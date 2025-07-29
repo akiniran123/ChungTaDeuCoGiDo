@@ -2,11 +2,17 @@
 import { useEffect, useState } from "react";
 
 export default function ThemeToggle() {
+  const [isMounted, setIsMounted] = useState(false);
   const [dark, setDark] = useState(false);
 
+  // ⚡️ Khi component đã mount
   useEffect(() => {
+    setIsMounted(true);
     const stored = localStorage.getItem("theme");
-    if (stored === "dark") {
+    const prefersDark = window.matchMedia("(prefers-color-scheme: dark)").matches;
+    const shouldUseDark = stored === "dark" || (!stored && prefersDark);
+
+    if (shouldUseDark) {
       document.documentElement.classList.add("dark");
       setDark(true);
     }
@@ -18,11 +24,13 @@ export default function ThemeToggle() {
     setDark(isDark);
   };
 
+  if (!isMounted) return null;
+
   return (
     <div className="ml-2">
       <button
         onClick={toggle}
-        className={`relative w-10 h-5 rounded-full flex items-center px-1 ${
+        className={`relative w-10 h-5 rounded-full flex items-center px-1 transition-colors ${
           dark ? "bg-indigo-500" : "bg-gray-300"
         }`}
       >

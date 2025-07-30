@@ -4,7 +4,7 @@ import { useState } from 'react';
 import Link from 'next/link';
 import { Heart, Bell, ShoppingCart, User, Menu } from 'lucide-react';
 import ThemeToggle from './ThemeToggle';
-import LoginModal from '/LoginModal';
+import LoginModal from './LoginModal';
 
 interface Props {
   onMenuToggle?: () => void;

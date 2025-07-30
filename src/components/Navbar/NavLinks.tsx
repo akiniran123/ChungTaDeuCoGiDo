@@ -6,17 +6,17 @@ import { useState } from 'react';
 import { Menu, X, ChevronDown } from 'lucide-react';
 
 const mainLinks = [
-  { name: 'NEW', path: '/new' },
+  { name: 'Mới', path: '/new' },
   { name: 'GAMING PCS', path: '/gaming-pcs' },
   { name: 'GPUS', path: '/gpus' },
-  { name: 'COMPONENTS', path: '/components' },
+  { name: 'Thành phần', path: '/components' },
   { name: 'PERIPHERALS', path: '/peripherals' },
   { name: 'OTHER SYSTEMS', path: '/other-systems' },
-  { name: 'RETRO', path: '/retro', isNew: true },
+  { name: 'Hệ thống khác', path: '/retro', isNew: true },
 ];
 
 const moreLinks = [
-  { name: 'ABOUT', path: '/about' },
+  { name: 'Giới Thiệu', path: '/about' },
   { name: 'FAQ', path: '/faq' },
   { name: 'CONTACT', path: '/contact' },
   { name: 'SELL', path: '/sell' },
@@ -64,7 +64,7 @@ export default function NavLinks() {
           onMouseLeave={() => setMoreOpen(false)}
         >
           <div className="flex items-center gap-1 cursor-pointer hover:text-indigo-600">
-            MORE <ChevronDown className="w-4 h-4" />
+            Menu <ChevronDown className="w-4 h-4" />
           </div>
           {moreOpen && (
             <div className="absolute left-0 top-full mt-2 bg-white dark:bg-gray-800 rounded-md shadow-md z-50 min-w-[150px]">

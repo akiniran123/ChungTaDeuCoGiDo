@@ -1,20 +1,21 @@
 'use client';
+
 import { useEffect, useState } from 'react';
 
 export function ThemeProvider({ children }: { children: React.ReactNode }) {
-  const [isMounted, setIsMounted] = useState(false);
+  const [mounted, setMounted] = useState(false);
 
   useEffect(() => {
-    setIsMounted(true);
-    const stored = localStorage.getItem("theme");
-    if (stored === "dark") {
-      document.documentElement.classList.add("dark");
-    } else {
-      document.documentElement.classList.remove("dark");
-    }
+    const storedTheme = localStorage.getItem('theme');
+    const prefersDark = window.matchMedia('(prefers-color-scheme: dark)').matches;
+
+    const shouldUseDark = storedTheme === 'dark' || (!storedTheme && prefersDark);
+
+    document.documentElement.classList.toggle('dark', shouldUseDark);
+    setMounted(true);
   }, []);
 
-  if (!isMounted) return null;
+  if (!mounted) return null;
 
   return <>{children}</>;
 }

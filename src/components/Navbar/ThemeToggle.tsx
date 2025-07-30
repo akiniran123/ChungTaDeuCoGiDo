@@ -1,11 +1,12 @@
 'use client';
-import { useEffect, useState } from "react";
+
+import { Moon, Sun } from 'lucide-react';
+import { useEffect, useState } from 'react';
 
 export default function ThemeToggle() {
   const [isMounted, setIsMounted] = useState(false);
   const [dark, setDark] = useState(false);
 
-  // ⚡️ Khi component đã mount
   useEffect(() => {
     setIsMounted(true);
     const stored = localStorage.getItem("theme");
@@ -19,27 +20,39 @@ export default function ThemeToggle() {
   }, []);
 
   const toggle = () => {
-    const isDark = document.documentElement.classList.toggle("dark");
-    localStorage.setItem("theme", isDark ? "dark" : "light");
+    const isDark = !dark;
     setDark(isDark);
+    localStorage.setItem("theme", isDark ? "dark" : "light");
+    document.documentElement.classList.toggle("dark", isDark);
   };
 
   if (!isMounted) return null;
 
   return (
-    <div className="ml-2">
-      <button
-        onClick={toggle}
-        className={`relative w-10 h-5 rounded-full flex items-center px-1 transition-colors ${
-          dark ? "bg-indigo-500" : "bg-gray-300"
-        }`}
+    <button
+      onClick={toggle}
+      aria-label="Toggle Theme"
+      className={`
+        relative w-12 h-6 rounded-full flex items-center 
+        px-1 transition-colors duration-300
+        focus:outline-none focus:ring-2 focus:ring-indigo-400
+        ${dark ? 'bg-indigo-600 justify-start' : 'bg-gray-300 justify-end'}
+        hover:brightness-110
+      `}
+    >
+      <span
+        className={`
+          transition-transform duration-300
+          w-5 h-5 flex items-center justify-center 
+          rounded-full bg-white shadow-md
+        `}
       >
-        <span
-          className={`w-4 h-4 bg-white rounded-full transition-transform ${
-            dark ? "translate-x-5" : "translate-x-0"
-          }`}
-        />
-      </button>
-    </div>
+        {dark ? (
+          <Moon className="w-3.5 h-3.5 text-indigo-600 transition-transform duration-300" />
+        ) : (
+          <Sun className="w-4 h-4 text-yellow-500 transition-transform duration-300" />
+        )}
+      </span>
+    </button>
   );
 }

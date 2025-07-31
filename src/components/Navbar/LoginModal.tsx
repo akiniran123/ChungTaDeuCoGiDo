@@ -2,18 +2,23 @@
 
 import { Dialog } from '@headlessui/react';
 import { useEffect, useState } from 'react';
-import { createClientComponentClient } from '@supabase/auth-helpers-nextjs';
+import { createBrowserClient } from '@supabase/ssr';
+import { type Database } from '@/types/supabase';
 import { Loader2 } from 'lucide-react';
 
 interface LoginModalProps {
   onClose: () => void;
-  onLoginSuccess?: () => void; // ✅ Thêm callback để redirect
+  onLoginSuccess?: () => void;
 }
 
 export default function LoginModal({ onClose, onLoginSuccess }: LoginModalProps) {
-  const supabase = createClientComponentClient();
   const [loading, setLoading] = useState(false);
   const [errorMsg, setErrorMsg] = useState('');
+
+  const supabase = createBrowserClient<Database>(
+    process.env.NEXT_PUBLIC_SUPABASE_URL!,
+    process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!
+  );
 
   const handleGoogleLogin = async () => {
     setLoading(true);
@@ -22,7 +27,7 @@ export default function LoginModal({ onClose, onLoginSuccess }: LoginModalProps)
     const { error } = await supabase.auth.signInWithOAuth({
       provider: 'google',
       options: {
-        redirectTo: `${location.origin}/auth/callback`,
+        redirectTo: `${window.location.origin}/auth/callback`,
       },
     });
 
@@ -33,19 +38,20 @@ export default function LoginModal({ onClose, onLoginSuccess }: LoginModalProps)
     }
   };
 
-  // ✅ Tự động đóng modal và gọi callback sau khi đăng nhập
   useEffect(() => {
-    const { data: listener } = supabase.auth.onAuthStateChange((event, session) => {
+    const {
+      data: { subscription },
+    } = supabase.auth.onAuthStateChange((event, session) => {
       if (event === 'SIGNED_IN' && session?.user) {
         onClose();
-        onLoginSuccess?.(); // ✅ Gọi callback nếu có
+        onLoginSuccess?.();
       }
     });
 
     return () => {
-      listener.subscription?.unsubscribe?.();
+      subscription.unsubscribe();
     };
-  }, [onClose, onLoginSuccess]);
+  }, [supabase, onClose, onLoginSuccess]);
 
   return (
     <Dialog open={true} onClose={onClose} className="fixed inset-0 z-50">

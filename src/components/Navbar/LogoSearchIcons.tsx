@@ -7,6 +7,7 @@ import { createClientComponentClient } from '@supabase/auth-helpers-nextjs';
 import { Heart, Bell, ShoppingCart, User, Menu } from 'lucide-react';
 import ThemeToggle from './ThemeToggle';
 import LoginModal from './LoginModal';
+import type { User as SupabaseUser } from '@supabase/supabase-js';
 
 interface Props {
   onMenuToggle?: () => void;
@@ -14,20 +15,25 @@ interface Props {
 
 export default function LogoSearchIcons({ onMenuToggle }: Props) {
   const [showLogin, setShowLogin] = useState(false);
-  const [user, setUser] = useState<any>(null);
+  const [user, setUser] = useState<SupabaseUser | null>(null);
   const supabase = createClientComponentClient();
   const router = useRouter();
 
   useEffect(() => {
     const getUser = async () => {
-      const { data: { user } } = await supabase.auth.getUser();
-      setUser(user);
+      const {
+        data: { user: fetchedUser },
+      } = await supabase.auth.getUser();
+      setUser(fetchedUser);
     };
     getUser();
-  }, []);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []); // supabase is stable, ok to ignore exhaustive-deps
 
   const handleStartSelling = async () => {
-    const { data: { user: currentUser } } = await supabase.auth.getUser();
+    const {
+      data: { user: currentUser },
+    } = await supabase.auth.getUser();
     if (currentUser) {
       router.push('/sell');
     } else {

@@ -23,21 +23,19 @@ export default function LogoSearchIcons({ onMenuToggle }: Props) {
       const { data: { user } } = await supabase.auth.getUser();
       setUser(user);
     };
-
     getUser();
   }, []);
 
-  const handleIconClick = () => {
-    setShowLogin(true);
-  };
-
-  const handleStartSelling = () => {
-    if (user) {
+  const handleStartSelling = async () => {
+    const { data: { user: currentUser } } = await supabase.auth.getUser();
+    if (currentUser) {
       router.push('/sell');
     } else {
       setShowLogin(true);
     }
   };
+
+  const handleIconClick = () => setShowLogin(true);
 
   return (
     <>
@@ -68,11 +66,12 @@ export default function LogoSearchIcons({ onMenuToggle }: Props) {
             />
           </div>
 
-          {/* Action Icons + Theme */}
+          {/* Icons & Start Selling */}
           <div className="flex items-center gap-3">
             <button
               onClick={handleStartSelling}
-              className="hidden sm:inline-block bg-indigo-600 text-white px-4 py-1.5 text-sm rounded-full font-semibold hover:bg-indigo-700 transition"
+              className="hidden sm:inline-block bg-indigo-600 hover:bg-indigo-700 text-white px-4 py-1.5 text-sm rounded-full font-semibold transition cursor-pointer"
+              aria-label="Start Selling"
             >
               START SELLING
             </button>
@@ -85,7 +84,7 @@ export default function LogoSearchIcons({ onMenuToggle }: Props) {
           </div>
         </div>
 
-        {/* Search (Mobile only) */}
+        {/* Mobile Search */}
         <div className="sm:hidden px-4 pb-2">
           <input
             type="text"
@@ -95,7 +94,15 @@ export default function LogoSearchIcons({ onMenuToggle }: Props) {
         </div>
       </div>
 
-      {showLogin && <LoginModal onClose={() => setShowLogin(false)} />}
+      {showLogin && (
+        <LoginModal
+          onClose={() => setShowLogin(false)}
+          onLoginSuccess={() => {
+            setShowLogin(false);
+            router.push('/sell');
+          }}
+        />
+      )}
     </>
   );
 }

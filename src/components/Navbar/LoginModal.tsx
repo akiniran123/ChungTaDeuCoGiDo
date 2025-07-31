@@ -7,9 +7,10 @@ import { Loader2 } from 'lucide-react';
 
 interface LoginModalProps {
   onClose: () => void;
+  onLoginSuccess?: () => void; // ✅ Thêm callback để redirect
 }
 
-export default function LoginModal({ onClose }: LoginModalProps) {
+export default function LoginModal({ onClose, onLoginSuccess }: LoginModalProps) {
   const supabase = createClientComponentClient();
   const [loading, setLoading] = useState(false);
   const [errorMsg, setErrorMsg] = useState('');
@@ -17,6 +18,7 @@ export default function LoginModal({ onClose }: LoginModalProps) {
   const handleGoogleLogin = async () => {
     setLoading(true);
     setErrorMsg('');
+
     const { error } = await supabase.auth.signInWithOAuth({
       provider: 'google',
       options: {
@@ -31,19 +33,19 @@ export default function LoginModal({ onClose }: LoginModalProps) {
     }
   };
 
-  // Listen to auth change and auto-close if login succeeds
+  // ✅ Tự động đóng modal và gọi callback sau khi đăng nhập
   useEffect(() => {
     const { data: listener } = supabase.auth.onAuthStateChange((event, session) => {
       if (event === 'SIGNED_IN' && session?.user) {
         onClose();
+        onLoginSuccess?.(); // ✅ Gọi callback nếu có
       }
     });
 
-    // cleanup listener on unmount
     return () => {
       listener.subscription?.unsubscribe?.();
     };
-  }, []);
+  }, [onClose, onLoginSuccess]);
 
   return (
     <Dialog open={true} onClose={onClose} className="fixed inset-0 z-50">

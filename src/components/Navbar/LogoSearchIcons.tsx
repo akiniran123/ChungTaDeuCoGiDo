@@ -1,7 +1,9 @@
 'use client';
 
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
 import Link from 'next/link';
+import { useRouter } from 'next/navigation';
+import { createClientComponentClient } from '@supabase/auth-helpers-nextjs';
 import { Heart, Bell, ShoppingCart, User, Menu } from 'lucide-react';
 import ThemeToggle from './ThemeToggle';
 import LoginModal from './LoginModal';
@@ -12,9 +14,29 @@ interface Props {
 
 export default function LogoSearchIcons({ onMenuToggle }: Props) {
   const [showLogin, setShowLogin] = useState(false);
+  const [user, setUser] = useState<any>(null);
+  const supabase = createClientComponentClient();
+  const router = useRouter();
+
+  useEffect(() => {
+    const getUser = async () => {
+      const { data: { user } } = await supabase.auth.getUser();
+      setUser(user);
+    };
+
+    getUser();
+  }, []);
 
   const handleIconClick = () => {
     setShowLogin(true);
+  };
+
+  const handleStartSelling = () => {
+    if (user) {
+      router.push('/sell');
+    } else {
+      setShowLogin(true);
+    }
   };
 
   return (
@@ -48,11 +70,13 @@ export default function LogoSearchIcons({ onMenuToggle }: Props) {
 
           {/* Action Icons + Theme */}
           <div className="flex items-center gap-3">
-            <button className="hidden sm:inline-block bg-indigo-600 text-white px-4 py-1.5 text-sm rounded-full font-semibold hover:bg-indigo-700 transition">
+            <button
+              onClick={handleStartSelling}
+              className="hidden sm:inline-block bg-indigo-600 text-white px-4 py-1.5 text-sm rounded-full font-semibold hover:bg-indigo-700 transition"
+            >
               START SELLING
             </button>
 
-            {/* ICONS trigger login modal */}
             <Heart className="w-5 h-5 hover:text-indigo-500 cursor-pointer" onClick={handleIconClick} />
             <Bell className="w-5 h-5 hover:text-indigo-500 cursor-pointer" onClick={handleIconClick} />
             <ShoppingCart className="w-5 h-5 hover:text-indigo-500 cursor-pointer" onClick={handleIconClick} />

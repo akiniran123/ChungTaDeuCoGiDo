@@ -31,14 +31,18 @@ export default function LoginModal({ onClose }: LoginModalProps) {
     }
   };
 
+  // Listen to auth change and auto-close if login succeeds
   useEffect(() => {
-    const checkUser = async () => {
-      const { data } = await supabase.auth.getUser();
-      if (data?.user) {
+    const { data: listener } = supabase.auth.onAuthStateChange((event, session) => {
+      if (event === 'SIGNED_IN' && session?.user) {
         onClose();
       }
+    });
+
+    // cleanup listener on unmount
+    return () => {
+      listener.subscription?.unsubscribe?.();
     };
-    checkUser();
   }, []);
 
   return (

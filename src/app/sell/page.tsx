@@ -2,43 +2,45 @@
 
 import { useEffect, useState } from 'react';
 import { useRouter } from 'next/navigation';
-import { createClientComponentClient } from '@supabase/auth-helpers-nextjs';
 import { v4 as uuidv4 } from 'uuid';
 import type { User } from '@supabase/supabase-js';
+import { createBrowserClient } from '@supabase/ssr';
+import { Database } from '@/types/supabase';
 
 export default function SellPage() {
-  const supabase = createClientComponentClient();
+  const supabase = createBrowserClient<Database>(
+    process.env.NEXT_PUBLIC_SUPABASE_URL!,
+    process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!
+  );
+
   const router = useRouter();
 
   const [user, setUser] = useState<User | null>(null);
   const [loadingUser, setLoadingUser] = useState(true);
 
-  const [form, setForm] = useState<{
-    title: string;
-    desc: string;
-    price: string;
-    category: string;
-    files: File[];
-  }>({
+  const [form, setForm] = useState({
     title: '',
     desc: '',
     price: '',
     category: '',
-    files: [],
+    files: [] as File[],
   });
 
   useEffect(() => {
     const auth = async () => {
-      const {
-        data: { user },
-      } = await supabase.auth.getUser();
+      const { data, error } = await supabase.auth.getUser();
 
-      if (!user) return router.push('/');
-      setUser(user);
+      if (!data?.user) {
+        router.push('/');
+        return;
+      }
+
+      setUser(data.user);
       setLoadingUser(false);
     };
+
     auth();
-  }, [router, supabase]);
+  }, [supabase, router]);
 
   const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
@@ -48,24 +50,23 @@ export default function SellPage() {
     for (const file of form.files) {
       const fileExt = file.name.split('.').pop();
       const fileName = `${uuidv4()}.${fileExt}`;
-      const { error } = await supabase.storage
+      const { error: uploadError } = await supabase.storage
         .from('listings')
         .upload(fileName, file);
 
-      if (error) {
-        console.error('Upload error:', error);
-        return alert('Failed to upload image.');
+      if (uploadError) {
+        console.error('Upload error:', uploadError);
+        alert('Failed to upload image.');
+        return;
       }
 
-    const { data: publicUrlData } = supabase.storage
-  .from('listings')
-  .getPublicUrl(fileName);
+      const { data: publicUrlData } = supabase.storage
+        .from('listings')
+        .getPublicUrl(fileName);
 
-if (publicUrlData?.publicUrl) {
-  uploadedUrls.push(publicUrlData.publicUrl);
-}
-
-
+      if (publicUrlData?.publicUrl) {
+        uploadedUrls.push(publicUrlData.publicUrl);
+      }
     }
 
     const { error: insertError } = await supabase.from('listings').insert([
@@ -82,7 +83,8 @@ if (publicUrlData?.publicUrl) {
 
     if (insertError) {
       console.error('Insert error:', insertError);
-      return alert('Failed to save listing.');
+      alert('Failed to save listing.');
+      return;
     }
 
     alert('Listing created!');
@@ -97,7 +99,7 @@ if (publicUrlData?.publicUrl) {
       <form onSubmit={handleSubmit} className="space-y-6">
         <select
           value={form.category}
-          onChange={(e: React.ChangeEvent<HTMLSelectElement>) =>
+          onChange={(e) =>
             setForm((f) => ({ ...f, category: e.target.value }))
           }
           className="w-full border p-2 rounded"
@@ -113,7 +115,7 @@ if (publicUrlData?.publicUrl) {
           type="text"
           placeholder="Listing Name (min 5 words)"
           value={form.title}
-          onChange={(e: React.ChangeEvent<HTMLInputElement>) =>
+          onChange={(e) =>
             setForm((f) => ({ ...f, title: e.target.value }))
           }
           className="w-full border rounded px-3 py-2"
@@ -123,7 +125,7 @@ if (publicUrlData?.publicUrl) {
         <textarea
           placeholder="Description"
           value={form.desc}
-          onChange={(e: React.ChangeEvent<HTMLTextAreaElement>) =>
+          onChange={(e) =>
             setForm((f) => ({ ...f, desc: e.target.value }))
           }
           rows={6}
@@ -134,7 +136,7 @@ if (publicUrlData?.publicUrl) {
         <input
           type="file"
           multiple
-          onChange={(e: React.ChangeEvent<HTMLInputElement>) =>
+          onChange={(e) =>
             setForm((f) => ({
               ...f,
               files: Array.from(e.target.files || []),
@@ -148,7 +150,7 @@ if (publicUrlData?.publicUrl) {
           type="number"
           placeholder="Price (USD)"
           value={form.price}
-          onChange={(e: React.ChangeEvent<HTMLInputElement>) =>
+          onChange={(e) =>
             setForm((f) => ({ ...f, price: e.target.value }))
           }
           className="w-full border rounded px-3 py-2"

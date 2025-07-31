@@ -1,47 +1,42 @@
-'use client';
+'use client'
 
-import { useEffect, useState } from 'react';
-import Link from 'next/link';
-import { useRouter } from 'next/navigation';
-import { createClientComponentClient } from '@supabase/auth-helpers-nextjs';
-import { Heart, Bell, ShoppingCart, User, Menu } from 'lucide-react';
-import ThemeToggle from './ThemeToggle';
-import LoginModal from './LoginModal';
-import type { User as SupabaseUser } from '@supabase/supabase-js';
+import { useEffect, useState } from 'react'
+import Link from 'next/link'
+import { useRouter } from 'next/navigation'
+import { Heart, Bell, ShoppingCart, User, Menu } from 'lucide-react'
+import { supabase } from '@/lib/supabase/client'
+
+import ThemeToggle from './ThemeToggle'
+import LoginModal from './LoginModal'
 
 interface Props {
-  onMenuToggle?: () => void;
+  onMenuToggle?: () => void
 }
 
 export default function LogoSearchIcons({ onMenuToggle }: Props) {
-  const [showLogin, setShowLogin] = useState(false);
-  const [user, setUser] = useState<SupabaseUser | null>(null);
-  const supabase = createClientComponentClient();
-  const router = useRouter();
+  const [showLogin, setShowLogin] = useState(false)
+  const [user, setUser] = useState<any>(null)
+  const router = useRouter()
 
   useEffect(() => {
     const getUser = async () => {
-      const {
-        data: { user: fetchedUser },
-      } = await supabase.auth.getUser();
-      setUser(fetchedUser);
-    };
-    getUser();
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, []); // supabase is stable, ok to ignore exhaustive-deps
-
-  const handleStartSelling = async () => {
-    const {
-      data: { user: currentUser },
-    } = await supabase.auth.getUser();
-    if (currentUser) {
-      router.push('/sell');
-    } else {
-      setShowLogin(true);
+      const { data: { user } } = await supabase.auth.getUser()
+      setUser(user)
     }
-  };
+    getUser()
+  }, [])
 
-  const handleIconClick = () => setShowLogin(true);
+  const handleStartSelling = () => {
+    if (user) {
+      router.push('/sell')
+    } else {
+      setShowLogin(true)
+    }
+  }
+
+  const handleIconClick = () => {
+    if (!user) setShowLogin(true)
+  }
 
   return (
     <>
@@ -63,7 +58,7 @@ export default function LogoSearchIcons({ onMenuToggle }: Props) {
             </Link>
           </div>
 
-          {/* Search (Desktop only) */}
+          {/* Middle: Search (Desktop only) */}
           <div className="hidden sm:block flex-1 max-w-xl mx-4">
             <input
               type="text"
@@ -72,7 +67,7 @@ export default function LogoSearchIcons({ onMenuToggle }: Props) {
             />
           </div>
 
-          {/* Icons & Start Selling */}
+          {/* Right: Icons & Actions */}
           <div className="flex items-center gap-3">
             <button
               onClick={handleStartSelling}
@@ -104,11 +99,11 @@ export default function LogoSearchIcons({ onMenuToggle }: Props) {
         <LoginModal
           onClose={() => setShowLogin(false)}
           onLoginSuccess={() => {
-            setShowLogin(false);
-            router.push('/sell');
+            setShowLogin(false)
+            router.push('/sell')
           }}
         />
       )}
     </>
-  );
+  )
 }

@@ -3,8 +3,9 @@
 import { useEffect, useState } from 'react'
 import Link from 'next/link'
 import { useRouter } from 'next/navigation'
-import { Heart, Bell, ShoppingCart, User, Menu } from 'lucide-react'
+import { Heart, Bell, ShoppingCart, User as UserIcon, Menu } from 'lucide-react'
 import { supabase } from '@/lib/supabase/client'
+import type { User } from '@supabase/supabase-js'
 
 import ThemeToggle from './ThemeToggle'
 import LoginModal from './LoginModal'
@@ -15,13 +16,13 @@ interface Props {
 
 export default function LogoSearchIcons({ onMenuToggle }: Props) {
   const [showLogin, setShowLogin] = useState(false)
-  const [user, setUser] = useState<any>(null)
+  const [user, setUser] = useState<User | null>(null)
   const router = useRouter()
 
   useEffect(() => {
     const getUser = async () => {
-      const { data: { user } } = await supabase.auth.getUser()
-      setUser(user)
+      const { data } = await supabase.auth.getUser()
+      setUser(data.user)
     }
     getUser()
   }, [])
@@ -80,7 +81,7 @@ export default function LogoSearchIcons({ onMenuToggle }: Props) {
             <Heart className="w-5 h-5 hover:text-indigo-500 cursor-pointer" onClick={handleIconClick} />
             <Bell className="w-5 h-5 hover:text-indigo-500 cursor-pointer" onClick={handleIconClick} />
             <ShoppingCart className="w-5 h-5 hover:text-indigo-500 cursor-pointer" onClick={handleIconClick} />
-            <User className="w-5 h-5 hover:text-indigo-500 cursor-pointer" onClick={handleIconClick} />
+            <UserIcon className="w-5 h-5 hover:text-indigo-500 cursor-pointer" onClick={handleIconClick} />
             <ThemeToggle />
           </div>
         </div>

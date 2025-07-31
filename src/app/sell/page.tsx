@@ -4,12 +4,15 @@ import { useEffect, useState } from 'react';
 import { useRouter } from 'next/navigation';
 import { createClientComponentClient } from '@supabase/auth-helpers-nextjs';
 import { v4 as uuidv4 } from 'uuid';
+import type { User } from '@supabase/supabase-js';
 
 export default function SellPage() {
   const supabase = createClientComponentClient();
   const router = useRouter();
-  const [user, setUser] = useState<any>(null);
+
+  const [user, setUser] = useState<User | null>(null);
   const [loadingUser, setLoadingUser] = useState(true);
+
   const [form, setForm] = useState<{
     title: string;
     desc: string;
@@ -26,15 +29,16 @@ export default function SellPage() {
 
   useEffect(() => {
     const auth = async () => {
-      const { data: { user } } = await supabase.auth.getUser();
+      const {
+        data: { user },
+      } = await supabase.auth.getUser();
+
       if (!user) return router.push('/');
       setUser(user);
       setLoadingUser(false);
     };
     auth();
-    // Nếu bạn thấy warning về dependency array thì có thể thêm:
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, []);
+  }, [router, supabase]);
 
   const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
@@ -44,7 +48,7 @@ export default function SellPage() {
     for (const file of form.files) {
       const fileExt = file.name.split('.').pop();
       const fileName = `${uuidv4()}.${fileExt}`;
-      const { data, error } = await supabase.storage
+      const { error } = await supabase.storage
         .from('listings')
         .upload(fileName, file);
 
@@ -53,26 +57,28 @@ export default function SellPage() {
         return alert('Failed to upload image.');
       }
 
-      const { data: urlData } = supabase.storage
-        .from('listings')
-        .getPublicUrl(fileName);
+    const { data: publicUrlData } = supabase.storage
+  .from('listings')
+  .getPublicUrl(fileName);
 
-      uploadedUrls.push(urlData.publicUrl);
+if (publicUrlData?.publicUrl) {
+  uploadedUrls.push(publicUrlData.publicUrl);
+}
+
+
     }
 
-    const { error: insertError } = await supabase
-      .from('listings')
-      .insert([
-        {
-          title: form.title,
-          desc: form.desc,
-          price: parseFloat(form.price),
-          category: form.category,
-          images: uploadedUrls,
-          user_id: user.id,
-          created_at: new Date().toISOString(),
-        },
-      ]);
+    const { error: insertError } = await supabase.from('listings').insert([
+      {
+        title: form.title,
+        desc: form.desc,
+        price: parseFloat(form.price),
+        category: form.category,
+        images: uploadedUrls,
+        user_id: user?.id,
+        created_at: new Date().toISOString(),
+      },
+    ]);
 
     if (insertError) {
       console.error('Insert error:', insertError);
@@ -89,7 +95,6 @@ export default function SellPage() {
     <div className="max-w-3xl mx-auto p-6">
       <h1 className="text-2xl font-bold mb-6">Start Selling</h1>
       <form onSubmit={handleSubmit} className="space-y-6">
-        {/* Category */}
         <select
           value={form.category}
           onChange={(e: React.ChangeEvent<HTMLSelectElement>) =>
@@ -104,7 +109,6 @@ export default function SellPage() {
           <option value="peripheral">Peripheral</option>
         </select>
 
-        {/* Title */}
         <input
           type="text"
           placeholder="Listing Name (min 5 words)"
@@ -116,7 +120,6 @@ export default function SellPage() {
           required
         />
 
-        {/* Description */}
         <textarea
           placeholder="Description"
           value={form.desc}
@@ -128,7 +131,6 @@ export default function SellPage() {
           required
         />
 
-        {/* Image Upload */}
         <input
           type="file"
           multiple
@@ -142,7 +144,6 @@ export default function SellPage() {
           className="w-full"
         />
 
-        {/* Price */}
         <input
           type="number"
           placeholder="Price (USD)"

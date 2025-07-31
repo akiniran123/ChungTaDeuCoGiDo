@@ -57,29 +57,33 @@ export default function LogoSearchIcons({ onMenuToggle }: Props) {
               <Menu className="w-6 h-6" />
             </button>
 
-            <Link href="/" className="flex items-center space-x-2 text-2xl font-bold">
-              <span className="text-[#9b4de0]">🛡</span>
-              <span className="text-black dark:text-white">jawa</span>
-            </Link>
+           <Link href="/" className="flex items-center space-x-2">
+  <img
+    src="/Logo/anh.png"
+    alt="Logo"
+    className="h-20 w-auto object-contain"
+  />
+</Link>
+
           </div>
 
           {/* Search (Desktop only) */}
           <div className="hidden sm:block flex-1 max-w-xl mx-4">
             <input
               type="text"
-              placeholder="Search listings and sellers"
+              placeholder="Tìm kiếm sản phẩm"
               className="w-full px-5 py-2 rounded-full border border-gray-300 focus:outline-none bg-gray-100 dark:bg-gray-800 text-sm"
             />
           </div>
 
-          {/* Icons & Start Selling */}
+          {/* Icons & Bắt đầu bán hàng */}
           <div className="flex items-center gap-3">
             <button
               onClick={handleStartSelling}
               className="hidden sm:inline-block bg-indigo-600 hover:bg-indigo-700 text-white px-4 py-1.5 text-sm rounded-full font-semibold transition cursor-pointer"
-              aria-label="Start Selling"
+              aria-label="Bắt đầu bán hàng"
             >
-              START SELLING
+              Bắt đầu bán hàng
             </button>
 
             <Heart className="w-5 h-5 hover:text-indigo-500 cursor-pointer" onClick={handleIconClick} />
@@ -94,7 +98,7 @@ export default function LogoSearchIcons({ onMenuToggle }: Props) {
         <div className="sm:hidden px-4 pb-2">
           <input
             type="text"
-            placeholder="Search listings and sellers"
+            placeholder="Tìm kiếm sản phẩm"
             className="w-full px-4 py-2 rounded-full border border-gray-300 focus:outline-none bg-gray-100 dark:bg-gray-800 text-sm"
           />
         </div>

@@ -5,14 +5,24 @@ import { usePathname } from 'next/navigation';
 import { useState } from 'react';
 import { Menu, X, ChevronDown, ChevronRight } from 'lucide-react';
 
-const mainLinks = [
+// ✅ Thêm kiểu cho link có thể có isNew
+type MainLink = {
+  name: string;
+  path: string;
+  isNew?: boolean;
+};
+
+const mainLinksLeft: MainLink[] = [
   { name: 'Giới thiệu', path: '/Giới thiệu' },
   { name: 'Tin tức', path: '/Tin tức' },
   { name: 'Khuyến mãi & Ưu đãi', path: '/Khuyến mãi & Ưu đãi' },
-  { name: '+Đăng tin', path: '/+Đăng tin' },
+  { name: 'Sản phẩm công nghệ mới', path: '/Sản phẩm công nghệ mới', isNew: true },
+  { name: 'Tuyển dụng', path: '/Tuyển dụng' },
+];
+
+const mainLinksRight: MainLink[] = [
   { name: 'Chính sách & Điều khoản, Điều kiện', path: '/Chính sách & Điều khoản, Điều kiện' },
   { name: 'Liên hệ & Hỗ trợ', path: '/Liên hệ & Hỗ trợ' },
-  { name: 'Sản phẩm công nghệ mới', path: '/Sản phẩm công nghệ mới', isNew: true },
 ];
 
 const categoryMenu = [
@@ -50,7 +60,7 @@ export default function NavLinks() {
     timer = setTimeout(() => {
       setCategoryOpen(false);
       setSubmenuOpen(null);
-    }, 200);
+    }, 300);
   };
 
   return (
@@ -65,26 +75,7 @@ export default function NavLinks() {
 
       {/* Desktop menu */}
       <nav className="hidden md:flex justify-center gap-6 font-semibold text-sm py-3 relative">
-        {mainLinks.map(({ name, path, isNew }) => (
-          <Link
-            key={name}
-            href={path}
-            className={`hover:text-indigo-600 transition-colors ${
-              pathname === path ? 'text-indigo-500 underline underline-offset-4' : ''
-            }`}
-          >
-            {isNew ? (
-              <span>
-                {name}
-                <span className="ml-1 px-1 rounded bg-red-500 text-white text-[10px]">NEW</span>
-              </span>
-            ) : (
-              name
-            )}
-          </Link>
-        ))}
-
-        {/* Dropdown Danh mục */}
+        {/* Danh mục */}
         <div
           className="relative"
           onMouseEnter={handleMouseEnter}
@@ -95,7 +86,11 @@ export default function NavLinks() {
           </div>
 
           {categoryOpen && (
-            <div className="absolute left-0 top-full mt-2 bg-white dark:bg-gray-800 rounded-md shadow-md z-50 min-w-[200px]">
+            <div
+              className="absolute left-0 top-full mt-2 bg-white dark:bg-gray-800 rounded-md shadow-md z-50 min-w-[200px]"
+              onMouseEnter={handleMouseEnter}
+              onMouseLeave={handleMouseLeave}
+            >
               {categoryMenu.map((item) => (
                 <div
                   key={item.name}
@@ -106,10 +101,9 @@ export default function NavLinks() {
                     {item.name} <ChevronRight className="w-4 h-4" />
                   </div>
 
-                  {/* Submenu */}
                   {submenuOpen === item.name && (
                     <div
-                      className="absolute top-0 left-full mt-0 bg-white dark:bg-gray-800 rounded-md shadow-md min-w-[180px] z-50"
+                      className="absolute top-0 left-full bg-white dark:bg-gray-800 rounded-md shadow-md min-w-[180px] z-50"
                       onMouseEnter={() => clearTimeout(timer)}
                       onMouseLeave={handleMouseLeave}
                     >
@@ -129,27 +123,60 @@ export default function NavLinks() {
             </div>
           )}
         </div>
+
+        {/* Links bên trái */}
+        {mainLinksLeft.map(({ name, path, isNew }) => (
+          <Link
+            key={path}
+            href={path}
+            className={`hover:text-indigo-600 transition-colors ${
+              pathname === path ? 'text-indigo-500 underline underline-offset-4' : ''
+            }`}
+          >
+            {isNew ? (
+              <span>
+                {name}
+                <span className="ml-1 px-1 rounded bg-red-500 text-white text-[10px]">NEW</span>
+              </span>
+            ) : (
+              name
+            )}
+          </Link>
+        ))}
+
+        {/* Links bên phải */}
+        {mainLinksRight.map(({ name, path }) => (
+          <Link
+            key={path}
+            href={path}
+            className={`hover:text-indigo-600 transition-colors ${
+              pathname === path ? 'text-indigo-500 underline underline-offset-4' : ''
+            }`}
+          >
+            {name}
+          </Link>
+        ))}
       </nav>
 
       {/* Mobile menu */}
       {mobileOpen && (
         <div className="md:hidden px-4 pb-4 font-semibold text-sm space-y-2">
-          {mainLinks.map(({ name, path, isNew }) => (
+          {[...mainLinksLeft, ...mainLinksRight].map((item, index) => (
             <Link
-              key={name}
-              href={path}
+              key={item.path || index}
+              href={item.path}
               onClick={() => setMobileOpen(false)}
               className={`block py-1 ${
-                pathname === path ? 'text-indigo-500 underline underline-offset-4' : ''
+                pathname === item.path ? 'text-indigo-500 underline underline-offset-4' : ''
               }`}
             >
-              {isNew ? (
+              {'isNew' in item && item.isNew ? (
                 <span>
-                  {name}
+                  {item.name}
                   <span className="ml-1 px-1 rounded bg-red-500 text-white text-[10px]">NEW</span>
                 </span>
               ) : (
-                name
+                item.name
               )}
             </Link>
           ))}

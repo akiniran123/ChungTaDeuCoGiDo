@@ -6,47 +6,47 @@ import Link from "next/link";
 export default function Home() {
   return (
     <div className="font-sans min-h-screen bg-black text-white p-6 sm:p-12 space-y-16">
-      {/* Banner / Thông báo */}
+      {/* Thông báo */}
       <div className="bg-[#f2efff] text-black text-center text-sm py-2 rounded">
-        🏆 TITAN FORGED WINS THE BE QUIET! CONTEST! —{" "}
+        🏆 TITAN FORGED ĐÃ THẮNG CUỘC THI BE QUIET! —{" "}
         <a href="#" className="underline font-medium">
-          See the silent beast here
+          Xem chi tiết tại đây
         </a>
       </div>
 
-      {/* Hero Section */}
+      {/* Phần chính / Hero */}
       <section className="text-center space-y-6">
         <h1 className="text-4xl sm:text-5xl font-bold">
-          Buy & Sell Trusted Gaming Gear 🎮
+          Mua & Bán Thiết Bị Gaming Uy Tín 🎮
         </h1>
         <p className="text-lg text-gray-300 max-w-xl mx-auto">
-          The #1 marketplace for gamers to trade PCs, GPUs, and accessories safely and easily.
+          Nền tảng số 1 cho game thủ mua bán PC, GPU và phụ kiện một cách an toàn, nhanh chóng.
         </p>
 
         <div className="flex flex-col sm:flex-row gap-4 justify-center mt-6">
           <Link
-            href="/start-selling"
+            href="/bat-dau-ban"
             className="bg-white text-black rounded-full px-6 py-3 font-semibold hover:bg-gray-200 transition"
           >
-            Start Selling
+            Bắt đầu bán hàng
           </Link>
           <Link
-            href="/products"
+            href="/san-pham"
             className="border border-white rounded-full px-6 py-3 font-semibold hover:bg-white hover:text-black transition"
           >
-            Browse Products
+            Xem sản phẩm
           </Link>
         </div>
       </section>
 
       {/* Danh mục nổi bật */}
       <section>
-        <h2 className="text-2xl font-semibold mb-6 text-center">Categories</h2>
+        <h2 className="text-2xl font-semibold mb-6 text-center">Danh mục</h2>
         <div className="grid grid-cols-1 sm:grid-cols-3 gap-6">
           {[
-            { title: "Gaming PCs", desc: "Built for performance." },
-            { title: "GPUs", desc: "Powerful graphics cards for all needs." },
-            { title: "Peripherals", desc: "Keyboards, mice, headsets, and more." },
+            { title: "PC Gaming", desc: "Hiệu năng mạnh mẽ, sẵn sàng chiến game." },
+            { title: "Card đồ họa (GPU)", desc: "Đa dạng cấu hình cho mọi nhu cầu." },
+            { title: "Phụ kiện", desc: "Bàn phím, chuột, tai nghe và nhiều hơn nữa." },
           ].map((item, idx) => (
             <div
               key={idx}
@@ -59,7 +59,7 @@ export default function Home() {
         </div>
       </section>
 
-      {/* Giới thiệu Next.js + Vercel như trong code bạn gửi (giữ nguyên để làm mẫu học tập) */}
+      {/* Phần demo giữ nguyên để học tập */}
       <section className="text-center">
         <Image
           className="mx-auto dark:invert"
@@ -71,12 +71,12 @@ export default function Home() {
         />
         <ol className="mt-6 font-mono list-inside list-decimal text-sm text-center text-gray-400">
           <li className="mb-2">
-            Get started by editing{" "}
+            Bắt đầu bằng cách chỉnh sửa{" "}
             <code className="bg-black/10 dark:bg-white/10 px-1 py-0.5 rounded">
               src/app/page.tsx
             </code>
           </li>
-          <li>Save and see your changes instantly.</li>
+          <li>Lưu lại và xem thay đổi ngay lập tức.</li>
         </ol>
 
         <div className="flex flex-col sm:flex-row gap-4 justify-center mt-6">
@@ -93,7 +93,7 @@ export default function Home() {
               width={20}
               height={20}
             />
-            Deploy now
+            Triển khai ngay
           </a>
           <a
             className="rounded-full border border-white hover:bg-white hover:text-black px-5 py-2 font-semibold"
@@ -101,7 +101,7 @@ export default function Home() {
             target="_blank"
             rel="noopener noreferrer"
           >
-            Read our docs
+            Xem tài liệu
           </a>
         </div>
       </section>
@@ -115,7 +115,7 @@ export default function Home() {
             className="hover:underline flex items-center gap-2"
           >
             <Image src="/file.svg" alt="File" width={16} height={16} />
-            Learn
+            Học Next.js
           </a>
           <a
             href="https://vercel.com/templates"
@@ -123,7 +123,7 @@ export default function Home() {
             className="hover:underline flex items-center gap-2"
           >
             <Image src="/window.svg" alt="Window" width={16} height={16} />
-            Examples
+            Mẫu giao diện
           </a>
           <a
             href="https://nextjs.org"
@@ -131,7 +131,7 @@ export default function Home() {
             className="hover:underline flex items-center gap-2"
           >
             <Image src="/globe.svg" alt="Globe" width={16} height={16} />
-            Go to nextjs.org →
+            Truy cập nextjs.org →
           </a>
         </div>
       </footer>

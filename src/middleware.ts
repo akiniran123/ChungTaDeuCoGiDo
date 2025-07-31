@@ -1,6 +1,6 @@
-import { NextRequest, NextResponse } from 'next/server'
+import { NextResponse } from 'next/server'
+import type { NextRequest } from 'next/server'
 
-export function middleware(req: NextRequest) {
-  // Có thể thêm logic tại đây
+export function middleware(_req: NextRequest) {
   return NextResponse.next()
 }

@@ -10,12 +10,18 @@ export default function SellPage() {
   const router = useRouter();
   const [user, setUser] = useState<any>(null);
   const [loadingUser, setLoadingUser] = useState(true);
-  const [form, setForm] = useState({
+  const [form, setForm] = useState<{
+    title: string;
+    desc: string;
+    price: string;
+    category: string;
+    files: File[];
+  }>({
     title: '',
     desc: '',
     price: '',
     category: '',
-    files: [] as File[],
+    files: [],
   });
 
   useEffect(() => {
@@ -26,18 +32,20 @@ export default function SellPage() {
       setLoadingUser(false);
     };
     auth();
+    // Nếu bạn thấy warning về dependency array thì có thể thêm:
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
-  const handleSubmit = async (e: React.FormEvent) => {
+  const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
 
-    // ✅ 1. Upload images
     const uploadedUrls: string[] = [];
+
     for (const file of form.files) {
       const fileExt = file.name.split('.').pop();
       const fileName = `${uuidv4()}.${fileExt}`;
       const { data, error } = await supabase.storage
-        .from('listings') // Ensure you created this bucket in Supabase
+        .from('listings')
         .upload(fileName, file);
 
       if (error) {
@@ -52,7 +60,6 @@ export default function SellPage() {
       uploadedUrls.push(urlData.publicUrl);
     }
 
-    // ✅ 2. Insert metadata into database
     const { error: insertError } = await supabase
       .from('listings')
       .insert([
@@ -73,7 +80,7 @@ export default function SellPage() {
     }
 
     alert('Listing created!');
-    router.push('/'); // or redirect to `/my-listings`
+    router.push('/');
   };
 
   if (loadingUser) return <p className="p-10">Checking auth...</p>;
@@ -85,7 +92,9 @@ export default function SellPage() {
         {/* Category */}
         <select
           value={form.category}
-          onChange={(e) => setForm((f) => ({ ...f, category: e.target.value }))}
+          onChange={(e: React.ChangeEvent<HTMLSelectElement>) =>
+            setForm((f) => ({ ...f, category: e.target.value }))
+          }
           className="w-full border p-2 rounded"
           required
         >
@@ -100,7 +109,9 @@ export default function SellPage() {
           type="text"
           placeholder="Listing Name (min 5 words)"
           value={form.title}
-          onChange={(e) => setForm((f) => ({ ...f, title: e.target.value }))}
+          onChange={(e: React.ChangeEvent<HTMLInputElement>) =>
+            setForm((f) => ({ ...f, title: e.target.value }))
+          }
           className="w-full border rounded px-3 py-2"
           required
         />
@@ -109,7 +120,9 @@ export default function SellPage() {
         <textarea
           placeholder="Description"
           value={form.desc}
-          onChange={(e) => setForm((f) => ({ ...f, desc: e.target.value }))}
+          onChange={(e: React.ChangeEvent<HTMLTextAreaElement>) =>
+            setForm((f) => ({ ...f, desc: e.target.value }))
+          }
           rows={6}
           className="w-full border rounded px-3 py-2"
           required
@@ -119,8 +132,11 @@ export default function SellPage() {
         <input
           type="file"
           multiple
-          onChange={(e) =>
-            setForm((f) => ({ ...f, files: Array.from(e.target.files || []) }))
+          onChange={(e: React.ChangeEvent<HTMLInputElement>) =>
+            setForm((f) => ({
+              ...f,
+              files: Array.from(e.target.files || []),
+            }))
           }
           accept="image/png, image/jpeg, image/webp"
           className="w-full"
@@ -131,7 +147,9 @@ export default function SellPage() {
           type="number"
           placeholder="Price (USD)"
           value={form.price}
-          onChange={(e) => setForm((f) => ({ ...f, price: e.target.value }))}
+          onChange={(e: React.ChangeEvent<HTMLInputElement>) =>
+            setForm((f) => ({ ...f, price: e.target.value }))
+          }
           className="w-full border rounded px-3 py-2"
           required
         />

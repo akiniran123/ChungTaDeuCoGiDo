@@ -1,141 +1,106 @@
 "use client";
 
-import Image from "next/image";
-import Link from "next/link";
+import Navbar from "@/components/Navbar/Navbar";
 
 export default function Home() {
   return (
-    <div className="font-sans min-h-screen bg-black text-white p-6 sm:p-12 space-y-16">
-      {/* Thông báo */}
-      <div className="bg-[#f2efff] text-black text-center text-sm py-2 rounded">
-        🏆 TITAN FORGED ĐÃ THẮNG CUỘC THI BE QUIET! —{" "}
-        <a href="#" className="underline font-medium">
-          Xem chi tiết tại đây
-        </a>
+    <div className="min-h-screen bg-white dark:bg-black text-black dark:text-white">
+      {/* Navbar cố định */}
+      <div className="fixed top-0 left-0 right-0 z-50">
+        <Navbar />
       </div>
 
-      {/* Phần chính / Hero */}
-      <section className="text-center space-y-6">
-        <h1 className="text-4xl sm:text-5xl font-bold">
-          Mua & Bán Thiết Bị Gaming Uy Tín 🎮
-        </h1>
-        <p className="text-lg text-gray-300 max-w-xl mx-auto">
-          Nền tảng số 1 cho game thủ mua bán PC, GPU và phụ kiện một cách an toàn, nhanh chóng.
-        </p>
+      {/* Nội dung trang chính */}
+      <main className="pt-48 px-4 space-y-16">
+        {/* Tiêu đề công ty */}
+        <header className="text-center space-y-2">
+          <h1 className="text-4xl font-bold">Công ty Cổ phần ABC</h1>
+          <p className="text-lg text-gray-600 dark:text-gray-300">
+            Dẫn đầu đổi mới - Vững bước tương lai
+          </p>
+        </header>
 
-        <div className="flex flex-col sm:flex-row gap-4 justify-center mt-6">
-          <Link
-            href="/bat-dau-ban"
-            className="bg-white text-black rounded-full px-6 py-3 font-semibold hover:bg-gray-200 transition"
-          >
-            Bắt đầu bán hàng
-          </Link>
-          <Link
-            href="/san-pham"
-            className="border border-white rounded-full px-6 py-3 font-semibold hover:bg-white hover:text-black transition"
-          >
-            Xem sản phẩm
-          </Link>
-        </div>
-      </section>
+        {/* Sản phẩm ưu tiên */}
+        <section className="space-y-4">
+          <h2 className="text-2xl font-semibold">🔥 Sản phẩm HOT</h2>
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
+            <div className="border p-4 rounded shadow">Sản phẩm A</div>
+            <div className="border p-4 rounded shadow">Sản phẩm B</div>
+            <div className="border p-4 rounded shadow">Sản phẩm C</div>
+          </div>
+        </section>
 
-      {/* Danh mục nổi bật */}
-      <section>
-        <h2 className="text-2xl font-semibold mb-6 text-center">Danh mục</h2>
-        <div className="grid grid-cols-1 sm:grid-cols-3 gap-6">
-          {[
-            { title: "PC Gaming", desc: "Hiệu năng mạnh mẽ, sẵn sàng chiến game." },
-            { title: "Card đồ họa (GPU)", desc: "Đa dạng cấu hình cho mọi nhu cầu." },
-            { title: "Phụ kiện", desc: "Bàn phím, chuột, tai nghe và nhiều hơn nữa." },
-          ].map((item, idx) => (
-            <div
-              key={idx}
-              className="bg-[#1c1c1c] p-6 rounded-lg hover:bg-[#2a2a2a] transition"
-            >
-              <h3 className="text-xl font-bold mb-2">{item.title}</h3>
-              <p className="text-gray-400">{item.desc}</p>
+        {/* Sản phẩm bán chạy */}
+        <section className="space-y-4">
+          <h2 className="text-2xl font-semibold">🚀 Sản phẩm bán chạy</h2>
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
+            <div className="border p-4 rounded shadow">Sản phẩm D</div>
+            <div className="border p-4 rounded shadow">Sản phẩm E</div>
+            <div className="border p-4 rounded shadow">Sản phẩm F</div>
+          </div>
+        </section>
+
+        {/* Sản phẩm mua nhiều */}
+        <section className="space-y-4">
+          <h2 className="text-2xl font-semibold">💸 Sản phẩm mua nhiều</h2>
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
+            <div className="border p-4 rounded shadow">Sản phẩm G</div>
+            <div className="border p-4 rounded shadow">Sản phẩm H</div>
+            <div className="border p-4 rounded shadow">Sản phẩm I</div>
+          </div>
+        </section>
+
+        {/* Tầm nhìn chiến lược */}
+        <section className="overflow-x-auto whitespace-nowrap py-12">
+          <div className="flex space-x-8 animate-scroll-left px-4">
+            <div className="min-w-[300px] max-w-sm border p-4 rounded shadow bg-white dark:bg-gray-900">
+              <h3 className="text-xl font-bold">🧑‍💼 CEO Nguyễn Văn A</h3>
+              <p className="text-sm mt-2 text-gray-700 dark:text-gray-300">
+                Với tầm nhìn chiến lược và sự kiên định, chúng tôi không chỉ cung cấp sản phẩm chất lượng mà còn tạo ra giá trị lâu dài cho cộng đồng và cổ đông.
+              </p>
+              <p className="text-xs mt-4 text-right text-gray-500">- Công ty Cổ phần ABC</p>
             </div>
-          ))}
-        </div>
-      </section>
+            <div className="min-w-[300px] max-w-sm border p-4 rounded shadow bg-white dark:bg-gray-900">
+              <h3 className="text-xl font-bold">🧑‍💼 Chủ tịch Trần B</h3>
+              <p className="text-sm mt-2 text-gray-700 dark:text-gray-300">
+                Chúng tôi luôn đặt sự đổi mới công nghệ lên hàng đầu và hướng đến phát triển bền vững trong mọi hoạt động kinh doanh.
+              </p>
+              <p className="text-xs mt-4 text-right text-gray-500">- Công ty Cổ phần ABC</p>
+            </div>
+          </div>
+        </section>
 
-      {/* Phần demo giữ nguyên để học tập */}
-      <section className="text-center">
-        <Image
-          className="mx-auto dark:invert"
-          src="/next.svg"
-          alt="Next.js logo"
-          width={180}
-          height={38}
-          priority
-        />
-        <ol className="mt-6 font-mono list-inside list-decimal text-sm text-center text-gray-400">
-          <li className="mb-2">
-            Bắt đầu bằng cách chỉnh sửa{" "}
-            <code className="bg-black/10 dark:bg-white/10 px-1 py-0.5 rounded">
-              src/app/page.tsx
-            </code>
-          </li>
-          <li>Lưu lại và xem thay đổi ngay lập tức.</li>
-        </ol>
+        {/* Footer mở rộng */}
+        <section className="grid grid-cols-1 md:grid-cols-3 gap-6 px-4 pb-16">
+          <div className="space-y-2 text-sm">
+            <h4 className="font-semibold text-lg">🏢 Thông tin công ty</h4>
+            <p>Công ty Cổ phần ABC</p>
+            <p>Địa chỉ: 123 Đường ABC, Quận XYZ, TP.HCM</p>
+            <p>SĐT: 0123 456 789</p>
+            <p>Mã số doanh nghiệp: 0123456789</p>
+            <p>Sở Kế hoạch và Đầu tư TP.HCM cấp ngày 01/01/2020</p>
+          </div>
 
-        <div className="flex flex-col sm:flex-row gap-4 justify-center mt-6">
-          <a
-            className="rounded-full bg-white text-black hover:bg-gray-200 px-5 py-2 flex items-center gap-2 font-semibold"
-            href="https://vercel.com/new"
-            target="_blank"
-            rel="noopener noreferrer"
-          >
-            <Image
-              className="dark:invert"
-              src="/vercel.svg"
-              alt="Vercel logomark"
-              width={20}
-              height={20}
-            />
-            Triển khai ngay
-          </a>
-          <a
-            className="rounded-full border border-white hover:bg-white hover:text-black px-5 py-2 font-semibold"
-            href="https://nextjs.org/docs"
-            target="_blank"
-            rel="noopener noreferrer"
-          >
-            Xem tài liệu
-          </a>
-        </div>
-      </section>
+          <div className="space-y-2 text-sm">
+            <h4 className="font-semibold text-lg">📂 Danh mục</h4>
+            <ul className="space-y-1">
+              <li><a href="#" className="hover:underline">Về chúng tôi</a></li>
+              <li><a href="#" className="hover:underline">Chính sách bảo hành</a></li>
+              <li><a href="#" className="hover:underline">Tuyển dụng</a></li>
+              <li><a href="#" className="hover:underline">Liên hệ</a></li>
+            </ul>
+          </div>
 
-      {/* Footer */}
-      <footer className="text-center text-gray-500 text-sm pt-12 border-t border-white/10">
-        <div className="flex justify-center gap-4 flex-wrap py-4">
-          <a
-            href="https://nextjs.org/learn"
-            target="_blank"
-            className="hover:underline flex items-center gap-2"
-          >
-            <Image src="/file.svg" alt="File" width={16} height={16} />
-            Học Next.js
-          </a>
-          <a
-            href="https://vercel.com/templates"
-            target="_blank"
-            className="hover:underline flex items-center gap-2"
-          >
-            <Image src="/window.svg" alt="Window" width={16} height={16} />
-            Mẫu giao diện
-          </a>
-          <a
-            href="https://nextjs.org"
-            target="_blank"
-            className="hover:underline flex items-center gap-2"
-          >
-            <Image src="/globe.svg" alt="Globe" width={16} height={16} />
-            Truy cập nextjs.org →
-          </a>
-        </div>
-      </footer>
+          <div className="space-y-2 text-sm">
+            <h4 className="font-semibold text-lg">💳 Thanh toán</h4>
+            <ul className="space-y-1">
+              <li>Ngân hàng: Vietcombank, Techcombank, BIDV...</li>
+              <li>Ví điện tử: Momo, ZaloPay, ShopeePay</li>
+              <li>Chuyển khoản trực tiếp hoặc quét mã QR</li>
+            </ul>
+          </div>
+        </section>
+      </main>
     </div>
   );
 }
-

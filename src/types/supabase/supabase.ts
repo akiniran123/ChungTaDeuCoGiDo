@@ -1,58 +1,23 @@
-export type Json =
-  | string
-  | number
-  | boolean
-  | null
-  | { [key: string]: Json }
-  | Json[]
+export type Json = string | number | boolean | null | { [key: string]: Json } | Json[];
 
-export interface Database {
+export type Row = {
+  id: string;
+  created_at: string;
+  data: object; // 👈 thay vì {}
+};
+
+export type SomeTable = {
+  Row: object;    // 👈 thay vì {}
+  Insert: object; // 👈
+  Update: object; // 👈
+};
+
+export type Database = {
   public: {
     Tables: {
-      // Ví dụ: bảng products
-      products: {
-        Row: {
-          id: string
-          title: string
-          description: string
-          price: number
-          category: string
-          created_at: string
-          user_id: string
-        }
-        Insert: {
-          id?: string
-          title: string
-          description: string
-          price: number
-          category: string
-          created_at?: string
-          user_id: string
-        }
-        Update: {
-          id?: string
-          title?: string
-          description?: string
-          price?: number
-          category?: string
-          created_at?: string
-          user_id?: string
-        }
-        Relationships: [
-          {
-            foreignKeyName: "products_user_id_fkey"
-            columns: ["user_id"]
-            referencedRelation: "users"
-            referencedColumns: ["id"]
-          }
-        ]
-      }
-
-      // Thêm các bảng khác nếu cần
-    }
-    Views: {}
-    Functions: {}
-    Enums: {}
-    CompositeTypes: {}
-  }
-}
+      some_table: SomeTable;
+    };
+    Views: Record<string, never>;     // hoặc object nếu bạn muốn cho phép thêm
+    Functions: Record<string, never>; // tương tự
+  };
+};

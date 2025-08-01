@@ -1,5 +1,6 @@
 "use client";
 
+import Image from "next/image";
 import Navbar from "@/components/Navbar/Navbar";
 
 export default function Home() {
@@ -14,7 +15,7 @@ export default function Home() {
       <main className="pt-48 px-4 space-y-16">
         {/* Tiêu đề công ty */}
         <header className="text-center space-y-2">
-          <h1 className="text-4xl font-bold">Công ty Cổ phần ABC</h1>
+          <h1 className="text-4xl font-bold">Công ty Cổ phần NexLoot</h1>
           <p className="text-lg text-gray-600 dark:text-gray-300">
             Dẫn đầu đổi mới - Vững bước tương lai
           </p>
@@ -24,9 +25,19 @@ export default function Home() {
         <section className="space-y-4">
           <h2 className="text-2xl font-semibold">🔥 Sản phẩm HOT</h2>
           <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
-            <div className="border p-4 rounded shadow">Sản phẩm A</div>
-            <div className="border p-4 rounded shadow">Sản phẩm B</div>
-            <div className="border p-4 rounded shadow">Sản phẩm C</div>
+            {[1, 2, 3].map((i) => (
+              <div key={i} className="border p-4 rounded shadow bg-white dark:bg-gray-900">
+                <Image
+                  src={`/products/product${i}.jpg`}
+                  alt={`Sản phẩm HOT ${i}`}
+                  width={400}
+                  height={250}
+                  className="rounded mb-2 w-full object-cover h-48"
+                />
+                <h3 className="text-lg font-semibold">Sản phẩm A{i}</h3>
+                <p className="text-sm text-gray-600 dark:text-gray-400">Mô tả ngắn về sản phẩm HOT {i}.</p>
+              </div>
+            ))}
           </div>
         </section>
 
@@ -34,9 +45,19 @@ export default function Home() {
         <section className="space-y-4">
           <h2 className="text-2xl font-semibold">🚀 Sản phẩm bán chạy</h2>
           <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
-            <div className="border p-4 rounded shadow">Sản phẩm D</div>
-            <div className="border p-4 rounded shadow">Sản phẩm E</div>
-            <div className="border p-4 rounded shadow">Sản phẩm F</div>
+            {[4, 5, 6].map((i) => (
+              <div key={i} className="border p-4 rounded shadow bg-white dark:bg-gray-900">
+                <Image
+                  src={`/products/product${i}.jpg`}
+                  alt={`Sản phẩm bán chạy ${i}`}
+                  width={400}
+                  height={250}
+                  className="rounded mb-2 w-full object-cover h-48"
+                />
+                <h3 className="text-lg font-semibold">Sản phẩm B{i - 3}</h3>
+                <p className="text-sm text-gray-600 dark:text-gray-400">Mô tả ngắn về sản phẩm bán chạy {i - 3}.</p>
+              </div>
+            ))}
           </div>
         </section>
 
@@ -44,41 +65,60 @@ export default function Home() {
         <section className="space-y-4">
           <h2 className="text-2xl font-semibold">💸 Sản phẩm mua nhiều</h2>
           <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
-            <div className="border p-4 rounded shadow">Sản phẩm G</div>
-            <div className="border p-4 rounded shadow">Sản phẩm H</div>
-            <div className="border p-4 rounded shadow">Sản phẩm I</div>
+            {[7, 8, 9].map((i) => (
+              <div key={i} className="border p-4 rounded shadow bg-white dark:bg-gray-900">
+                <Image
+                  src={`/products/product${i}.jpg`}
+                  alt={`Sản phẩm mua nhiều ${i}`}
+                  width={400}
+                  height={250}
+                  className="rounded mb-2 w-full object-cover h-48"
+                />
+                <h3 className="text-lg font-semibold">Sản phẩm C{i - 6}</h3>
+                <p className="text-sm text-gray-600 dark:text-gray-400">Mô tả ngắn về sản phẩm mua nhiều {i - 6}.</p>
+              </div>
+            ))}
           </div>
         </section>
+{/* Tầm nhìn và chiến lược của cổ đông */}
+<section className="py-12 px-4 space-y-6">
+  <h2 className="text-2xl font-semibold text-left">
+    🧭 Tầm nhìn & Chiến lược của cổ đông
+  </h2>
+  <div className="flex flex-col lg:flex-row gap-8">
+    <div className="flex-1 bg-white dark:bg-gray-900 p-6 rounded-2xl shadow-md">
+      <h3 className="text-xl font-bold">🧑‍💼 Nguyễn Tuấn Nghĩa</h3>
+      <p className="text-sm mt-3 text-gray-700 dark:text-gray-300 leading-relaxed">
+        NexLoot cam kết không ngừng đổi mới, đặt khách hàng và cộng đồng lên hàng đầu.
+        Tầm nhìn của chúng tôi là trở thành công ty công nghệ hàng đầu Đông Nam Á trong 10 năm tới,
+        đồng hành cùng sự phát triển bền vững và ứng dụng công nghệ vào cuộc sống.
+      </p>
+      <p className="text-xs mt-4 text-right text-gray-500">— Chủ sở hữu & Đồng sáng lập, công ty NexLoot</p>
+    </div>
+    <div className="flex-1 bg-white dark:bg-gray-900 p-6 rounded-2xl shadow-md">
+      <h3 className="text-xl font-bold">🧑‍💼 Trần Đức Anh</h3>
+      <p className="text-sm mt-3 text-gray-700 dark:text-gray-300 leading-relaxed">
+        Chiến lược dài hạn của chúng tôi là xây dựng hệ sinh thái số hiện đại,
+        lấy công nghệ làm nền tảng, đội ngũ nhân sự là cốt lõi, hướng đến hội nhập quốc tế,
+        minh bạch tài chính và nâng cao trải nghiệm người dùng toàn diện.
+      </p>
+      <p className="text-xs mt-4 text-right text-gray-500">— Chủ sở hữu & Đồng sáng lập, công ty NexLoot </p>
+    </div>
+  </div>
+</section>
 
-        {/* Tầm nhìn chiến lược */}
-        <section className="overflow-x-auto whitespace-nowrap py-12">
-          <div className="flex space-x-8 animate-scroll-left px-4">
-            <div className="min-w-[300px] max-w-sm border p-4 rounded shadow bg-white dark:bg-gray-900">
-              <h3 className="text-xl font-bold">🧑‍💼 CEO Nguyễn Văn A</h3>
-              <p className="text-sm mt-2 text-gray-700 dark:text-gray-300">
-                Với tầm nhìn chiến lược và sự kiên định, chúng tôi không chỉ cung cấp sản phẩm chất lượng mà còn tạo ra giá trị lâu dài cho cộng đồng và cổ đông.
-              </p>
-              <p className="text-xs mt-4 text-right text-gray-500">- Công ty Cổ phần ABC</p>
-            </div>
-            <div className="min-w-[300px] max-w-sm border p-4 rounded shadow bg-white dark:bg-gray-900">
-              <h3 className="text-xl font-bold">🧑‍💼 Chủ tịch Trần B</h3>
-              <p className="text-sm mt-2 text-gray-700 dark:text-gray-300">
-                Chúng tôi luôn đặt sự đổi mới công nghệ lên hàng đầu và hướng đến phát triển bền vững trong mọi hoạt động kinh doanh.
-              </p>
-              <p className="text-xs mt-4 text-right text-gray-500">- Công ty Cổ phần ABC</p>
-            </div>
-          </div>
-        </section>
+
+
 
         {/* Footer mở rộng */}
         <section className="grid grid-cols-1 md:grid-cols-3 gap-6 px-4 pb-16">
           <div className="space-y-2 text-sm">
             <h4 className="font-semibold text-lg">🏢 Thông tin công ty</h4>
-            <p>Công ty Cổ phần ABC</p>
-            <p>Địa chỉ: 123 Đường ABC, Quận XYZ, TP.HCM</p>
-            <p>SĐT: 0123 456 789</p>
+            <p>Công ty Cổ phần NexLoot</p>
+            <p>Địa chỉ: 19 Vĩnh Hoàng, Quận Hoàng Mai, Hà Nội</p>
+            <p>SĐT: 0868576379</p>
             <p>Mã số doanh nghiệp: 0123456789</p>
-            <p>Sở Kế hoạch và Đầu tư TP.HCM cấp ngày 01/01/2020</p>
+            <p>Sở Kế hoạch và Đầu tư TP.Hà Nội cấp ngày .../.../2026</p>
           </div>
 
           <div className="space-y-2 text-sm">

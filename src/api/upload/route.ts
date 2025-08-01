@@ -1,51 +1,24 @@
-import { NextRequest, NextResponse } from 'next/server'
-import { createServerSupabaseClient } from '@/lib/supabase/serverClient'
+import { createServerClient } from '@supabase/ssr'
+import { cookies } from 'next/headers'
+import type { Database } from '@/types/supabase/supabase'
+import type { CookieOptions } from '@supabase/ssr'
 
-export async function POST(req: NextRequest) {
-  try {
-    const body = await req.json()
-    const { title, imageUrl } = body
+export async function createServerSupabaseClient() {
+  const cookieStore = await cookies()
 
-    if (!title || !imageUrl) {
-      return NextResponse.json(
-        { error: 'Missing title or imageUrl' },
-        { status: 400 }
-      )
+  return createServerClient<Database>(
+    process.env.NEXT_PUBLIC_SUPABASE_URL!,
+    process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!,
+    {
+      cookies: {
+        get: (name: string) => cookieStore.get(name)?.value,
+        set: () => {
+          // Không cần thiết trong Server Component hoặc API route
+        },
+        remove: () => {
+          // Không cần thiết trong Server Component hoặc API route
+        },
+      },
     }
-
-    const supabase = await createServerSupabaseClient()
-    const {
-      data: { user },
-      error: authError,
-    } = await supabase.auth.getUser()
-
-    if (authError) {
-      return NextResponse.json({ error: authError.message }, { status: 401 })
-    }
-
-    if (!user) {
-      return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
-    }
-
-    const { data, error } = await supabase
-      .from('images')
-      .insert([{ title, image_url: imageUrl, user_id: user.id }])
-
-    if (error) {
-      return NextResponse.json({ error: error.message }, { status: 500 })
-    }
-
-    return NextResponse.json({ data }, { status: 201 }) // 201 = Created
-  } catch (err: unknown) {
-    let message = 'Unexpected server error'
-
-    if (err instanceof Error) {
-      message = err.message
-    }
-
-    return NextResponse.json(
-      { error: message },
-      { status: 500 }
-    )
-  }
+  )
 }

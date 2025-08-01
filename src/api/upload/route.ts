@@ -36,9 +36,15 @@ export async function POST(req: NextRequest) {
     }
 
     return NextResponse.json({ data }, { status: 201 }) // 201 = Created
-  } catch (err: any) {
+  } catch (err: unknown) {
+    let message = 'Unexpected server error'
+
+    if (err instanceof Error) {
+      message = err.message
+    }
+
     return NextResponse.json(
-      { error: 'Unexpected server error', detail: err.message },
+      { error: message },
       { status: 500 }
     )
   }

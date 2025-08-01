@@ -14,7 +14,12 @@ export default function SellPage() {
     images: [] as File[],
   })
 
-  const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) => {
+  const [loading, setLoading] = useState(false)
+  const [error, setError] = useState<string | null>(null)
+
+  const handleChange = (
+    e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>
+  ) => {
     setFormData({ ...formData, [e.target.name]: e.target.value })
   }
 
@@ -26,34 +31,50 @@ export default function SellPage() {
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault()
+    setLoading(true)
+    setError(null)
 
-    const uploadedUrls: string[] = []
+    try {
+      const uploadedUrls: string[] = []
 
-    for (const file of formData.images) {
-      const filePath = `products/${Date.now()}-${file.name}`
-      const uploadRes = await supabase.storage.from('images').upload(filePath, file)
+      for (const file of formData.images) {
+        const filePath = `products/${Date.now()}-${file.name}`
+        const uploadRes = await supabase.storage.from('images').upload(filePath, file)
 
-      if (uploadRes?.data?.path) {
+        if (uploadRes.error) {
+          throw new Error(`Upload failed: ${uploadRes.error.message}`)
+        }
+
         const { data } = supabase.storage.from('images').getPublicUrl(uploadRes.data.path)
         uploadedUrls.push(data.publicUrl)
       }
+
+      const { data: userData, error: userError } = await supabase.auth.getUser()
+      if (userError || !userData.user) {
+        throw new Error('Authentication required.')
+      }
+
+      const { error: insertError } = await supabase.from('products').insert([
+        {
+          title: formData.title,
+          description: formData.description,
+          price: Number(formData.price),
+          category: formData.category,
+          image_urls: uploadedUrls,
+          user_id: userData.user.id,
+        },
+      ])
+
+      if (insertError) {
+        throw new Error(insertError.message)
+      }
+
+      router.push('/')
+    } catch (err: any) {
+      setError(err.message)
+    } finally {
+      setLoading(false)
     }
-
-    const { data: userData } = await supabase.auth.getUser()
-    const userId = userData?.user?.id
-
-    await supabase.from('products').insert([
-      {
-        title: formData.title,
-        description: formData.description,
-        price: Number(formData.price),
-        category: formData.category,
-        image_urls: uploadedUrls,
-        user_id: userId,
-      },
-    ])
-
-    router.push('/')
   }
 
   return (
@@ -93,6 +114,7 @@ export default function SellPage() {
           value={formData.category}
           onChange={handleChange}
           className="w-full border rounded px-4 py-2"
+          required
         />
         <input
           type="file"
@@ -100,12 +122,15 @@ export default function SellPage() {
           accept="image/*"
           onChange={handleFileChange}
           className="w-full"
+          required
         />
+        {error && <p className="text-red-500">{error}</p>}
         <button
           type="submit"
-          className="bg-indigo-600 text-white px-4 py-2 rounded hover:bg-indigo-700"
+          disabled={loading}
+          className="bg-indigo-600 text-white px-4 py-2 rounded hover:bg-indigo-700 disabled:opacity-50"
         >
-          Submit
+          {loading ? 'Uploading...' : 'Submit'}
         </button>
       </form>
     </div>

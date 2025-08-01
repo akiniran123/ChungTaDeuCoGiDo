@@ -4,7 +4,7 @@ import { useEffect, useMemo, useState } from 'react';
 import { Dialog } from '@headlessui/react';
 import { Loader2 } from 'lucide-react';
 import { createBrowserClient } from '@supabase/ssr';
-import { type Database } from '@/types/supabase';
+import { type Database } from '@/types/supabase/supabase';
 
 interface LoginModalProps {
   onClose: () => void;

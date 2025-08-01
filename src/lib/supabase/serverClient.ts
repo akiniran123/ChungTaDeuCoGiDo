@@ -1,21 +1,47 @@
-import { createServerClient } from '@supabase/ssr';
-import { cookies } from 'next/headers';
+import { createServerClient } from "@supabase/ssr";
+import { cookies } from "next/headers";
+import { Database } from "@/types/supabase/supabase";
 
-export async function createServerSupabaseClient() {
-  const cookieStore =  await cookies(); // ✅ đây là object, không phải function
+export function createClient() {
+  const cookieStore = cookies();
 
-  return createServerClient(
+  return createServerClient<Database>(
     process.env.NEXT_PUBLIC_SUPABASE_URL!,
-    process.env.SUPABASE_SERVICE_ROLE_KEY!, // hoặc ANON KEY nếu không dùng service key
+    process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!,
     {
       cookies: {
-        get: (key) => cookieStore.get(key)?.value,
-        set: (key, value, options) => {
-          // Không thể set cookie từ server action/SSR
-          // Chỉ dùng nếu bạn đang ở trong middleware hoặc edge function
+        async getAll() {
+          return (await cookieStore).getAll();
         },
-        remove: (key, options) => {
-          // Tương tự như set — thường không dùng ở đây
+        setAll(
+cookiesToSet
+) {
+          try {
+            
+cookiesToSet
+.forEach(async ({ 
+name
+, 
+value
+, 
+options
+ }) =>
+              (await cookieStore).set(
+name
+, 
+value
+, 
+options
+)
+            );
+          } catch {
+            
+// The `setAll` method was called from a Server Component.
+            
+// This can be ignored if you have middleware refreshing
+            
+// user sessions.
+          }
         },
       },
     }

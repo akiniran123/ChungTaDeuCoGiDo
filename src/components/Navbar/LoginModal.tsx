@@ -1,10 +1,10 @@
 'use client';
 
+import { useEffect, useMemo, useState } from 'react';
 import { Dialog } from '@headlessui/react';
-import { useEffect, useState } from 'react';
+import { Loader2 } from 'lucide-react';
 import { createBrowserClient } from '@supabase/ssr';
 import { type Database } from '@/types/supabase';
-import { Loader2 } from 'lucide-react';
 
 interface LoginModalProps {
   onClose: () => void;
@@ -15,10 +15,16 @@ export default function LoginModal({ onClose, onLoginSuccess }: LoginModalProps)
   const [loading, setLoading] = useState(false);
   const [errorMsg, setErrorMsg] = useState('');
 
-  const supabase = createBrowserClient<Database>(
-    process.env.NEXT_PUBLIC_SUPABASE_URL!,
-    process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!
-  );
+  const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL;
+  const supabaseAnonKey = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY;
+
+  if (!supabaseUrl || !supabaseAnonKey) {
+    throw new Error('Missing Supabase environment variables.');
+  }
+
+  const supabase = useMemo(() => {
+    return createBrowserClient<Database>(supabaseUrl, supabaseAnonKey);
+  }, [supabaseUrl, supabaseAnonKey]);
 
   const handleGoogleLogin = async () => {
     setLoading(true);
@@ -26,9 +32,7 @@ export default function LoginModal({ onClose, onLoginSuccess }: LoginModalProps)
 
     const { error } = await supabase.auth.signInWithOAuth({
       provider: 'google',
-      options: {
-        redirectTo: `${window.location.origin}/auth/callback`,
-      },
+      // redirectTo is omitted => use popup instead of redirect
     });
 
     if (error) {
@@ -39,9 +43,7 @@ export default function LoginModal({ onClose, onLoginSuccess }: LoginModalProps)
   };
 
   useEffect(() => {
-    const {
-      data: { subscription },
-    } = supabase.auth.onAuthStateChange((event, session) => {
+    const { data: { subscription } } = supabase.auth.onAuthStateChange((event, session) => {
       if (event === 'SIGNED_IN' && session?.user) {
         onClose();
         onLoginSuccess?.();

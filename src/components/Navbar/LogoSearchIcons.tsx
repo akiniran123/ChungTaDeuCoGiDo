@@ -101,7 +101,11 @@ export default function LogoSearchIcons({ onMenuToggle }: Props) {
           onClose={() => setShowLogin(false)}
           onLoginSuccess={() => {
             setShowLogin(false)
-            router.push('/sell')
+            // ❌ Bỏ dòng redirect
+            // ✅ Nếu muốn cập nhật lại user sau login:
+            supabase.auth.getUser().then(({ data }) => {
+              setUser(data.user)
+            })
           }}
         />
       )}

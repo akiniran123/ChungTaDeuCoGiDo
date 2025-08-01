@@ -1,22 +1,21 @@
 import { createServerClient } from '@supabase/ssr';
 import { cookies } from 'next/headers';
-import type { Database } from '@/types/supabase/supabase';
-import type { CookieOptions } from '@supabase/ssr';
 
 export async function createServerSupabaseClient() {
-  const cookieStore = await cookies();
+  const cookieStore =  await cookies(); // ✅ đây là object, không phải function
 
-  return createServerClient<Database>(
+  return createServerClient(
     process.env.NEXT_PUBLIC_SUPABASE_URL!,
-    process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!,
+    process.env.SUPABASE_SERVICE_ROLE_KEY!, // hoặc ANON KEY nếu không dùng service key
     {
       cookies: {
-        get: (name: string) => cookieStore.get(name)?.value,
-        set: (name: string, value: string, options: CookieOptions) => {
-          // Implement nếu cần SSR auth state persistence
+        get: (key) => cookieStore.get(key)?.value,
+        set: (key, value, options) => {
+          // Không thể set cookie từ server action/SSR
+          // Chỉ dùng nếu bạn đang ở trong middleware hoặc edge function
         },
-        remove: (name: string, options: CookieOptions) => {
-          // Implement nếu cần SSR auth state persistence
+        remove: (key, options) => {
+          // Tương tự như set — thường không dùng ở đây
         },
       },
     }

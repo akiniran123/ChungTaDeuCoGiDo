@@ -39,17 +39,26 @@ export default function SellPage() {
 
       for (const file of formData.images) {
         const filePath = `products/${Date.now()}-${file.name}`
-        const uploadRes = await supabase.storage.from('images').upload(filePath, file)
+        const uploadRes = await supabase.storage
+          .from('images')
+          .upload(filePath, file)
 
         if (uploadRes.error) {
           throw new Error(`Upload failed: ${uploadRes.error.message}`)
         }
 
-        const { data } = supabase.storage.from('images').getPublicUrl(uploadRes.data.path)
+        const { data } = supabase.storage
+          .from('images')
+          .getPublicUrl(uploadRes.data.path)
+
         uploadedUrls.push(data.publicUrl)
       }
 
-      const { data: userData, error: userError } = await supabase.auth.getUser()
+      const {
+        data: userData,
+        error: userError,
+      } = await supabase.auth.getUser()
+
       if (userError || !userData.user) {
         throw new Error('Authentication required.')
       }
@@ -70,8 +79,12 @@ export default function SellPage() {
       }
 
       router.push('/')
-    } catch (err: any) {
-      setError(err.message)
+    } catch (err) {
+      if (err instanceof Error) {
+        setError(err.message)
+      } else {
+        setError('Unknown error occurred.')
+      }
     } finally {
       setLoading(false)
     }

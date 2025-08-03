@@ -1,31 +1,39 @@
-'use client'
+'use client';
 
-import { useEffect } from 'react'
-import { Dialog } from '@headlessui/react'
-import { createPagesBrowserClient } from '@supabase/auth-helpers-nextjs'
-import { type Database } from '@/types/supabase'
-import LoginForm from '@/components/LoginForm' // ✅ Import đúng
+import { useEffect } from 'react';
+import { Dialog } from '@headlessui/react';
+import { createPagesBrowserClient } from '@supabase/auth-helpers-nextjs';
+import { type Database } from '@/types/supabase';
+import LoginForm from '@/components/LoginForm';
+import { useRouter } from 'next/navigation';
 
 interface LoginModalProps {
-  onClose: () => void
-  onLoginSuccess?: () => void
+  onClose: () => void;
+  onLoginSuccess?: () => void;
+  redirectTo?: string; // 👈 Add this
 }
 
-export default function LoginModal({ onClose, onLoginSuccess }: LoginModalProps) {
-  const supabase = createPagesBrowserClient<Database>()
+export default function LoginModal({ onClose, onLoginSuccess, redirectTo }: LoginModalProps) {
+  const supabase = createPagesBrowserClient<Database>();
+  const router = useRouter();
 
   useEffect(() => {
-    const { data: { subscription } } = supabase.auth.onAuthStateChange((event, session) => {
+    const {
+      data: { subscription },
+    } = supabase.auth.onAuthStateChange((event, session) => {
       if (event === 'SIGNED_IN' && session?.user) {
-        onClose()
-        onLoginSuccess?.()
+        onClose();
+        onLoginSuccess?.();
+        if (redirectTo) {
+          router.push(redirectTo); // 👈 redirect here
+        }
       }
-    })
+    });
 
     return () => {
-      subscription.unsubscribe()
-    }
-  }, [supabase, onClose, onLoginSuccess])
+      subscription.unsubscribe();
+    };
+  }, [supabase, onClose, onLoginSuccess, redirectTo, router]);
 
   return (
     <Dialog open={true} onClose={onClose} className="fixed inset-0 z-50">
@@ -35,7 +43,6 @@ export default function LoginModal({ onClose, onLoginSuccess }: LoginModalProps)
             Sign in to Jawa.gg
           </Dialog.Title>
 
-          {/* ✅ Hiển thị form login */}
           <LoginForm onLoginSuccess={onLoginSuccess} />
 
           <button
@@ -47,5 +54,5 @@ export default function LoginModal({ onClose, onLoginSuccess }: LoginModalProps)
         </Dialog.Panel>
       </div>
     </Dialog>
-  )
+  );
 }

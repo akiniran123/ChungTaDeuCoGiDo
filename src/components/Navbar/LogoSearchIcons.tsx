@@ -160,6 +160,7 @@ export default function LogoSearchIcons({ onMenuToggle }: Props) {
       {/* Login Modal */}
       {showLogin && (
         <LoginModal
+          redirectTo={pendingRedirect ? '/sell' : undefined}
           onClose={() => {
             setShowLogin(false)
             setPendingRedirect(false)
@@ -167,12 +168,6 @@ export default function LogoSearchIcons({ onMenuToggle }: Props) {
           onLoginSuccess={async () => {
             const { data } = await supabase.auth.getUser()
             setUser(data.user)
-            setShowLogin(false)
-
-            if (pendingRedirect) {
-              setPendingRedirect(false)
-              router.push('/sell')
-            }
           }}
         />
       )}

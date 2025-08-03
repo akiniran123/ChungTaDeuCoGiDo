@@ -4,7 +4,14 @@ import { useEffect, useState } from 'react';
 import Link from 'next/link';
 import { useRouter } from 'next/navigation';
 import { createClientComponentClient } from '@supabase/auth-helpers-nextjs';
-import { Heart, Bell, ShoppingCart, User, Menu } from 'lucide-react';
+import {
+  Heart,
+  Bell,
+  ShoppingCart,
+  User,
+  Menu,
+  Search,
+} from 'lucide-react';
 import ThemeToggle from './ThemeToggle';
 import LoginModal from './LoginModal';
 import type { User as SupabaseUser } from '@supabase/supabase-js';
@@ -16,6 +23,7 @@ interface Props {
 export default function LogoSearchIcons({ onMenuToggle }: Props) {
   const [showLogin, setShowLogin] = useState(false);
   const [user, setUser] = useState<SupabaseUser | null>(null);
+  const [searchQuery, setSearchQuery] = useState('');
   const supabase = createClientComponentClient();
   const router = useRouter();
 
@@ -27,8 +35,7 @@ export default function LogoSearchIcons({ onMenuToggle }: Props) {
       setUser(fetchedUser);
     };
     getUser();
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, []); // supabase is stable, ok to ignore exhaustive-deps
+  }, []);
 
   const handleStartSelling = async () => {
     const {
@@ -42,6 +49,12 @@ export default function LogoSearchIcons({ onMenuToggle }: Props) {
   };
 
   const handleIconClick = () => setShowLogin(true);
+
+  const handleSearch = () => {
+    if (searchQuery.trim()) {
+      router.push(`/search?query=${encodeURIComponent(searchQuery.trim())}`);
+    }
+  };
 
   return (
     <>
@@ -57,23 +70,31 @@ export default function LogoSearchIcons({ onMenuToggle }: Props) {
               <Menu className="w-6 h-6" />
             </button>
 
-           <Link href="/" className="flex items-center space-x-2">
-  <img
-    src="/Logo/anh.png"
-    alt="Logo"
-    className="h-20 w-auto object-contain"
-  />
-</Link>
-
+            <Link href="/" className="flex items-center space-x-2">
+              <img
+                src="/Logo/anh.png"
+                alt="Logo"
+                className="h-20 w-auto object-contain"
+              />
+            </Link>
           </div>
 
           {/* Search (Desktop only) */}
-          <div className="hidden sm:block flex-1 max-w-xl mx-4">
+          <div className="hidden sm:flex flex-1 max-w-xl mx-4 relative">
             <input
               type="text"
+              value={searchQuery}
+              onChange={(e) => setSearchQuery(e.target.value)}
               placeholder="Tìm kiếm sản phẩm"
-              className="w-full px-5 py-2 rounded-full border border-gray-300 focus:outline-none bg-gray-100 dark:bg-gray-800 text-sm"
+              className="w-full pl-5 pr-10 py-2 rounded-full border border-gray-300 focus:outline-none bg-gray-100 dark:bg-gray-800 text-sm"
             />
+            <button
+              onClick={handleSearch}
+              className="absolute right-2 top-1/2 -translate-y-1/2 text-gray-500 hover:text-indigo-600 cursor-pointer"
+              aria-label="Tìm kiếm"
+            >
+              <Search className="w-5 h-5" />
+            </button>
           </div>
 
           {/* Icons & Bắt đầu bán hàng */}

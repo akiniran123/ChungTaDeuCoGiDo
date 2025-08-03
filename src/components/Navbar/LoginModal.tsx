@@ -5,7 +5,8 @@ import { useEffect } from 'react'
 import { Dialog } from '@headlessui/react'
 import { createPagesBrowserClient } from '@supabase/auth-helpers-nextjs'
 import { type Database } from '@/types/supabase'
-import LoginForm from '@/components/LoginForm/LoginForm'
+import LoginForm from '@/components/LoginForm'
+
 
 interface LoginModalProps {
   onClose: () => void

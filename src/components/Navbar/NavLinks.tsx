@@ -5,7 +5,19 @@ import { usePathname } from 'next/navigation';
 import { useState } from 'react';
 import { Menu, X, ChevronDown } from 'lucide-react';
 
-const mainLinks = [
+interface NavLinksProps {
+  onLinkClick?: () => void;
+}
+
+// ✅ Khai báo type có isNew là optional
+type NavLink = {
+  name: string;
+  path: string;
+  isNew?: boolean;
+};
+
+// Danh sách menu chính
+const mainLinks: NavLink[] = [
   { name: 'NEW', path: '/new' },
   { name: 'GAMING PCS', path: '/gaming-pcs' },
   { name: 'GPUS', path: '/gpus' },
@@ -15,20 +27,27 @@ const mainLinks = [
   { name: 'RETRO', path: '/retro', isNew: true },
 ];
 
-const moreLinks = [
+// Danh sách MORE
+const moreLinks: NavLink[] = [
   { name: 'ABOUT', path: '/about' },
   { name: 'FAQ', path: '/faq' },
   { name: 'CONTACT', path: '/contact' },
   { name: 'SELL', path: '/sell' },
 ];
 
-export default function NavLinks() {
+export default function NavLinks({ onLinkClick }: NavLinksProps) {
   const pathname = usePathname();
   const [mobileOpen, setMobileOpen] = useState(false);
   const [moreOpen, setMoreOpen] = useState(false);
 
+  const handleClick = () => {
+    if (onLinkClick) onLinkClick();
+    else setMobileOpen(false);
+  };
+
   return (
     <div className="border-t dark:border-gray-700">
+      {/* Mobile toggle */}
       <div className="max-w-7xl mx-auto px-4 py-3 flex justify-between items-center md:hidden">
         <button onClick={() => setMobileOpen(!mobileOpen)}>
           {mobileOpen ? <X className="h-6 w-6" /> : <Menu className="h-6 w-6" />}
@@ -57,7 +76,7 @@ export default function NavLinks() {
           </Link>
         ))}
 
-        {/* Dropdown "More" */}
+        {/* Dropdown MORE */}
         <div
           className="relative"
           onMouseEnter={() => setMoreOpen(true)}
@@ -72,6 +91,7 @@ export default function NavLinks() {
                 <Link
                   key={name}
                   href={path}
+                  onClick={() => setMoreOpen(false)}
                   className={`block px-4 py-2 text-sm hover:bg-gray-100 dark:hover:bg-gray-700 ${
                     pathname === path ? 'text-indigo-500 font-medium' : ''
                   }`}
@@ -87,11 +107,11 @@ export default function NavLinks() {
       {/* Mobile menu */}
       {mobileOpen && (
         <div className="md:hidden px-4 pb-4 font-semibold text-sm space-y-2">
-          {mainLinks.map(({ name, path, isNew }) => (
+          {[...mainLinks, ...moreLinks].map(({ name, path, isNew }) => (
             <Link
               key={name}
               href={path}
-              onClick={() => setMobileOpen(false)}
+              onClick={handleClick}
               className={`block py-1 ${
                 pathname === path ? 'text-indigo-500 underline underline-offset-4' : ''
               }`}
@@ -104,19 +124,6 @@ export default function NavLinks() {
               ) : (
                 name
               )}
-            </Link>
-          ))}
-
-          {moreLinks.map(({ name, path }) => (
-            <Link
-              key={name}
-              href={path}
-              onClick={() => setMobileOpen(false)}
-              className={`block py-1 ${
-                pathname === path ? 'text-indigo-500 underline underline-offset-4' : ''
-              }`}
-            >
-              {name}
             </Link>
           ))}
         </div>

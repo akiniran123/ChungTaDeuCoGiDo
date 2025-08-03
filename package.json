@@ -10,7 +10,7 @@
   },
   "dependencies": {
     "@headlessui/react": "^2.2.6",
-    "@supabase/ssr": "^0.6.1",
+    "@supabase/auth-helpers-nextjs": "^0.10.0",
     "@supabase/supabase-js": "^2.53.0",
     "formidable": "^3.5.4",
     "lucide-react": "^0.533.0",

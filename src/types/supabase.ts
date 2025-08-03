@@ -1,23 +1,33 @@
 export type Json = string | number | boolean | null | { [key: string]: Json } | Json[];
 
-export type Row = {
+export type SomeTableRow = {
   id: string;
   created_at: string;
-  data: object; // 👈 thay vì {}
+  data: Json; // 👈 chính xác hơn object
 };
 
-export type SomeTable = {
-  Row: object;    // 👈 thay vì {}
-  Insert: object; // 👈
-  Update: object; // 👈
+export type SomeTableInsert = {
+  id?: string;
+  created_at?: string;
+  data: Json;
+};
+
+export type SomeTableUpdate = {
+  id?: string;
+  created_at?: string;
+  data?: Json;
 };
 
 export type Database = {
   public: {
     Tables: {
-      some_table: SomeTable;
+      some_table: {
+        Row: SomeTableRow;
+        Insert: SomeTableInsert;
+        Update: SomeTableUpdate;
+      };
     };
-    Views: Record<string, never>;     // hoặc object nếu bạn muốn cho phép thêm
-    Functions: Record<string, never>; // tương tự
+    Views: Record<string, never>;
+    Functions: Record<string, never>;
   };
 };

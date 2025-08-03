@@ -1,54 +1,32 @@
-'use client';
+// src/components/LoginModal.tsx
+'use client'
 
-import { useEffect, useMemo, useState } from 'react';
-import { Dialog } from '@headlessui/react';
-import { Loader2 } from 'lucide-react';
-import { createPagesBrowserClient } from '@supabase/auth-helpers-nextjs';
-import { type Database } from '@/types/supabase';
+import { useEffect } from 'react'
+import { Dialog } from '@headlessui/react'
+import { createPagesBrowserClient } from '@supabase/auth-helpers-nextjs'
+import { type Database } from '@/types/supabase'
+import LoginForm from '@/components/LoginForm/LoginForm'
 
 interface LoginModalProps {
-  onClose: () => void;
-  onLoginSuccess?: () => void;
+  onClose: () => void
+  onLoginSuccess?: () => void
 }
 
 export default function LoginModal({ onClose, onLoginSuccess }: LoginModalProps) {
-  const [loading, setLoading] = useState(false);
-  const [errorMsg, setErrorMsg] = useState('');
-
-  const supabase = useMemo(() => {
-    return createPagesBrowserClient<Database>();
-  }, []);
-
-  const handleGoogleLogin = async () => {
-    setLoading(true);
-    setErrorMsg('');
-
-    const { error } = await supabase.auth.signInWithOAuth({
-      provider: 'google',
-      // redirectTo omitted → use popup instead of redirect
-    });
-
-    if (error) {
-      console.error('Google login error:', error.message);
-      setErrorMsg('Login failed. Please try again.');
-      setLoading(false);
-    }
-  };
+  const supabase = createPagesBrowserClient<Database>()
 
   useEffect(() => {
-    const {
-      data: { subscription },
-    } = supabase.auth.onAuthStateChange((event, session) => {
+    const { data: { subscription } } = supabase.auth.onAuthStateChange((event, session) => {
       if (event === 'SIGNED_IN' && session?.user) {
-        onClose();
-        onLoginSuccess?.();
+        onClose()
+        onLoginSuccess?.()
       }
-    });
+    })
 
     return () => {
-      subscription.unsubscribe();
-    };
-  }, [supabase, onClose, onLoginSuccess]);
+      subscription.unsubscribe()
+    }
+  }, [supabase, onClose, onLoginSuccess])
 
   return (
     <Dialog open={true} onClose={onClose} className="fixed inset-0 z-50">
@@ -58,24 +36,8 @@ export default function LoginModal({ onClose, onLoginSuccess }: LoginModalProps)
             Sign in to Jawa.gg
           </Dialog.Title>
 
-          <button
-            onClick={handleGoogleLogin}
-            disabled={loading}
-            className="w-full bg-red-500 hover:bg-red-600 disabled:opacity-50 text-white font-medium py-2 rounded flex items-center justify-center"
-          >
-            {loading ? (
-              <>
-                <Loader2 className="animate-spin w-4 h-4 mr-2" />
-                Connecting...
-              </>
-            ) : (
-              'Continue with Google'
-            )}
-          </button>
-
-          {errorMsg && (
-            <p className="mt-3 text-sm text-red-500 text-center">{errorMsg}</p>
-          )}
+          {/* 🔁 Dùng form đã tách */}
+          <LoginForm onLoginSuccess={onLoginSuccess} />
 
           <button
             onClick={onClose}
@@ -86,5 +48,5 @@ export default function LoginModal({ onClose, onLoginSuccess }: LoginModalProps)
         </Dialog.Panel>
       </div>
     </Dialog>
-  );
+  )
 }

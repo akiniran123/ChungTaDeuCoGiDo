@@ -1,11 +1,11 @@
 // ✅ src/app/api/logout/route.ts
 import { NextResponse } from 'next/server'
-import { createServerComponentClient } from '@supabase/auth-helpers-nextjs'
+import { createServerActionClient } from '@supabase/auth-helpers-nextjs'
 import { cookies } from 'next/headers'
 import type { Database } from '@/types/supabase'
 
 export async function GET() {
-  const supabase = createServerComponentClient<Database>({ cookies })
+  const supabase = createServerActionClient<Database>({ cookies })
 
   await supabase.auth.signOut()
 

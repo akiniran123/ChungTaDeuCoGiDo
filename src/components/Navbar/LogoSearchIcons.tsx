@@ -17,6 +17,7 @@ interface Props {
 export default function LogoSearchIcons({ onMenuToggle }: Props) {
   const [showLogin, setShowLogin] = useState(false)
   const [user, setUser] = useState<User | null>(null)
+  const [pendingRedirect, setPendingRedirect] = useState(false)
   const router = useRouter()
 
   useEffect(() => {
@@ -31,6 +32,7 @@ export default function LogoSearchIcons({ onMenuToggle }: Props) {
     if (user) {
       router.push('/sell')
     } else {
+      setPendingRedirect(true)
       setShowLogin(true)
     }
   }
@@ -98,14 +100,19 @@ export default function LogoSearchIcons({ onMenuToggle }: Props) {
 
       {showLogin && (
         <LoginModal
-          onClose={() => setShowLogin(false)}
-          onLoginSuccess={() => {
+          onClose={() => {
             setShowLogin(false)
-            // ❌ Bỏ dòng redirect
-            // ✅ Nếu muốn cập nhật lại user sau login:
-            supabase.auth.getUser().then(({ data }) => {
-              setUser(data.user)
-            })
+            setPendingRedirect(false)
+          }}
+          onLoginSuccess={async () => {
+            setShowLogin(false)
+            const { data } = await supabase.auth.getUser()
+            setUser(data.user)
+
+            if (pendingRedirect) {
+              setPendingRedirect(false)
+              router.push('/sell')
+            }
           }}
         />
       )}

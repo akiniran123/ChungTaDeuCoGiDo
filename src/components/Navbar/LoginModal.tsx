@@ -1,12 +1,10 @@
-// src/components/LoginModal.tsx
 'use client'
 
 import { useEffect } from 'react'
 import { Dialog } from '@headlessui/react'
 import { createPagesBrowserClient } from '@supabase/auth-helpers-nextjs'
 import { type Database } from '@/types/supabase'
-import LoginForm from '@/components/LoginForm'
-
+import LoginForm from '@/components/LoginForm' // ✅ Import đúng
 
 interface LoginModalProps {
   onClose: () => void
@@ -37,7 +35,7 @@ export default function LoginModal({ onClose, onLoginSuccess }: LoginModalProps)
             Sign in to Jawa.gg
           </Dialog.Title>
 
-          {/* 🔁 Dùng form đã tách */}
+          {/* ✅ Hiển thị form login */}
           <LoginForm onLoginSuccess={onLoginSuccess} />
 
           <button

@@ -1,45 +1,47 @@
-'use client'
+'use client';
 
-import { useEffect, useState } from 'react'
-import Link from 'next/link'
-import { useRouter } from 'next/navigation'
-import { Heart, Bell, ShoppingCart, User as UserIcon, Menu } from 'lucide-react'
-import { supabase } from '@/lib/supabase/client'
-import type { User } from '@supabase/supabase-js'
+import { useEffect, useState } from 'react';
+import Link from 'next/link';
+import { useRouter } from 'next/navigation';
+import { Heart, Bell, ShoppingCart, User as UserIcon, Menu, Loader2 } from 'lucide-react';
+import { supabase } from '@/lib/supabase/client';
+import type { User } from '@supabase/supabase-js';
 
-import ThemeToggle from './ThemeToggle'
-import LoginModal from './LoginModal'
+import ThemeToggle from './ThemeToggle';
+import LoginModal from './LoginModal';
 
 interface Props {
-  onMenuToggle?: () => void
+  onMenuToggle?: () => void;
 }
 
 export default function LogoSearchIcons({ onMenuToggle }: Props) {
-  const [showLogin, setShowLogin] = useState(false)
-  const [user, setUser] = useState<User | null>(null)
-  const [pendingRedirect, setPendingRedirect] = useState(false)
-  const router = useRouter()
+  const [showLogin, setShowLogin] = useState(false);
+  const [user, setUser] = useState<User | null>(null);
+  const [loadingUser, setLoadingUser] = useState(true);
+  const [pendingRedirect, setPendingRedirect] = useState(false);
+  const router = useRouter();
 
   useEffect(() => {
     const getUser = async () => {
-      const { data } = await supabase.auth.getUser()
-      setUser(data.user)
-    }
-    getUser()
-  }, [])
+      const { data } = await supabase.auth.getUser();
+      setUser(data.user);
+      setLoadingUser(false);
+    };
+    getUser();
+  }, []);
 
   const handleStartSelling = () => {
     if (user) {
-      router.push('/sell')
+      router.push('/sell');
     } else {
-      setPendingRedirect(true)
-      setShowLogin(true)
+      setPendingRedirect(true);
+      setShowLogin(true);
     }
-  }
+  };
 
   const handleIconClick = () => {
-    if (!user) setShowLogin(true)
-  }
+    if (!user) setShowLogin(true);
+  };
 
   return (
     <>
@@ -72,18 +74,25 @@ export default function LogoSearchIcons({ onMenuToggle }: Props) {
 
           {/* Right: Icons & Actions */}
           <div className="flex items-center gap-3">
-            <button
-              onClick={handleStartSelling}
-              className="hidden sm:inline-block bg-indigo-600 hover:bg-indigo-700 text-white px-4 py-1.5 text-sm rounded-full font-semibold transition cursor-pointer"
-              aria-label="Start Selling"
-            >
-              START SELLING
-            </button>
+            {loadingUser ? (
+              <Loader2 className="w-5 h-5 animate-spin text-gray-500" />
+            ) : (
+              <>
+                <button
+                  onClick={handleStartSelling}
+                  className="hidden sm:inline-block bg-indigo-600 hover:bg-indigo-700 text-white px-4 py-1.5 text-sm rounded-full font-semibold transition cursor-pointer"
+                  aria-label="Start Selling"
+                >
+                  START SELLING
+                </button>
 
-            <Heart className="w-5 h-5 hover:text-indigo-500 cursor-pointer" onClick={handleIconClick} />
-            <Bell className="w-5 h-5 hover:text-indigo-500 cursor-pointer" onClick={handleIconClick} />
-            <ShoppingCart className="w-5 h-5 hover:text-indigo-500 cursor-pointer" onClick={handleIconClick} />
-            <UserIcon className="w-5 h-5 hover:text-indigo-500 cursor-pointer" onClick={handleIconClick} />
+                <Heart className="w-5 h-5 hover:text-indigo-500 cursor-pointer" onClick={handleIconClick} />
+                <Bell className="w-5 h-5 hover:text-indigo-500 cursor-pointer" onClick={handleIconClick} />
+                <ShoppingCart className="w-5 h-5 hover:text-indigo-500 cursor-pointer" onClick={handleIconClick} />
+                <UserIcon className="w-5 h-5 hover:text-indigo-500 cursor-pointer" onClick={handleIconClick} />
+              </>
+            )}
+
             <ThemeToggle />
           </div>
         </div>
@@ -98,24 +107,25 @@ export default function LogoSearchIcons({ onMenuToggle }: Props) {
         </div>
       </div>
 
+      {/* Login Modal */}
       {showLogin && (
         <LoginModal
           onClose={() => {
-            setShowLogin(false)
-            setPendingRedirect(false)
+            setShowLogin(false);
+            setPendingRedirect(false);
           }}
           onLoginSuccess={async () => {
-            setShowLogin(false)
-            const { data } = await supabase.auth.getUser()
-            setUser(data.user)
+            const { data } = await supabase.auth.getUser();
+            setUser(data.user);
+            setShowLogin(false);
 
             if (pendingRedirect) {
-              setPendingRedirect(false)
-              router.push('/sell')
+              setPendingRedirect(false);
+              router.push('/sell');
             }
           }}
         />
       )}
     </>
-  )
+  );
 }

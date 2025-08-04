@@ -17,28 +17,8 @@ import ImageUploader from '@/components/sell/ImageUploader';
 import ConditionSelector from '@/components/sell/ConditionSelector';
 import DescriptionEditor from '@/components/sell/DescriptionEditor';
 
-const schema = z.object({
-  title: z.string().min(5, 'Title must be at least 5 characters').max(100),
-  category: z.string().min(1, 'Category is required'),
-  isPrivate: z.boolean(),
-  condition: z.enum([
-    'brand_new',
-    'new_open_box',
-    'used_like_new',
-    'used_good',
-    'as_is',
-  ]),
-  description: z.string().min(10, 'Description must be at least 10 characters'),
-  specs: z.array(
-    z.object({
-      key: z.string().min(1, 'Spec key is required'),
-      value: z.string().min(1, 'Spec value is required'),
-    })
-  ),
-  images: z.array(z.instanceof(File)).max(10, 'You can upload up to 10 images'),
-});
-
-export type ProductFormData = z.infer<typeof schema>;
+import type { ProductFormData } from '@/types/form';
+import { productSchema } from '@/types/form';
 
 export default function SellPage() {
   const router = useRouter();
@@ -52,7 +32,7 @@ export default function SellPage() {
     watch,
     formState: { errors },
   } = useForm<ProductFormData>({
-    resolver: zodResolver(schema),
+    resolver: zodResolver(productSchema),
     defaultValues: {
       title: '',
       category: '',

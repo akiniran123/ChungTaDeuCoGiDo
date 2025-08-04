@@ -10,6 +10,22 @@ export default function SellPage() {
   const [category, setCategory] = useState('');
   const [isPrivate, setIsPrivate] = useState(false);
   const [loading, setLoading] = useState(false);
+  const [specs, setSpecs] = useState([{ key: '', value: '' }]);
+
+  const handleSpecChange = (index: number, field: 'key' | 'value', value: string) => {
+    const updated = [...specs];
+    updated[index][field] = value;
+    setSpecs(updated);
+  };
+
+  const addSpec = () => {
+    setSpecs([...specs, { key: '', value: '' }]);
+  };
+
+  const removeSpec = (index: number) => {
+    const updated = specs.filter((_, i) => i !== index);
+    setSpecs(updated);
+  };
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -28,6 +44,7 @@ export default function SellPage() {
         category,
         is_private: isPrivate,
         user_id: user.id,
+        specs,
       },
     ]);
 
@@ -131,6 +148,46 @@ export default function SellPage() {
               </label>
             </div>
           </div>
+        </div>
+
+        {/* Tech Specs Section */}
+        <div className="border rounded-lg p-5 space-y-5">
+          <h2 className="font-semibold text-lg">Tech Specs</h2>
+
+          {specs.map((spec, index) => (
+            <div key={index} className="flex gap-2">
+              <input
+                type="text"
+                placeholder="Key (e.g. CPU)"
+                className="w-1/3 border rounded px-3 py-2"
+                value={spec.key}
+                onChange={(e) => handleSpecChange(index, 'key', e.target.value)}
+              />
+              <input
+                type="text"
+                placeholder="Value (e.g. Intel i7)"
+                className="w-2/3 border rounded px-3 py-2"
+                value={spec.value}
+                onChange={(e) => handleSpecChange(index, 'value', e.target.value)}
+              />
+              <button
+                type="button"
+                onClick={() => removeSpec(index)}
+                className="text-red-500 font-bold px-2"
+                title="Remove"
+              >
+                ×
+              </button>
+            </div>
+          ))}
+
+          <button
+            type="button"
+            onClick={addSpec}
+            className="text-sm text-indigo-600 font-medium hover:underline"
+          >
+            + Add Spec
+          </button>
         </div>
 
         {/* Submit Button */}

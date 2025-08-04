@@ -13,16 +13,16 @@ type MainLink = {
 };
 
 const mainLinksLeft: MainLink[] = [
-  { name: 'Giới thiệu', path: '/Giới thiệu' },
-  { name: 'Tin tức', path: '/Tin tức' },
-  { name: 'Khuyến mãi & Ưu đãi', path: '/Khuyến mãi & Ưu đãi' },
-  { name: 'Sản phẩm công nghệ mới', path: '/Sản phẩm công nghệ mới', isNew: true },
-  { name: 'Tuyển dụng', path: '/Tuyển dụng' },
+  { name: 'Giới thiệu', path: '/about' },
+  { name: 'Tin tức', path: '/news' },
+  { name: 'Khuyến mãi & Ưu đãi', path: '/PromotionsPage' },
+  { name: 'Sản phẩm công nghệ mới', path: '/NewTechProducts', isNew: true },
+  { name: 'Tuyển dụng', path: '/RecruitmentPage' },
 ];
 
 const mainLinksRight: MainLink[] = [
-  { name: 'Chính sách & Điều khoản, Điều kiện', path: '/Chính sách & Điều khoản, Điều kiện' },
-  { name: 'Liên hệ & Hỗ trợ', path: '/Liên hệ & Hỗ trợ' },
+  { name: 'Chính sách & Điều khoản, Điều kiện', path: '/TermsConditionsPage' },
+  { name: 'Liên hệ & Hỗ trợ', path: '/SupportContact' },
 ];
 
 const categoryMenu = [

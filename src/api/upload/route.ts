@@ -1,6 +1,5 @@
 import { NextRequest, NextResponse } from 'next/server';
-import supabase from '@/lib/supabase/serverClient';
-
+import { supabase } from '@/lib/supabase/serverClient'; // ✅ giờ đúng rồi
 
 export async function POST(req: NextRequest) {
   const body = await req.json();
@@ -10,7 +9,9 @@ export async function POST(req: NextRequest) {
     .from('images')
     .insert([{ title, image_url: imageUrl, user_id }]);
 
-  if (error) return NextResponse.json({ error: error.message }, { status: 500 });
+  if (error) {
+    return NextResponse.json({ error: error.message }, { status: 500 });
+  }
 
   return NextResponse.json({ data }, { status: 200 });
 }

@@ -16,7 +16,6 @@ import TechSpecsEditor from '@/components/sell/TechSpecsEditor';
 import ImageUploaderSection from '@/components/sell/ImageUploader';
 import ConditionSelectorSection from '@/components/sell/ConditionSelector';
 import DescriptionEditorSection from '@/components/sell/DescriptionEditor';
-import PriceAndOffers from '@/components/sell/PriceAndOffers';
 import ReturnPolicies from '@/components/sell/ReturnPolicies';
 import ActionButtons from '@/components/sell/ActionButtons';
 
@@ -147,10 +146,6 @@ export default function SellPage() {
 
         {/* Section: Description */}
         <DescriptionEditorSection control={control} error={errors.description} />
-
-
-        {/* Section: Pricing + Offers */}
-        <PriceAndOffers register={register} errors={errors} />
 
         {/* Section: Return Policy */}
         <ReturnPolicies register={register} error={errors.returnPolicy} />

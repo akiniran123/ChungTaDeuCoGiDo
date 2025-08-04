@@ -1,11 +1,13 @@
 'use client';
 
-import { useForm } from 'react-hook-form';
+import { useState } from 'react';
+import { useRouter } from 'next/navigation';
+import { useForm, SubmitHandler } from 'react-hook-form';
 import { z } from 'zod';
 import { zodResolver } from '@hookform/resolvers/zod';
-import { useRouter } from 'next/navigation';
-import { useState } from 'react';
+
 import { supabase } from '@/lib/supabase/client';
+
 import BankAccountBanner from '@/components/sell/BankAccountBanner';
 import CategorySelect from '@/components/sell/CategorySelect';
 import ListingTitleInput from '@/components/sell/ListingTitleInput';
@@ -16,14 +18,27 @@ import ConditionSelector from '@/components/sell/ConditionSelector';
 import DescriptionEditor from '@/components/sell/DescriptionEditor';
 
 const schema = z.object({
-  title: z.string().min(5).max(100),
-  category: z.string().min(1),
+  title: z.string().min(5, 'Title must be at least 5 characters').max(100),
+  category: z.string().min(1, 'Category is required'),
   isPrivate: z.boolean(),
-  condition: z.enum(['brand_new', 'new_open_box', 'used_like_new', 'used_good', 'as_is']),
-  description: z.string().min(10),
-  specs: z.array(z.object({ key: z.string(), value: z.string() })),
-  images: z.array(z.instanceof(File)).max(10),
+  condition: z.enum([
+    'brand_new',
+    'new_open_box',
+    'used_like_new',
+    'used_good',
+    'as_is',
+  ]),
+  description: z.string().min(10, 'Description must be at least 10 characters'),
+  specs: z.array(
+    z.object({
+      key: z.string().min(1, 'Spec key is required'),
+      value: z.string().min(1, 'Spec value is required'),
+    })
+  ),
+  images: z.array(z.instanceof(File)).max(10, 'You can upload up to 10 images'),
 });
+
+export type ProductFormData = z.infer<typeof schema>;
 
 export default function SellPage() {
   const router = useRouter();
@@ -36,47 +51,59 @@ export default function SellPage() {
     setValue,
     watch,
     formState: { errors },
-  } = useForm({
+  } = useForm<ProductFormData>({
     resolver: zodResolver(schema),
     defaultValues: {
       title: '',
       category: '',
       isPrivate: false,
-      specs: [{ key: '', value: '' }],
       condition: 'brand_new',
       description: '',
+      specs: [{ key: '', value: '' }],
       images: [],
     },
   });
 
-  const onSubmit = async (data: any) => {
+  const onSubmit: SubmitHandler<ProductFormData> = async (data) => {
     setLoading(true);
-    const user = (await supabase.auth.getUser()).data.user;
+
+    const {
+      data: { user },
+    } = await supabase.auth.getUser();
+
     if (!user) {
       alert('You must be logged in to post.');
       setLoading(false);
       return;
     }
 
-    // 1. Upload images to Supabase Storage
     const uploadedImageUrls: string[] = [];
+
     for (const file of data.images) {
       const fileName = `${user.id}-${Date.now()}-${file.name}`;
-      const { data: uploadData, error } = await supabase.storage
+      const { error: uploadError } = await supabase.storage
         .from('product-images')
         .upload(fileName, file);
 
-      if (error) {
+      if (uploadError) {
         alert('Image upload failed');
         setLoading(false);
         return;
       }
 
-      const url = supabase.storage.from('product-images').getPublicUrl(fileName).data.publicUrl;
-      uploadedImageUrls.push(url);
+      const { data: publicUrlData } = supabase.storage
+        .from('product-images')
+        .getPublicUrl(fileName);
+
+      if (!publicUrlData?.publicUrl) {
+        alert('Failed to get public image URL');
+        setLoading(false);
+        return;
+      }
+
+      uploadedImageUrls.push(publicUrlData.publicUrl);
     }
 
-    // 2. Save to database
     const { error: insertError } = await supabase.from('products').insert([
       {
         user_id: user.id,
@@ -85,8 +112,8 @@ export default function SellPage() {
         is_private: data.isPrivate,
         specs: data.specs,
         description: data.description,
-        images: uploadedImageUrls,
         condition: data.condition,
+        images: uploadedImageUrls,
       },
     ]);
 
@@ -103,6 +130,7 @@ export default function SellPage() {
   return (
     <div className="max-w-4xl mx-auto px-4 py-8">
       <h1 className="text-2xl font-bold mb-6">Add a New Listing</h1>
+
       <BankAccountBanner />
 
       <form onSubmit={handleSubmit(onSubmit)} className="space-y-6">

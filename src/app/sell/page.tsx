@@ -1,6 +1,6 @@
 'use client';
 
-import { useState } from 'react';
+import { useState, ChangeEvent, FormEvent } from 'react';
 import { useRouter } from 'next/navigation';
 import { supabase } from '@/lib/supabase/client';
 
@@ -11,6 +11,8 @@ export default function SellPage() {
   const [isPrivate, setIsPrivate] = useState(false);
   const [loading, setLoading] = useState(false);
   const [specs, setSpecs] = useState([{ key: '', value: '' }]);
+  const [images, setImages] = useState<File[]>([]);
+  const [condition, setCondition] = useState('');
 
   const handleSpecChange = (index: number, field: 'key' | 'value', value: string) => {
     const updated = [...specs];
@@ -18,16 +20,26 @@ export default function SellPage() {
     setSpecs(updated);
   };
 
-  const addSpec = () => {
-    setSpecs([...specs, { key: '', value: '' }]);
+  const addSpec = () => setSpecs([...specs, { key: '', value: '' }]);
+  const removeSpec = (index: number) => setSpecs(specs.filter((_, i) => i !== index));
+
+  const handleImageUpload = (e: ChangeEvent<HTMLInputElement>) => {
+    if (!e.target.files) return;
+    const files = Array.from(e.target.files);
+    if (files.length + images.length > 10) {
+      alert('You can only upload up to 10 images.');
+      return;
+    }
+    setImages([...images, ...files]);
   };
 
-  const removeSpec = (index: number) => {
-    const updated = specs.filter((_, i) => i !== index);
-    setSpecs(updated);
+  const removeImage = (index: number) => {
+    const updated = [...images];
+    updated.splice(index, 1);
+    setImages(updated);
   };
 
-  const handleSubmit = async (e: React.FormEvent) => {
+  const handleSubmit = async (e: FormEvent) => {
     e.preventDefault();
     setLoading(true);
 
@@ -38,6 +50,23 @@ export default function SellPage() {
       return;
     }
 
+    const uploadedUrls: string[] = [];
+
+    for (const image of images) {
+      const fileName = `${Date.now()}-${image.name}`;
+      const { error: uploadError } = await supabase.storage
+        .from('product-images')
+        .upload(fileName, image);
+
+      if (uploadError) {
+        console.error('Upload failed:', uploadError.message);
+        continue;
+      }
+
+      const publicUrl = supabase.storage.from('product-images').getPublicUrl(fileName).data.publicUrl;
+      uploadedUrls.push(publicUrl);
+    }
+
     const { error } = await supabase.from('products').insert([
       {
         title,
@@ -45,6 +74,8 @@ export default function SellPage() {
         is_private: isPrivate,
         user_id: user.id,
         specs,
+        images: uploadedUrls,
+        condition,
       },
     ]);
 
@@ -66,12 +97,9 @@ export default function SellPage() {
       <div className="flex items-start gap-4 bg-indigo-100 border border-indigo-300 p-4 rounded-md mb-6">
         <div className="text-2xl mt-1">💰</div>
         <div className="flex-1">
-          <p className="font-semibold">
-            Link your bank account to get paid (it only takes a few minutes!)
-          </p>
+          <p className="font-semibold">Link your bank account to get paid (it only takes a few minutes!)</p>
           <p className="text-sm mt-1">
-            You will be able to create draft listings, but must link your bank account to publish or be paid out.
-            Jawa uses Stripe&apos;s platform to securely link to your bank account.
+            You will be able to create draft listings, but must link your bank account to publish or be paid out. Jawa uses Stripe&apos;s platform to securely link to your bank account.
           </p>
         </div>
         <button className="bg-indigo-600 text-white px-4 py-1.5 rounded-full text-sm font-medium hover:bg-indigo-700">
@@ -79,17 +107,13 @@ export default function SellPage() {
         </button>
       </div>
 
-      {/* Listing Form */}
       <form onSubmit={handleSubmit} className="space-y-6">
-        {/* Listing Info Section */}
+        {/* Listing Info */}
         <div className="border rounded-lg p-5 space-y-5">
           <h2 className="font-semibold text-lg">Listing information</h2>
 
-          {/* Category */}
           <div>
-            <label className="block font-medium mb-1">
-              Category <span className="text-red-500">*</span>
-            </label>
+            <label className="block font-medium mb-1">Category <span className="text-red-500">*</span></label>
             <select
               className="w-full border rounded px-3 py-2"
               value={category}
@@ -105,11 +129,8 @@ export default function SellPage() {
             </select>
           </div>
 
-          {/* Title */}
           <div>
-            <label className="block font-medium mb-1">
-              Listing name <span className="text-red-500">*</span>
-            </label>
+            <label className="block font-medium mb-1">Listing name <span className="text-red-500">*</span></label>
             <input
               type="text"
               placeholder="Example: On Sale! BNIB Intel Core i9-9900k LGA1151 8 Core Processor!"
@@ -122,13 +143,11 @@ export default function SellPage() {
             <div className="text-sm text-gray-500 mt-1">{title.length}/100</div>
           </div>
 
-          {/* Private Toggle */}
           <div className="flex items-start justify-between">
             <div>
               <p className="font-medium">Private Listing</p>
               <p className="text-sm text-gray-500">
-                Private listings will not appear in search results or on your seller page — they can only be
-                accessed by a special link.
+                Private listings will not appear in search results or on your seller page — they can only be accessed by a special link.
               </p>
             </div>
             <div className="relative">
@@ -140,20 +159,15 @@ export default function SellPage() {
                   onChange={(e) => setIsPrivate(e.target.checked)}
                 />
                 <div className="w-11 h-6 bg-gray-300 rounded-full peer-checked:bg-indigo-600 transition duration-300"></div>
-                <div
-                  className={`absolute left-1 top-1 w-4 h-4 bg-white rounded-full shadow-md transition-transform ${
-                    isPrivate ? 'translate-x-5' : ''
-                  }`}
-                ></div>
+                <div className={`absolute left-1 top-1 w-4 h-4 bg-white rounded-full shadow-md transition-transform ${isPrivate ? 'translate-x-5' : ''}`}></div>
               </label>
             </div>
           </div>
         </div>
 
-        {/* Tech Specs Section */}
+        {/* Tech Specs */}
         <div className="border rounded-lg p-5 space-y-5">
           <h2 className="font-semibold text-lg">Tech Specs</h2>
-
           {specs.map((spec, index) => (
             <div key={index} className="flex gap-2">
               <input
@@ -170,27 +184,76 @@ export default function SellPage() {
                 value={spec.value}
                 onChange={(e) => handleSpecChange(index, 'value', e.target.value)}
               />
-              <button
-                type="button"
-                onClick={() => removeSpec(index)}
-                className="text-red-500 font-bold px-2"
-                title="Remove"
-              >
-                ×
-              </button>
+              <button type="button" onClick={() => removeSpec(index)} className="text-red-500 font-bold px-2">×</button>
             </div>
           ))}
-
-          <button
-            type="button"
-            onClick={addSpec}
-            className="text-sm text-indigo-600 font-medium hover:underline"
-          >
-            + Add Spec
-          </button>
+          <button type="button" onClick={addSpec} className="text-sm text-indigo-600 font-medium hover:underline">+ Add Spec</button>
         </div>
 
-        {/* Submit Button */}
+        {/* Image Upload */}
+        <div className="border rounded-lg p-5 space-y-4">
+          <h2 className="font-semibold text-lg">Images <span className="text-red-500">*</span></h2>
+          <p className="text-sm text-gray-600">
+            Upload up to 10 photos in JPG, PNG, GIF, or WEBP format. Each image under 1MB for faster upload.
+          </p>
+          <label className="flex flex-col items-center justify-center border-2 border-dashed border-gray-300 p-6 rounded cursor-pointer hover:border-indigo-500">
+            <input
+              type="file"
+              multiple
+              accept="image/*"
+              className="hidden"
+              onChange={handleImageUpload}
+            />
+            <p className="text-gray-500">Drag and drop photos, or <span className="underline text-indigo-600">click to upload</span>.</p>
+          </label>
+          <div className="flex flex-wrap gap-4 mt-4">
+            {images.map((img, i) => (
+              <div key={i} className="relative w-24 h-24 border rounded overflow-hidden">
+                <img src={URL.createObjectURL(img)} alt={`Preview ${i}`} className="w-full h-full object-cover" />
+                <button
+                  type="button"
+                  onClick={() => removeImage(i)}
+                  className="absolute top-0 right-0 bg-black bg-opacity-50 text-white text-xs p-1"
+                >✕</button>
+              </div>
+            ))}
+          </div>
+          <div className="bg-orange-100 border border-orange-300 p-4 rounded-md flex justify-between items-center">
+            <div>
+              <p className="text-sm font-medium">📸 Listings with quality photos sell 30% faster</p>
+              <p className="text-xs text-gray-600">Head over to Seller Academy and learn how to take great photos</p>
+            </div>
+            <div className="flex gap-2">
+              <button type="button" className="text-white bg-indigo-600 text-xs px-3 py-1 rounded hover:bg-indigo-700">PHOTO GUIDE</button>
+              <button type="button" className="text-xs text-gray-500">DISMISS</button>
+            </div>
+          </div>
+        </div>
+
+        {/* Condition */}
+        <div className="border rounded-lg p-5 space-y-4">
+          <h2 className="font-semibold text-lg">Description</h2>
+          <div>
+            <label className="block font-medium mb-1">Condition <span className="text-red-500">*</span></label>
+            <div className="grid grid-cols-2 sm:grid-cols-3 gap-3 text-sm">
+              {['Brand New in Box', 'New Open Box', 'Used, Like New', 'Used, Good', 'Used, Fair', 'As-Is / For Parts'].map((option) => (
+                <label key={option} className="flex items-center gap-2 cursor-pointer">
+                  <input
+                    type="radio"
+                    name="condition"
+                    value={option}
+                    checked={condition === option}
+                    onChange={(e) => setCondition(e.target.value)}
+                    required
+                  />
+                  {option}
+                </label>
+              ))}
+            </div>
+          </div>
+        </div>
+
+        {/* Submit */}
         <div>
           <button
             type="submit"

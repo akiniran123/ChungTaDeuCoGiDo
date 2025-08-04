@@ -8,7 +8,7 @@ export default function BankAccountBanner() {
         </p>
         <p className="text-sm mt-1">
           You will be able to create draft listings, but must link your bank account to publish or be paid out.
-          Jawa uses Stripe's platform to securely link to your bank account.
+          Jawa uses Stripe&apos;s platform to securely link to your bank account.
         </p>
       </div>
       <button className="bg-indigo-600 text-white px-4 py-1.5 rounded-full text-sm font-medium hover:bg-indigo-700">

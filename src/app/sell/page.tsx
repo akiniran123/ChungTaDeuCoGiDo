@@ -16,6 +16,8 @@ import TechSpecsEditor from '@/components/sell/TechSpecsEditor';
 import ImageUploaderSection from '@/components/sell/ImageUploader';
 import ConditionSelectorSection from '@/components/sell/ConditionSelector';
 import DescriptionEditorSection from '@/components/sell/DescriptionEditor';
+import ProductVideoInput from '@/components/sell/ProductVideoInput';
+import PriceAndOffers from '@/components/sell/PriceAndOffers';
 import ReturnPolicies from '@/components/sell/ReturnPolicies';
 import ActionButtons from '@/components/sell/ActionButtons';
 
@@ -52,7 +54,6 @@ export default function SellPage() {
 
   const onSubmit: SubmitHandler<ProductFormData> = async (data) => {
     setLoading(true);
-
     const {
       data: { user },
     } = await supabase.auth.getUser();
@@ -64,7 +65,6 @@ export default function SellPage() {
     }
 
     const uploadedImageUrls: string[] = [];
-
     for (const file of data.images) {
       const fileName = `${user.id}-${Date.now()}-${file.name}`;
       const { error: uploadError } = await supabase.storage
@@ -123,11 +123,9 @@ export default function SellPage() {
   return (
     <div className="max-w-4xl mx-auto px-4 py-8">
       <h1 className="text-2xl font-bold mb-6">Add a New Listing</h1>
-
       <BankAccountBanner />
 
       <form onSubmit={handleSubmit(onSubmit)} className="space-y-6">
-        {/* Section: Basic Info */}
         <div className="border rounded-lg p-5 space-y-6">
           <h2 className="font-semibold text-lg">Listing Information</h2>
           <CategorySelect register={register} error={errors.category} />
@@ -135,22 +133,13 @@ export default function SellPage() {
           <PrivateToggle register={register} />
         </div>
 
-        {/* Section: Tech Specs */}
         <TechSpecsEditor control={control} />
-
-        {/* Section: Images */}
         <ImageUploaderSection setValue={setValue} watch={watch} error={errors.images} />
-
-        {/* Section: Condition */}
         <ConditionSelectorSection register={register} />
-
-        {/* Section: Description */}
         <DescriptionEditorSection control={control} error={errors.description} />
-
-        {/* Section: Return Policy */}
+        <ProductVideoInput register={register} error={errors.videoUrl} />
+        <PriceAndOffers register={register} errors={errors} />
         <ReturnPolicies register={register} error={errors.returnPolicy} />
-
-        {/* Submit */}
         <ActionButtons loading={loading} />
       </form>
     </div>

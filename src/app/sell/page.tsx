@@ -17,7 +17,7 @@ import ImageUploaderSection from '@/components/sell/ImageUploader';
 import ConditionSelectorSection from '@/components/sell/ConditionSelector';
 import DescriptionEditorSection from '@/components/sell/DescriptionEditor';
 import ProductVideoInput from '@/components/sell/ProductVideoInput';
-import PriceAndOffers from '@/components/sell/PriceAndOffers';
+import {PriceAndOffers} from '@/components/sell/PriceAndOffers';
 import ReturnPolicies from '@/components/sell/ReturnPolicies';
 import ActionButtons from '@/components/sell/ActionButtons';
 
@@ -132,7 +132,6 @@ export default function SellPage() {
           <ListingTitleInput register={register} error={errors.title} />
           <PrivateToggle register={register} />
         </div>
-
         <TechSpecsEditor control={control} />
         <ImageUploaderSection setValue={setValue} watch={watch} error={errors.images} />
         <ConditionSelectorSection register={register} />

@@ -1,49 +1,60 @@
 "use client";
 
-export default function NewsPage() {
+import { Rocket, Users, Brain, BarChart3, Truck } from "lucide-react";
+
+export default function VisionHighlights() {
+  const highlights = [
+    {
+      icon: <Rocket className="w-6 h-6 text-blue-500" />,
+      title: "Nền tảng tối ưu – Tốc độ vượt trội",
+      description:
+        "Phiên bản mới tăng tốc độ tải trang đến 40%, thiết kế tối giản hiện đại, mang lại trải nghiệm mượt mà cho cả người mua và người bán.",
+    },
+    {
+      icon: <Users className="w-6 h-6 text-pink-500" />,
+      title: "1 triệu người dùng sau 6 tháng",
+      description:
+        "Một cột mốc đáng tự hào, khẳng định niềm tin của cộng đồng vào NexLoot. Xin cảm ơn vì đã đồng hành!",
+    },
+    {
+      icon: <Brain className="w-6 h-6 text-purple-500" />,
+      title: "Tìm kiếm thông minh bằng AI",
+      description:
+        "AI phân tích hành vi & đề xuất sản phẩm chính xác hơn. Giúp tiết kiệm thời gian và tăng tỷ lệ chuyển đổi.",
+    },
+    {
+      icon: <BarChart3 className="w-6 h-6 text-yellow-500" />,
+      title: "Báo cáo thị trường định kỳ",
+      description:
+        "Cập nhật xu hướng tiêu dùng, biến động giá & sản phẩm bán chạy, hỗ trợ quyết định kinh doanh hiệu quả.",
+    },
+    {
+      icon: <Truck className="w-6 h-6 text-orange-500" />,
+      title: "Tăng tốc giao hàng toàn quốc",
+      description:
+        "Hợp tác chiến lược cùng đối tác vận chuyển uy tín, giảm thời gian giao hàng và hỗ trợ hoàn tiền khi chậm trễ.",
+    },
+  ];
+
   return (
-    <div className="min-h-screen pt-32 px-6 md:px-12 bg-white dark:bg-black text-black dark:text-white space-y-12">
-      {/* News Items */}
-      <div className="space-y-8">
-
-        <div>
-          <h2 className="text-xl font-semibold mb-1">🆕 Nền tảng mới – Tốc độ & hiệu quả vượt trội</h2>
-          <p>
-            Phiên bản nền tảng thương mại điện tử mới giúp tăng tốc độ tải trang đến 40%,
-            cải thiện giao diện và trải nghiệm mua sắm toàn diện cho cả người dùng và nhà bán.
-          </p>
-        </div>
-
-        <div>
-          <h2 className="text-xl font-semibold mb-1">🎉 Chạm mốc 1 triệu người dùng</h2>
-          <p>
-            Sau 6 tháng ra mắt, hệ thống đã thu hút hơn 1 triệu người đăng ký. Chúng tôi xin cảm ơn cộng đồng
-            đã tin tưởng và đồng hành trong hành trình phát triển không ngừng này.
-          </p>
-        </div>
-
-        <div>
-          <h2 className="text-xl font-semibold mb-1">🤖 Tìm kiếm thông minh bằng AI</h2>
-          <p>
-            Hệ thống AI mới phân tích hành vi và xu hướng, giúp đề xuất sản phẩm chính xác hơn, tăng trải nghiệm và hiệu quả mua sắm cho người dùng.
-          </p>
-        </div>
-
-        <div>
-          <h2 className="text-xl font-semibold mb-1">📊 Báo cáo thị trường định kỳ</h2>
-          <p>
-            Hàng tháng, người bán có thể theo dõi báo cáo xu hướng sản phẩm, biến động giá và nhu cầu thị trường trực tiếp trong tài khoản cá nhân.
-          </p>
-        </div>
-
-        <div>
-          <h2 className="text-xl font-semibold mb-1">🚚 Tăng tốc vận chuyển toàn quốc</h2>
-          <p>
-            Hợp tác với các đối tác logistics lớn giúp rút ngắn thời gian giao hàng, đồng giá ship và hoàn tiền khi chậm trễ – mang lại trải nghiệm tốt hơn cho khách.
-          </p>
-        </div>
-
+    <section className="px-6 md:px-12 py-16 bg-white dark:bg-black text-black dark:text-white">
+      <h2 className="text-2xl md:text-3xl font-bold mb-10">Điểm nhấn nổi bật</h2>
+      <div className="grid gap-8 md:grid-cols-2 lg:grid-cols-3">
+        {highlights.map((item, index) => (
+          <div
+            key={index}
+            className="flex items-start gap-4 bg-gray-50 dark:bg-gray-900 p-6 rounded-2xl shadow-md hover:shadow-xl transition"
+          >
+            <div>{item.icon}</div>
+            <div>
+              <h3 className="font-semibold text-lg mb-1">{item.title}</h3>
+              <p className="text-sm text-gray-700 dark:text-gray-300">
+                {item.description}
+              </p>
+            </div>
+          </div>
+        ))}
       </div>
-    </div>
+    </section>
   );
 }

@@ -107,9 +107,9 @@ export default function Home() {
             <h4 className="font-semibold text-lg">📂 Danh mục</h4>
             <ul className="space-y-1">
               <li><a href="#" className="hover:underline">Về chúng tôi</a></li>
-              <li><a href="#" className="hover:underline">Chính sách bảo hành</a></li>
               <li><a href="#" className="hover:underline">Tuyển dụng</a></li>
-              <li><a href="#" className="hover:underline">Liên hệ</a></li>
+              <li><a href="#" className="hover:underline">Hướng dẫn mua hàng</a></li>
+              <li><a href="#" className="hover:underline">Đánh giá của khách hàng</a></li>
             </ul>
           </div>
 

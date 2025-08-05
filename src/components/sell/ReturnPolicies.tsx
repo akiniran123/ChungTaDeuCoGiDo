@@ -1,19 +1,20 @@
 'use client';
 
-import { FieldError, UseFormRegister } from 'react-hook-form';
+import { UseFormRegister, FieldError } from 'react-hook-form';
 import { ProductFormData } from '@/types/form';
 
-type Props = {
+type ReturnPoliciesProps = {
   register: UseFormRegister<ProductFormData>;
   error?: FieldError;
 };
 
-export default function ReturnPolicies({ register, error }: Props) {
+export function ReturnPolicies({ register, error }: ReturnPoliciesProps) {
   return (
     <div className="space-y-6 border rounded p-5">
       <h2 className="font-semibold text-lg">Return Policies</h2>
 
       <div className="grid grid-cols-2 gap-6">
+        {/* Return Address */}
         <div>
           <p className="font-medium">Return Address</p>
           <p className="text-sm text-gray-600">
@@ -22,11 +23,30 @@ export default function ReturnPolicies({ register, error }: Props) {
         </div>
         <div className="text-gray-600">Please select address first</div>
 
+        {/* Buyer Protection Info */}
         <div>
-          <label className="font-medium">Return Policy</label>
+          <p className="font-medium">Buyer Protection Policy</p>
+          <p className="text-sm text-gray-600">
+            Select a buyer protection for this item.
+          </p>
+        </div>
+        <div className="flex justify-between items-center">
+          <div>
+            <p className="font-medium">🛡️ Jawa Buyer Protection</p>
+            <p className="text-sm text-gray-600">
+              Buyer can get a full refund if item never arrived, is damaged, or doesn’t match description within 48h.
+            </p>
+          </div>
+          <button className="text-indigo-600 font-medium hover:underline">+ ADD POLICY</button>
+        </div>
+
+        {/* Return Policy Selector */}
+        <div className="col-span-2">
+          <label className="font-medium block mb-1">Return Policy</label>
           <select
             {...register('returnPolicy')}
             className="w-full border rounded px-3 py-2"
+            defaultValue=""
           >
             <option value="">Select return policy</option>
             <option value="no_returns">Returns not accepted</option>
@@ -39,3 +59,5 @@ export default function ReturnPolicies({ register, error }: Props) {
     </div>
   );
 }
+
+export default ReturnPolicies;

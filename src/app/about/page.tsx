@@ -71,6 +71,38 @@ export default function AboutPage() {
           </p>
         </div>
 
+        {/* Tầm nhìn & Chiến lược của cổ đông */}
+        <div>
+          <h2 className="text-2xl font-semibold flex items-center gap-2 mb-6">
+            <Users className="w-6 h-6 text-blue-500" />
+            Tầm nhìn & Chiến lược của cổ đông
+          </h2>
+          <div className="flex flex-col lg:flex-row gap-8">
+            <div className="flex-1 bg-white dark:bg-gray-900 p-6 rounded-2xl shadow-md">
+              <h3 className="text-xl font-bold">🧑‍💼 Nguyễn Tuấn Nghĩa</h3>
+              <p className="text-sm mt-3 text-gray-700 dark:text-gray-300 leading-relaxed">
+                NexLoot cam kết không ngừng đổi mới, đặt khách hàng và cộng đồng lên hàng đầu.
+                Tầm nhìn của chúng tôi là trở thành công ty công nghệ hàng đầu Đông Nam Á trong 10 năm tới,
+                đồng hành cùng sự phát triển bền vững và ứng dụng công nghệ vào cuộc sống.
+              </p>
+              <p className="text-xs mt-4 text-right text-gray-500">
+                — Chủ sở hữu & Đồng sáng lập, công ty NexLoot
+              </p>
+            </div>
+            <div className="flex-1 bg-white dark:bg-gray-900 p-6 rounded-2xl shadow-md">
+              <h3 className="text-xl font-bold">🧑‍💼 Trần Đức Anh</h3>
+              <p className="text-sm mt-3 text-gray-700 dark:text-gray-300 leading-relaxed">
+                Chiến lược dài hạn của chúng tôi là xây dựng hệ sinh thái số hiện đại,
+                lấy công nghệ làm nền tảng, đội ngũ nhân sự là cốt lõi, hướng đến hội nhập quốc tế,
+                minh bạch tài chính và nâng cao trải nghiệm người dùng toàn diện.
+              </p>
+              <p className="text-xs mt-4 text-right text-gray-500">
+                — Chủ sở hữu & Đồng sáng lập, công ty NexLoot
+              </p>
+            </div>
+          </div>
+        </div>
+
         {/* Cảm ơn */}
         <div>
           <p>

@@ -35,21 +35,22 @@ export default function SellPage() {
   } = useForm<ProductFormData>({
     resolver: zodResolver(productSchema),
     defaultValues: {
-      title: '',
-      category: '',
-      isPrivate: false,
-      condition: 'brand_new',
-      description: '',
-      specs: [{ key: '', value: '' }],
-      images: [],
-      videoUrl: '',
-      price: 0,
-      enableOffers: false,
-      minOffer: 0,
-      quantity: 1,
-      sku: '',
-      returnPolicy: '',
-    },
+  title: '',
+  category: '',
+  isPrivate: false,
+  condition: 'brand_new',
+  description: '',
+  specs: [{ key: '', value: '' }],
+  images: [],
+  videoUrl: '',
+  price: 0,
+  enableOffers: false,
+  minOffer: 0,
+  quantity: 1,
+  sku: '',
+  returnPolicy: undefined, // ✅ Sửa ở đây
+},
+
   });
 
   const onSubmit: SubmitHandler<ProductFormData> = async (data) => {

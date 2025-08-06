@@ -1,14 +1,11 @@
-// src/app/logout/route.ts
+// ✅ /src/lib/supabase/serverClient.ts
 
-import { NextResponse } from 'next/server'
-import { createServerComponentClient } from '@supabase/auth-helpers-nextjs'
-import { cookies } from 'next/headers'
-import type { Database } from '@/types/supabase'
+import { createClient } from '@supabase/supabase-js';
+import type { Database } from '@/types/supabase';
 
-export async function GET() {
-  const supabase = createServerComponentClient<Database>({ cookies })
-
-  await supabase.auth.signOut()
-
-  return NextResponse.redirect(new URL('/', process.env.NEXT_PUBLIC_SITE_URL))
+export function createServerClient() {
+  return createClient<Database>(
+    process.env.NEXT_PUBLIC_SUPABASE_URL!,
+    process.env.SUPABASE_SERVICE_ROLE_KEY! // ✅ Service role key, chỉ dùng server
+  );
 }

@@ -1,3 +1,4 @@
+
 'use client';
 
 import Link from 'next/link';
@@ -5,7 +6,6 @@ import { usePathname } from 'next/navigation';
 import { useState } from 'react';
 import { Menu, X, ChevronDown, ChevronRight } from 'lucide-react';
 
-// ✅ Thêm kiểu cho link có thể có isNew
 type MainLink = {
   name: string;
   path: string;
@@ -73,8 +73,8 @@ export default function NavLinks() {
         <span className="text-sm font-semibold">MENU</span>
       </div>
 
-      {/* Desktop menu */}
-      <nav className="hidden md:flex justify-center gap-6 font-semibold text-sm py-3 relative">
+      {/* Desktop menu (CĂN TRÁI) */}
+      <nav className="hidden md:flex justify-start gap-6 font-semibold text-sm py-3 relative px-6">
         {/* Danh mục */}
         <div
           className="relative"
@@ -184,4 +184,4 @@ export default function NavLinks() {
       )}
     </div>
   );
-}
+}                

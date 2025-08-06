@@ -21,9 +21,9 @@ export default function Home() {
           </p>
         </header>
 
-        {/* Sản phẩm HOT */}
+        {/* Sản phẩm Mới */}
         <section className="space-y-4">
-          <h2 className="text-2xl font-semibold">🔥 Sản phẩm HOT</h2>
+          <h2 className="text-2xl font-semibold">🔥 Sản phẩm Mới</h2>
           <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
             {["1q.webp", "2.webp", "3.webp"].map((filename, i) => (
               <div key={i} className="border p-4 rounded shadow bg-white dark:bg-gray-900">
@@ -46,7 +46,7 @@ export default function Home() {
 
         {/* Sản phẩm bán chạy */}
         <section className="space-y-4">
-          <h2 className="text-2xl font-semibold">🚀 Sản phẩm bán chạy</h2>
+          <h2 className="text-2xl font-semibold">🚀 Sản phẩm Mua Nhiều</h2>
           <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
             {["4.webp", "5.webp", "6.webp"].map((filename, i) => (
               <div key={i} className="border p-4 rounded shadow bg-white dark:bg-gray-900">
@@ -69,7 +69,7 @@ export default function Home() {
 
         {/* Sản phẩm mua nhiều */}
         <section className="space-y-4">
-          <h2 className="text-2xl font-semibold">💸 Sản phẩm mua nhiều</h2>
+          <h2 className="text-2xl font-semibold">💸 Sản phẩm Khuyến Mãi & Giảm Giá</h2>
           <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
             {["7.webp", "8.webp", "9_1.webp"].map((filename, i) => (
               <div key={i} className="border p-4 rounded shadow bg-white dark:bg-gray-900">
@@ -89,8 +89,6 @@ export default function Home() {
             ))}
           </div>
         </section>
-
-      
 
         {/* Footer mở rộng */}
         <section className="grid grid-cols-1 md:grid-cols-3 gap-6 px-4 pb-16">

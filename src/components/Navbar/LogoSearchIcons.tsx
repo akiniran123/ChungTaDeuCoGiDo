@@ -59,9 +59,9 @@ export default function LogoSearchIcons({ onMenuToggle }: Props) {
   return (
     <>
       <div className="w-full border-b dark:border-gray-700">
-        <div className="max-w-7xl mx-auto px-4 py-3 flex items-center justify-between gap-4">
-          {/* Left: Hamburger + Logo */}
-          <div className="flex items-center gap-3">
+        <div className="w-full px-4 py-3 flex items-center justify-between gap-4">
+          {/* Left side: Logo + Search */}
+          <div className="flex items-center gap-4 flex-1 pl-8">
             <button
               className="sm:hidden text-gray-700 dark:text-gray-300"
               onClick={onMenuToggle}
@@ -77,28 +77,28 @@ export default function LogoSearchIcons({ onMenuToggle }: Props) {
                 className="h-20 w-auto object-contain"
               />
             </Link>
+
+            {/* Search (Desktop only) */}
+            <div className="hidden sm:flex flex-1 max-w-sm relative">
+              <input
+                type="text"
+                value={searchQuery}
+                onChange={(e) => setSearchQuery(e.target.value)}
+                placeholder="Tìm kiếm sản phẩm"
+                className="w-full pl-5 pr-10 py-2 rounded-full border border-gray-300 focus:outline-none bg-gray-100 dark:bg-gray-800 text-sm"
+              />
+              <button
+                onClick={handleSearch}
+                className="absolute right-2 top-1/2 -translate-y-1/2 text-gray-500 hover:text-indigo-600 cursor-pointer"
+                aria-label="Tìm kiếm"
+              >
+                <Search className="w-5 h-5" />
+              </button>
+            </div>
           </div>
 
-          {/* Search (Desktop only) */}
-          <div className="hidden sm:flex flex-1 max-w-xl mx-4 relative">
-            <input
-              type="text"
-              value={searchQuery}
-              onChange={(e) => setSearchQuery(e.target.value)}
-              placeholder="Tìm kiếm sản phẩm"
-              className="w-full pl-5 pr-10 py-2 rounded-full border border-gray-300 focus:outline-none bg-gray-100 dark:bg-gray-800 text-sm"
-            />
-            <button
-              onClick={handleSearch}
-              className="absolute right-2 top-1/2 -translate-y-1/2 text-gray-500 hover:text-indigo-600 cursor-pointer"
-              aria-label="Tìm kiếm"
-            >
-              <Search className="w-5 h-5" />
-            </button>
-          </div>
-
-          {/* Icons & Bắt đầu bán hàng */}
-          <div className="flex items-center gap-3">
+          {/* Right: Icons & Bắt đầu bán hàng */}
+          <div className="flex items-center gap-3 pr-2">
             <button
               onClick={handleStartSelling}
               className="hidden sm:inline-block bg-indigo-600 hover:bg-indigo-700 text-white px-4 py-1.5 text-sm rounded-full font-semibold transition cursor-pointer"

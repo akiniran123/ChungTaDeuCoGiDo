@@ -19,7 +19,7 @@ export function PriceAndOffers({
         </label>
         <input
           type="number"
-          {...register('price')}
+          {...register('price', { valueAsNumber: true })}
           className="w-full border rounded px-3 py-2"
           min={0}
         />
@@ -46,7 +46,7 @@ export function PriceAndOffers({
         <label className="font-medium">Minimum Offer</label>
         <input
           type="number"
-          {...register('minOffer')}
+          {...register('minOffer', { valueAsNumber: true })}
           className="w-full border rounded px-3 py-2"
           min={0}
         />
@@ -62,7 +62,7 @@ export function PriceAndOffers({
         </label>
         <input
           type="number"
-          {...register('quantity')}
+          {...register('quantity', { valueAsNumber: true })}
           className="w-full border rounded px-3 py-2"
           min={1}
         />

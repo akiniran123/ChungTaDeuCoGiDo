@@ -50,7 +50,7 @@ export default function Navbar() {
       </header>
 
       {/* ✅ Spacer to prevent content being hidden behind fixed navbar */}
-      <div className="h-24 sm:h-[104px]" />
+      <div className="h-28 sm:h-[104px]" />
     </>
   );
 }

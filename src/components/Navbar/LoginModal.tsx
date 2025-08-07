@@ -2,18 +2,21 @@
 
 import { useEffect, Fragment } from 'react'
 import { Dialog, Transition } from '@headlessui/react'
+import { XMarkIcon } from '@heroicons/react/24/outline'
 import { createPagesBrowserClient } from '@supabase/auth-helpers-nextjs'
 import { useRouter } from 'next/navigation'
 import LoginForm from './LoginForm'
 import type { Database } from '@/types/supabase'
 
-interface LoginModalProps {
+export default function LoginModal({
+  onClose,
+  onLoginSuccess,
+  redirectTo,
+}: {
   onClose: () => void
   onLoginSuccess?: () => void
   redirectTo?: string
-}
-
-export default function LoginModal({ onClose, onLoginSuccess, redirectTo }: LoginModalProps) {
+}) {
   const supabase = createPagesBrowserClient<Database>()
   const router = useRouter()
 
@@ -62,6 +65,7 @@ export default function LoginModal({ onClose, onLoginSuccess, redirectTo }: Logi
             >
               <Dialog.Panel
                 className="
+                  relative
                   w-full 
                   max-w-md 
                   sm:max-w-lg 
@@ -79,12 +83,24 @@ export default function LoginModal({ onClose, onLoginSuccess, redirectTo }: Logi
                   overflow-y-auto
                 "
               >
+                {/* Close button */}
+                <button
+                  onClick={onClose}
+                  className="absolute top-4 right-4 text-gray-400 hover:text-gray-600 dark:hover:text-gray-300 transition"
+                  aria-label="Close"
+                >
+                  <XMarkIcon className="h-6 w-6" />
+                </button>
+
+                {/* Title */}
                 <Dialog.Title className="text-xl font-semibold text-center text-gray-900 dark:text-white mb-6">
                   Sign in to Jawa.gg
                 </Dialog.Title>
 
+                {/* Login Form */}
                 <LoginForm onLoginSuccess={onLoginSuccess} />
 
+                {/* Cancel fallback */}
                 <button
                   onClick={onClose}
                   className="mt-6 w-full text-sm text-center text-gray-500 hover:underline"

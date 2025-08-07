@@ -1,25 +1,26 @@
 @import "tailwindcss";
 
 :root {
-  --background: #0f0f0f;      /* nền đen nhẹ */
-  --foreground: #ffffff;      /* chữ trắng */
-  --accent: #9333EA;          /* tím nhấn */
-  --primary: #3B82F6;         /* xanh dương nút */
+  --background: #ffffff;
+  --foreground: #171717;
+  --accent: #8b5cf6; /* purple-500/600 */
+  --primary: #3b82f6; /* blue-500 */
   --font-sans: var(--font-geist-sans);
-  --font-mono: var(--font-geist-mono);
 }
 
 body {
   background: var(--background);
   color: var(--foreground);
   font-family: var(--font-sans), Arial, Helvetica, sans-serif;
+  transition: background 0.3s, color 0.3s;
 }
 
-input, button {
-  transition: all 0.2s ease-in-out;
+html.dark {
+  --background: #0f0f0f;
+  --foreground: #f0f0f0;
 }
 
 html,
 body {
-  @apply bg-[#0f0f0f] text-white;
+  @apply bg-white text-black dark:bg-black dark:text-white;
 }

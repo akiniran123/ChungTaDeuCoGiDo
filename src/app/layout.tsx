@@ -1,15 +1,26 @@
-'use client';
+import './globals.css';
+import type { Metadata } from 'next';
+import Navbar from '@/components/Navbar/Navbar';
+import { ThemeProvider } from '@/components/Navbar/ThemeProvider'; // ✅ Import provider đúng
 
-import { ThemeProvider as NextThemesProvider } from 'next-themes';
+export const metadata: Metadata = {
+  title: 'Jawa Clone',
+  description: 'Marketplace for custom PCs',
+};
 
-export function ThemeProvider({ children }: { children: React.ReactNode }) {
+export default function RootLayout({
+  children,
+}: {
+  children: React.ReactNode;
+}) {
   return (
-    <NextThemesProvider
-      attribute="class"
-      defaultTheme="light"
-      enableSystem={false}
-    >
-      {children}
-    </NextThemesProvider>
+    <html lang="en" suppressHydrationWarning>
+      <body className="bg-white text-black">
+        <ThemeProvider> {/* ✅ Dùng bên trong JSX, KHÔNG phải export ở ngoài */}
+          <Navbar />
+          <main>{children}</main>
+        </ThemeProvider>
+      </body>
+    </html>
   );
 }

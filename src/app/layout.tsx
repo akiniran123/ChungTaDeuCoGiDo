@@ -1,9 +1,7 @@
-// app/layout.tsx
-'use client';
+// ❌ Đừng thêm "use client" ở đây
 
-import { ThemeProvider } from 'next-themes';
-import type { Metadata } from 'next';
 import './globals.css';
+import type { Metadata } from 'next';
 import Navbar from '@/components/Navbar/Navbar';
 
 export const metadata: Metadata = {
@@ -11,18 +9,16 @@ export const metadata: Metadata = {
   description: 'Marketplace for custom PCs',
 };
 
-export default function RootLayout({ children }: { children: React.ReactNode }) {
+export default function RootLayout({
+  children,
+}: {
+  children: React.ReactNode;
+}) {
   return (
-    <html lang="en" suppressHydrationWarning>
-      <body>
-        <ThemeProvider
-          attribute="class"
-          defaultTheme="light" // 👈 mặc định light
-          enableSystem={true}
-        >
-          <Navbar />
-          <main className="pt-20">{children}</main>
-        </ThemeProvider>
+    <html lang="en">
+      <body className="bg-white dark:bg-gray-900 text-black dark:text-white">
+        <Navbar />
+        <main>{children}</main>
       </body>
     </html>
   );

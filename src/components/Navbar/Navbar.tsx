@@ -46,6 +46,11 @@ export default function Navbar() {
       <div className="hidden sm:block">
         <NavLinks />
       </div>
+      <main className="pt-24">
+  {/* Nội dung */}
+</main>
+
     </header>
+    
   );
 }

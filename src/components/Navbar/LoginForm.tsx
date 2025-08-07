@@ -1,31 +1,43 @@
 'use client';
 
 import { useState } from 'react';
+import { useForm } from 'react-hook-form';
+import { z } from 'zod';
+import { zodResolver } from '@hookform/resolvers/zod';
 import { FcGoogle } from 'react-icons/fc';
 import { createPagesBrowserClient } from '@supabase/auth-helpers-nextjs';
+import SignUpModal from '@/components/Navbar/SignUpModal';
+import ForgotPasswordModal from '@/components/Navbar/ForgotPasswordModal';
 import type { Database } from '@/types/supabase';
-import SignUpModal from '@/components/SignUpModal';
-import ForgotPasswordModal from '@/components/ForgotPasswordModal';
 
-interface LoginFormProps {
+const loginSchema = z.object({
+  email: z.string().email(),
+  password: z.string().min(6, 'Password must be at least 6 characters'),
+});
+
+type LoginFormSchema = z.infer<typeof loginSchema>;
+
+export default function LoginForm({
+  onLoginSuccess,
+}: {
   onLoginSuccess?: () => void;
-}
-
-export default function LoginForm({ onLoginSuccess }: LoginFormProps) {
+}) {
   const supabase = createPagesBrowserClient<Database>();
-  const [email, setEmail] = useState('');
-  const [password, setPassword] = useState('');
-  const [loading, setLoading] = useState(false);
   const [errorMsg, setErrorMsg] = useState('');
+  const [loading, setLoading] = useState(false);
   const [showSignUpModal, setShowSignUpModal] = useState(false);
   const [showForgotPasswordModal, setShowForgotPasswordModal] = useState(false);
 
-  const handleEmailLogin = async (e: React.FormEvent) => {
-    e.preventDefault();
+  const {
+    register,
+    handleSubmit,
+    formState: { errors },
+  } = useForm<LoginFormSchema>({ resolver: zodResolver(loginSchema) });
+
+  const onSubmit = async (data: LoginFormSchema) => {
     setLoading(true);
     setErrorMsg('');
-
-    const { error } = await supabase.auth.signInWithPassword({ email, password });
+    const { error } = await supabase.auth.signInWithPassword(data);
 
     if (error) {
       setErrorMsg(error.message);
@@ -40,62 +52,53 @@ export default function LoginForm({ onLoginSuccess }: LoginFormProps) {
     setLoading(true);
     const { error } = await supabase.auth.signInWithOAuth({ provider: 'google' });
 
-    if (error) {
-      setErrorMsg(error.message);
-    }
-
+    if (error) setErrorMsg(error.message);
     setLoading(false);
   };
 
   return (
     <>
-      <form onSubmit={handleEmailLogin} className="space-y-4">
-        {errorMsg && (
-          <div className="text-sm text-red-500 text-center">{errorMsg}</div>
-        )}
+      <form onSubmit={handleSubmit(onSubmit)} className="space-y-4">
+        {errorMsg && <p className="text-red-500 text-sm text-center">{errorMsg}</p>}
 
         {/* Email */}
         <div>
-          <label className="block text-sm mb-1 text-gray-700 dark:text-gray-300">Email</label>
+          <label className="block text-sm text-gray-700 dark:text-gray-300 mb-1">Email</label>
           <input
             type="email"
-            value={email}
-            required
-            onChange={(e) => setEmail(e.target.value)}
+            {...register('email')}
             className="w-full px-3 py-2 border rounded-md bg-gray-50 dark:bg-gray-800 dark:border-gray-700 text-sm"
           />
+          {errors.email && <p className="text-red-500 text-xs mt-1">{errors.email.message}</p>}
         </div>
 
         {/* Password */}
         <div>
-          <label className="block text-sm mb-1 text-gray-700 dark:text-gray-300">Password</label>
+          <label className="block text-sm text-gray-700 dark:text-gray-300 mb-1">Password</label>
           <input
             type="password"
-            value={password}
-            required
-            onChange={(e) => setPassword(e.target.value)}
+            {...register('password')}
             className="w-full px-3 py-2 border rounded-md bg-gray-50 dark:bg-gray-800 dark:border-gray-700 text-sm"
           />
+          {errors.password && <p className="text-red-500 text-xs mt-1">{errors.password.message}</p>}
         </div>
 
-        {/* Login button */}
+        {/* Submit */}
         <button
           type="submit"
           disabled={loading}
-          className="w-full bg-indigo-600 hover:bg-indigo-700 text-white py-2 rounded-md text-sm font-medium transition"
+          className="w-full bg-indigo-600 hover:bg-indigo-700 text-white py-2 rounded-md text-sm font-medium"
         >
           {loading ? 'Signing in...' : 'Sign in'}
         </button>
 
         {/* Divider */}
         <div className="relative text-center my-3">
-          <span className="absolute left-0 top-1/2 w-full border-t border-gray-300 dark:border-gray-700"></span>
-          <span className="relative bg-white dark:bg-gray-900 px-2 text-sm text-gray-500">
-            or
-          </span>
+          <span className="absolute left-0 top-1/2 w-full border-t border-gray-300 dark:border-gray-700" />
+          <span className="relative bg-white dark:bg-gray-900 px-2 text-sm text-gray-500">or</span>
         </div>
 
-        {/* Google login */}
+        {/* Google */}
         <button
           type="button"
           onClick={handleGoogleLogin}
@@ -106,7 +109,7 @@ export default function LoginForm({ onLoginSuccess }: LoginFormProps) {
           Continue with Google
         </button>
 
-        {/* Signup & Forgot password links */}
+        {/* Links */}
         <div className="flex justify-between text-sm mt-4">
           <button
             type="button"
@@ -126,9 +129,7 @@ export default function LoginForm({ onLoginSuccess }: LoginFormProps) {
       </form>
 
       {/* Modals */}
-      {showSignUpModal && (
-        <SignUpModal onClose={() => setShowSignUpModal(false)} />
-      )}
+      {showSignUpModal && <SignUpModal onClose={() => setShowSignUpModal(false)} />}
       {showForgotPasswordModal && (
         <ForgotPasswordModal onClose={() => setShowForgotPasswordModal(false)} />
       )}

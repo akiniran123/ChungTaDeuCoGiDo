@@ -1,13 +1,40 @@
 'use client';
 
 import { Dialog, Transition } from '@headlessui/react';
-import { Fragment } from 'react';
+import { Fragment, useState } from 'react';
+import { createPagesBrowserClient } from '@supabase/auth-helpers-nextjs';
+import type { Database } from '@/types/supabase';
 
-interface ForgotPasswordModalProps {
+export default function ForgotPasswordModal({
+  onClose,
+}: {
   onClose: () => void;
-}
+}) {
+  const supabase = createPagesBrowserClient<Database>();
+  const [email, setEmail] = useState('');
+  const [message, setMessage] = useState('');
+  const [error, setError] = useState('');
+  const [loading, setLoading] = useState(false);
 
-export default function ForgotPasswordModal({ onClose }: ForgotPasswordModalProps) {
+  const handleReset = async (e: React.FormEvent) => {
+    e.preventDefault();
+    setError('');
+    setMessage('');
+    setLoading(true);
+
+    const { error } = await supabase.auth.resetPasswordForEmail(email, {
+      redirectTo: `${location.origin}/reset-password`,
+    });
+
+    if (error) {
+      setError(error.message);
+    } else {
+      setMessage('Password reset email sent. Please check your inbox.');
+    }
+
+    setLoading(false);
+  };
+
   return (
     <Transition appear show as={Fragment}>
       <Dialog as="div" className="relative z-50" onClose={onClose}>
@@ -38,12 +65,37 @@ export default function ForgotPasswordModal({ onClose }: ForgotPasswordModalProp
                 <Dialog.Title className="text-lg font-medium text-gray-900 dark:text-white">
                   Forgot Password
                 </Dialog.Title>
-                <p className="text-sm text-gray-500 mt-2">Password reset form goes here...</p>
 
-                <div className="mt-4 text-right">
+                <form onSubmit={handleReset} className="space-y-4 mt-4">
+                  {error && <div className="text-red-500 text-sm">{error}</div>}
+                  {message && <div className="text-green-600 text-sm">{message}</div>}
+
+                  <div>
+                    <label className="block text-sm text-gray-700 dark:text-gray-300 mb-1">
+                      Email
+                    </label>
+                    <input
+                      type="email"
+                      required
+                      value={email}
+                      onChange={(e) => setEmail(e.target.value)}
+                      className="w-full px-3 py-2 border rounded-md bg-gray-50 dark:bg-gray-800 dark:border-gray-700 text-sm"
+                    />
+                  </div>
+
+                  <button
+                    type="submit"
+                    disabled={loading}
+                    className="w-full bg-indigo-600 hover:bg-indigo-700 text-white py-2 rounded-md text-sm font-medium transition"
+                  >
+                    {loading ? 'Sending...' : 'Send Reset Link'}
+                  </button>
+                </form>
+
+                <div className="mt-4 text-center">
                   <button
                     onClick={onClose}
-                    className="text-sm text-indigo-600 hover:underline"
+                    className="text-sm text-gray-500 hover:underline"
                   >
                     Cancel
                   </button>

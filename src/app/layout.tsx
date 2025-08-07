@@ -1,23 +1,15 @@
-import './globals.css';
-import type { Metadata } from 'next';
-import Navbar from '@/components/Navbar/Navbar';
+'use client';
 
-export const metadata: Metadata = {
-  title: 'Jawa Clone',
-  description: 'Marketplace for custom PCs',
-};
+import { ThemeProvider as NextThemesProvider } from 'next-themes';
 
-export default function RootLayout({
-  children,
-}: {
-  children: React.ReactNode;
-}) {
+export function ThemeProvider({ children }: { children: React.ReactNode }) {
   return (
-    <html lang="en">
-      <body className="bg-white text-black">
-        <Navbar />
-        <main>{children}</main>
-      </body>
-    </html>
+    <NextThemesProvider
+      attribute="class"
+      defaultTheme="light"
+      enableSystem={false}
+    >
+      {children}
+    </NextThemesProvider>
   );
 }

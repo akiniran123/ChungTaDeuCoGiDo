@@ -1,15 +1,12 @@
-export default {
-  // tailwind.config.ts
-
-  content: [/* ... */],
-
+module.exports = {
+  darkMode: 'class', // bắt buộc phải có
+  content: [
+    './app/**/*.{ts,tsx}',
+    './components/**/*.{ts,tsx}',
+    './pages/**/*.{ts,tsx}',
+  ],
   theme: {
-  extend: {
-    fontFamily: {
-      sans: ['Inter', 'sans-serif'],
-    },
+    extend: {},
   },
-}
-,
   plugins: [],
 };

@@ -1,6 +1,6 @@
 'use client'
 
-import { useEffect, useState } from 'react'
+import { useEffect, Fragment } from 'react'
 import { Dialog, Transition } from '@headlessui/react'
 import { createPagesBrowserClient } from '@supabase/auth-helpers-nextjs'
 import { useRouter } from 'next/navigation'
@@ -16,14 +16,12 @@ interface LoginModalProps {
 export default function LoginModal({ onClose, onLoginSuccess, redirectTo }: LoginModalProps) {
   const supabase = createPagesBrowserClient<Database>()
   const router = useRouter()
-  const [isOpen, setIsOpen] = useState(true)
 
   useEffect(() => {
     const {
       data: { subscription },
     } = supabase.auth.onAuthStateChange((event, session) => {
       if (event === 'SIGNED_IN' && session?.user) {
-        setIsOpen(false)
         onClose()
         onLoginSuccess?.()
         if (redirectTo) {
@@ -36,40 +34,66 @@ export default function LoginModal({ onClose, onLoginSuccess, redirectTo }: Logi
   }, [supabase, onClose, onLoginSuccess, redirectTo, router])
 
   return (
-    <Transition show={isOpen} appear>
-      <Dialog
-        as="div"
-        className="fixed inset-0 z-50 overflow-y-auto"
-        onClose={() => {
-          setIsOpen(false)
-          onClose()
-        }}
-      >
-        <div className="min-h-screen px-4 text-center bg-black/40 flex items-center justify-center h-dvh overscroll-none touch-none">
-          <Transition.Child
-            as="div"
-            enter="transition-opacity ease-out duration-300"
-            enterFrom="opacity-0 scale-95"
-            enterTo="opacity-100 scale-100"
-            leave="transition-opacity ease-in duration-200"
-            leaveFrom="opacity-100 scale-100"
-            leaveTo="opacity-0 scale-95"
-          >
-            <Dialog.Panel className="w-full max-w-[24rem] sm:max-w-[26rem] md:max-w-[28rem] transform overflow-hidden rounded-lg bg-white dark:bg-gray-900 p-6 text-left align-middle shadow-xl transition-all max-h-[90vh] overflow-y-auto">
-              <Dialog.Title className="text-xl font-semibold mb-4 text-center text-gray-800 dark:text-gray-100">
-                Sign in to Jawa.gg
-              </Dialog.Title>
+    <Transition appear show as={Fragment}>
+      <Dialog as="div" className="relative z-50" onClose={onClose}>
+        {/* Overlay */}
+        <Transition.Child
+          as={Fragment}
+          enter="ease-out duration-300"
+          enterFrom="opacity-0"
+          enterTo="opacity-100"
+          leave="ease-in duration-200"
+          leaveFrom="opacity-100"
+          leaveTo="opacity-0"
+        >
+          <div className="fixed inset-0 bg-black bg-opacity-40 backdrop-blur-sm" />
+        </Transition.Child>
 
-              <LoginForm onLoginSuccess={onLoginSuccess} />
-
-              <button
-                onClick={onClose}
-                className="mt-4 w-full text-sm text-center text-gray-500 hover:underline"
+        <div className="fixed inset-0 overflow-y-auto">
+          <div className="flex min-h-full items-center justify-center px-4 py-8">
+            <Transition.Child
+              as={Fragment}
+              enter="ease-out duration-300"
+              enterFrom="opacity-0 scale-95"
+              enterTo="opacity-100 scale-100"
+              leave="ease-in duration-200"
+              leaveFrom="opacity-100 scale-100"
+              leaveTo="opacity-0 scale-95"
+            >
+              <Dialog.Panel
+                className="
+                  w-full 
+                  max-w-md 
+                  sm:max-w-lg 
+                  md:max-w-xl 
+                  lg:max-w-2xl
+                  transform 
+                  overflow-hidden 
+                  rounded-xl 
+                  bg-white 
+                  dark:bg-gray-900 
+                  p-8 
+                  shadow-2xl 
+                  transition-all 
+                  max-h-[90vh] 
+                  overflow-y-auto
+                "
               >
-                Cancel
-              </button>
-            </Dialog.Panel>
-          </Transition.Child>
+                <Dialog.Title className="text-xl font-semibold text-center text-gray-900 dark:text-white mb-6">
+                  Sign in to Jawa.gg
+                </Dialog.Title>
+
+                <LoginForm onLoginSuccess={onLoginSuccess} />
+
+                <button
+                  onClick={onClose}
+                  className="mt-6 w-full text-sm text-center text-gray-500 hover:underline"
+                >
+                  Cancel
+                </button>
+              </Dialog.Panel>
+            </Transition.Child>
+          </div>
         </div>
       </Dialog>
     </Transition>

@@ -55,7 +55,7 @@ export default function LoginModal({ onClose, onLoginSuccess, redirectTo }: Logi
             leaveFrom="opacity-100 scale-100"
             leaveTo="opacity-0 scale-95"
           >
-            <Dialog.Panel className="w-full max-w-[18rem] sm:max-w-[20rem] md:max-w-[22rem] transform overflow-hidden rounded-lg bg-white dark:bg-gray-900 p-6 text-left align-middle shadow-xl transition-all max-h-[90vh] overflow-y-auto">
+            <Dialog.Panel className="w-full max-w-[24rem] sm:max-w-[26rem] md:max-w-[28rem] transform overflow-hidden rounded-lg bg-white dark:bg-gray-900 p-6 text-left align-middle shadow-xl transition-all max-h-[90vh] overflow-y-auto">
               <Dialog.Title className="text-xl font-semibold mb-4 text-center text-gray-800 dark:text-gray-100">
                 Sign in to Jawa.gg
               </Dialog.Title>

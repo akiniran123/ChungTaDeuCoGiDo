@@ -53,9 +53,9 @@ export default function PartListFlex() {
 
   return (
     <div className="max-w-7xl mx-auto px-4 py-8">
-      <div className="overflow-x-auto rounded-lg border border-gray-300 shadow-sm bg-white">
+      <div className="overflow-x-auto rounded-lg shadow-sm bg-white">
         {/* Header */}
-        <div className="hidden md:flex bg-white rounded-t-lg select-none font-semibold text-xs uppercase tracking-widest text-gray-700 border-b border-gray-300">
+        <div className="hidden md:flex bg-white rounded-t-lg select-none text-[14px] font-medium uppercase tracking-wide text-gray-700 border-b border-transparent">
           <div className="w-48 px-5 py-3">Category</div>
           <div className="flex-1 px-5 py-3">Part Name</div>
           <div className="w-36 px-5 py-3">Store</div>
@@ -71,9 +71,9 @@ export default function PartListFlex() {
             return (
               <div
                 key={part.id}
-                className="flex bg-white border-b border-gray-300 hover:bg-gray-50 transition cursor-pointer"
+                className="flex bg-white hover:bg-gray-50 transition cursor-pointer border-b border-transparent"
               >
-                <div className="w-48 px-5 py-4 font-semibold bg-white flex items-center whitespace-nowrap text-gray-900">
+                <div className="w-48 px-5 py-4 font-medium flex items-center whitespace-nowrap text-gray-900">
                   {part.category}
                 </div>
                 <div
@@ -96,7 +96,7 @@ export default function PartListFlex() {
                 <div className="w-36 px-5 py-4 truncate flex items-center text-gray-700">
                   {part.store ?? '-'}
                 </div>
-                <div className="w-24 px-5 py-4 text-right font-semibold flex items-center justify-end text-gray-900">
+                <div className="w-24 px-5 py-4 text-right font-medium flex items-center justify-end text-gray-900">
                   ${part.price.toFixed(2)}
                 </div>
                 <div className="w-24 px-5 py-4 text-center flex items-center justify-center">
@@ -147,7 +147,7 @@ export default function PartListFlex() {
           return (
             <div
               key={category}
-              className="flex bg-white border-b border-gray-300 hover:bg-gray-50 cursor-pointer rounded-none last:rounded-b-lg"
+              className="flex bg-white hover:bg-gray-50 cursor-pointer rounded-none last:rounded-b-lg border-b border-transparent"
               role="button"
               tabIndex={0}
               onClick={() => handleAddPart(category)}
@@ -155,7 +155,7 @@ export default function PartListFlex() {
                 if (e.key === 'Enter' || e.key === ' ') handleAddPart(category);
               }}
             >
-              <div className="w-48 px-5 py-5 font-semibold flex items-center text-gray-700 whitespace-nowrap">
+              <div className="w-48 px-5 py-5 font-medium flex items-center text-gray-700 whitespace-nowrap">
                 {category}
               </div>
               <div className="flex-1 px-5 py-5 flex items-center justify-center">
@@ -175,7 +175,7 @@ export default function PartListFlex() {
         })}
 
         {/* Tổng tiền */}
-        <div className="flex bg-white font-semibold text-gray-900 rounded-b-lg border-t border-gray-300 shadow-inner">
+        <div className="flex bg-white font-medium text-gray-900 rounded-b-lg border-t border-transparent shadow-inner">
           <div className="w-48 px-5 py-4">Total</div>
           <div className="flex-1 px-5 py-4"></div>
           <div className="w-36 px-5 py-4"></div>

@@ -39,7 +39,6 @@ export default function NavLinks({ onLinkClick }: NavLinksProps) {
   const [isMobile, setIsMobile] = useState(false);
   const moreRef = useRef<HTMLDivElement>(null);
 
-  // Detect screen size for responsive behavior
   useEffect(() => {
     function handleResize() {
       setIsMobile(window.innerWidth < 768);
@@ -52,7 +51,6 @@ export default function NavLinks({ onLinkClick }: NavLinksProps) {
     return () => window.removeEventListener('resize', handleResize);
   }, []);
 
-  // Close dropdown if clicked outside
   useEffect(() => {
     function handleClickOutside(event: MouseEvent) {
       if (moreRef.current && !moreRef.current.contains(event.target as Node)) {
@@ -65,7 +63,6 @@ export default function NavLinks({ onLinkClick }: NavLinksProps) {
     return () => document.removeEventListener('mousedown', handleClickOutside);
   }, [moreOpen]);
 
-  // Keyboard navigation for dropdown (ESC to close)
   useEffect(() => {
     function handleKeyDown(e: KeyboardEvent) {
       if (e.key === 'Escape') {
@@ -84,14 +81,13 @@ export default function NavLinks({ onLinkClick }: NavLinksProps) {
     setMoreOpen(false);
   };
 
-  // Check active link by startsWith pathname, for parent and subpaths
   function isActiveLink(path: string) {
     if (path === '/') return pathname === '/';
     return pathname.startsWith(path);
   }
 
   return (
-    <div className="border-t dark:border-gray-700">
+    <div>
       {/* Mobile toggle */}
       <div className="max-w-7xl mx-auto px-4 py-3 flex justify-between items-center md:hidden">
         <button
@@ -132,7 +128,6 @@ export default function NavLinks({ onLinkClick }: NavLinksProps) {
               ) : (
                 name
               )}
-              {/* Underline hiệu ứng đã chỉnh sửa */}
               <span
                 className={`absolute bottom-0 left-0 h-[2px] bg-blue-500 transition-all duration-300
                   ${active ? 'w-full' : 'w-0 group-hover:w-full'}
@@ -154,7 +149,6 @@ export default function NavLinks({ onLinkClick }: NavLinksProps) {
               }
               if (e.key === 'ArrowDown') {
                 e.preventDefault();
-                // Focus first item in dropdown
                 const firstLink = moreRef.current?.querySelector<HTMLAnchorElement>('a');
                 firstLink?.focus();
               }
@@ -170,7 +164,6 @@ export default function NavLinks({ onLinkClick }: NavLinksProps) {
               MORE <ChevronDown className="w-4 h-4" />
             </button>
 
-            {/* Dropdown menu */}
             <div
               id="more-menu"
               role="menu"

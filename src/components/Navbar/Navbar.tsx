@@ -14,7 +14,7 @@ export default function Navbar() {
 
   return (
     <>
-      <header className="fixed top-0 left-0 w-full z-50 bg-white dark:bg-black border-b shadow-sm">
+      <header className="fixed top-0 left-0 w-full z-50 bg-white border-b shadow-sm">
         <TopBar />
         <LogoSearchIcons onMenuToggle={toggleMenu} />
 
@@ -27,12 +27,12 @@ export default function Navbar() {
               animate={{ x: 0 }}
               exit={{ x: '-100%' }}
               transition={{ duration: 0.25 }}
-              className="sm:hidden fixed top-0 left-0 h-screen w-full bg-white dark:bg-black z-50 overflow-y-auto"
+              className="sm:hidden fixed top-0 left-0 h-screen w-full bg-white z-50 overflow-y-auto"
             >
               <div className="p-4 flex justify-end">
                 <button
                   onClick={closeMenu}
-                  className="text-2xl text-gray-700 dark:text-gray-300"
+                  className="text-2xl text-gray-700"
                   aria-label="Close menu"
                 >
                   ✕

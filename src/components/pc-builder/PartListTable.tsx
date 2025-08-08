@@ -28,7 +28,7 @@ const categories = [
   'Operating System',
 ];
 
-// ... phần import và type giống như trước
+// ... import + types vẫn giữ nguyên
 
 export default function PartListFlex() {
   const [parts, setParts] = useState<Part[]>([]);
@@ -66,12 +66,12 @@ export default function PartListFlex() {
         }}
       >
         {/* Header */}
-        {/* ... giữ nguyên phần Header như code trước */}
+        {/* giữ nguyên header như trước */}
 
         {categories.map((category) => {
           const part = parts.find((p) => p.category === category);
           if (part) {
-            // ... giữ nguyên render phần có part như code trước
+            // render part đã chọn như trước
             return (
               <div
                 key={part.id}
@@ -83,7 +83,7 @@ export default function PartListFlex() {
                   backgroundColor: 'white',
                 }}
               >
-                {/* ... phần hiển thị part như trước */}
+                {/* phần hiển thị part giữ nguyên */}
               </div>
             );
           }
@@ -91,17 +91,9 @@ export default function PartListFlex() {
           return (
             <div
               key={category}
-              role="button"
-              tabIndex={0}
-              onClick={() => handleAddPart(category)}
-              onKeyDown={(e) => {
-                if (e.key === 'Enter' || e.key === ' ') handleAddPart(category);
-              }}
+              className="flex items-start"
               style={{
-                display: 'flex',
-                alignItems: 'flex-start',
                 backgroundColor: 'white',
-                cursor: 'pointer',
                 borderTop: '1px solid #dfe3e8',
                 padding: '20px',
                 userSelect: 'none',
@@ -126,11 +118,11 @@ export default function PartListFlex() {
                   display: 'flex',
                   flexDirection: 'column',
                   justifyContent: 'flex-start',
-                  paddingLeft: 0,
                 }}
               >
                 <button
                   type="button"
+                  onClick={() => handleAddPart(category)}
                   style={{
                     border: '1px solid #0071e3',
                     color: '#0071e3',
@@ -150,16 +142,16 @@ export default function PartListFlex() {
                   + Add a part
                 </button>
               </div>
-              <div style={{ width: 160 }}></div>
-              <div style={{ width: 110 }}></div>
-              <div style={{ width: 110 }}></div>
-              <div style={{ width: 130 }}></div>
+              <div style={{ width: 160 }} />
+              <div style={{ width: 110 }} />
+              <div style={{ width: 110 }} />
+              <div style={{ width: 130 }} />
             </div>
           );
         })}
 
-        {/* Tổng tiền */}
-        {/* ... giữ nguyên phần tổng tiền như code trước */}
+        {/* Total */}
+        {/* giữ nguyên phần tổng tiền */}
       </div>
     </div>
   );

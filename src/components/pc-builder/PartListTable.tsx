@@ -52,21 +52,51 @@ export default function PartListFlex() {
 
   return (
     <div
-      className="max-w-7xl mx-auto px-4 py-8 font-sans"
+      className="max-w-7xl mx-auto px-4 py-8"
       style={{
         fontFamily:
-          "'Inter', ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif",
+          "'Helvetica Neue', Arial, sans-serif",
+        fontSize: 14,
+        color: '#222',
       }}
     >
-      <div className="overflow-x-auto rounded-lg shadow-sm bg-white">
+      <div
+        className="overflow-x-auto rounded-md"
+        style={{
+          border: '1px solid #dfe3e8',
+          backgroundColor: 'white',
+        }}
+      >
         {/* Header */}
-        <div className="hidden md:flex bg-gray-50 rounded-t-lg select-none text-[14px] font-semibold uppercase tracking-wide text-gray-600 leading-6">
-          <div className="w-48 px-5 py-3">Category</div>
-          <div className="flex-1 px-5 py-3">Part Name</div>
-          <div className="w-36 px-5 py-3">Store</div>
-          <div className="w-24 px-5 py-3 text-right">Price</div>
-          <div className="w-24 px-5 py-3 text-center">Status</div>
-          <div className="w-28 px-5 py-3 text-center">Actions</div>
+        <div
+          className="hidden md:flex select-none"
+          style={{
+            backgroundColor: '#f6f8fa',
+            fontWeight: 600,
+            textTransform: 'uppercase',
+            letterSpacing: '0.06em',
+            color: '#6b6b6b',
+            userSelect: 'none',
+          }}
+        >
+          <div style={{ width: 190, padding: '14px 20px' }}>Category</div>
+          <div style={{ flex: 1, padding: '14px 20px' }}>Part Name</div>
+          <div style={{ width: 160, padding: '14px 20px' }}>Store</div>
+          <div
+            style={{ width: 110, padding: '14px 20px', textAlign: 'right', fontVariantNumeric: 'tabular-nums' }}
+          >
+            Price
+          </div>
+          <div
+            style={{ width: 110, padding: '14px 20px', textAlign: 'center' }}
+          >
+            Status
+          </div>
+          <div
+            style={{ width: 130, padding: '14px 20px', textAlign: 'center' }}
+          >
+            Actions
+          </div>
         </div>
 
         {/* Rows */}
@@ -76,14 +106,34 @@ export default function PartListFlex() {
             return (
               <div
                 key={part.id}
-                className="flex bg-white hover:bg-gray-50 transition cursor-pointer"
-                style={{ lineHeight: 1.5 }}
+                className="flex cursor-pointer"
+                style={{
+                  borderTop: '1px solid #dfe3e8',
+                  padding: '14px 20px',
+                  alignItems: 'center',
+                  backgroundColor: 'white',
+                }}
               >
-                <div className="w-48 px-5 py-4 font-medium flex items-center whitespace-nowrap text-gray-900 text-[14px]">
+                <div
+                  style={{
+                    width: 190,
+                    whiteSpace: 'nowrap',
+                    overflow: 'hidden',
+                    textOverflow: 'ellipsis',
+                    fontWeight: 600,
+                    color: '#222',
+                  }}
+                >
                   {part.category}
                 </div>
                 <div
-                  className="flex-1 px-5 py-4 flex items-center text-blue-600 hover:underline truncate cursor-pointer text-[14px]"
+                  style={{
+                    flex: 1,
+                    color: '#0071e3',
+                    overflow: 'hidden',
+                    textOverflow: 'ellipsis',
+                    whiteSpace: 'nowrap',
+                  }}
                   title={part.name}
                 >
                   {part.url ? (
@@ -91,7 +141,9 @@ export default function PartListFlex() {
                       href={part.url}
                       target="_blank"
                       rel="noopener noreferrer"
-                      className="truncate"
+                      style={{ color: '#0071e3', textDecoration: 'none' }}
+                      onMouseEnter={(e) => (e.currentTarget.style.textDecoration = 'underline')}
+                      onMouseLeave={(e) => (e.currentTarget.style.textDecoration = 'none')}
                     >
                       {part.name}
                     </a>
@@ -99,52 +151,110 @@ export default function PartListFlex() {
                     part.name
                   )}
                 </div>
-                <div className="w-36 px-5 py-4 truncate flex items-center text-gray-700 text-[14px]">
+                <div
+                  style={{
+                    width: 160,
+                    color: '#444',
+                    whiteSpace: 'nowrap',
+                    overflow: 'hidden',
+                    textOverflow: 'ellipsis',
+                  }}
+                >
                   {part.store ?? '-'}
                 </div>
-                <div className="w-24 px-5 py-4 text-right font-medium flex items-center justify-end text-gray-900 text-[14px]">
+                <div
+                  style={{
+                    width: 110,
+                    textAlign: 'right',
+                    fontVariantNumeric: 'tabular-nums',
+                    fontFamily: 'monospace',
+                    fontWeight: 600,
+                    color: '#222',
+                    whiteSpace: 'nowrap',
+                  }}
+                >
                   ${part.price.toFixed(2)}
                 </div>
-                <div className="w-24 px-5 py-4 text-center flex items-center justify-center">
+                <div
+                  style={{
+                    width: 110,
+                    textAlign: 'center',
+                  }}
+                >
                   <span
-                    className={`inline-block px-3 py-1 rounded-full font-semibold ${
-                      part.status === 'In Stock'
-                        ? 'bg-green-100 text-green-700 text-xs'
-                        : part.status === 'Out of Stock'
-                        ? 'bg-red-100 text-red-700 text-xs'
-                        : 'bg-gray-100 text-gray-700 text-xs'
-                    }`}
-                    style={{ lineHeight: 1.2 }}
+                    style={{
+                      backgroundColor:
+                        part.status === 'In Stock'
+                          ? '#dbf3db'
+                          : part.status === 'Out of Stock'
+                          ? '#f7d7d7'
+                          : '#e8e8e8',
+                      color:
+                        part.status === 'In Stock'
+                          ? '#2f7f2f'
+                          : part.status === 'Out of Stock'
+                          ? '#a33a3a'
+                          : '#777777',
+                      borderRadius: 12,
+                      padding: '2px 8px',
+                      fontWeight: 500,
+                      fontSize: 12,
+                      display: 'inline-block',
+                      userSelect: 'none',
+                    }}
                   >
                     {part.status ?? 'Unknown'}
                   </span>
                 </div>
-                <div className="w-28 px-5 py-4 flex items-center justify-center space-x-4">
+                <div
+                  style={{
+                    width: 130,
+                    textAlign: 'center',
+                    display: 'flex',
+                    justifyContent: 'center',
+                    gap: 20,
+                  }}
+                >
                   <button
                     onClick={() => alert('Edit feature coming soon!')}
                     aria-label="Edit Part"
-                    className="p-1 rounded hover:bg-blue-50 transition focus:outline-none focus:ring-2 focus:ring-blue-400 focus:ring-offset-1"
+                    style={{
+                      padding: 4,
+                      borderRadius: 4,
+                      backgroundColor: 'transparent',
+                      border: 'none',
+                      cursor: 'pointer',
+                      color: '#0071e3',
+                    }}
+                    onMouseEnter={(e) => (e.currentTarget.style.backgroundColor = '#e6f0ff')}
+                    onMouseLeave={(e) => (e.currentTarget.style.backgroundColor = 'transparent')}
                   >
-                    <PencilSquareIcon className="w-5 h-5 text-blue-600" />
+                    <PencilSquareIcon className="w-5 h-5" />
                   </button>
                   <button
                     onClick={() => handleRemovePart(part.id)}
                     aria-label="Remove Part"
-                    className="p-1 rounded hover:bg-red-50 transition focus:outline-none focus:ring-2 focus:ring-red-400 focus:ring-offset-1"
+                    style={{
+                      padding: 4,
+                      borderRadius: 4,
+                      backgroundColor: 'transparent',
+                      border: 'none',
+                      cursor: 'pointer',
+                      color: '#d33',
+                    }}
+                    onMouseEnter={(e) => (e.currentTarget.style.backgroundColor = '#ffe6e6')}
+                    onMouseLeave={(e) => (e.currentTarget.style.backgroundColor = 'transparent')}
                   >
                     <svg
                       xmlns="http://www.w3.org/2000/svg"
-                      className="w-5 h-5 text-red-600"
+                      className="w-5 h-5"
                       fill="none"
                       viewBox="0 0 24 24"
                       stroke="currentColor"
                       strokeWidth={2}
+                      style={{ strokeLinecap: 'round', strokeLinejoin: 'round' }}
                     >
-                      <path
-                        strokeLinecap="round"
-                        strokeLinejoin="round"
-                        d="M6 18L18 6M6 6l12 12"
-                      />
+                      <path d="M6 18L18 6M6 6l12 12" />
                     </svg>
                   </button>
                 </div>
@@ -154,45 +264,96 @@ export default function PartListFlex() {
           return (
             <div
               key={category}
-              className="flex bg-white hover:bg-gray-50 cursor-pointer rounded-none last:rounded-b-lg"
               role="button"
               tabIndex={0}
               onClick={() => handleAddPart(category)}
               onKeyDown={(e) => {
                 if (e.key === 'Enter' || e.key === ' ') handleAddPart(category);
               }}
+              style={{
+                display: 'flex',
+                alignItems: 'center',
+                backgroundColor: 'white',
+                cursor: 'pointer',
+                borderTop: '1px solid #dfe3e8',
+                padding: '20px',
+                userSelect: 'none',
+              }}
             >
-              <div className="w-48 px-5 py-5 font-medium flex items-center text-gray-700 whitespace-nowrap text-[14px]">
+              <div
+                style={{
+                  width: 190,
+                  fontWeight: 600,
+                  color: '#4a4a4a',
+                  whiteSpace: 'nowrap',
+                  overflow: 'hidden',
+                  textOverflow: 'ellipsis',
+                }}
+              >
                 {category}
               </div>
-              <div className="flex-1 px-5 py-5 flex items-center justify-center">
+              <div
+                style={{
+                  flex: 1,
+                  display: 'flex',
+                  justifyContent: 'center',
+                }}
+              >
                 <button
-                  className="bg-blue-600 text-white text-sm font-semibold px-6 py-2 rounded-md shadow-sm hover:shadow-md transition-shadow focus:outline-none focus:ring-2 focus:ring-blue-500"
                   type="button"
                   style={{
-                    fontFamily:
-                      "'Inter', ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif",
+                    border: '1px solid #0071e3',
+                    color: '#0071e3',
+                    backgroundColor: 'transparent',
+                    borderRadius: 4,
+                    padding: '6px 18px',
+                    fontWeight: 600,
+                    cursor: 'pointer',
+                    userSelect: 'none',
+                    fontSize: 14,
+                    transition: 'background-color 0.2s ease',
                   }}
+                  onMouseEnter={(e) => (e.currentTarget.style.backgroundColor = '#e6f0ff')}
+                  onMouseLeave={(e) => (e.currentTarget.style.backgroundColor = 'transparent')}
                 >
                   + Add a part
                 </button>
               </div>
-              <div className="w-36 px-5 py-5"></div>
-              <div className="w-24 px-5 py-5"></div>
-              <div className="w-24 px-5 py-5"></div>
-              <div className="w-28 px-5 py-5"></div>
+              <div style={{ width: 160 }}></div>
+              <div style={{ width: 110 }}></div>
+              <div style={{ width: 110 }}></div>
+              <div style={{ width: 130 }}></div>
             </div>
           );
         })}
 
-        {/* Tổng tiền */}
-        <div className="flex bg-white font-semibold text-gray-900 rounded-b-lg shadow-inner border-t border-transparent">
-          <div className="w-48 px-5 py-4 text-[14px]">Total</div>
-          <div className="flex-1 px-5 py-4"></div>
-          <div className="w-36 px-5 py-4"></div>
-          <div className="w-24 px-5 py-4 text-right text-[14px]">${totalPrice.toFixed(2)}</div>
-          <div className="w-24 px-5 py-4"></div>
-          <div className="w-28 px-5 py-4"></div>
+        {/* Total */}
+        <div
+          style={{
+            display: 'flex',
+            backgroundColor: 'white',
+            fontWeight: 700,
+            color: '#222',
+            padding: '14px 20px',
+            borderTop: '1px solid #dfe3e8',
+            userSelect: 'none',
+          }}
+        >
+          <div style={{ width: 190 }}>Total</div>
+          <div style={{ flex: 1 }}></div>
+          <div style={{ width: 160 }}></div>
+          <div
+            style={{
+              width: 110,
+              textAlign: 'right',
+              fontFamily: 'monospace',
+              fontVariantNumeric: 'tabular-nums',
+            }}
+          >
+            ${totalPrice.toFixed(2)}
+          </div>
+          <div style={{ width: 110 }}></div>
+          <div style={{ width: 130 }}></div>
         </div>
       </div>
     </div>

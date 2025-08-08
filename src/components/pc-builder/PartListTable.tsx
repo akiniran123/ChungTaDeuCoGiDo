@@ -54,15 +54,15 @@ export default function PartListFlex() {
 
   return (
     <div className="max-w-7xl mx-auto px-4 py-8">
-      <div className="overflow-x-auto rounded-md border border-gray-300 shadow-sm bg-white">
+      <div className="overflow-x-auto rounded-lg border border-gray-300 shadow-sm bg-white">
         {/* Header */}
-        <div className="hidden md:flex bg-white rounded-t-md select-none font-semibold text-xs uppercase tracking-wider text-gray-600 border-b border-gray-300">
-          <div className="w-48 px-4 py-3 border-r border-gray-300">Category</div>
-          <div className="flex-1 px-4 py-3 border-r border-gray-300">Part Name</div>
-          <div className="w-36 px-4 py-3 border-r border-gray-300">Store</div>
-          <div className="w-24 px-4 py-3 border-r border-gray-300 text-right">Price</div>
-          <div className="w-24 px-4 py-3 border-r border-gray-300 text-center">Status</div>
-          <div className="w-28 px-4 py-3 text-center">Actions</div>
+        <div className="hidden md:flex bg-white rounded-t-lg select-none font-semibold text-xs uppercase tracking-widest text-gray-700 border-b border-gray-300">
+          <div className="w-48 px-5 py-3 border-r border-gray-300">Category</div>
+          <div className="flex-1 px-5 py-3 border-r border-gray-300">Part Name</div>
+          <div className="w-36 px-5 py-3 border-r border-gray-300">Store</div>
+          <div className="w-24 px-5 py-3 border-r border-gray-300 text-right">Price</div>
+          <div className="w-24 px-5 py-3 border-r border-gray-300 text-center">Status</div>
+          <div className="w-28 px-5 py-3 text-center">Actions</div>
         </div>
 
         {/* Rows */}
@@ -74,11 +74,11 @@ export default function PartListFlex() {
                 key={part.id}
                 className="flex bg-white border-b border-gray-300 hover:bg-gray-50 transition cursor-pointer"
               >
-                <div className="w-48 px-4 py-3 font-semibold bg-white border-r border-gray-300 flex items-center whitespace-nowrap text-gray-800">
+                <div className="w-48 px-5 py-4 font-semibold bg-white border-r border-gray-300 flex items-center whitespace-nowrap text-gray-900">
                   {part.category}
                 </div>
                 <div
-                  className="flex-1 px-4 py-3 border-r border-gray-300 flex items-center text-blue-600 hover:underline truncate cursor-pointer"
+                  className="flex-1 px-5 py-4 border-r border-gray-300 flex items-center text-blue-600 hover:underline truncate cursor-pointer"
                   title={part.name}
                 >
                   {part.url ? (
@@ -94,13 +94,13 @@ export default function PartListFlex() {
                     part.name
                   )}
                 </div>
-                <div className="w-36 px-4 py-3 border-r border-gray-300 truncate flex items-center text-gray-700">
+                <div className="w-36 px-5 py-4 border-r border-gray-300 truncate flex items-center text-gray-700">
                   {part.store ?? '-'}
                 </div>
-                <div className="w-24 px-4 py-3 border-r border-gray-300 text-right font-semibold flex items-center justify-end text-gray-800">
+                <div className="w-24 px-5 py-4 border-r border-gray-300 text-right font-semibold flex items-center justify-end text-gray-900">
                   ${part.price.toFixed(2)}
                 </div>
-                <div className="w-24 px-4 py-3 border-r border-gray-300 text-center flex items-center justify-center">
+                <div className="w-24 px-5 py-4 border-r border-gray-300 text-center flex items-center justify-center">
                   <span
                     className={`inline-block px-2 py-0.5 rounded-full text-xs font-semibold ${
                       part.status === 'In Stock'
@@ -113,7 +113,7 @@ export default function PartListFlex() {
                     {part.status ?? 'Unknown'}
                   </span>
                 </div>
-                <div className="w-28 px-4 py-3 flex items-center justify-center space-x-2">
+                <div className="w-28 px-5 py-4 flex items-center justify-center space-x-3">
                   <button
                     onClick={() => alert('Edit feature coming soon!')}
                     aria-label="Edit Part"
@@ -135,7 +135,7 @@ export default function PartListFlex() {
           return (
             <div
               key={category}
-              className="flex bg-white border-b border-gray-300 hover:bg-gray-50 cursor-pointer"
+              className="flex bg-white border-b border-gray-300 hover:bg-gray-50 cursor-pointer rounded-none last:rounded-b-lg"
               onClick={() => handleAddPart(category)}
               role="button"
               tabIndex={0}
@@ -143,31 +143,31 @@ export default function PartListFlex() {
                 if (e.key === 'Enter' || e.key === ' ') handleAddPart(category);
               }}
             >
-              <div className="w-48 px-4 py-4 font-semibold flex items-center border-r border-gray-300 text-gray-700 whitespace-nowrap">
+              <div className="w-48 px-5 py-5 font-semibold flex items-center border-r border-gray-300 text-gray-700 whitespace-nowrap">
                 {category}
               </div>
-              <div className="flex-1 px-4 py-4 flex items-center justify-center text-blue-600 hover:underline">
-                <PlusCircleIcon className="w-5 h-5 mr-1" />
+              <div className="flex-1 px-5 py-5 flex items-center justify-center text-blue-600 hover:underline">
+                <PlusCircleIcon className="w-6 h-6 mr-1" />
                 + Add a part
               </div>
-              <div className="w-36 px-4 py-4 border-l border-gray-300"></div>
-              <div className="w-24 px-4 py-4 border-l border-gray-300"></div>
-              <div className="w-24 px-4 py-4 border-l border-gray-300"></div>
-              <div className="w-28 px-4 py-4 border-l border-gray-300"></div>
+              <div className="w-36 px-5 py-5 border-l border-gray-300"></div>
+              <div className="w-24 px-5 py-5 border-l border-gray-300"></div>
+              <div className="w-24 px-5 py-5 border-l border-gray-300"></div>
+              <div className="w-28 px-5 py-5 border-l border-gray-300"></div>
             </div>
           );
         })}
 
         {/* Tổng tiền */}
-        <div className="flex bg-white font-semibold text-gray-900 rounded-b-md border-t border-gray-300 shadow-inner">
-          <div className="w-48 px-4 py-3 border-r border-gray-300">Total</div>
-          <div className="flex-1 px-4 py-3 border-r border-gray-300"></div>
-          <div className="w-36 px-4 py-3 border-r border-gray-300"></div>
-          <div className="w-24 px-4 py-3 border-r border-gray-300 text-right">
+        <div className="flex bg-white font-semibold text-gray-900 rounded-b-lg border-t border-gray-300 shadow-inner">
+          <div className="w-48 px-5 py-4 border-r border-gray-300">Total</div>
+          <div className="flex-1 px-5 py-4 border-r border-gray-300"></div>
+          <div className="w-36 px-5 py-4 border-r border-gray-300"></div>
+          <div className="w-24 px-5 py-4 border-r border-gray-300 text-right">
             ${totalPrice.toFixed(2)}
           </div>
-          <div className="w-24 px-4 py-3 border-r border-gray-300"></div>
-          <div className="w-28 px-4 py-3"></div>
+          <div className="w-24 px-5 py-4 border-r border-gray-300"></div>
+          <div className="w-28 px-5 py-4"></div>
         </div>
       </div>
     </div>

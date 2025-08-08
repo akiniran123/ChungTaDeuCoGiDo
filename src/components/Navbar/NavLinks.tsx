@@ -18,21 +18,21 @@ type NavLink = {
 
 // Danh sách menu chính
 const mainLinks: NavLink[] = [
-  { name: 'NEW', path: '/new' },
-  { name: 'GAMING PCS', path: '/gaming-pcs' },
-  { name: 'GPUS', path: '/gpus' },
-  { name: 'COMPONENTS', path: '/components' },
-  { name: 'PERIPHERALS', path: '/peripherals' },
-  { name: 'OTHER SYSTEMS', path: '/other-systems' },
-  { name: 'RETRO', path: '/retro', isNew: true },
+  { name: 'NEW', path: '/public/new' },
+  { name: 'GAMING PCS', path: '/public/gaming-pcs' },
+  { name: 'GPUS', path: '/public/gpus' },
+  { name: 'COMPONENTS', path: '/public/components' },
+  { name: 'PERIPHERALS', path: '/public/peripherals' },
+  { name: 'OTHER SYSTEMS', path: '/public/other-systems' },
+  { name: 'RETRO', path: '/public/retro', isNew: true },
 ];
 
 // Danh sách MORE
 const moreLinks: NavLink[] = [
-  { name: 'ABOUT', path: '/about' },
-  { name: 'FAQ', path: '/faq' },
-  { name: 'CONTACT', path: '/contact' },
-  { name: 'SELL', path: '/sell' },
+  { name: 'ABOUT', path: '/public/about' },
+  { name: 'FAQ', path: '/public/faq' },
+  { name: 'CONTACT', path: '/public/contact' },
+  { name: 'SELL', path: '/public/sell' },
 ];
 
 export default function NavLinks({ onLinkClick }: NavLinksProps) {

@@ -132,11 +132,11 @@ export default function NavLinks({ onLinkClick }: NavLinksProps) {
               ) : (
                 name
               )}
-              {/* Underline hiệu ứng */}
+              {/* Underline hiệu ứng đã chỉnh sửa */}
               <span
-                className={`absolute bottom-0 left-1/2 h-[2px] bg-blue-500 transition-all duration-300
-                  ${active ? 'w-full left-0' : 'w-0 group-hover:w-full group-hover:left-0'}
-                  transform -translate-x-1/2`}
+                className={`absolute bottom-0 left-0 h-[2px] bg-blue-500 transition-all duration-300
+                  ${active ? 'w-full' : 'w-0 group-hover:w-full'}
+                `}
               />
             </Link>
           );

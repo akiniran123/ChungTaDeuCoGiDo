@@ -2,6 +2,7 @@
 
 import Link from 'next/link';
 import { useState } from 'react';
+import { PencilSquareIcon, TrashIcon } from '@heroicons/react/24/outline';
 
 type Part = {
   id: string;
@@ -10,7 +11,7 @@ type Part = {
   price: number;
   store?: string;
   url?: string;
-  status?: string;
+  status?: 'In Stock' | 'Out of Stock' | 'Unknown';
 };
 
 const categories = [
@@ -27,11 +28,10 @@ const categories = [
 ];
 
 export default function PartListTable() {
-  const [parts, setParts] = useState<Part[]>([]); // bắt đầu với rỗng
+  const [parts, setParts] = useState<Part[]>([]);
 
   const totalPrice = parts.reduce((sum, p) => sum + p.price, 0);
 
-  // Hàm giả lập thêm part (bạn thay bằng modal chọn món thật)
   function handleAddPart(category: string) {
     const newPart: Part = {
       id: `${category.toLowerCase()}-${Date.now()}`,
@@ -45,37 +45,37 @@ export default function PartListTable() {
     setParts([...parts, newPart]);
   }
 
-  // Xóa món
   function handleRemovePart(id: string) {
     setParts(parts.filter((p) => p.id !== id));
   }
 
   return (
-    <div className="overflow-x-auto border border-gray-300 rounded-lg dark:border-gray-700">
+    <div className="overflow-x-auto border border-gray-300 rounded-lg shadow-sm dark:border-gray-700 dark:shadow-gray-900">
       <table className="min-w-full text-sm text-left text-gray-700 dark:text-gray-300">
-        <thead className="bg-gray-100 dark:bg-gray-800 uppercase text-xs font-semibold tracking-wide">
+        <thead className="bg-gray-50 dark:bg-gray-800 uppercase text-xs font-semibold tracking-wide">
           <tr>
-            <th className="px-5 py-3">Category</th>
-            <th className="px-5 py-3">Part Name</th>
-            <th className="px-5 py-3">Store</th>
-            <th className="px-5 py-3">Price</th>
-            <th className="px-5 py-3">Status</th>
-            <th className="px-5 py-3">Actions</th>
+            <th className="px-6 py-3">Category</th>
+            <th className="px-6 py-3">Part Name</th>
+            <th className="px-6 py-3">Store</th>
+            <th className="px-6 py-3">Price</th>
+            <th className="px-6 py-3">Status</th>
+            <th className="px-6 py-3 text-center">Actions</th>
           </tr>
         </thead>
         <tbody>
           {categories.map((category) => {
             const part = parts.find((p) => p.category === category);
+
             if (part) {
               return (
                 <tr
                   key={part.id}
-                  className="border-t border-gray-200 dark:border-gray-700 hover:bg-gray-50 dark:hover:bg-gray-900"
+                  className="border-t border-gray-200 dark:border-gray-700 hover:bg-gray-100 dark:hover:bg-gray-900"
                 >
-                  <td className="px-5 py-3 font-medium bg-gray-50 dark:bg-gray-900 whitespace-nowrap">
+                  <td className="px-6 py-4 font-medium bg-gray-50 dark:bg-gray-900 whitespace-nowrap">
                     {part.category}
                   </td>
-                  <td className="px-5 py-3 text-blue-600 dark:text-blue-400 hover:underline">
+                  <td className="px-6 py-4 text-blue-600 dark:text-blue-400 hover:underline">
                     {part.url ? (
                       <Link href={part.url} target="_blank" rel="noopener noreferrer">
                         {part.name}
@@ -84,45 +84,51 @@ export default function PartListTable() {
                       part.name
                     )}
                   </td>
-                  <td className="px-5 py-3">{part.store ?? '-'}</td>
-                  <td className="px-5 py-3 font-semibold">${part.price.toFixed(2)}</td>
+                  <td className="px-6 py-4">{part.store ?? '-'}</td>
+                  <td className="px-6 py-4 font-semibold">${part.price.toFixed(2)}</td>
                   <td
-                    className={`px-5 py-3 font-semibold ${
-                      part.status === 'In Stock' ? 'text-green-600' : 'text-red-600'
+                    className={`px-6 py-4 font-semibold ${
+                      part.status === 'In Stock'
+                        ? 'text-green-600'
+                        : part.status === 'Out of Stock'
+                        ? 'text-red-600'
+                        : 'text-gray-500'
                     }`}
                   >
                     {part.status ?? 'Unknown'}
                   </td>
-                  <td className="px-5 py-3">
+                  <td className="px-6 py-4 flex justify-center gap-2">
                     <button
                       onClick={() => alert('Edit feature coming soon!')}
-                      className="mr-2 px-2 py-1 bg-blue-600 text-white rounded text-xs hover:bg-blue-700"
+                      aria-label="Edit Part"
+                      className="p-1 rounded hover:bg-blue-100 dark:hover:bg-blue-900 transition"
                     >
-                      Edit
+                      <PencilSquareIcon className="w-5 h-5 text-blue-600" />
                     </button>
                     <button
                       onClick={() => handleRemovePart(part.id)}
-                      className="px-2 py-1 bg-red-600 text-white rounded text-xs hover:bg-red-700"
+                      aria-label="Remove Part"
+                      className="p-1 rounded hover:bg-red-100 dark:hover:bg-red-900 transition"
                     >
-                      Remove
+                      <TrashIcon className="w-5 h-5 text-red-600" />
                     </button>
                   </td>
                 </tr>
               );
             }
-            // Nếu chưa chọn món trong category thì show nút Add
+
             return (
               <tr
                 key={category}
                 className="border-t border-gray-200 dark:border-gray-700 hover:bg-gray-50 dark:hover:bg-gray-900"
               >
-                <td className="px-5 py-3 font-medium bg-gray-50 dark:bg-gray-900 whitespace-nowrap">
+                <td className="px-6 py-4 font-medium bg-gray-50 dark:bg-gray-900 whitespace-nowrap">
                   {category}
                 </td>
-                <td colSpan={5} className="px-5 py-3 text-center">
+                <td colSpan={5} className="px-6 py-4 text-center">
                   <button
                     onClick={() => handleAddPart(category)}
-                    className="px-3 py-1 text-blue-600 border border-blue-600 rounded hover:bg-blue-50 dark:hover:bg-gray-800"
+                    className="px-4 py-1 text-blue-600 border border-blue-600 rounded hover:bg-blue-50 dark:hover:bg-gray-800 transition"
                   >
                     + Add a part
                   </button>
@@ -130,12 +136,12 @@ export default function PartListTable() {
               </tr>
             );
           })}
-          {/* Tổng giá */}
-          <tr className="bg-gray-200 dark:bg-gray-800 font-semibold text-gray-900 dark:text-gray-100">
-            <td className="px-5 py-3">Total</td>
+
+          <tr className="bg-gray-100 dark:bg-gray-800 font-semibold text-gray-900 dark:text-gray-100">
+            <td className="px-6 py-4">Total</td>
             <td></td>
             <td></td>
-            <td className="px-5 py-3">${totalPrice.toFixed(2)}</td>
+            <td className="px-6 py-4">${totalPrice.toFixed(2)}</td>
             <td></td>
             <td></td>
           </tr>

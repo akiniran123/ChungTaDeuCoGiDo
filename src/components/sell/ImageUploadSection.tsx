@@ -1,97 +1,95 @@
 'use client';
 
-import { Dispatch, SetStateAction, useState } from 'react';
-import { supabase } from '@/lib/supabase/client';
-import type { Control } from 'react-hook-form';
+import { useState } from 'react';
+import type { UseFormSetValue, UseFormWatch } from 'react-hook-form';
+import { ProductFormData } from '@/types/form';
+
+interface ErrorType {
+  message?: string;
+}
 
 interface ImageUploaderSectionProps {
-  setValue: (field: string, value: any, options?: object) => void;
-  watch: (field: string) => File[];
-  error?: any;
+  setValue: UseFormSetValue<ProductFormData>;
+  watch: UseFormWatch<ProductFormData>;
+  error?: ErrorType;
 }
 
 export default function ImageUploaderSection({ setValue, watch, error }: ImageUploaderSectionProps) {
   const [uploading, setUploading] = useState(false);
-  const images = watch('images') || [];
+  const images = watch('images') ?? ([] as File[]);
 
-  async function handleUpload(event: React.ChangeEvent<HTMLInputElement>) {
-    const files = event.target.files;
+  // Tạo preview URLs
+  const previews = images.map((file) => URL.createObjectURL(file));
+
+  // Xử lý upload: chỉ cập nhật mảng File, không upload ngay
+  const handleUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const files = e.target.files;
     if (!files || files.length === 0) return;
 
-    setUploading(true);
-    const uploadedFiles: File[] = [...images];
-    for (const file of files) {
-      // Tạo tên file unique
-      const fileExt = file.name.split('.').pop();
-      const fileName = `${Date.now()}-${Math.random().toString(36).substring(2)}.${fileExt}`;
-      const filePath = `product-images/${fileName}`;
+    const allowedTypes = ['image/jpeg', 'image/png', 'image/webp', 'image/gif'];
+    const maxSize = 1024 * 1024; // 1MB
 
-      const { error: uploadError } = await supabase.storage
-        .from('product-images')
-        .upload(filePath, file, { upsert: false });
+    const validFiles = Array.from(files).filter(
+      (file) => allowedTypes.includes(file.type) && file.size <= maxSize
+    );
 
-      if (uploadError) {
-        alert('Upload image failed: ' + uploadError.message);
-        setUploading(false);
-        return;
-      }
-
-      // Lấy public url
-      const { data: publicUrlData } = supabase.storage
-        .from('product-images')
-        .getPublicUrl(filePath);
-
-      if (!publicUrlData?.publicUrl) {
-        alert('Failed to get public URL for uploaded image.');
-        setUploading(false);
-        return;
-      }
-
-      // Mình đẩy url vào mảng images
-      uploadedFiles.push(new File([file], publicUrlData.publicUrl));
+    if (validFiles.length === 0) {
+      alert('Please upload valid images (JPG, PNG, WEBP, GIF) under 1MB.');
+      return;
     }
 
-    setValue('images', uploadedFiles, { shouldValidate: true });
-    setUploading(false);
-  }
+    // Giới hạn tối đa 10 ảnh
+    const newImages = [...images, ...validFiles].slice(0, 10);
+    setValue('images', newImages, { shouldValidate: true });
+  };
 
-  function handleRemoveImage(index: number) {
+  // Xóa ảnh theo index
+  const handleRemoveImage = (index: number) => {
     const newImages = [...images];
     newImages.splice(index, 1);
     setValue('images', newImages, { shouldValidate: true });
-  }
+  };
 
   return (
-    <div className="space-y-2">
-      <label className="block font-semibold">Upload Images</label>
+    <div className="space-y-4">
+      <label className="block font-semibold">
+        Upload Images <span className="text-red-500">*</span>
+      </label>
+
       <input
         type="file"
+        accept="image/jpeg,image/png,image/webp,image/gif"
         multiple
-        accept="image/*"
         onChange={handleUpload}
         disabled={uploading}
-        className="block mb-2"
+        className="block"
       />
-      {error && <p className="text-red-600 text-sm">{error.message}</p>}
 
-      <div className="flex flex-wrap gap-3">
-        {images.map((img: any, idx: number) => {
-          const src = img instanceof File ? URL.createObjectURL(img) : img;
-          return (
-            <div key={idx} className="relative w-24 h-24 border rounded overflow-hidden">
-              <img src={src} alt={`Uploaded ${idx}`} className="object-cover w-full h-full" />
+      {/* Preview ảnh */}
+      {previews.length > 0 && (
+        <div className="grid grid-cols-2 sm:grid-cols-3 gap-2 mt-2">
+          {previews.map((src, idx) => (
+            <div key={idx} className="relative w-full h-24 border rounded overflow-hidden">
+              <img
+                src={src}
+                alt={`Preview ${idx + 1}`}
+                className="object-cover w-full h-full"
+                loading="lazy"
+              />
               <button
                 type="button"
                 onClick={() => handleRemoveImage(idx)}
                 className="absolute top-1 right-1 bg-black bg-opacity-50 rounded-full w-6 h-6 text-white flex items-center justify-center text-sm"
+                aria-label={`Remove image ${idx + 1}`}
               >
                 &times;
               </button>
             </div>
-          );
-        })}
-      </div>
-      {uploading && <p>Uploading...</p>}
+          ))}
+        </div>
+      )}
+
+      {error?.message && <p className="text-red-600 text-sm">{error.message}</p>}
     </div>
   );
 }

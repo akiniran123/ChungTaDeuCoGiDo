@@ -9,14 +9,12 @@ interface NavLinksProps {
   onLinkClick?: () => void;
 }
 
-// ✅ Khai báo type có isNew là optional
 type NavLink = {
   name: string;
   path: string;
   isNew?: boolean;
 };
 
-// Danh sách menu chính
 const mainLinks: NavLink[] = [
   { name: 'NEW', path: '/public/new' },
   { name: 'GAMING PCS', path: '/public/gaming-pcs' },
@@ -27,12 +25,11 @@ const mainLinks: NavLink[] = [
   { name: 'RETRO', path: '/public/retro', isNew: true },
 ];
 
-// Danh sách MORE
 const moreLinks: NavLink[] = [
   { name: 'ABOUT', path: '/public/about' },
   { name: 'FAQ', path: '/public/faq' },
   { name: 'CONTACT', path: '/public/contact' },
-  { name: 'SELL', path: '/public/sell' },
+  { name: 'SELL', path: '/publics/sell' },
 ];
 
 export default function NavLinks({ onLinkClick }: NavLinksProps) {
@@ -56,33 +53,40 @@ export default function NavLinks({ onLinkClick }: NavLinksProps) {
       </div>
 
       {/* Desktop menu */}
-      <nav className="hidden md:flex justify-center gap-6 font-semibold text-sm py-3 relative">
-        {mainLinks.map(({ name, path, isNew }) => (
-          <Link
-            key={name}
-            href={path}
-            className={`hover:text-indigo-600 transition-colors ${
-              pathname === path ? 'text-indigo-500 underline underline-offset-4' : ''
-            }`}
-          >
-            {isNew ? (
-              <span>
-                {name}
-                <span className="ml-1 px-1 rounded bg-red-500 text-white text-[10px]">NEW</span>
-              </span>
-            ) : (
-              name
-            )}
-          </Link>
-        ))}
+      <nav className="hidden md:flex justify-center gap-6 font-medium text-xs uppercase tracking-wide py-3 relative">
+        {mainLinks.map(({ name, path, isNew }) => {
+          const isActive = pathname === path;
+          return (
+            <Link
+              key={name}
+              href={path}
+              className={`relative group flex items-center transition-colors duration-200 
+                ${isActive ? 'text-white' : 'text-gray-400 hover:text-white'}`}
+            >
+              {isNew ? (
+                <span>
+                  {name}
+                  <span className="ml-1 px-1 rounded bg-red-500 text-white text-[10px]">NEW</span>
+                </span>
+              ) : (
+                name
+              )}
+              {/* Underline hiệu ứng Jawa.gg */}
+              <span
+                className={`absolute bottom-0 left-1/2 h-[2px] bg-blue-500 transition-all duration-300 
+                  ${isActive ? 'w-full left-0' : 'w-0 group-hover:w-full group-hover:left-0'} transform -translate-x-1/2`}
+              />
+            </Link>
+          );
+        })}
 
         {/* Dropdown MORE */}
         <div
-          className="relative"
+          className="relative group"
           onMouseEnter={() => setMoreOpen(true)}
           onMouseLeave={() => setMoreOpen(false)}
         >
-          <div className="flex items-center gap-1 cursor-pointer hover:text-indigo-600">
+          <div className="flex items-center gap-1 cursor-pointer text-gray-400 hover:text-white transition-colors">
             MORE <ChevronDown className="w-4 h-4" />
           </div>
           {moreOpen && (
@@ -92,9 +96,8 @@ export default function NavLinks({ onLinkClick }: NavLinksProps) {
                   key={name}
                   href={path}
                   onClick={() => setMoreOpen(false)}
-                  className={`block px-4 py-2 text-sm hover:bg-gray-100 dark:hover:bg-gray-700 ${
-                    pathname === path ? 'text-indigo-500 font-medium' : ''
-                  }`}
+                  className={`block px-4 py-2 text-sm hover:bg-gray-100 dark:hover:bg-gray-700 transition 
+                    ${pathname === path ? 'text-blue-500 font-medium' : 'text-gray-700 dark:text-gray-300'}`}
                 >
                   {name}
                 </Link>
@@ -113,7 +116,7 @@ export default function NavLinks({ onLinkClick }: NavLinksProps) {
               href={path}
               onClick={handleClick}
               className={`block py-1 ${
-                pathname === path ? 'text-indigo-500 underline underline-offset-4' : ''
+                pathname === path ? 'text-blue-500 underline underline-offset-4' : ''
               }`}
             >
               {isNew ? (

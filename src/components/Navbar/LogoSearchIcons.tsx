@@ -17,7 +17,7 @@ import { supabase } from '@/lib/supabase/client'
 import type { User } from '@supabase/supabase-js'
 
 import ThemeToggle from './ThemeToggle'
-import LoginModal from './LoginModal'
+import LoginModal from '@/components/auth/LoginModal'
 
 interface Props {
   onMenuToggle?: () => void

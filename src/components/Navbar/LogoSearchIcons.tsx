@@ -41,7 +41,7 @@ export default function LogoSearchIcons({ onMenuToggle }: Props) {
 
   const handleStartSelling = () => {
     if (user) {
-      router.push('/sell')
+      router.push('/protected/sell')
     } else {
       setPendingRedirect(true)
       setShowLogin(true)

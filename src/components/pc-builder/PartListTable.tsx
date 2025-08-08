@@ -1,9 +1,7 @@
 'use client';
 
 import { useState } from 'react';
-import {
-  PencilSquareIcon,
-} from '@heroicons/react/24/outline';
+import { PencilSquareIcon } from '@heroicons/react/24/outline';
 
 type Part = {
   id: string;
@@ -261,6 +259,7 @@ export default function PartListFlex() {
               </div>
             );
           }
+          // Khi chưa chọn part
           return (
             <div
               key={category}
@@ -292,11 +291,8 @@ export default function PartListFlex() {
                   flexDirection: 'column',
                   justifyContent: 'center',
                   alignItems: 'flex-start',
-                  gap: 6,
                 }}
               >
-                {/* Giữ khoảng trắng trên nút */}
-                <div style={{ height: 18 }}></div>
                 <button
                   type="button"
                   onClick={() => handleAddPart(category)}
@@ -305,7 +301,9 @@ export default function PartListFlex() {
                     color: '#0071e3',
                     backgroundColor: 'transparent',
                     borderRadius: 4,
-                    padding: '6px 18px',
+                    padding: '0 18px',
+                    height: 38,
+                    lineHeight: '38px',
                     fontWeight: 600,
                     cursor: 'pointer',
                     userSelect: 'none',

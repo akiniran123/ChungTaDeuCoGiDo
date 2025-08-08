@@ -1,12 +1,19 @@
 module.exports = {
-  // darkMode: 'class', // ❌ xóa dòng này
-  content: [
-    './app/**/*.{ts,tsx}',
-    './components/**/*.{ts,tsx}',
-    './pages/**/*.{ts,tsx}',
-  ],
   theme: {
-    extend: {},
+    extend: {
+      colors: {
+        text: {
+          primary: 'var(--color-text-primary)',
+          secondary: 'var(--color-text-secondary)',
+        },
+        bg: {
+          DEFAULT: 'var(--color-bg)',
+        },
+        border: {
+          DEFAULT: 'var(--color-border)',
+        },
+      },
+    },
   },
   plugins: [],
 };

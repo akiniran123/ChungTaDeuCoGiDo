@@ -1,102 +1,97 @@
 'use client';
 
-import { useDropzone } from 'react-dropzone';
-import { ImageIcon, InfoIcon } from 'lucide-react';
-import { useCallback } from 'react';
-import { UseFormSetValue, UseFormWatch } from 'react-hook-form';
-import { ProductFormData } from '@/types/form';
+import { Dispatch, SetStateAction, useState } from 'react';
+import { supabase } from '@/lib/supabase/client';
+import type { Control } from 'react-hook-form';
 
-type Props = {
-  setValue: UseFormSetValue<ProductFormData>;
-  watch: UseFormWatch<ProductFormData>;
-  error?: { message?: string };
-};
+interface ImageUploaderSectionProps {
+  setValue: (field: string, value: any, options?: object) => void;
+  watch: (field: string) => File[];
+  error?: any;
+}
 
-export default function ImageUploaderSection({ setValue, watch, error }: Props) {
-  const images = watch('images');
+export default function ImageUploaderSection({ setValue, watch, error }: ImageUploaderSectionProps) {
+  const [uploading, setUploading] = useState(false);
+  const images = watch('images') || [];
 
-  const onDrop = useCallback(
-    (acceptedFiles: File[]) => {
-      const current = images || [];
-      if (current.length + acceptedFiles.length > 10) return;
+  async function handleUpload(event: React.ChangeEvent<HTMLInputElement>) {
+    const files = event.target.files;
+    if (!files || files.length === 0) return;
 
-      setValue('images', [...current, ...acceptedFiles], {
-        shouldValidate: true,
-      });
-    },
-    [images, setValue]
-  );
+    setUploading(true);
+    const uploadedFiles: File[] = [...images];
+    for (const file of files) {
+      // Tạo tên file unique
+      const fileExt = file.name.split('.').pop();
+      const fileName = `${Date.now()}-${Math.random().toString(36).substring(2)}.${fileExt}`;
+      const filePath = `product-images/${fileName}`;
 
-  const { getRootProps, getInputProps, isDragActive } = useDropzone({
-    onDrop,
-    accept: {
-      'image/jpeg': [],
-      'image/png': [],
-      'image/webp': [],
-      'image/gif': [],
-    },
-    multiple: true,
-    maxSize: 1024 * 1024,
-  });
+      const { error: uploadError } = await supabase.storage
+        .from('product-images')
+        .upload(filePath, file, { upsert: false });
+
+      if (uploadError) {
+        alert('Upload image failed: ' + uploadError.message);
+        setUploading(false);
+        return;
+      }
+
+      // Lấy public url
+      const { data: publicUrlData } = supabase.storage
+        .from('product-images')
+        .getPublicUrl(filePath);
+
+      if (!publicUrlData?.publicUrl) {
+        alert('Failed to get public URL for uploaded image.');
+        setUploading(false);
+        return;
+      }
+
+      // Mình đẩy url vào mảng images
+      uploadedFiles.push(new File([file], publicUrlData.publicUrl));
+    }
+
+    setValue('images', uploadedFiles, { shouldValidate: true });
+    setUploading(false);
+  }
+
+  function handleRemoveImage(index: number) {
+    const newImages = [...images];
+    newImages.splice(index, 1);
+    setValue('images', newImages, { shouldValidate: true });
+  }
 
   return (
-    <div className="border rounded-lg p-5 space-y-4">
-      <h2 className="font-semibold text-lg">Images <span className="text-red-500">*</span></h2>
-      <p className="text-sm text-gray-600">
-        You can upload up to 10 photos in JPG, PNG, GIF, or WEBP format. For best results, use a 4:3 aspect ratio, size images to at least 1200px on the shortest side at 72 PPI, and keep each file under 1MB for quick uploads.
-      </p>
+    <div className="space-y-2">
+      <label className="block font-semibold">Upload Images</label>
+      <input
+        type="file"
+        multiple
+        accept="image/*"
+        onChange={handleUpload}
+        disabled={uploading}
+        className="block mb-2"
+      />
+      {error && <p className="text-red-600 text-sm">{error.message}</p>}
 
-      <div
-        {...getRootProps()}
-        className={`border-2 border-dashed rounded-md p-6 text-center cursor-pointer ${
-          isDragActive ? 'border-indigo-600 bg-indigo-50' : 'border-gray-300 bg-white'
-        }`}
-      >
-        <input {...getInputProps()} />
-        <div className="flex flex-col items-center gap-2 text-gray-600">
-          <ImageIcon className="w-8 h-8" />
-          <p>
-            Drag and drop photos, or{' '}
-            <span className="text-indigo-600 underline">click to upload</span>.
-          </p>
-        </div>
-      </div>
-
-      {error?.message && (
-        <p className="text-red-500 text-sm">{error.message}</p>
-      )}
-
-      {images && images.length > 0 && (
-        <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-5 gap-4 mt-4">
-          {images.map((file, idx) => (
-            <div key={idx} className="relative group">
-              <img
-                src={URL.createObjectURL(file)}
-                alt={`preview-${idx}`}
-                className="object-cover rounded-md w-full h-32 border"
-              />
+      <div className="flex flex-wrap gap-3">
+        {images.map((img: any, idx: number) => {
+          const src = img instanceof File ? URL.createObjectURL(img) : img;
+          return (
+            <div key={idx} className="relative w-24 h-24 border rounded overflow-hidden">
+              <img src={src} alt={`Uploaded ${idx}`} className="object-cover w-full h-full" />
+              <button
+                type="button"
+                onClick={() => handleRemoveImage(idx)}
+                className="absolute top-1 right-1 bg-black bg-opacity-50 rounded-full w-6 h-6 text-white flex items-center justify-center text-sm"
+              >
+                &times;
+              </button>
             </div>
-          ))}
-        </div>
-      )}
-
-      <div className="bg-orange-50 border border-orange-300 text-orange-800 rounded-md px-4 py-3 text-sm flex items-start gap-2">
-        <ImageIcon className="w-5 h-5 mt-1" />
-        <div>
-          <p className="font-semibold">
-            Listings with quality photos sell 30% faster
-          </p>
-          <p className="mt-1">
-            Head over to Seller Academy and learn how to take great photos
-          </p>
-        </div>
-        <div className="ml-auto flex items-center gap-2">
-          <button className="text-sm font-medium text-white bg-indigo-600 px-3 py-1.5 rounded hover:bg-indigo-700">
-            PHOTO GUIDE
-          </button>
-          <button className="text-sm text-gray-600 hover:underline">DISMISS</button>
-        </div>
+          );
+        })}
       </div>
+      {uploading && <p>Uploading...</p>}
     </div>
   );
 }

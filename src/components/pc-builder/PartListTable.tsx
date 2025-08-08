@@ -4,8 +4,8 @@ import { useState } from 'react';
 import {
   PencilSquareIcon,
   TrashIcon,
-  PlusCircleIcon,
-} from '@heroicons/react/24/outline';
+  PlusIcon,
+} from '@heroicons/react/24/solid';
 
 type Part = {
   id: string;
@@ -151,7 +151,7 @@ export default function PartListFlex() {
                   className="inline-flex items-center gap-2 bg-blue-600 text-white text-sm font-semibold px-4 py-2 rounded-sm hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-blue-500"
                   type="button"
                 >
-                  <PlusCircleIcon className="w-5 h-5" />
+                  <PlusIcon className="w-5 h-5" />
                   + Add a part
                 </button>
               </div>

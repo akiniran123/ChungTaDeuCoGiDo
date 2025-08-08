@@ -1,7 +1,6 @@
 import './globals.css';
 import type { Metadata } from 'next';
-import Navbar from '@/components/Navbar/Navbar';
-import { ThemeProvider } from '@/components/Navbar/ThemeProvider'; // ✅ Import provider đúng
+import Navbar from '@/components/Navbar/Navbar'; // ✅ Import provider đúng
 
 export const metadata: Metadata = {
   title: 'Jawa Clone',
@@ -16,10 +15,10 @@ export default function RootLayout({
   return (
     <html lang="en" suppressHydrationWarning>
       <body className="bg-white text-black">
-        <ThemeProvider> {/* ✅ Dùng bên trong JSX, KHÔNG phải export ở ngoài */}
+         {/* ✅ Dùng bên trong JSX, KHÔNG phải export ở ngoài */}
           <Navbar />
           <main>{children}</main>
-        </ThemeProvider>
+        
       </body>
     </html>
   );

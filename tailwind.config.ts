@@ -1,5 +1,5 @@
 module.exports = {
-  darkMode: 'class', // bắt buộc phải có
+  // darkMode: 'class', // ❌ xóa dòng này
   content: [
     './app/**/*.{ts,tsx}',
     './components/**/*.{ts,tsx}',

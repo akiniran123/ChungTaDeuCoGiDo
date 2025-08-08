@@ -53,15 +53,15 @@ export default function NavLinks({ onLinkClick }: NavLinksProps) {
       </div>
 
       {/* Desktop menu */}
-      <nav className="hidden md:flex justify-center gap-6 font-medium text-xs uppercase tracking-wide py-3 relative">
+      <nav className="hidden md:flex justify-center gap-6 font-medium text-sm uppercase tracking-wide py-3 relative">
         {mainLinks.map(({ name, path, isNew }) => {
           const isActive = pathname === path;
           return (
             <Link
               key={name}
               href={path}
-              className={`relative group flex items-center transition-colors duration-200 
-                ${isActive ? 'text-white' : 'text-gray-400 hover:text-white'}`}
+              className={`relative group flex items-center pb-1 transition-colors duration-200
+                ${isActive ? 'text-white' : 'text-gray-500 hover:text-white'}`}
             >
               {isNew ? (
                 <span>
@@ -71,10 +71,11 @@ export default function NavLinks({ onLinkClick }: NavLinksProps) {
               ) : (
                 name
               )}
-              {/* Underline hiệu ứng Jawa.gg */}
+              {/* Underline hiệu ứng */}
               <span
-                className={`absolute bottom-0 left-1/2 h-[2px] bg-blue-500 transition-all duration-300 
-                  ${isActive ? 'w-full left-0' : 'w-0 group-hover:w-full group-hover:left-0'} transform -translate-x-1/2`}
+                className={`absolute bottom-0 left-1/2 h-[2px] bg-blue-500 transition-all duration-300
+                  ${isActive ? 'w-full left-0' : 'w-0 group-hover:w-full group-hover:left-0'}
+                  transform -translate-x-1/2`}
               />
             </Link>
           );
@@ -86,7 +87,7 @@ export default function NavLinks({ onLinkClick }: NavLinksProps) {
           onMouseEnter={() => setMoreOpen(true)}
           onMouseLeave={() => setMoreOpen(false)}
         >
-          <div className="flex items-center gap-1 cursor-pointer text-gray-400 hover:text-white transition-colors">
+          <div className="flex items-center gap-1 cursor-pointer text-gray-500 hover:text-white transition-colors">
             MORE <ChevronDown className="w-4 h-4" />
           </div>
           {moreOpen && (

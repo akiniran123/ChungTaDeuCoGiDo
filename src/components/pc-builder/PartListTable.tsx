@@ -3,7 +3,6 @@
 import { useState } from 'react';
 import {
   PencilSquareIcon,
-  TrashIcon,
 } from '@heroicons/react/24/outline';
 
 type Part = {
@@ -52,10 +51,16 @@ export default function PartListFlex() {
   }
 
   return (
-    <div className="max-w-7xl mx-auto px-4 py-8">
+    <div
+      className="max-w-7xl mx-auto px-4 py-8 font-sans"
+      style={{
+        fontFamily:
+          "'Inter', ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif",
+      }}
+    >
       <div className="overflow-x-auto rounded-lg shadow-sm bg-white">
         {/* Header */}
-        <div className="hidden md:flex bg-white rounded-t-lg select-none text-[14px] font-medium uppercase tracking-wide text-gray-700 border-b border-transparent">
+        <div className="hidden md:flex bg-gray-50 rounded-t-lg select-none text-[14px] font-semibold uppercase tracking-wide text-gray-600 leading-6">
           <div className="w-48 px-5 py-3">Category</div>
           <div className="flex-1 px-5 py-3">Part Name</div>
           <div className="w-36 px-5 py-3">Store</div>
@@ -71,13 +76,14 @@ export default function PartListFlex() {
             return (
               <div
                 key={part.id}
-                className="flex bg-white hover:bg-gray-50 transition cursor-pointer border-b border-transparent"
+                className="flex bg-white hover:bg-gray-50 transition cursor-pointer"
+                style={{ lineHeight: 1.5 }}
               >
-                <div className="w-48 px-5 py-4 font-medium flex items-center whitespace-nowrap text-gray-900">
+                <div className="w-48 px-5 py-4 font-medium flex items-center whitespace-nowrap text-gray-900 text-[14px]">
                   {part.category}
                 </div>
                 <div
-                  className="flex-1 px-5 py-4 flex items-center text-blue-600 hover:underline truncate cursor-pointer"
+                  className="flex-1 px-5 py-4 flex items-center text-blue-600 hover:underline truncate cursor-pointer text-[14px]"
                   title={part.name}
                 >
                   {part.url ? (
@@ -93,37 +99,38 @@ export default function PartListFlex() {
                     part.name
                   )}
                 </div>
-                <div className="w-36 px-5 py-4 truncate flex items-center text-gray-700">
+                <div className="w-36 px-5 py-4 truncate flex items-center text-gray-700 text-[14px]">
                   {part.store ?? '-'}
                 </div>
-                <div className="w-24 px-5 py-4 text-right font-medium flex items-center justify-end text-gray-900">
+                <div className="w-24 px-5 py-4 text-right font-medium flex items-center justify-end text-gray-900 text-[14px]">
                   ${part.price.toFixed(2)}
                 </div>
                 <div className="w-24 px-5 py-4 text-center flex items-center justify-center">
                   <span
-                    className={`inline-block px-2 py-0.5 rounded-full text-xs font-semibold ${
+                    className={`inline-block px-3 py-1 rounded-full font-semibold ${
                       part.status === 'In Stock'
-                        ? 'bg-green-100 text-green-700'
+                        ? 'bg-green-100 text-green-700 text-xs'
                         : part.status === 'Out of Stock'
-                        ? 'bg-red-100 text-red-700'
-                        : 'bg-gray-100 text-gray-700'
+                        ? 'bg-red-100 text-red-700 text-xs'
+                        : 'bg-gray-100 text-gray-700 text-xs'
                     }`}
+                    style={{ lineHeight: 1.2 }}
                   >
                     {part.status ?? 'Unknown'}
                   </span>
                 </div>
-                <div className="w-28 px-5 py-4 flex items-center justify-center space-x-3">
+                <div className="w-28 px-5 py-4 flex items-center justify-center space-x-4">
                   <button
                     onClick={() => alert('Edit feature coming soon!')}
                     aria-label="Edit Part"
-                    className="p-1 rounded hover:bg-blue-50 transition"
+                    className="p-1 rounded hover:bg-blue-50 transition focus:outline-none focus:ring-2 focus:ring-blue-400 focus:ring-offset-1"
                   >
                     <PencilSquareIcon className="w-5 h-5 text-blue-600" />
                   </button>
                   <button
                     onClick={() => handleRemovePart(part.id)}
                     aria-label="Remove Part"
-                    className="p-1 rounded hover:bg-red-50 transition"
+                    className="p-1 rounded hover:bg-red-50 transition focus:outline-none focus:ring-2 focus:ring-red-400 focus:ring-offset-1"
                   >
                     <svg
                       xmlns="http://www.w3.org/2000/svg"
@@ -147,7 +154,7 @@ export default function PartListFlex() {
           return (
             <div
               key={category}
-              className="flex bg-white hover:bg-gray-50 cursor-pointer rounded-none last:rounded-b-lg border-b border-transparent"
+              className="flex bg-white hover:bg-gray-50 cursor-pointer rounded-none last:rounded-b-lg"
               role="button"
               tabIndex={0}
               onClick={() => handleAddPart(category)}
@@ -155,13 +162,17 @@ export default function PartListFlex() {
                 if (e.key === 'Enter' || e.key === ' ') handleAddPart(category);
               }}
             >
-              <div className="w-48 px-5 py-5 font-medium flex items-center text-gray-700 whitespace-nowrap">
+              <div className="w-48 px-5 py-5 font-medium flex items-center text-gray-700 whitespace-nowrap text-[14px]">
                 {category}
               </div>
               <div className="flex-1 px-5 py-5 flex items-center justify-center">
                 <button
-                  className="bg-blue-600 text-white text-sm font-semibold px-5 py-2 rounded-sm hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-blue-500"
+                  className="bg-blue-600 text-white text-sm font-semibold px-6 py-2 rounded-md shadow-sm hover:shadow-md transition-shadow focus:outline-none focus:ring-2 focus:ring-blue-500"
                   type="button"
+                  style={{
+                    fontFamily:
+                      "'Inter', ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif",
+                  }}
                 >
                   + Add a part
                 </button>
@@ -175,11 +186,11 @@ export default function PartListFlex() {
         })}
 
         {/* Tổng tiền */}
-        <div className="flex bg-white font-medium text-gray-900 rounded-b-lg border-t border-transparent shadow-inner">
-          <div className="w-48 px-5 py-4">Total</div>
+        <div className="flex bg-white font-semibold text-gray-900 rounded-b-lg shadow-inner border-t border-transparent">
+          <div className="w-48 px-5 py-4 text-[14px]">Total</div>
           <div className="flex-1 px-5 py-4"></div>
           <div className="w-36 px-5 py-4"></div>
-          <div className="w-24 px-5 py-4 text-right">${totalPrice.toFixed(2)}</div>
+          <div className="w-24 px-5 py-4 text-right text-[14px]">${totalPrice.toFixed(2)}</div>
           <div className="w-24 px-5 py-4"></div>
           <div className="w-28 px-5 py-4"></div>
         </div>

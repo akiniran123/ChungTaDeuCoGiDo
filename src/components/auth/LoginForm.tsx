@@ -6,8 +6,8 @@ import { z } from 'zod';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { FcGoogle } from 'react-icons/fc';
 import { createPagesBrowserClient } from '@supabase/auth-helpers-nextjs';
-import SignUpModal from '@/components/Navbar/SignUpModal';
-import ForgotPasswordModal from '@/components/Navbar/ForgotPasswordModal';
+import SignUpModal from '@/components/auth/SignUpModal';
+import ForgotPasswordModal from '@/components/auth/ForgotPasswordModal';
 import type { Database } from '@/types/supabase';
 
 const loginSchema = z.object({

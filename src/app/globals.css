@@ -2,7 +2,7 @@
 
 :root {
   --background: #ffffff;
-  --foreground: #171717;
+  --foreground: #ffffff;
   --accent: #8b5cf6; /* purple-500/600 */
   --primary: #3b82f6; /* blue-500 */
   --font-sans: var(--font-geist-sans);

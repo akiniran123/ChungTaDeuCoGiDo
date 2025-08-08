@@ -50,16 +50,16 @@ export default function PartListTable() {
   }
 
   return (
-    <div className="overflow-x-auto border border-gray-300 rounded-lg shadow-sm dark:border-gray-700 dark:shadow-gray-900">
-      <table className="min-w-full text-sm text-left text-gray-700 dark:text-gray-300">
-        <thead className="bg-gray-50 dark:bg-gray-800 uppercase text-xs font-semibold tracking-wide">
+    <div className="overflow-x-auto border border-gray-200 rounded-md shadow-sm dark:border-gray-700 dark:shadow-gray-900">
+      <table className="min-w-full text-[14px] font-inter text-gray-700 dark:text-gray-300">
+        <thead className="bg-gray-50 dark:bg-gray-800 uppercase text-xs font-medium tracking-wide text-gray-500 dark:text-gray-400 select-none">
           <tr>
-            <th className="px-6 py-3">Category</th>
-            <th className="px-6 py-3">Part Name</th>
-            <th className="px-6 py-3">Store</th>
-            <th className="px-6 py-3">Price</th>
-            <th className="px-6 py-3">Status</th>
-            <th className="px-6 py-3 text-center">Actions</th>
+            <th className="px-6 py-3 border-b border-gray-200 dark:border-gray-700 text-left">Category</th>
+            <th className="px-6 py-3 border-b border-gray-200 dark:border-gray-700 text-left">Part Name</th>
+            <th className="px-6 py-3 border-b border-gray-200 dark:border-gray-700 text-left">Store</th>
+            <th className="px-6 py-3 border-b border-gray-200 dark:border-gray-700 text-right">Price</th>
+            <th className="px-6 py-3 border-b border-gray-200 dark:border-gray-700 text-center">Status</th>
+            <th className="px-6 py-3 border-b border-gray-200 dark:border-gray-700 text-center">Actions</th>
           </tr>
         </thead>
         <tbody>
@@ -70,45 +70,47 @@ export default function PartListTable() {
               return (
                 <tr
                   key={part.id}
-                  className="border-t border-gray-200 dark:border-gray-700 hover:bg-gray-100 dark:hover:bg-gray-900"
+                  className="border-b border-gray-200 dark:border-gray-700 hover:bg-gray-100 dark:hover:bg-gray-900 transition-colors duration-150"
                 >
-                  <td className="px-6 py-4 font-medium bg-gray-50 dark:bg-gray-900 whitespace-nowrap">
+                  <td className="px-6 py-4 font-semibold bg-gray-50 dark:bg-gray-900 whitespace-nowrap text-gray-700 dark:text-gray-300">
                     {part.category}
                   </td>
-                  <td className="px-6 py-4 text-blue-600 dark:text-blue-400 hover:underline">
+                  <td className="px-6 py-4 text-blue-600 dark:text-blue-400 hover:underline cursor-pointer max-w-xs truncate">
                     {part.url ? (
-                      <Link href={part.url} target="_blank" rel="noopener noreferrer">
+                      <Link href={part.url} target="_blank" rel="noopener noreferrer" title={part.name}>
                         {part.name}
                       </Link>
                     ) : (
                       part.name
                     )}
                   </td>
-                  <td className="px-6 py-4">{part.store ?? '-'}</td>
-                  <td className="px-6 py-4 font-semibold">${part.price.toFixed(2)}</td>
-                  <td
-                    className={`px-6 py-4 font-semibold ${
-                      part.status === 'In Stock'
-                        ? 'text-green-600'
-                        : part.status === 'Out of Stock'
-                        ? 'text-red-600'
-                        : 'text-gray-500'
-                    }`}
-                  >
-                    {part.status ?? 'Unknown'}
+                  <td className="px-6 py-4 whitespace-nowrap max-w-[120px] truncate">{part.store ?? '-'}</td>
+                  <td className="px-6 py-4 whitespace-nowrap text-right font-semibold">${part.price.toFixed(2)}</td>
+                  <td className="px-6 py-4 text-center font-semibold whitespace-nowrap">
+                    <span
+                      className={`inline-block px-2 py-0.5 rounded-full text-xs font-medium ${
+                        part.status === 'In Stock'
+                          ? 'bg-green-100 text-green-700 dark:bg-green-900 dark:text-green-400'
+                          : part.status === 'Out of Stock'
+                          ? 'bg-red-100 text-red-700 dark:bg-red-900 dark:text-red-400'
+                          : 'bg-gray-100 text-gray-700 dark:bg-gray-900 dark:text-gray-400'
+                      }`}
+                    >
+                      {part.status ?? 'Unknown'}
+                    </span>
                   </td>
-                  <td className="px-6 py-4 flex justify-center gap-2">
+                  <td className="px-6 py-4 text-center whitespace-nowrap">
                     <button
                       onClick={() => alert('Edit feature coming soon!')}
                       aria-label="Edit Part"
-                      className="p-1 rounded hover:bg-blue-100 dark:hover:bg-blue-900 transition"
+                      className="p-1 rounded hover:bg-blue-50 dark:hover:bg-blue-900 transition"
                     >
                       <PencilSquareIcon className="w-5 h-5 text-blue-600" />
                     </button>
                     <button
                       onClick={() => handleRemovePart(part.id)}
                       aria-label="Remove Part"
-                      className="p-1 rounded hover:bg-red-100 dark:hover:bg-red-900 transition"
+                      className="p-1 rounded hover:bg-red-50 dark:hover:bg-red-900 transition ml-1"
                     >
                       <TrashIcon className="w-5 h-5 text-red-600" />
                     </button>
@@ -117,18 +119,19 @@ export default function PartListTable() {
               );
             }
 
+            // Nếu chưa có món, hiển thị Add a part button trải rộng các cột bên phải, Category có background riêng
             return (
               <tr
                 key={category}
-                className="border-t border-gray-200 dark:border-gray-700 hover:bg-gray-50 dark:hover:bg-gray-900"
+                className="border-b border-gray-200 dark:border-gray-700 hover:bg-gray-50 dark:hover:bg-gray-900 transition-colors duration-150"
               >
-                <td className="px-6 py-4 font-medium bg-gray-50 dark:bg-gray-900 whitespace-nowrap">
+                <td className="px-6 py-4 font-semibold bg-gray-50 dark:bg-gray-900 whitespace-nowrap text-gray-700 dark:text-gray-300">
                   {category}
                 </td>
                 <td colSpan={5} className="px-6 py-4 text-center">
                   <button
                     onClick={() => handleAddPart(category)}
-                    className="px-4 py-1 text-blue-600 border border-blue-600 rounded hover:bg-blue-50 dark:hover:bg-gray-800 transition"
+                    className="inline-block px-5 py-1 font-semibold text-blue-600 border border-blue-600 rounded hover:bg-blue-50 dark:hover:bg-gray-800 transition"
                   >
                     + Add a part
                   </button>
@@ -136,14 +139,12 @@ export default function PartListTable() {
               </tr>
             );
           })}
-
+          {/* Dòng tổng */}
           <tr className="bg-gray-100 dark:bg-gray-800 font-semibold text-gray-900 dark:text-gray-100">
-            <td className="px-6 py-4">Total</td>
-            <td></td>
-            <td></td>
-            <td className="px-6 py-4">${totalPrice.toFixed(2)}</td>
-            <td></td>
-            <td></td>
+            <td className="px-6 py-4 border-t border-gray-300 dark:border-gray-700">Total</td>
+            <td colSpan={2} className="border-t border-gray-300 dark:border-gray-700"></td>
+            <td className="px-6 py-4 border-t border-gray-300 dark:border-gray-700 text-right">${totalPrice.toFixed(2)}</td>
+            <td colSpan={2} className="border-t border-gray-300 dark:border-gray-700"></td>
           </tr>
         </tbody>
       </table>

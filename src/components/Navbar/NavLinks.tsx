@@ -87,15 +87,15 @@ export default function NavLinks({ onLinkClick }: NavLinksProps) {
   }
 
   return (
-    <div>
+    <div className="border-none outline-none">
       {/* Mobile toggle */}
-      <div className="max-w-7xl mx-auto px-4 py-3 flex justify-between items-center md:hidden">
+      <div className="max-w-7xl mx-auto px-4 py-3 flex justify-between items-center md:hidden border-none outline-none">
         <button
           onClick={() => setMobileOpen(!mobileOpen)}
           aria-label={mobileOpen ? 'Close menu' : 'Open menu'}
           aria-expanded={mobileOpen}
           aria-controls="mobile-menu"
-          className="focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500 rounded"
+          className="focus:outline-none focus:ring-0 rounded border-none"
         >
           {mobileOpen ? <X className="h-6 w-6" /> : <Menu className="h-6 w-6" />}
         </button>
@@ -104,7 +104,7 @@ export default function NavLinks({ onLinkClick }: NavLinksProps) {
 
       {/* Desktop menu */}
       <nav
-        className="hidden md:flex justify-center gap-6 font-medium text-sm uppercase tracking-wide py-3 relative"
+        className="hidden md:flex justify-center gap-6 font-medium text-sm uppercase tracking-wide py-3 relative border-none outline-none"
         role="menubar"
       >
         {mainLinks.map(({ name, path, isNew }) => {
@@ -140,7 +140,7 @@ export default function NavLinks({ onLinkClick }: NavLinksProps) {
         {/* Dropdown MORE - desktop only */}
         {!isMobile && (
           <div
-            className="relative"
+            className="relative border-none outline-none"
             ref={moreRef}
             onKeyDown={(e) => {
               if (e.key === 'Enter' || e.key === ' ') {
@@ -159,7 +159,7 @@ export default function NavLinks({ onLinkClick }: NavLinksProps) {
               aria-haspopup="true"
               aria-expanded={moreOpen}
               aria-controls="more-menu"
-              className="flex items-center gap-1 cursor-pointer text-gray-500 hover:text-white transition-colors font-medium uppercase text-sm"
+              className="flex items-center gap-1 cursor-pointer text-gray-500 hover:text-white transition-colors font-medium uppercase text-sm border-none outline-none"
             >
               MORE <ChevronDown className="w-4 h-4" />
             </button>
@@ -196,7 +196,7 @@ export default function NavLinks({ onLinkClick }: NavLinksProps) {
       {mobileOpen && (
         <div
           id="mobile-menu"
-          className="md:hidden px-4 pb-4 font-semibold text-sm space-y-2"
+          className="md:hidden px-4 pb-4 font-semibold text-sm space-y-2 border-none outline-none"
           role="menu"
           aria-label="Mobile menu"
         >

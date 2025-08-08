@@ -10,10 +10,9 @@ export default function HomePage() {
         Chọn linh kiện phù hợp, theo dõi giá, và chia sẻ cấu hình máy tính của bạn.
       </p>
 
-      {/* ✅ Nút giống PCPartPicker */}
       <Link
         href="/list"
-        className="inline-flex items-center justify-center rounded-md bg-blue-600 px-6 py-3 text-lg font-semibold text-white shadow-md transition duration-200 hover:bg-blue-700 hover:shadow-lg active:scale-[0.98]"
+        className="inline-flex items-center justify-center rounded-md bg-blue-600 px-6 py-3 text-lg font-semibold !text-white shadow-md transition duration-200 hover:bg-blue-700 hover:shadow-lg active:scale-[0.98]"
       >
         🚀 Start Your Build
       </Link>

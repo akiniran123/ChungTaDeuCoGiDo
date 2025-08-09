@@ -28,6 +28,10 @@ export default function LogoSearchIcons({ onMenuToggle }: Props) {
   const [user, setUser] = useState<User | null>(null)
   const [loadingUser, setLoadingUser] = useState(true)
   const [pendingRedirect, setPendingRedirect] = useState(false)
+
+  const [searchTerm, setSearchTerm] = useState('')
+  const [searchResults, setSearchResults] = useState<any[]>([])
+  const [searchLoading, setSearchLoading] = useState(false)
   const router = useRouter()
 
   useEffect(() => {
@@ -38,6 +42,41 @@ export default function LogoSearchIcons({ onMenuToggle }: Props) {
     }
     getUser()
   }, [])
+
+  // Debounce search
+  useEffect(() => {
+    const timer = setTimeout(() => {
+      if (searchTerm.trim() !== '') {
+        performSearch(searchTerm)
+      } else {
+        setSearchResults([])
+      }
+    }, 300)
+    return () => clearTimeout(timer)
+  }, [searchTerm])
+
+  const performSearch = async (query: string) => {
+    setSearchLoading(true)
+    // Giả sử bạn có bảng "listings" trong Supabase
+    const { data, error } = await supabase
+      .from('listings')
+      .select('id, title')
+      .ilike('title', `%${query}%`)
+      .limit(5)
+
+    if (!error) {
+      setSearchResults(data || [])
+    }
+    setSearchLoading(false)
+  }
+
+  const handleSearchSubmit = (e: React.FormEvent) => {
+    e.preventDefault()
+    if (searchTerm.trim() !== '') {
+      router.push(`/search?query=${encodeURIComponent(searchTerm)}`)
+      setSearchResults([])
+    }
+  }
 
   const handleStartSelling = () => {
     if (user) {
@@ -54,7 +93,7 @@ export default function LogoSearchIcons({ onMenuToggle }: Props) {
 
   return (
     <>
-      <div className="w-full border-b dark:border-gray-700">
+      <div className="w-full border-b dark:border-gray-700 relative">
         <div className="max-w-7xl mx-auto px-4 py-3 flex items-center justify-between gap-4">
           {/* Left: Hamburger + Logo */}
           <div className="flex items-center gap-3">
@@ -73,12 +112,37 @@ export default function LogoSearchIcons({ onMenuToggle }: Props) {
           </div>
 
           {/* Middle: Search (Desktop only) */}
-          <div className="hidden sm:block flex-1 max-w-xl mx-4">
-            <input
-              type="text"
-              placeholder="Search listings and sellers"
-              className="w-full px-5 py-2 rounded-full border border-gray-300 focus:outline-none bg-gray-100 dark:bg-gray-800 text-sm"
-            />
+          <div className="hidden sm:block flex-1 max-w-xl mx-4 relative">
+            <form onSubmit={handleSearchSubmit}>
+              <input
+                type="text"
+                value={searchTerm}
+                onChange={(e) => setSearchTerm(e.target.value)}
+                placeholder="Search listings and sellers"
+                className="w-full px-5 py-2 rounded-full border border-gray-300 focus:outline-none bg-gray-100 dark:bg-gray-800 text-sm"
+              />
+            </form>
+
+            {/* Search results dropdown */}
+            {searchResults.length > 0 && (
+              <div className="absolute top-full left-0 right-0 bg-white dark:bg-gray-800 shadow-lg rounded-lg mt-1 overflow-hidden z-50">
+                {searchResults.map((item) => (
+                  <Link
+                    key={item.id}
+                    href={`/listing/${item.id}`}
+                    className="block px-4 py-2 hover:bg-gray-100 dark:hover:bg-gray-700 text-sm"
+                    onClick={() => setSearchResults([])}
+                  >
+                    {item.title}
+                  </Link>
+                ))}
+              </div>
+            )}
+            {searchLoading && (
+              <div className="absolute top-full left-0 right-0 bg-white dark:bg-gray-800 shadow-lg rounded-lg mt-1 p-2 text-sm text-gray-500">
+                Searching...
+              </div>
+            )}
           </div>
 
           {/* Right: Icons & Actions */}
@@ -148,12 +212,32 @@ export default function LogoSearchIcons({ onMenuToggle }: Props) {
         </div>
 
         {/* Mobile Search */}
-        <div className="sm:hidden px-4 pb-2">
-          <input
-            type="text"
-            placeholder="Search listings and sellers"
-            className="w-full px-4 py-2 rounded-full border border-gray-300 focus:outline-none bg-gray-100 dark:bg-gray-800 text-sm"
-          />
+        <div className="sm:hidden px-4 pb-2 relative">
+          <form onSubmit={handleSearchSubmit}>
+            <input
+              type="text"
+              value={searchTerm}
+              onChange={(e) => setSearchTerm(e.target.value)}
+              placeholder="Search listings and sellers"
+              className="w-full px-4 py-2 rounded-full border border-gray-300 focus:outline-none bg-gray-100 dark:bg-gray-800 text-sm"
+            />
+          </form>
+
+          {/* Mobile search results */}
+          {searchResults.length > 0 && (
+            <div className="absolute top-full left-4 right-4 bg-white dark:bg-gray-800 shadow-lg rounded-lg mt-1 overflow-hidden z-50">
+              {searchResults.map((item) => (
+                <Link
+                  key={item.id}
+                  href={`/listing/${item.id}`}
+                  className="block px-4 py-2 hover:bg-gray-100 dark:hover:bg-gray-700 text-sm"
+                  onClick={() => setSearchResults([])}
+                >
+                  {item.title}
+                </Link>
+              ))}
+            </div>
+          )}
         </div>
       </div>
 

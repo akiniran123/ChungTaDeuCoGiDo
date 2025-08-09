@@ -13,7 +13,6 @@ import CategorySelect from '@/components/sell/CategorySelect';
 import ListingTitleInput from '@/components/sell/ListingTitleInput';
 import PrivateToggle from '@/components/sell/PrivateToggle';
 import TechSpecsEditor from '@/components/sell/TechSpecsEditor';
-import ImageUploaderSection from '@/components/sell/ImageUploader';
 import ConditionSelectorSection from '@/components/sell/ConditionSelector';
 import DescriptionEditorSection from '@/components/sell/DescriptionEditor';
 import ProductVideoInput from '@/components/sell/ProductVideoInput';
@@ -133,8 +132,8 @@ export default function SellPage() {
           <ListingTitleInput register={register} error={errors.title} />
           <PrivateToggle register={register} />
         </div>
-        <TechSpecsEditor control={control} />
-        <ImageUploaderSection setValue={setValue} watch={watch} error={errors.images} />
+        <TechSpecsEditor control={control} />1
+       
         <ConditionSelectorSection register={register} />
         <DescriptionEditorSection control={control} error={errors.description} />
         <ProductVideoInput register={register} error={errors.videoUrl} />

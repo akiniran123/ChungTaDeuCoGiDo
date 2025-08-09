@@ -13,16 +13,15 @@ export const productSchema = z.object({
   ]),
   description: z.string().min(10),
   specs: z.array(z.object({ key: z.string(), value: z.string() })),
-  images: z.array(z.instanceof(File)).max(10),
+  // Bỏ images hoặc để optional nếu sau này dùng lại
+  images: z.array(z.instanceof(File)).max(10).optional(),
   videoUrl: z.string().url().optional(),
   price: z.number().min(0),
   enableOffers: z.boolean(),
   minOffer: z.number().min(0),
   quantity: z.number().min(1),
   sku: z.string().optional(),
-  returnPolicy: z
-    .enum(['no_returns', '7_days', '14_days'])
-    .optional(), // ← đã thêm ở đây
+  returnPolicy: z.enum(['no_returns', '7_days', '14_days']).optional(),
 });
 
 export type ProductFormData = z.infer<typeof productSchema>;

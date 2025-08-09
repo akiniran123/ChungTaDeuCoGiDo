@@ -4,6 +4,7 @@ import { useState } from 'react';
 import { useRouter } from 'next/navigation';
 import { useForm, SubmitHandler } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
+import { PostgrestError } from '@supabase/supabase-js';
 
 import { supabase } from '@/lib/supabase/client';
 import { productSchema, ProductFormData } from '@/types/form';
@@ -38,7 +39,6 @@ export default function SellPage() {
       condition: 'brand_new',
       description: '',
       specs: [{ key: '', value: '' }],
-      // images removed from defaults
       videoUrl: '',
       price: 0,
       enableOffers: false,
@@ -53,7 +53,6 @@ export default function SellPage() {
     setLoading(true);
     console.log('Form submit data (raw):', data);
 
-    // Extra: re-validate with zod at runtime and log errors if any
     const safe = productSchema.safeParse(data);
     if (!safe.success) {
       console.error('Zod validation failed:', safe.error.format());
@@ -63,7 +62,7 @@ export default function SellPage() {
     }
 
     try {
-      // check user
+      // Check user
       const {
         data: { user },
         error: userError,
@@ -72,7 +71,6 @@ export default function SellPage() {
       if (userError || !user) {
         console.error('Auth getUser error or no user:', userError);
         alert('You must be logged in to post.');
-        setLoading(false);
         return;
       }
 
@@ -84,7 +82,6 @@ export default function SellPage() {
         condition: data.condition,
         description: data.description,
         specs: data.specs,
-        // images completely removed
         video_url: data.videoUrl || null,
         price: data.price,
         enable_offers: data.enableOffers,
@@ -96,28 +93,27 @@ export default function SellPage() {
 
       console.log('Insert payload:', payload);
 
-      // Insert and request returned rows so we can inspect response
-      const res = await supabase.from('products').insert([payload]).select('*');
+      const { data: insertedRows, error: insertError } = await supabase
+        .from('products')
+        .insert([payload])
+        .select('*');
 
-      // supabase-js v2 returns { data, error } — log both
-      console.log('Supabase insert response:', res);
-
-      // check error
-      // @ts-ignore
-      if (res.error) {
-        console.error('Insert error object:', res.error);
-        alert(`Insert error: ${res.error.message || JSON.stringify(res.error)}`);
-        setLoading(false);
+      if (insertError) {
+        console.error('Insert error object:', insertError);
+        alert(`Insert error: ${insertError.message}`);
         return;
       }
 
-      // success
-      console.log('Insert success, returned rows:', res.data);
+      console.log('Insert success, returned rows:', insertedRows);
       router.push('/');
-    } catch (err: any) {
-      // catch unexpected runtime errors
-      console.error('Unexpected error during submit:', err);
-      alert(`Unexpected error: ${err?.message ?? JSON.stringify(err)}`);
+    } catch (err: unknown) {
+      if (err instanceof Error) {
+        console.error('Unexpected error during submit:', err);
+        alert(`Unexpected error: ${err.message}`);
+      } else {
+        console.error('Unexpected non-Error thrown:', err);
+        alert(`Unexpected error: ${JSON.stringify(err)}`);
+      }
     } finally {
       setLoading(false);
     }

@@ -16,7 +16,7 @@ import TechSpecsEditor from '@/components/sell/TechSpecsEditor';
 import ConditionSelectorSection from '@/components/sell/ConditionSelector';
 import DescriptionEditorSection from '@/components/sell/DescriptionEditor';
 import ProductVideoInput from '@/components/sell/ProductVideoInput';
-import {PriceAndOffers} from '@/components/sell/PriceAndOffers';
+import { PriceAndOffers } from '@/components/sell/PriceAndOffers';
 import ReturnPolicies from '@/components/sell/ReturnPolicies';
 import ActionButtons from '@/components/sell/ActionButtons';
 
@@ -28,32 +28,29 @@ export default function SellPage() {
     register,
     handleSubmit,
     control,
-    setValue,
-    watch,
     formState: { errors },
   } = useForm<ProductFormData>({
     resolver: zodResolver(productSchema),
     defaultValues: {
-  title: '',
-  category: '',
-  isPrivate: false,
-  condition: 'brand_new',
-  description: '',
-  specs: [{ key: '', value: '' }],
-  images: [],
-  videoUrl: '',
-  price: 0,
-  enableOffers: false,
-  minOffer: 0,
-  quantity: 1,
-  sku: '',
-  returnPolicy: undefined, // ✅ Sửa ở đây
-},
-
+      title: '',
+      category: '',
+      isPrivate: false,
+      condition: 'brand_new',
+      description: '',
+      specs: [{ key: '', value: '' }],
+      videoUrl: '',
+      price: 0,
+      enableOffers: false,
+      minOffer: 0,
+      quantity: 1,
+      sku: '',
+      returnPolicy: undefined,
+    },
   });
 
   const onSubmit: SubmitHandler<ProductFormData> = async (data) => {
     setLoading(true);
+
     const {
       data: { user },
     } = await supabase.auth.getUser();
@@ -62,32 +59,6 @@ export default function SellPage() {
       alert('You must be logged in to post.');
       setLoading(false);
       return;
-    }
-
-    const uploadedImageUrls: string[] = [];
-    for (const file of data.images) {
-      const fileName = `${user.id}-${Date.now()}-${file.name}`;
-      const { error: uploadError } = await supabase.storage
-        .from('product-images')
-        .upload(fileName, file);
-
-      if (uploadError) {
-        alert('Image upload failed');
-        setLoading(false);
-        return;
-      }
-
-      const { data: publicUrlData } = supabase.storage
-        .from('product-images')
-        .getPublicUrl(fileName);
-
-      if (!publicUrlData?.publicUrl) {
-        alert('Failed to get public image URL');
-        setLoading(false);
-        return;
-      }
-
-      uploadedImageUrls.push(publicUrlData.publicUrl);
     }
 
     const { error: insertError } = await supabase.from('products').insert([
@@ -99,7 +70,7 @@ export default function SellPage() {
         condition: data.condition,
         description: data.description,
         specs: data.specs,
-        images: uploadedImageUrls,
+        images: [], // không upload ảnh, gửi mảng rỗng
         video_url: data.videoUrl,
         price: data.price,
         enable_offers: data.enableOffers,
@@ -132,8 +103,8 @@ export default function SellPage() {
           <ListingTitleInput register={register} error={errors.title} />
           <PrivateToggle register={register} />
         </div>
-        <TechSpecsEditor control={control} />1
-       
+
+        <TechSpecsEditor control={control} />
         <ConditionSelectorSection register={register} />
         <DescriptionEditorSection control={control} error={errors.description} />
         <ProductVideoInput register={register} error={errors.videoUrl} />

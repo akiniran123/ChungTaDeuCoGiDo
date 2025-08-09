@@ -38,6 +38,7 @@ export default function SellPage() {
       condition: 'brand_new',
       description: '',
       specs: [{ key: '', value: '' }],
+      images: [], // Giữ cho đúng schema nhưng sẽ không upload
       videoUrl: '',
       price: 0,
       enableOffers: false,
@@ -61,6 +62,7 @@ export default function SellPage() {
       return;
     }
 
+    // Không upload ảnh, gửi mảng rỗng
     const { error: insertError } = await supabase.from('products').insert([
       {
         user_id: user.id,
@@ -70,7 +72,7 @@ export default function SellPage() {
         condition: data.condition,
         description: data.description,
         specs: data.specs,
-        images: [], // Không upload ảnh, gửi mảng rỗng
+        images: [], // Luôn là mảng rỗng
         video_url: data.videoUrl,
         price: data.price,
         enable_offers: data.enableOffers,

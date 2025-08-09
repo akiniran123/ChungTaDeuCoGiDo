@@ -38,6 +38,7 @@ export default function SellPage() {
       condition: 'brand_new',
       description: '',
       specs: [{ key: '', value: '' }],
+      // images removed from defaults
       videoUrl: '',
       price: 0,
       enableOffers: false,
@@ -50,20 +51,32 @@ export default function SellPage() {
 
   const onSubmit: SubmitHandler<ProductFormData> = async (data) => {
     setLoading(true);
+    console.log('Form submit data (raw):', data);
 
-    const {
-      data: { user },
-    } = await supabase.auth.getUser();
-
-    if (!user) {
-      alert('You must be logged in to post.');
+    // Extra: re-validate with zod at runtime and log errors if any
+    const safe = productSchema.safeParse(data);
+    if (!safe.success) {
+      console.error('Zod validation failed:', safe.error.format());
+      alert('Validation failed — check console for details.');
       setLoading(false);
       return;
     }
 
-    // Chỉ upload dữ liệu text
-    const { error: insertError } = await supabase.from('products').insert([
-      {
+    try {
+      // check user
+      const {
+        data: { user },
+        error: userError,
+      } = await supabase.auth.getUser();
+
+      if (userError || !user) {
+        console.error('Auth getUser error or no user:', userError);
+        alert('You must be logged in to post.');
+        setLoading(false);
+        return;
+      }
+
+      const payload = {
         user_id: user.id,
         title: data.title,
         category: data.category,
@@ -71,24 +84,42 @@ export default function SellPage() {
         condition: data.condition,
         description: data.description,
         specs: data.specs,
-        images: [], // Không dùng ảnh nữa
-        video_url: data.videoUrl,
+        // images completely removed
+        video_url: data.videoUrl || null,
         price: data.price,
         enable_offers: data.enableOffers,
         min_offer: data.minOffer,
         quantity: data.quantity,
-        sku: data.sku,
-        return_policy: data.returnPolicy,
-      },
-    ]);
+        sku: data.sku || null,
+        return_policy: data.returnPolicy || null,
+      };
 
-    setLoading(false);
+      console.log('Insert payload:', payload);
 
-    if (insertError) {
-      alert('Error submitting listing');
-      console.error(insertError.message);
-    } else {
+      // Insert and request returned rows so we can inspect response
+      const res = await supabase.from('products').insert([payload]).select('*');
+
+      // supabase-js v2 returns { data, error } — log both
+      console.log('Supabase insert response:', res);
+
+      // check error
+      // @ts-ignore
+      if (res.error) {
+        console.error('Insert error object:', res.error);
+        alert(`Insert error: ${res.error.message || JSON.stringify(res.error)}`);
+        setLoading(false);
+        return;
+      }
+
+      // success
+      console.log('Insert success, returned rows:', res.data);
       router.push('/');
+    } catch (err: any) {
+      // catch unexpected runtime errors
+      console.error('Unexpected error during submit:', err);
+      alert(`Unexpected error: ${err?.message ?? JSON.stringify(err)}`);
+    } finally {
+      setLoading(false);
     }
   };
 

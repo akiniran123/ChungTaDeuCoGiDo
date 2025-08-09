@@ -70,7 +70,7 @@ export default function SellPage() {
         condition: data.condition,
         description: data.description,
         specs: data.specs,
-        images: [], // không upload ảnh, gửi mảng rỗng
+        images: [], // Không upload ảnh, gửi mảng rỗng
         video_url: data.videoUrl,
         price: data.price,
         enable_offers: data.enableOffers,

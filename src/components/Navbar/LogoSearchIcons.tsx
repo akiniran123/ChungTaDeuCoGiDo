@@ -23,6 +23,11 @@ interface Props {
   onMenuToggle?: () => void
 }
 
+interface Listing {
+  id: string
+  title: string
+}
+
 export default function LogoSearchIcons({ onMenuToggle }: Props) {
   const [showLogin, setShowLogin] = useState(false)
   const [user, setUser] = useState<User | null>(null)
@@ -30,7 +35,7 @@ export default function LogoSearchIcons({ onMenuToggle }: Props) {
   const [pendingRedirect, setPendingRedirect] = useState(false)
 
   const [searchTerm, setSearchTerm] = useState('')
-  const [searchResults, setSearchResults] = useState<any[]>([])
+  const [searchResults, setSearchResults] = useState<Listing[]>([])
   const [searchLoading, setSearchLoading] = useState(false)
   const router = useRouter()
 
@@ -47,7 +52,7 @@ export default function LogoSearchIcons({ onMenuToggle }: Props) {
   useEffect(() => {
     const timer = setTimeout(() => {
       if (searchTerm.trim() !== '') {
-        performSearch(searchTerm)
+        void performSearch(searchTerm)
       } else {
         setSearchResults([])
       }
@@ -57,20 +62,19 @@ export default function LogoSearchIcons({ onMenuToggle }: Props) {
 
   const performSearch = async (query: string) => {
     setSearchLoading(true)
-    // Giả sử bạn có bảng "listings" trong Supabase
     const { data, error } = await supabase
       .from('listings')
       .select('id, title')
       .ilike('title', `%${query}%`)
       .limit(5)
 
-    if (!error) {
-      setSearchResults(data || [])
+    if (!error && data) {
+      setSearchResults(data as Listing[])
     }
     setSearchLoading(false)
   }
 
-  const handleSearchSubmit = (e: React.FormEvent) => {
+  const handleSearchSubmit = (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault()
     if (searchTerm.trim() !== '') {
       router.push(`/search?query=${encodeURIComponent(searchTerm)}`)
@@ -123,7 +127,6 @@ export default function LogoSearchIcons({ onMenuToggle }: Props) {
               />
             </form>
 
-            {/* Search results dropdown */}
             {searchResults.length > 0 && (
               <div className="absolute top-full left-0 right-0 bg-white dark:bg-gray-800 shadow-lg rounded-lg mt-1 overflow-hidden z-50">
                 {searchResults.map((item) => (
@@ -223,7 +226,6 @@ export default function LogoSearchIcons({ onMenuToggle }: Props) {
             />
           </form>
 
-          {/* Mobile search results */}
           {searchResults.length > 0 && (
             <div className="absolute top-full left-4 right-4 bg-white dark:bg-gray-800 shadow-lg rounded-lg mt-1 overflow-hidden z-50">
               {searchResults.map((item) => (
@@ -241,7 +243,6 @@ export default function LogoSearchIcons({ onMenuToggle }: Props) {
         </div>
       </div>
 
-      {/* Login Modal */}
       {showLogin && (
         <LoginModal
           redirectTo={pendingRedirect ? '/sell' : undefined}

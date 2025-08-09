@@ -13,8 +13,8 @@ export const productSchema = z.object({
   ]),
   description: z.string().min(10),
   specs: z.array(z.object({ key: z.string(), value: z.string() })),
-  // Bỏ images hoặc để optional nếu sau này dùng lại
-  images: z.array(z.instanceof(File)).max(10).optional(),
+  // Ảnh giờ không bắt buộc nữa, mặc định là mảng rỗng
+  images: z.array(z.instanceof(File)).max(10).default([]),
   videoUrl: z.string().url().optional(),
   price: z.number().min(0),
   enableOffers: z.boolean(),

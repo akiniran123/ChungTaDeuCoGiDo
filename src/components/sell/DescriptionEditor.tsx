@@ -1,44 +1,73 @@
-import { Control, Controller } from 'react-hook-form';
+'use client';
+
+import { Control, Controller, FieldError } from 'react-hook-form';
 import { ProductFormData } from '@/types/form';
+import dynamic from 'next/dynamic';
+
+const SimpleMDE = dynamic(() => import('react-simplemde-editor'), { ssr: false });
 
 type Props = {
   control: Control<ProductFormData>;
-  error?: {
-    message?: string;
-  };
+  error?: FieldError;
 };
 
-export default function DescriptionEditor({ control, error }: Props) {
+export default function DescriptionEditorSection({ control, error }: Props) {
   return (
-    <div className="space-y-3">
-      <label className="font-semibold text-lg block">Product description <span className="text-red-500">*</span></label>
-      <div className="grid md:grid-cols-2 gap-4">
-        {/* Input */}
+    <div className="grid md:grid-cols-2 gap-6">
+      <div>
+        <label className="block font-medium mb-1">Product description <span className="text-red-500">*</span></label>
+        <p className="text-sm text-gray-600 mb-2">
+          Describe your listing: the more details, the better for buyers!
+        </p>
+        <p className="text-sm text-gray-600">
+          Markdown formatting is supported: check out this{' '}
+          <a
+            href="https://www.markdownguide.org/cheat-sheet/"
+            target="_blank"
+            rel="noopener noreferrer"
+            className="underline font-medium"
+          >
+            cheat sheet
+          </a>{' '}
+          for syntax help.
+        </p>
+      </div>
+
+      <div>
+        <label className="block font-medium mb-1">Markdown guide:</label>
+        <div className="text-sm border rounded p-4 bg-gray-50 whitespace-pre-wrap">
+{`This is some normal text.
+*Single asterisks italicize text*.
+**Double asterisks make bold text**.
+
+Use blank lines to create new paragraphs.
+
+Use hyphens to make unordered lists:
+- Item 1
+- Item 2
+
+To make ordered lists:
+1. First item
+2. Second item
+
+Add horizontal rules with --- on a line by themselves.`}
+        </div>
+      </div>
+
+      <div className="col-span-2 mt-4">
         <Controller
           name="description"
           control={control}
           render={({ field }) => (
-            <textarea
+            <SimpleMDE
               {...field}
-              placeholder="Describe your listing: the more details, the better for buyers!"
-              rows={10}
-              className="w-full border rounded px-3 py-2"
+              placeholder="Describe your item..."
+              className="border rounded"
             />
           )}
         />
-
-        {/* Markdown Guide */}
-        <div className="bg-gray-50 border rounded px-3 py-2 text-sm text-gray-700">
-          <p className="font-medium mb-2">Markdown guide:</p>
-          <p>This is some normal text.</p>
-          <p><em>*Single asterisks italicize text*</em></p>
-          <p><strong>**Double asterisks make bold text**</strong></p>
-          <p>`Backticks` for inline code</p>
-          <p>- List item 1</p>
-          <p>- List item 2</p>
-        </div>
+        {error && <p className="text-red-500 text-sm mt-1">{error.message}</p>}
       </div>
-      {error?.message && <p className="text-red-500 text-sm">{error.message}</p>}
     </div>
   );
 }

@@ -3,9 +3,7 @@ import { ProductFormData } from '@/types/form';
 
 type Props = {
   register: UseFormRegister<ProductFormData>;
-  error?: {
-    message?: string;
-  };
+  error?: { message?: string };
 };
 
 export default function CategorySelect({ register, error }: Props) {
@@ -25,7 +23,9 @@ export default function CategorySelect({ register, error }: Props) {
         <option value="peripheral">Peripheral</option>
         <option value="other">Other</option>
       </select>
-      {error?.message && <p className="text-red-500 text-sm mt-1">{error.message}</p>}
+      {error?.message && (
+        <p className="text-red-500 text-sm mt-1">{error.message}</p>
+      )}
     </div>
   );
 }

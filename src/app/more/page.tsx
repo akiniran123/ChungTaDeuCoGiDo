@@ -1,8 +1,8 @@
-export default function NewPage() {
+export default function MorePage() {
   return (
     <div className="p-4">
-      <h1 className="text-2xl font-bold">New Listings</h1>
-      <p>Trang hiển thị các sản phẩm mới.</p>
+      <h1 className="text-2xl font-bold">More</h1>
+      <p>Trang tổng hợp các tùy chọn khác.</p>
     </div>
   );
 }

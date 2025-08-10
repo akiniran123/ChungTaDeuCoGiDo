@@ -1,8 +1,8 @@
-export default function NewPage() {
+export default function RetroPage() {
   return (
     <div className="p-4">
-      <h1 className="text-2xl font-bold">New Listings</h1>
-      <p>Trang hiển thị các sản phẩm mới.</p>
+      <h1 className="text-2xl font-bold">Retro Systems</h1>
+      <p>Trang máy tính cổ điển - retro builds.</p>
     </div>
   );
 }

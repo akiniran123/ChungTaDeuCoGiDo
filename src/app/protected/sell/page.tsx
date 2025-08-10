@@ -4,7 +4,6 @@ import { useState } from 'react';
 import { useRouter } from 'next/navigation';
 import { useForm, SubmitHandler } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
-import { PostgrestError } from '@supabase/supabase-js';
 
 import { supabase } from '@/lib/supabase/client';
 import { productSchema, ProductFormData } from '@/types/form';
@@ -20,10 +19,12 @@ import ProductVideoInput from '@/components/sell/ProductVideoInput';
 import { PriceAndOffers } from '@/components/sell/PriceAndOffers';
 import ReturnPolicies from '@/components/sell/ReturnPolicies';
 import ActionButtons from '@/components/sell/ActionButtons';
+import ImageUploader from '@/components/sell/ImageUploader'; // mới thêm
 
 export default function SellPage() {
   const router = useRouter();
   const [loading, setLoading] = useState(false);
+  const [imageUrl, setImageUrl] = useState<string | null>(null);
 
   const {
     register,
@@ -51,25 +52,22 @@ export default function SellPage() {
 
   const onSubmit: SubmitHandler<ProductFormData> = async (data) => {
     setLoading(true);
-    console.log('Form submit data (raw):', data);
 
     const safe = productSchema.safeParse(data);
     if (!safe.success) {
-      console.error('Zod validation failed:', safe.error.format());
       alert('Validation failed — check console for details.');
+      console.error(safe.error.format());
       setLoading(false);
       return;
     }
 
     try {
-      // Check user
       const {
         data: { user },
         error: userError,
       } = await supabase.auth.getUser();
 
       if (userError || !user) {
-        console.error('Auth getUser error or no user:', userError);
         alert('You must be logged in to post.');
         return;
       }
@@ -83,6 +81,7 @@ export default function SellPage() {
         description: data.description,
         specs: data.specs,
         video_url: data.videoUrl || null,
+        image_url: imageUrl, // thêm ảnh vào payload
         price: data.price,
         enable_offers: data.enableOffers,
         min_offer: data.minOffer,
@@ -91,29 +90,19 @@ export default function SellPage() {
         return_policy: data.returnPolicy || null,
       };
 
-      console.log('Insert payload:', payload);
-
-      const { data: insertedRows, error: insertError } = await supabase
+      const { error: insertError } = await supabase
         .from('products')
-        .insert([payload])
-        .select('*');
+        .insert([payload]);
 
       if (insertError) {
-        console.error('Insert error object:', insertError);
         alert(`Insert error: ${insertError.message}`);
         return;
       }
 
-      console.log('Insert success, returned rows:', insertedRows);
       router.push('/');
-    } catch (err: unknown) {
-      if (err instanceof Error) {
-        console.error('Unexpected error during submit:', err);
-        alert(`Unexpected error: ${err.message}`);
-      } else {
-        console.error('Unexpected non-Error thrown:', err);
-        alert(`Unexpected error: ${JSON.stringify(err)}`);
-      }
+    } catch (err) {
+      console.error(err);
+      alert('Unexpected error, check console.');
     } finally {
       setLoading(false);
     }
@@ -130,6 +119,12 @@ export default function SellPage() {
           <CategorySelect register={register} error={errors.category} />
           <ListingTitleInput register={register} error={errors.title} />
           <PrivateToggle register={register} />
+
+          {/* Upload ảnh */}
+          <ImageUploader onUploadComplete={(url) => setImageUrl(url)} />
+          {imageUrl && (
+            <p className="text-sm text-green-600">Image uploaded successfully!</p>
+          )}
         </div>
 
         <TechSpecsEditor control={control} />

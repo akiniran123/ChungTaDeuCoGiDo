@@ -1,19 +1,24 @@
 'use client';
 
-interface BuildHeaderProps {
-  buildName?: string;
-  totalPrice?: string;
-}
-
-export default function BuildHeader({
-  buildName = 'My Custom Build',
-  totalPrice = '$1,234.56',
-}: BuildHeaderProps) {
+export default function BuildHeader() {
   return (
-    <header className="flex flex-col sm:flex-row justify-between items-center mb-6">
-      <h1 className="text-3xl font-semibold">{buildName}</h1>
-      <div className="mt-2 sm:mt-0 text-gray-700 dark:text-gray-300 font-medium text-lg">
-        Total Price: <span className="text-green-600 dark:text-green-400">{totalPrice}</span>
+    <header className="flex flex-col sm:flex-row justify-between items-center mb-8">
+      <h1 className="text-4xl font-bold tracking-tight text-gray-900 dark:text-gray-100">
+        New PC Build
+      </h1>
+      <div className="mt-4 sm:mt-0 flex items-center gap-4">
+        <button
+          type="button"
+          className="rounded bg-blue-600 px-4 py-2 text-white hover:bg-blue-700 transition"
+        >
+          Save List
+        </button>
+        <button
+          type="button"
+          className="rounded border border-gray-300 px-4 py-2 text-gray-700 hover:bg-gray-100 transition"
+        >
+          Share List
+        </button>
       </div>
     </header>
   );

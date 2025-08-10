@@ -1,65 +1,26 @@
-@import "tailwindcss";
-
 :root {
-  --background: #f8f9fa;
-  --foreground: #1f2937;
-  --card-bg: #ffffff;
-  --border-color: #e5e7eb;
-  --primary: #2563eb;
-  --primary-hover: #1d4ed8;
-  --muted: #6b7280;
-  --link: #2563eb;
-  --link-hover: #1d4ed8;
+  --color-text-primary: #111827; /* giống text-gray-900 */
+  --color-text-secondary: #4b5563; /* giống text-gray-600 */
+  --color-bg: #ffffff;
+  --color-border: #e5e7eb;
 }
 
-/* Apply global background and text color */
+html {
+  color: var(--color-text-primary);
+  background-color: var(--color-bg);
+  font-family: Inter, system-ui, sans-serif;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+}
+
 body {
-  @apply bg-[var(--background)] text-[var(--foreground)] font-sans;
+  @apply text-base;
 }
 
-/* Links */
 a {
-  @apply text-[var(--link)] transition-colors duration-150;
-}
-a:hover {
-  @apply text-[var(--link-hover)];
+  @apply text-blue-600 hover:text-blue-700 transition-colors;
 }
 
-/* Card style (optional) */
-.card {
-  @apply bg-[var(--card-bg)] border border-[var(--border-color)] rounded-xl shadow-sm;
-}
-
-/* Scrollbar (Webkit browsers) */
-::-webkit-scrollbar {
-  width: 8px;
-  height: 8px;
-}
-::-webkit-scrollbar-track {
-  background: transparent;
-}
-::-webkit-scrollbar-thumb {
-  background-color: rgba(100, 116, 139, 0.4); /* slate-500/40 */
-  border-radius: 9999px;
-}
-::-webkit-scrollbar-thumb:hover {
-  background-color: rgba(100, 116, 139, 0.6); /* slate-500/60 */
-}
-
-/* Selection */
-::selection {
-  background-color: var(--primary);
-  color: white;
-}
-
-/* Headings weight tweak (similar to Jawa.gg) */
-h1, h2, h3, h4, h5, h6 {
-  @apply font-semibold tracking-tight;
-}
-
-/* Form inputs match Jawa.gg style */
-input, textarea, select {
-  @apply border border-[var(--border-color)] rounded-lg px-3 py-2 text-sm
-         focus:outline-none focus:ring-2 focus:ring-[var(--primary)] focus:border-[var(--primary)];
-  background-color: white;
+button {
+  @apply transition-colors;
 }

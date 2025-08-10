@@ -16,8 +16,6 @@ import {
 import { Menu as HeadlessMenu } from '@headlessui/react'
 import { supabase } from '@/lib/supabase/client'
 import type { User } from '@supabase/supabase-js'
-
-import ThemeToggle from './ThemeToggle'
 import LoginModal from '@/components/auth/LoginModal'
 
 interface Props {
@@ -49,7 +47,6 @@ export default function LogoSearchIcons({ onMenuToggle }: Props) {
     getUser()
   }, [])
 
-  // Debounce search
   useEffect(() => {
     const timer = setTimeout(() => {
       if (searchTerm.trim()) void performSearch(searchTerm)
@@ -90,12 +87,12 @@ export default function LogoSearchIcons({ onMenuToggle }: Props) {
 
   return (
     <>
-      <header className="w-full border-b border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-900">
+      <header className="w-full border-b border-gray-200 bg-white">
         <div className="max-w-7xl mx-auto px-4 py-3 flex items-center justify-between gap-4">
-          {/* Left: Hamburger + Logo */}
+          {/* Left: Menu + Logo */}
           <div className="flex items-center gap-3">
             <button
-              className="sm:hidden text-gray-700 dark:text-gray-300"
+              className="sm:hidden text-gray-700"
               onClick={onMenuToggle}
               aria-label="Toggle menu"
             >
@@ -103,7 +100,7 @@ export default function LogoSearchIcons({ onMenuToggle }: Props) {
             </button>
             <Link href="/" className="flex items-center space-x-2 text-2xl font-bold">
               <span className="text-[#9b4de0]">🛡</span>
-              <span className="text-black dark:text-white">jawa</span>
+              <span className="text-gray-900">jawa</span>
             </Link>
           </div>
 
@@ -116,16 +113,16 @@ export default function LogoSearchIcons({ onMenuToggle }: Props) {
                 value={searchTerm}
                 onChange={(e) => setSearchTerm(e.target.value)}
                 placeholder="Search listings and sellers"
-                className="w-full pl-11 pr-4 py-2 bg-gray-100 dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-full text-sm focus:outline-none focus:border-indigo-500 focus:ring-2 focus:ring-indigo-500 transition"
+                className="w-full pl-11 pr-4 py-2 bg-white border border-gray-300 rounded-full text-sm focus:outline-none focus:border-[#9b4de0] focus:ring-2 focus:ring-[#9b4de0] transition"
               />
             </form>
             {searchResults.length > 0 && (
-              <div className="absolute top-full left-0 right-0 mt-1 bg-white dark:bg-gray-800 shadow-lg rounded-lg overflow-hidden z-50">
+              <div className="absolute top-full left-0 right-0 mt-1 bg-white shadow-lg rounded-lg overflow-hidden z-50">
                 {searchResults.map((item) => (
                   <Link
                     key={item.id}
                     href={`/listing/${item.id}`}
-                    className="block px-4 py-2 hover:bg-gray-100 dark:hover:bg-gray-700 text-sm"
+                    className="block px-4 py-2 hover:bg-gray-100 text-sm"
                     onClick={() => setSearchResults([])}
                   >
                     {item.title}
@@ -134,7 +131,7 @@ export default function LogoSearchIcons({ onMenuToggle }: Props) {
               </div>
             )}
             {searchLoading && (
-              <div className="absolute top-full left-0 right-0 mt-1 p-2 text-sm text-gray-500 dark:text-gray-400 bg-white dark:bg-gray-800 rounded-lg shadow-lg">
+              <div className="absolute top-full left-0 right-0 mt-1 p-2 text-sm text-gray-500 bg-white rounded-lg shadow-lg">
                 Searching...
               </div>
             )}
@@ -148,26 +145,26 @@ export default function LogoSearchIcons({ onMenuToggle }: Props) {
               <>
                 <button
                   onClick={handleStartSelling}
-                  className="hidden sm:inline-block bg-gradient-to-r from-[#9b4de0] to-[#7c3aed] text-white px-4 py-1.5 rounded-full text-sm font-semibold shadow-sm hover:opacity-90 transition"
+                  className="hidden sm:inline-block bg-[#9b4de0] text-white px-4 py-1.5 rounded-full text-sm font-semibold shadow-sm hover:bg-[#873ac7] transition"
                 >
                   Start Selling
                 </button>
-                <Heart className="w-5 h-5 hover:text-indigo-500 cursor-pointer" onClick={handleIconClick} />
-                <Bell className="w-5 h-5 hover:text-indigo-500 cursor-pointer" onClick={handleIconClick} />
-                <ShoppingCart className="w-5 h-5 hover:text-indigo-500 cursor-pointer" onClick={handleIconClick} />
+                <Heart className="w-5 h-5 text-gray-600 hover:text-[#9b4de0] cursor-pointer" onClick={handleIconClick} />
+                <Bell className="w-5 h-5 text-gray-600 hover:text-[#9b4de0] cursor-pointer" onClick={handleIconClick} />
+                <ShoppingCart className="w-5 h-5 text-gray-600 hover:text-[#9b4de0] cursor-pointer" onClick={handleIconClick} />
 
                 {user ? (
                   <HeadlessMenu as="div" className="relative">
-                    <HeadlessMenu.Button className="flex items-center gap-1 text-sm hover:text-indigo-500">
+                    <HeadlessMenu.Button className="flex items-center gap-1 text-sm text-gray-700 hover:text-[#9b4de0]">
                       <UserIcon className="w-5 h-5" />
                       <ChevronDown className="w-4 h-4" />
                     </HeadlessMenu.Button>
-                    <HeadlessMenu.Items className="absolute right-0 mt-2 w-40 bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-md shadow-lg z-50 text-sm">
+                    <HeadlessMenu.Items className="absolute right-0 mt-2 w-40 bg-white border border-gray-200 rounded-md shadow-lg z-50 text-sm">
                       <HeadlessMenu.Item>
                         {({ active }) => (
                           <button
                             onClick={() => router.push('/profile')}
-                            className={`block w-full px-4 py-2 text-left ${active ? 'bg-gray-100 dark:bg-gray-700' : ''}`}
+                            className={`block w-full px-4 py-2 text-left ${active ? 'bg-gray-100' : ''}`}
                           >
                             Profile
                           </button>
@@ -181,7 +178,7 @@ export default function LogoSearchIcons({ onMenuToggle }: Props) {
                               setUser(null)
                               router.refresh()
                             }}
-                            className={`block w-full px-4 py-2 text-left text-red-500 ${active ? 'bg-gray-100 dark:bg-gray-700' : ''}`}
+                            className={`block w-full px-4 py-2 text-left text-red-500 ${active ? 'bg-gray-100' : ''}`}
                           >
                             Sign out
                           </button>
@@ -190,9 +187,8 @@ export default function LogoSearchIcons({ onMenuToggle }: Props) {
                     </HeadlessMenu.Items>
                   </HeadlessMenu>
                 ) : (
-                  <UserIcon className="w-5 h-5 hover:text-indigo-500 cursor-pointer" onClick={handleIconClick} />
+                  <UserIcon className="w-5 h-5 text-gray-600 hover:text-[#9b4de0] cursor-pointer" onClick={handleIconClick} />
                 )}
-                <ThemeToggle />
               </>
             )}
           </div>
@@ -207,7 +203,7 @@ export default function LogoSearchIcons({ onMenuToggle }: Props) {
               value={searchTerm}
               onChange={(e) => setSearchTerm(e.target.value)}
               placeholder="Search listings and sellers"
-              className="w-full pl-11 pr-4 py-2 bg-gray-100 dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-full text-sm"
+              className="w-full pl-11 pr-4 py-2 bg-white border border-gray-300 rounded-full text-sm"
             />
           </form>
         </div>

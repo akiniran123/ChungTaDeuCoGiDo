@@ -1,4 +1,3 @@
-
 'use client';
 
 import Link from 'next/link';
@@ -26,22 +25,10 @@ const mainLinksRight: MainLink[] = [
 ];
 
 const categoryMenu = [
-  {
-    name: 'PC',
-    subItems: ['PC Gaming', 'PC Văn Phòng', 'PC Workstation'],
-  },
-  {
-    name: 'Thời trang',
-    subItems: ['Nam', 'Nữ', 'Phụ kiện'],
-  },
-  {
-    name: 'Xe cộ',
-    subItems: ['Ô tô', 'Xe máy', 'Phụ tùng'],
-  },
-  {
-    name: 'Công nghệ',
-    subItems: ['Điện thoại', 'Laptop', 'Thiết bị thông minh'],
-  },
+  { name: 'PC', subItems: ['PC Gaming', 'PC Văn Phòng', 'PC Workstation'] },
+  { name: 'Thời trang', subItems: ['Nam', 'Nữ', 'Phụ kiện'] },
+  { name: 'Xe cộ', subItems: ['Ô tô', 'Xe máy', 'Phụ tùng'] },
+  { name: 'Công nghệ', subItems: ['Điện thoại', 'Laptop', 'Thiết bị thông minh'] },
 ];
 
 export default function NavLinks() {
@@ -73,16 +60,17 @@ export default function NavLinks() {
         <span className="text-sm font-semibold">MENU</span>
       </div>
 
-      {/* Desktop menu (CĂN TRÁI) */}
-      <nav className="hidden md:flex justify-start gap-6 font-semibold text-sm py-3 relative px-6">
+      {/* Desktop menu */}
+      <nav className="hidden md:flex justify-start gap-6 font-semibold text-sm px-6 h-[64px] items-center">
         {/* Danh mục */}
         <div
-          className="relative"
+          className="relative flex items-center h-full ml-[12px]" // chỉnh khoảng cách này cho thẳng logo
           onMouseEnter={handleMouseEnter}
           onMouseLeave={handleMouseLeave}
         >
-          <div className="flex items-center gap-1 cursor-pointer hover:text-indigo-600">
-            Danh mục <ChevronDown className="w-4 h-4" />
+          <div className="flex items-center gap-1 cursor-pointer hover:text-indigo-600 h-full">
+            <span className="flex items-center h-full">Danh mục</span>
+            <ChevronDown className="w-4 h-4" />
           </div>
 
           {categoryOpen && (
@@ -129,7 +117,7 @@ export default function NavLinks() {
           <Link
             key={path}
             href={path}
-            className={`hover:text-indigo-600 transition-colors ${
+            className={`hover:text-indigo-600 transition-colors flex items-center h-full ${
               pathname === path ? 'text-indigo-500 underline underline-offset-4' : ''
             }`}
           >
@@ -149,7 +137,7 @@ export default function NavLinks() {
           <Link
             key={path}
             href={path}
-            className={`hover:text-indigo-600 transition-colors ${
+            className={`hover:text-indigo-600 transition-colors flex items-center h-full ${
               pathname === path ? 'text-indigo-500 underline underline-offset-4' : ''
             }`}
           >
@@ -184,4 +172,4 @@ export default function NavLinks() {
       )}
     </div>
   );
-}                
+}

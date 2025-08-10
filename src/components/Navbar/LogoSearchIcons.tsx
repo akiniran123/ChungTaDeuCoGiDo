@@ -98,7 +98,7 @@ export default function LogoSearchIcons({ onMenuToggle }: Props) {
 
   return (
     <>
-      <div className="w-full border-b dark:border-gray-700 relative">
+      <div className="w-full border-b border-gray-200 dark:border-gray-700 relative">
         <div className="max-w-7xl mx-auto px-4 py-3 flex items-center justify-between gap-4">
           {/* Left: Hamburger + Logo */}
           <div className="flex items-center gap-3">
@@ -125,14 +125,7 @@ export default function LogoSearchIcons({ onMenuToggle }: Props) {
                 value={searchTerm}
                 onChange={(e) => setSearchTerm(e.target.value)}
                 placeholder="Search listings and sellers"
-                className="
-                  w-full pl-11 pr-4 py-2
-                  bg-gray-100 border border-gray-200
-                  rounded-full text-sm text-gray-900
-                  placeholder-gray-400
-                  focus:outline-none focus:border-indigo-500 focus:ring-2 focus:ring-indigo-500
-                  transition
-                "
+                className="w-full pl-11 pr-4 py-2 bg-gray-100 dark:bg-gray-900 border border-gray-200 dark:border-gray-700 rounded-full text-sm text-gray-900 dark:text-gray-100 placeholder-gray-400 dark:placeholder-gray-500 focus:outline-none focus:border-indigo-500 focus:ring-2 focus:ring-indigo-500 transition"
               />
             </form>
 
@@ -152,7 +145,7 @@ export default function LogoSearchIcons({ onMenuToggle }: Props) {
               </div>
             )}
             {searchLoading && (
-              <div className="absolute top-full left-0 right-0 bg-white dark:bg-gray-800 shadow-lg rounded-lg mt-1 p-2 text-sm text-gray-500">
+              <div className="absolute top-full left-0 right-0 bg-white dark:bg-gray-800 shadow-lg rounded-lg mt-1 p-2 text-sm text-gray-500 dark:text-gray-400">
                 Searching...
               </div>
             )}
@@ -183,7 +176,7 @@ export default function LogoSearchIcons({ onMenuToggle }: Props) {
                       <ChevronDown className="w-4 h-4" />
                     </HeadlessMenu.Button>
 
-                    <HeadlessMenu.Items className="absolute right-0 mt-2 w-40 bg-white dark:bg-gray-800 border rounded-md shadow-lg z-50 text-sm">
+                    <HeadlessMenu.Items className="absolute right-0 mt-2 w-40 bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-md shadow-lg z-50 text-sm">
                       <HeadlessMenu.Item>
                         {({ active }) => (
                           <button
@@ -233,14 +226,7 @@ export default function LogoSearchIcons({ onMenuToggle }: Props) {
               value={searchTerm}
               onChange={(e) => setSearchTerm(e.target.value)}
               placeholder="Search listings and sellers"
-              className="
-                w-full pl-11 pr-4 py-2
-                bg-gray-100 border border-gray-200
-                rounded-full text-sm text-gray-900
-                placeholder-gray-400
-                focus:outline-none focus:border-indigo-500 focus:ring-2 focus:ring-indigo-500
-                transition
-              "
+              className="w-full pl-11 pr-4 py-2 bg-gray-100 dark:bg-gray-900 border border-gray-200 dark:border-gray-700 rounded-full text-sm text-gray-900 dark:text-gray-100 placeholder-gray-400 dark:placeholder-gray-500 focus:outline-none focus:border-indigo-500 focus:ring-2 focus:ring-indigo-500 transition"
             />
           </form>
 

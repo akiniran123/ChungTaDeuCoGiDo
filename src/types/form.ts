@@ -13,7 +13,8 @@ export const productSchema = z.object({
   ]),
   description: z.string().min(10, "Description must be at least 10 characters"),
   specs: z.array(z.object({ key: z.string(), value: z.string() })),
-  videoUrl: z.string().url().optional(),
+  videoUrl: z.string().url("Invalid video URL").optional(),
+  imageUrl: z.string().url("Invalid image URL").optional(), // ✅ mới thêm
   price: z.number().min(0, "Price must be positive"),
   enableOffers: z.boolean(),
   minOffer: z.number().min(0),

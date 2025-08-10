@@ -1,7 +1,5 @@
 @import "tailwindcss";
-
-
-@import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700&display=swap');
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap');
 
 html {
   font-family: 'Inter', sans-serif;
@@ -15,37 +13,55 @@ body {
   line-height: 1.6;
 }
 
-/* Heading */
+/* Heading styles */
 h1, h2, h3, h4, h5, h6 {
   @apply font-semibold text-gray-800;
 }
 
-/* Link */
+/* Links */
 a {
-  @apply text-indigo-600 hover:text-indigo-500 transition-colors;
+  @apply text-blue-600 hover:text-blue-500 transition-colors;
 }
 
-/* Form elements */
+/* Inputs, selects, textarea */
 input,
 select,
-textarea,
-button {
+textarea {
   font-family: inherit;
   @apply border border-gray-300 rounded-md px-3 py-2 text-sm;
+  @apply focus:ring-2 focus:ring-blue-500 focus:outline-none;
+  transition: border-color 0.2s ease-in-out;
 }
 
-input:focus,
-select:focus,
-textarea:focus {
-  @apply ring-2 ring-indigo-500 outline-none;
+/* Buttons */
+button {
+  font-family: inherit;
+  @apply px-4 py-2 rounded-md font-medium text-sm transition-all;
 }
 
-/* Card style */
+.btn-primary {
+  @apply bg-blue-600 text-white hover:bg-blue-500 active:bg-blue-700;
+}
+
+.btn-secondary {
+  @apply bg-gray-100 text-gray-800 hover:bg-gray-200;
+}
+
+/* Cards */
 .card {
-  @apply border border-gray-200 rounded-lg shadow-sm bg-white;
+  @apply bg-white border border-gray-200 rounded-lg shadow-sm p-4;
 }
 
-/* Utility spacing reset */
+/* Tables */
+table {
+  @apply w-full border-collapse;
+}
+
+th, td {
+  @apply border border-gray-200 px-4 py-2 text-left;
+}
+
+/* Reset list spacing */
 p, ul, ol {
   margin: 0;
   padding: 0;
@@ -53,9 +69,4 @@ p, ul, ol {
 
 ul, ol {
   list-style-position: inside;
-}
-
-/* Searchbar custom */
-.search-input {
-  @apply w-full px-4 py-2 rounded-full border border-gray-300 bg-gray-100 dark:bg-gray-800 text-sm;
 }

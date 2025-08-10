@@ -17,7 +17,6 @@ import { Menu as HeadlessMenu } from '@headlessui/react'
 import { supabase } from '@/lib/supabase/client'
 import type { User } from '@supabase/supabase-js'
 
-import ThemeToggle from './ThemeToggle'
 import LoginModal from '@/components/auth/LoginModal'
 
 interface Props {
@@ -98,12 +97,12 @@ export default function LogoSearchIcons({ onMenuToggle }: Props) {
 
   return (
     <>
-      <div className="w-full border-b border-gray-200 dark:border-gray-700 relative">
+      <div className="w-full border-b border-gray-200 relative">
         <div className="max-w-7xl mx-auto px-4 py-3 flex items-center justify-between gap-4">
           {/* Left: Hamburger + Logo */}
           <div className="flex items-center gap-3">
             <button
-              className="sm:hidden text-gray-700 dark:text-gray-300"
+              className="sm:hidden text-gray-700"
               onClick={onMenuToggle}
               aria-label="Toggle menu"
             >
@@ -112,7 +111,7 @@ export default function LogoSearchIcons({ onMenuToggle }: Props) {
 
             <Link href="/" className="flex items-center space-x-2 text-2xl font-bold">
               <span className="text-[#9b4de0]">🛡</span>
-              <span className="text-black dark:text-white">jawa</span>
+              <span className="text-black">jawa</span>
             </Link>
           </div>
 
@@ -125,18 +124,25 @@ export default function LogoSearchIcons({ onMenuToggle }: Props) {
                 value={searchTerm}
                 onChange={(e) => setSearchTerm(e.target.value)}
                 placeholder="Search listings and sellers"
-                className="w-full pl-11 pr-4 py-2 bg-gray-100 dark:bg-gray-900 border border-gray-200 dark:border-gray-700 rounded-full text-sm text-gray-900 dark:text-gray-100 placeholder-gray-400 dark:placeholder-gray-500 focus:outline-none focus:border-indigo-500 focus:ring-2 focus:ring-indigo-500 transition"
+                className="
+                  w-full pl-11 pr-4 py-2
+                  bg-gray-100 border border-gray-200
+                  rounded-full text-sm text-gray-900
+                  placeholder-gray-400
+                  focus:outline-none focus:border-indigo-500 focus:ring-2 focus:ring-indigo-500
+                  transition
+                "
               />
             </form>
 
             {/* Search results */}
             {searchResults.length > 0 && (
-              <div className="absolute top-full left-0 right-0 bg-white dark:bg-gray-800 shadow-lg rounded-lg mt-1 overflow-hidden z-50">
+              <div className="absolute top-full left-0 right-0 bg-white shadow-lg rounded-lg mt-1 overflow-hidden z-50">
                 {searchResults.map((item) => (
                   <Link
                     key={item.id}
                     href={`/listing/${item.id}`}
-                    className="block px-4 py-2 hover:bg-gray-100 dark:hover:bg-gray-700 text-sm"
+                    className="block px-4 py-2 hover:bg-gray-100 text-sm"
                     onClick={() => setSearchResults([])}
                   >
                     {item.title}
@@ -145,7 +151,7 @@ export default function LogoSearchIcons({ onMenuToggle }: Props) {
               </div>
             )}
             {searchLoading && (
-              <div className="absolute top-full left-0 right-0 bg-white dark:bg-gray-800 shadow-lg rounded-lg mt-1 p-2 text-sm text-gray-500 dark:text-gray-400">
+              <div className="absolute top-full left-0 right-0 bg-white shadow-lg rounded-lg mt-1 p-2 text-sm text-gray-500">
                 Searching...
               </div>
             )}
@@ -157,12 +163,12 @@ export default function LogoSearchIcons({ onMenuToggle }: Props) {
               <Loader2 className="w-5 h-5 animate-spin text-gray-500" />
             ) : (
               <>
+                {/* Nút Start Selling kiểu cũ */}
                 <button
                   onClick={handleStartSelling}
-                  className="hidden sm:inline-block bg-indigo-600 hover:bg-indigo-700 text-white px-4 py-1.5 text-sm rounded-full font-semibold transition cursor-pointer"
-                  aria-label="Start Selling"
+                  className="hidden sm:inline-flex items-center bg-gradient-to-r from-[#9b4de0] to-[#7a2cc0] hover:opacity-90 text-white px-4 py-2 rounded-full font-semibold text-sm transition"
                 >
-                  START SELLING
+                  Start Selling
                 </button>
 
                 <Heart className="w-5 h-5 hover:text-indigo-500 cursor-pointer" onClick={handleIconClick} />
@@ -176,13 +182,13 @@ export default function LogoSearchIcons({ onMenuToggle }: Props) {
                       <ChevronDown className="w-4 h-4" />
                     </HeadlessMenu.Button>
 
-                    <HeadlessMenu.Items className="absolute right-0 mt-2 w-40 bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-md shadow-lg z-50 text-sm">
+                    <HeadlessMenu.Items className="absolute right-0 mt-2 w-40 bg-white border rounded-md shadow-lg z-50 text-sm">
                       <HeadlessMenu.Item>
                         {({ active }) => (
                           <button
                             onClick={() => router.push('/profile')}
                             className={`block w-full text-left px-4 py-2 ${
-                              active ? 'bg-gray-100 dark:bg-gray-700' : ''
+                              active ? 'bg-gray-100' : ''
                             }`}
                           >
                             Profile
@@ -198,7 +204,7 @@ export default function LogoSearchIcons({ onMenuToggle }: Props) {
                               router.refresh()
                             }}
                             className={`block w-full text-left px-4 py-2 text-red-500 ${
-                              active ? 'bg-gray-100 dark:bg-gray-700' : ''
+                              active ? 'bg-gray-100' : ''
                             }`}
                           >
                             Sign out
@@ -213,7 +219,14 @@ export default function LogoSearchIcons({ onMenuToggle }: Props) {
               </>
             )}
 
-            <ThemeToggle />
+            {/* Nút Dark/Light kiểu cũ */}
+            <button
+              className="bg-gray-200 hover:bg-gray-300 text-gray-800 rounded-full p-2 transition"
+              aria-label="Toggle Theme"
+              onClick={() => alert('Theme toggle action')}
+            >
+              🌞/🌙
+            </button>
           </div>
         </div>
 
@@ -226,17 +239,24 @@ export default function LogoSearchIcons({ onMenuToggle }: Props) {
               value={searchTerm}
               onChange={(e) => setSearchTerm(e.target.value)}
               placeholder="Search listings and sellers"
-              className="w-full pl-11 pr-4 py-2 bg-gray-100 dark:bg-gray-900 border border-gray-200 dark:border-gray-700 rounded-full text-sm text-gray-900 dark:text-gray-100 placeholder-gray-400 dark:placeholder-gray-500 focus:outline-none focus:border-indigo-500 focus:ring-2 focus:ring-indigo-500 transition"
+              className="
+                w-full pl-11 pr-4 py-2
+                bg-gray-100 border border-gray-200
+                rounded-full text-sm text-gray-900
+                placeholder-gray-400
+                focus:outline-none focus:border-indigo-500 focus:ring-2 focus:ring-indigo-500
+                transition
+              "
             />
           </form>
 
           {searchResults.length > 0 && (
-            <div className="absolute top-full left-4 right-4 bg-white dark:bg-gray-800 shadow-lg rounded-lg mt-1 overflow-hidden z-50">
+            <div className="absolute top-full left-4 right-4 bg-white shadow-lg rounded-lg mt-1 overflow-hidden z-50">
               {searchResults.map((item) => (
                 <Link
                   key={item.id}
                   href={`/listing/${item.id}`}
-                  className="block px-4 py-2 hover:bg-gray-100 dark:hover:bg-gray-700 text-sm"
+                  className="block px-4 py-2 hover:bg-gray-100 text-sm"
                   onClick={() => setSearchResults([])}
                 >
                   {item.title}

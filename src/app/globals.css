@@ -1,5 +1,6 @@
 @import "tailwindcss";
 
+
 @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700&display=swap');
 
 html {
@@ -12,53 +13,49 @@ html {
 body {
   @apply bg-white text-gray-900;
   line-height: 1.6;
-  margin: 0;
-  padding: 0;
 }
 
 /* Heading */
 h1, h2, h3, h4, h5, h6 {
   @apply font-semibold text-gray-800;
-  margin-top: 0;
-  margin-bottom: 0.5rem;
 }
 
-/* Links & buttons */
+/* Link */
 a {
   @apply text-indigo-600 hover:text-indigo-500 transition-colors;
 }
 
-button {
-  @apply font-sans;
-}
-
-/* Inputs */
+/* Form elements */
 input,
 select,
 textarea,
 button {
   font-family: inherit;
+  @apply border border-gray-300 rounded-md px-3 py-2 text-sm;
 }
 
-/* Borders, shadow, rounded */
-.border {
-  @apply border-gray-200;
+input:focus,
+select:focus,
+textarea:focus {
+  @apply ring-2 ring-indigo-500 outline-none;
 }
 
-.shadow {
-  @apply shadow-sm;
+/* Card style */
+.card {
+  @apply border border-gray-200 rounded-lg shadow-sm bg-white;
 }
 
-.rounded {
-  @apply rounded-md;
-}
-
-/* Utility defaults */
-p, ul, ol, form {
+/* Utility spacing reset */
+p, ul, ol {
   margin: 0;
   padding: 0;
 }
 
 ul, ol {
   list-style-position: inside;
+}
+
+/* Searchbar custom */
+.search-input {
+  @apply w-full px-4 py-2 rounded-full border border-gray-300 bg-gray-100 dark:bg-gray-800 text-sm;
 }

@@ -11,6 +11,7 @@ import {
   Menu,
   Loader2,
   ChevronDown,
+  Search,
 } from 'lucide-react'
 import { Menu as HeadlessMenu } from '@headlessui/react'
 import { supabase } from '@/lib/supabase/client'
@@ -115,18 +116,27 @@ export default function LogoSearchIcons({ onMenuToggle }: Props) {
             </Link>
           </div>
 
-          {/* Middle: Search (Desktop only) */}
+          {/* Middle: Search (Desktop) */}
           <div className="hidden sm:block flex-1 max-w-xl mx-4 relative">
-            <form onSubmit={handleSearchSubmit}>
+            <form onSubmit={handleSearchSubmit} className="relative">
+              <Search className="absolute left-4 top-1/2 -translate-y-1/2 text-gray-400 w-5 h-5" />
               <input
                 type="text"
                 value={searchTerm}
                 onChange={(e) => setSearchTerm(e.target.value)}
                 placeholder="Search listings and sellers"
-                className="w-full px-5 py-2 rounded-full border border-gray-300 focus:outline-none bg-gray-100 dark:bg-gray-800 text-sm"
+                className="
+                  w-full pl-11 pr-4 py-2
+                  bg-gray-100 border border-gray-200
+                  rounded-full text-sm text-gray-900
+                  placeholder-gray-400
+                  focus:outline-none focus:border-indigo-500 focus:ring-2 focus:ring-indigo-500
+                  transition
+                "
               />
             </form>
 
+            {/* Search results */}
             {searchResults.length > 0 && (
               <div className="absolute top-full left-0 right-0 bg-white dark:bg-gray-800 shadow-lg rounded-lg mt-1 overflow-hidden z-50">
                 {searchResults.map((item) => (
@@ -148,7 +158,7 @@ export default function LogoSearchIcons({ onMenuToggle }: Props) {
             )}
           </div>
 
-          {/* Right: Icons & Actions */}
+          {/* Right: Icons */}
           <div className="flex items-center gap-3">
             {loadingUser ? (
               <Loader2 className="w-5 h-5 animate-spin text-gray-500" />
@@ -216,13 +226,21 @@ export default function LogoSearchIcons({ onMenuToggle }: Props) {
 
         {/* Mobile Search */}
         <div className="sm:hidden px-4 pb-2 relative">
-          <form onSubmit={handleSearchSubmit}>
+          <form onSubmit={handleSearchSubmit} className="relative">
+            <Search className="absolute left-4 top-1/2 -translate-y-1/2 text-gray-400 w-5 h-5" />
             <input
               type="text"
               value={searchTerm}
               onChange={(e) => setSearchTerm(e.target.value)}
               placeholder="Search listings and sellers"
-              className="w-full px-4 py-2 rounded-full border border-gray-300 focus:outline-none bg-gray-100 dark:bg-gray-800 text-sm"
+              className="
+                w-full pl-11 pr-4 py-2
+                bg-gray-100 border border-gray-200
+                rounded-full text-sm text-gray-900
+                placeholder-gray-400
+                focus:outline-none focus:border-indigo-500 focus:ring-2 focus:ring-indigo-500
+                transition
+              "
             />
           </form>
 

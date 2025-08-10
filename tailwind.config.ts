@@ -4,6 +4,7 @@ module.exports = {
     './src/**/*.{js,ts,jsx,tsx}',
     './components/**/*.{js,ts,jsx,tsx}',
     './pages/**/*.{js,ts,jsx,tsx}',
+    './app/**/*.{js,ts,jsx,tsx}', // nếu dùng Next.js 13+ app dir
   ],
   theme: {
     extend: {
@@ -16,6 +17,8 @@ module.exports = {
           light: '#6366f1',   // indigo-500
           dark: '#4338ca',    // indigo-700
         },
+        background: '#ffffff', // light mode background
+        text: '#111827',       // text-gray-900
       },
       borderRadius: {
         lg: '0.5rem',

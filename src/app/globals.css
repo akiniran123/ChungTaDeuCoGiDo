@@ -1,28 +1,64 @@
 @import "tailwindcss";
 
-:root {
-  --color-text-primary: #111827; /* giống text-gray-900 */
-  --color-text-secondary: #4b5563; /* giống text-gray-600 */
-  --color-bg: #ffffff;
-  --color-border: #e5e7eb;
-}
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700&display=swap');
 
 html {
-  color: var(--color-text-primary);
-  background-color: var(--color-bg);
-  font-family: Inter, system-ui, sans-serif;
+  font-family: 'Inter', sans-serif;
+  scroll-behavior: smooth;
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
 }
 
 body {
-  @apply text-base;
+  @apply bg-white text-gray-900;
+  line-height: 1.6;
+  margin: 0;
+  padding: 0;
 }
 
+/* Heading */
+h1, h2, h3, h4, h5, h6 {
+  @apply font-semibold text-gray-800;
+  margin-top: 0;
+  margin-bottom: 0.5rem;
+}
+
+/* Links & buttons */
 a {
-  @apply text-blue-600 hover:text-blue-700 transition-colors;
+  @apply text-indigo-600 hover:text-indigo-500 transition-colors;
 }
 
 button {
-  @apply transition-colors;
+  @apply font-sans;
+}
+
+/* Inputs */
+input,
+select,
+textarea,
+button {
+  font-family: inherit;
+}
+
+/* Borders, shadow, rounded */
+.border {
+  @apply border-gray-200;
+}
+
+.shadow {
+  @apply shadow-sm;
+}
+
+.rounded {
+  @apply rounded-md;
+}
+
+/* Utility defaults */
+p, ul, ol, form {
+  margin: 0;
+  padding: 0;
+}
+
+ul, ol {
+  list-style-position: inside;
 }

@@ -2,6 +2,45 @@
 
 import React, { useState } from "react";
 
+function ToggleFooterSection({
+  title,
+  items,
+}: {
+  title: string;
+  items: { label: string; href: string }[];
+}) {
+  const [open, setOpen] = useState(false);
+
+  return (
+    <div className="space-y-1 text-left">
+      <button
+        className="font-semibold mb-2 w-full text-left hover:text-pink-600 transition-colors"
+        onClick={() => setOpen(!open)}
+        aria-expanded={open}
+        aria-controls={`footer-section-${title.replace(/\s+/g, "")}`}
+      >
+        {title}
+      </button>
+      {open && (
+        <div
+          id={`footer-section-${title.replace(/\s+/g, "")}`}
+          className="flex flex-col gap-1 pl-2"
+        >
+          {items.map(({ label, href }, i) => (
+            <a
+              key={i}
+              href={href}
+              className="text-gray-600 hover:text-pink-500 transition-colors text-sm"
+            >
+              {label}
+            </a>
+          ))}
+        </div>
+      )}
+    </div>
+  );
+}
+
 export default function HotDealsHomePage() {
   const categories = [
     "All",
@@ -42,6 +81,45 @@ export default function HotDealsHomePage() {
 
   const pages = Math.max(1, Math.ceil(filtered.length / perPage));
   const shown = filtered.slice((page - 1) * perPage, page * perPage);
+
+  // Footer data
+  const footerSections = [
+    {
+      title: "Liên hệ với chúng tôi",
+      items: [
+        { label: "19 Vĩnh Hoàng, Quận Hoàng Mai, Hà Nội", href: "#" },
+        { label: "Mã số doanh nghiệp: 0123456789", href: "#" },
+        { label: "SĐT: 0868576379", href: "#" },
+        { label: "Email: contact@nexloot.vn", href: "mailto:contact@nexloot.vn" },
+        { label: "Facebook: fb.com/nexloot", href: "https://fb.com/nexloot" },
+      ],
+    },
+    {
+      title: "Chính sách quyền riêng tư",
+      items: [
+        { label: "Chính sách bảo mật thông tin", href: "/privacy-policy" },
+        { label: "Chính sách đổi trả hàng", href: "/return-policy" },
+        { label: "Chính sách giao hàng", href: "/shipping-policy" },
+      ],
+    },
+    {
+      title: "Điều khoản & Quy định",
+      items: [
+        { label: "Điều khoản sử dụng", href: "/terms-of-use" },
+        { label: "Quy định cộng đồng", href: "/community-rules" },
+        { label: "Quy định đăng tin", href: "/posting-rules" },
+      ],
+    },
+    {
+      title: "Hỗ trợ",
+      items: [
+        { label: "Hỗ trợ khách hàng", href: "/customer-support" },
+        { label: "Trung tâm trợ giúp", href: "/help-center" },
+        { label: "Liên hệ hỗ trợ", href: "/contact-support" },
+        { label: "Hướng dẫn sử dụng", href: "/user-guide" },
+      ],
+    },
+  ];
 
   return (
     <div className="min-h-screen bg-gradient-to-b from-pink-50 via-white to-blue-50 text-gray-900">
@@ -166,8 +244,7 @@ export default function HotDealsHomePage() {
         <div className="flex items-center justify-between pt-4">
           <div className="text-sm text-gray-500">
             Showing {(page - 1) * perPage + 1}–
-            {Math.min(page * perPage, filtered.length)} of {filtered.length}{" "}
-            deals
+            {Math.min(page * perPage, filtered.length)} of {filtered.length} deals
           </div>
           <div className="flex items-center gap-2">
             <button
@@ -189,43 +266,14 @@ export default function HotDealsHomePage() {
         </div>
       </main>
 
-      {/* FOOTER */}
-<footer className="bg-gray-100 border-t w-full mt-8">
-  <div className="max-w-5xl mx-auto px-6 py-8 grid grid-cols-4 gap-8 text-sm text-gray-700">
-    {/* Cột 1 - Thông tin + Liên hệ */}
-    <div className="space-y-1">
-      <p className="font-semibold mb-2">Liên hệ với chúng tôi</p>
-      <p>19 Vĩnh Hoàng, Quận Hoàng Mai, Hà Nội</p>
-      <p>Mã số doanh nghiệp: 0123456789</p>
-      <p>SĐT: 0868576379</p>
-      <p>Email: contact@nexloot.vn</p>
-      <p>Facebook: fb.com/nexloot</p>
-    </div>
-    {/* Cột 2 - Chính sách & Bảo mật */}
-    <div className="space-y-1">
-      <p className="font-semibold mb-2">Chính sách quyền riêng tư</p>
-      <p>Chính sách bảo mật thông tin</p>
-      <p>Chính sách đổi trả hàng</p>
-      <p>Chính sách giao hàng</p>
-    </div>
-    {/* Cột 3 - Điều khoản & Quy định */}
-    <div className="space-y-1">
-      <p className="font-semibold mb-2">Điều khoản & Quy định</p>
-      <p>Điều khoản sử dụng</p>
-      <p>Quy định cộng đồng</p>
-      <p>Quy định đăng tin</p>
-    </div>
-    {/* Cột 4 - Hỗ trợ */}
-    <div className="space-y-1 text-right">
-      <p className="font-semibold mb-2">Hỗ trợ</p>
-      <p>Hỗ trợ khách hàng</p>
-      <p>Trung tâm trợ giúp</p>
-      <p>Liên hệ hỗ trợ</p>
-      <p>Hướng dẫn sử dụng</p>
-    </div>
-  </div>
-</footer>
-
+      {/* Footer */}
+      <footer className="w-screen bg-gray-100 border-t border-gray-300 mt-8">
+        <div className="max-w-7xl mx-auto grid grid-cols-1 sm:grid-cols-4 gap-6 px-0">
+          {footerSections.map(({ title, items }, idx) => (
+            <ToggleFooterSection key={idx} title={title} items={items} />
+          ))}
+        </div>
+      </footer>
     </div>
   );
 }

@@ -2,7 +2,7 @@
 
 export default function TermsConditionsPage() {
   return (
-    <main className="w-full px-6 pt-28 pb-10 text-gray-800 dark:text-gray-100">
+    <main className="w-full px-6 pt-40 pb-10 text-gray-800 dark:text-gray-100">
       <h1 className="text-3xl font-bold mb-8">
         📜 Chính sách & Điều khoản, Điều kiện
       </h1>

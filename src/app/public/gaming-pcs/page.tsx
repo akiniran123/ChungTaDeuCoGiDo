@@ -1,3 +1,5 @@
+"use client";
+
 import React, { useState } from "react";
 import CategoryHeader from "@/components/FullSystem/CategoryHeader";
 import FiltersSidebar from "@/components/FullSystem/FiltersSidebar";

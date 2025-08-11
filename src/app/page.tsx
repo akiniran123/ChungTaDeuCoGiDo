@@ -6,7 +6,7 @@ import Link from "next/link";
 
 export default function Home() {
   return (
-    <div className="min-h-screen bg-white dark:bg-black text-black dark:text-white">
+    <div className="min-h-screen bg-white text-black">
       {/* Navbar cố định */}
       <div className="fixed top-0 left-0 right-0 z-50">
         <Navbar />
@@ -15,9 +15,9 @@ export default function Home() {
       {/* Nội dung trang chính */}
       <main className="pt-48 px-4 space-y-16">
         {/* Phần Build Your Dream PC lên đầu */}
-        <section className="flex min-h-[calc(100vh-5rem)] flex-col items-center justify-center text-center px-4 bg-gray-50 dark:bg-gray-800 rounded-lg py-16">
+        <section className="flex min-h-[calc(100vh-5rem)] flex-col items-center justify-center text-center px-4 bg-gray-50 rounded-lg py-16">
           <h1 className="text-4xl font-bold mb-4">🛠️ Build Your Dream PC</h1>
-          <p className="text-lg text-gray-700 dark:text-gray-300 mb-8 max-w-xl">
+          <p className="text-lg text-gray-700 mb-8 max-w-xl">
             Chọn linh kiện phù hợp, theo dõi giá, và chia sẻ cấu hình máy tính của bạn.
           </p>
 
@@ -32,7 +32,7 @@ export default function Home() {
         {/* Phần NexLoot */}
         <header className="text-center space-y-2">
           <h1 className="text-4xl font-bold">Chào mừng bạn đến với NexLoot</h1>
-          <p className="text-lg text-gray-600 dark:text-gray-300">
+          <p className="text-lg text-gray-600">
             Dẫn đầu đổi mới - Vững bước tương lai
           </p>
         </header>
@@ -43,7 +43,7 @@ export default function Home() {
             {["1q.webp", "2.webp", "3.webp"].map((filename, i) => (
               <div
                 key={i}
-                className="border p-4 rounded shadow bg-white dark:bg-gray-900"
+                className="border p-4 rounded shadow bg-white"
               >
                 <Image
                   src={`/assets/products/${filename}`}
@@ -54,7 +54,7 @@ export default function Home() {
                   priority={i === 0}
                 />
                 <h3 className="text-lg font-semibold">Sản phẩm A{i + 1}</h3>
-                <p className="text-sm text-gray-600 dark:text-gray-400">
+                <p className="text-sm text-gray-600">
                   Mô tả ngắn về sản phẩm HOT {i + 1}.
                 </p>
               </div>
@@ -68,7 +68,7 @@ export default function Home() {
             {["4.webp", "5.webp", "6.webp"].map((filename, i) => (
               <div
                 key={i}
-                className="border p-4 rounded shadow bg-white dark:bg-gray-900"
+                className="border p-4 rounded shadow bg-white"
               >
                 <Image
                   src={`/assets/products/${filename}`}
@@ -79,7 +79,7 @@ export default function Home() {
                   priority={i === 0}
                 />
                 <h3 className="text-lg font-semibold">Sản phẩm B{i + 1}</h3>
-                <p className="text-sm text-gray-600 dark:text-gray-400">
+                <p className="text-sm text-gray-600">
                   Mô tả ngắn về sản phẩm bán chạy {i + 1}.
                 </p>
               </div>
@@ -93,7 +93,7 @@ export default function Home() {
             {["7.webp", "8.webp", "9_1.webp"].map((filename, i) => (
               <div
                 key={i}
-                className="border p-4 rounded shadow bg-white dark:bg-gray-900"
+                className="border p-4 rounded shadow bg-white"
               >
                 <Image
                   src={`/assets/products/${filename}`}
@@ -104,7 +104,7 @@ export default function Home() {
                   priority={i === 0}
                 />
                 <h3 className="text-lg font-semibold">Sản phẩm C{i + 1}</h3>
-                <p className="text-sm text-gray-600 dark:text-gray-400">
+                <p className="text-sm text-gray-600">
                   Mô tả ngắn về sản phẩm mua nhiều {i + 1}.
                 </p>
               </div>

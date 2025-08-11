@@ -113,7 +113,7 @@ export default function LogoSearchIcons({ onMenuToggle }: Props) {
                 value={searchTerm}
                 onChange={(e) => setSearchTerm(e.target.value)}
                 placeholder="Search listings and sellers"
-                className="w-full pl-11 pr-4 py-2 bg-white border border-gray-300 rounded-full text-sm focus:outline-none focus:border-[#9b4de0] focus:ring-2 focus:ring-[#9b4de0] transition"
+                className="w-full pl-14 pr-4 py-2 bg-white border border-gray-300 rounded-full text-sm focus:outline-none focus:border-[#9b4de0] focus:ring-2 focus:ring-[#9b4de0] transition"
               />
             </form>
             {searchResults.length > 0 && (
@@ -203,7 +203,7 @@ export default function LogoSearchIcons({ onMenuToggle }: Props) {
               value={searchTerm}
               onChange={(e) => setSearchTerm(e.target.value)}
               placeholder="Search listings and sellers"
-              className="w-full pl-11 pr-4 py-2 bg-white border border-gray-300 rounded-full text-sm"
+              className="w-full pl-14 pr-4 py-2 bg-white border border-gray-300 rounded-full text-sm"
             />
           </form>
         </div>

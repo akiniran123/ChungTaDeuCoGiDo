@@ -107,13 +107,16 @@ export default function LogoSearchIcons({ onMenuToggle }: Props) {
           {/* Middle: Search */}
           <div className="hidden sm:block flex-1 max-w-xl relative">
             <form onSubmit={handleSearchSubmit} className="relative">
-              <Search className="absolute left-4 top-1/2 -translate-y-1/2 text-gray-400 w-5 h-5" />
+              <Search
+                className="absolute left-4 top-1/2 -translate-y-1/2 text-gray-400 w-5 h-5 pointer-events-none"
+                aria-hidden="true"
+              />
               <input
                 type="text"
                 value={searchTerm}
                 onChange={(e) => setSearchTerm(e.target.value)}
                 placeholder="Search listings and sellers"
-                className="w-full pl-14 pr-4 py-2 bg-white border border-gray-300 rounded-full text-sm focus:outline-none focus:border-[#9b4de0] focus:ring-2 focus:ring-[#9b4de0] transition"
+                className="search-input w-full pr-4 py-2 bg-white border border-gray-300 rounded-full text-sm focus:outline-none focus:border-[#9b4de0] focus:ring-2 focus:ring-[#9b4de0] transition"
               />
             </form>
             {searchResults.length > 0 && (
@@ -149,9 +152,18 @@ export default function LogoSearchIcons({ onMenuToggle }: Props) {
                 >
                   Start Selling
                 </button>
-                <Heart className="w-5 h-5 text-gray-600 hover:text-[#9b4de0] cursor-pointer" onClick={handleIconClick} />
-                <Bell className="w-5 h-5 text-gray-600 hover:text-[#9b4de0] cursor-pointer" onClick={handleIconClick} />
-                <ShoppingCart className="w-5 h-5 text-gray-600 hover:text-[#9b4de0] cursor-pointer" onClick={handleIconClick} />
+                <Heart
+                  className="w-5 h-5 text-gray-600 hover:text-[#9b4de0] cursor-pointer"
+                  onClick={handleIconClick}
+                />
+                <Bell
+                  className="w-5 h-5 text-gray-600 hover:text-[#9b4de0] cursor-pointer"
+                  onClick={handleIconClick}
+                />
+                <ShoppingCart
+                  className="w-5 h-5 text-gray-600 hover:text-[#9b4de0] cursor-pointer"
+                  onClick={handleIconClick}
+                />
 
                 {user ? (
                   <HeadlessMenu as="div" className="relative">
@@ -164,7 +176,9 @@ export default function LogoSearchIcons({ onMenuToggle }: Props) {
                         {({ active }) => (
                           <button
                             onClick={() => router.push('/profile')}
-                            className={`block w-full px-4 py-2 text-left ${active ? 'bg-gray-100' : ''}`}
+                            className={`block w-full px-4 py-2 text-left ${
+                              active ? 'bg-gray-100' : ''
+                            }`}
                           >
                             Profile
                           </button>
@@ -178,7 +192,9 @@ export default function LogoSearchIcons({ onMenuToggle }: Props) {
                               setUser(null)
                               router.refresh()
                             }}
-                            className={`block w-full px-4 py-2 text-left text-red-500 ${active ? 'bg-gray-100' : ''}`}
+                            className={`block w-full px-4 py-2 text-left text-red-500 ${
+                              active ? 'bg-gray-100' : ''
+                            }`}
                           >
                             Sign out
                           </button>
@@ -187,7 +203,10 @@ export default function LogoSearchIcons({ onMenuToggle }: Props) {
                     </HeadlessMenu.Items>
                   </HeadlessMenu>
                 ) : (
-                  <UserIcon className="w-5 h-5 text-gray-600 hover:text-[#9b4de0] cursor-pointer" onClick={handleIconClick} />
+                  <UserIcon
+                    className="w-5 h-5 text-gray-600 hover:text-[#9b4de0] cursor-pointer"
+                    onClick={handleIconClick}
+                  />
                 )}
               </>
             )}
@@ -197,13 +216,16 @@ export default function LogoSearchIcons({ onMenuToggle }: Props) {
         {/* Mobile Search */}
         <div className="sm:hidden px-4 pb-2">
           <form onSubmit={handleSearchSubmit} className="relative">
-            <Search className="absolute left-4 top-1/2 -translate-y-1/2 text-gray-400 w-5 h-5" />
+            <Search
+              className="absolute left-4 top-1/2 -translate-y-1/2 text-gray-400 w-5 h-5 pointer-events-none"
+              aria-hidden="true"
+            />
             <input
               type="text"
               value={searchTerm}
               onChange={(e) => setSearchTerm(e.target.value)}
               placeholder="Search listings and sellers"
-              className="w-full pl-14 pr-4 py-2 bg-white border border-gray-300 rounded-full text-sm"
+              className="search-input w-full pr-4 py-2 bg-white border border-gray-300 rounded-full text-sm"
             />
           </form>
         </div>

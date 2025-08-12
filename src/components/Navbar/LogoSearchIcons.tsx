@@ -103,14 +103,14 @@ export default function LogoSearchIcons({ onMenuToggle }: Props) {
             </Link>
           </div>
 
-          {/* Middle: Search (no icon) */}
-          <div className="hidden sm:block flex-1 max-w-xl">
+          {/* Middle: Search */}
+          <div className="hidden sm:block flex-1 max-w-xl relative">
             <form onSubmit={handleSearchSubmit}>
               <input
                 type="text"
                 value={searchTerm}
                 onChange={(e) => setSearchTerm(e.target.value)}
-                placeholder="Search listings and sellers"
+                placeholder="Tìm kiếm sản phẩm"
                 className="w-full pr-4 py-2 bg-white border border-gray-300 rounded-full text-sm focus:outline-none focus:border-[#9b4de0] focus:ring-2 focus:ring-[#9b4de0] transition"
               />
             </form>
@@ -141,12 +141,40 @@ export default function LogoSearchIcons({ onMenuToggle }: Props) {
               <Loader2 className="w-5 h-5 animate-spin text-gray-500" />
             ) : (
               <>
-                <button
-                  onClick={handleStartSelling}
-                  className="hidden sm:inline-block bg-[#9b4de0] text-white px-4 py-1.5 rounded-full text-sm font-semibold shadow-sm hover:bg-[#873ac7] transition"
-                >
-                  Start Selling
-                </button>
+                {/* Buttons container (ALWAYS visible) */}
+                <div className="flex gap-3 items-center">
+                  {/* <-- REWRITTEN START YOUR BUILD button (strong overrides to force visibility) */}
+                  <Link
+                    href="/list"
+                    aria-label="Start Your Build"
+                    className="inline-flex items-center justify-center rounded-full bg-blue-600 px-4 py-2 text-sm font-semibold shadow-sm transition duration-200 hover:bg-blue-700 hover:shadow-lg active:scale-[0.98] relative z-30 min-w-[140px]"
+                    style={{
+                      color: '#ffffff',
+                      opacity: 1,
+                      visibility: 'visible',
+                      // ensure text not clipped/transparent by external styles
+                      WebkitTextFillColor: 'white',
+                    }}
+                  >
+                    <span className="mr-2 text-lg" aria-hidden>
+                      🚀
+                    </span>
+                    <span className="whitespace-nowrap" style={{ color: '#ffffff' }}>
+                      Xây dựng máy tính 
+                    </span>
+                  </Link>
+
+   {/* Start Selling (giống hệt Start Your Build) */}
+<button
+  onClick={handleStartSelling}
+  className="inline-flex items-center justify-center bg-[#9b4de0] text-white font-semibold text-sm px-5 py-2 rounded-full cursor-pointer shadow-sm hover:bg-[#873ac7] hover:shadow-lg active:scale-[0.98] transition duration-200 relative z-20"
+>
+  Bắt đầu bán hàng
+</button>
+
+                </div>
+
+                {/* Icons */}
                 <Heart
                   className="w-5 h-5 text-gray-600 hover:text-[#9b4de0] cursor-pointer"
                   onClick={handleIconClick}
@@ -208,7 +236,7 @@ export default function LogoSearchIcons({ onMenuToggle }: Props) {
           </div>
         </div>
 
-        {/* Mobile Search (no icon) */}
+        {/* Mobile Search */}
         <div className="sm:hidden px-4 pb-2">
           <form onSubmit={handleSearchSubmit}>
             <input

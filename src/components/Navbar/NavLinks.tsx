@@ -16,20 +16,20 @@ type NavLink = {
 };
 
 const mainLinks: NavLink[] = [
-  { name: 'NEW', path: '/public/new' },
-  { name: 'GAMING PCS', path: '/public/gaming-pcs' },
-  { name: 'GPUS', path: '/public/gpus' },
-  { name: 'COMPONENTS', path: '/public/components' },
-  { name: 'PERIPHERALS', path: '/public/peripherals' },
-  { name: 'OTHER SYSTEMS', path: '/public/other-systems' },
-  { name: 'RETRO', path: '/public/retro', isNew: true },
+  { name: 'Mới', path: '/public/new' },
+  { name: 'Máy tính gaming', path: '/public/gaming-pcs' },
+  { name: 'GPU', path: '/public/gpus' },
+  { name: 'Thành phần', path: '/public/components' },
+  { name: 'Thiết bị ngoại vệ', path: '/public/peripherals' },
+  { name: 'Hệ thống khác', path: '/public/other-systems' },
+  { name: 'Cổ điển', path: '/public/retro', isNew: true },
 ];
 
 const moreLinks: NavLink[] = [
-  { name: 'ABOUT', path: '/public/about' },
-  { name: 'FAQ', path: '/public/faq' },
-  { name: 'CONTACT', path: '/public/contact' },
-  { name: 'SELL', path: '/public/sell' }, // fixed here
+  { name: 'Thông Tín', path: '/public/about' },
+  { name: 'Câu hỏi thường gặp', path: '/public/faq' },
+  { name: 'Liên hệ', path: '/public/contact' },
+  { name: 'Bán hàng', path: '/public/sell' },
 ];
 
 export default function NavLinks({ onLinkClick }: NavLinksProps) {
@@ -130,8 +130,7 @@ export default function NavLinks({ onLinkClick }: NavLinksProps) {
               )}
               <span
                 className={`absolute bottom-0 left-0 h-[2px] bg-blue-500 transition-all duration-300
-                  ${active ? 'w-full' : 'w-0 group-hover:w-full'}
-                `}
+                  ${active ? 'w-full' : 'w-0 group-hover:w-full'}`}
               />
             </Link>
           );
@@ -159,9 +158,9 @@ export default function NavLinks({ onLinkClick }: NavLinksProps) {
               aria-haspopup="true"
               aria-expanded={moreOpen}
               aria-controls="more-menu"
-              className="flex items-center gap-1 cursor-pointer text-gray-500 hover:text-white transition-colors font-medium uppercase text-sm border-none outline-none"
+              className="flex items-center gap-1 cursor-pointer text-gray-500 hover:text-blue-500 transition-colors font-medium uppercase text-sm border-none outline-none"
             >
-              MORE <ChevronDown className="w-4 h-4" />
+              Danh sách <ChevronDown className="w-4 h-4" />
             </button>
 
             <div

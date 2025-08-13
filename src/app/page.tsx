@@ -143,16 +143,18 @@ export default function HotDealsHomePage() {
   const shown = filtered.slice((page - 1) * perPage, page * perPage);
 
   const footerSections = [
-    {
-      title: "Liên hệ với chúng tôi",
-      items: [
-        { label: "19 Vĩnh Hoàng, Quận Hoàng Mai, Hà Nội", href: "#" },
-        { label: "Mã số doanh nghiệp: 0123456789", href: "#" },
-        { label: "SĐT: 0868576379", href: "#" },
-        { label: "Email: contact@nexloot.vn", href: "mailto:contact@nexloot.vn" },
-        { label: "Facebook: fb.com/nexloot", href: "https://fb.com/nexloot" },
-      ],
-    },
+{
+  title: "Liên hệ với chúng tôi",
+  items: [
+     { label: "Giới thiệu", href: "/gioi-thieu" }, // Thêm mục này ở trên cùng
+    { label: "19 Vĩnh Hoàng, Quận Hoàng Mai, Hà Nội", href: "#" },
+    { label: "Mã số doanh nghiệp: 0123456789", href: "#" },
+    { label: "SĐT: 0868576379", href: "#" },
+    { label: "Email: contact@nexloot.vn", href: "mailto:contact@nexloot.vn" },
+    { label: "Facebook: fb.com/nexloot", href: "https://fb.com/nexloot" },
+  ],
+},
+
     {
       title: "Chính sách quyền riêng tư",
       items: [

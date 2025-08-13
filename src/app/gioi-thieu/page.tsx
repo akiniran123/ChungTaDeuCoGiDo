@@ -17,7 +17,7 @@ export default function GioiThieuPage() {
       {/* Lịch sử & Định hướng */}
       <h2 className="text-2xl font-semibold mb-6">Lịch sử phát triển & Định hướng</h2>
       <p className="mb-10 leading-relaxed">
-        Công ty được thành lập năm 2020 với mục tiêu tạo ra một hệ sinh thái thương mại điện tử
+        Công ty được thành lập năm 2025 với mục tiêu tạo ra một hệ sinh thái thương mại điện tử
         đáng tin cậy. Định hướng của chúng tôi trong 5 năm tới là mở rộng ra thị trường quốc tế,
         kết hợp công nghệ AI và dữ liệu lớn để tối ưu hóa trải nghiệm khách hàng.
       </p>
@@ -52,12 +52,12 @@ export default function GioiThieuPage() {
       <div className="flex flex-col mb-16 border-b border-gray-200 pb-10 last:border-none last:pb-0">
         <div className="flex gap-8">
           <img
-            src="/anhcodong/ducanh.jpg"
-            alt="Trần Đức Anh"
+            src="/anhcodong/quanganh.jpg"
+            alt="Dương Quang Anh"
             className="w-28 h-28 rounded-full object-cover flex-shrink-0"
           />
           <div className="flex flex-col flex-1">
-            <h3 className="text-2xl font-semibold mb-3">Trần Đức Anh</h3>
+            <h3 className="text-2xl font-semibold mb-3">Dương Quang Anh</h3>
             <p className="italic text-gray-700 mb-5 max-w-prose leading-relaxed">
               "Dám nghĩ, Dám làm vươn ra thế giới."
             </p>
@@ -75,12 +75,12 @@ export default function GioiThieuPage() {
       <div className="flex flex-col mb-16 border-b border-gray-200 pb-10 last:border-none last:pb-0">
         <div className="flex gap-8">
           <img
-            src="/anhcodong/quanganh.jpg"
-            alt="Dương Quang Anh"
+            src="/anhcodong/ducanh.jpg"
+            alt="Trần Đức Anh"
             className="w-28 h-28 rounded-full object-cover flex-shrink-0"
           />
           <div className="flex flex-col flex-1">
-            <h3 className="text-2xl font-semibold mb-3">Dương Quang Anh</h3>
+            <h3 className="text-2xl font-semibold mb-3">Trần Đức Anh</h3>
             <p className="italic text-gray-700 mb-5 max-w-prose leading-relaxed">
               "Chiến lược đúng đắn tạo ra thành công bền vững."
             </p>

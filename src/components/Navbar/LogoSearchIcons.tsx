@@ -180,7 +180,7 @@ export default function LogoSearchIcons({ onMenuToggle }: Props) {
             </button>
             <Link href="/" className="flex items-center space-x-2 text-2xl font-bold">
               <span className="text-[#9b4de0]">🛡</span>
-              <span className="text-gray-900">jawa</span>
+              <span className="text-gray-900">NexLoot</span>
             </Link>
           </div>
 

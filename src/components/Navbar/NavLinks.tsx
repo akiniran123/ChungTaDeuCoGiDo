@@ -26,10 +26,10 @@ const mainLinks: NavLink[] = [
 ];
 
 const moreLinks: NavLink[] = [
-  { name: 'Thông Tín', path: '/public/about' },
-  { name: 'Câu hỏi thường gặp', path: '/public/faq' },
-  { name: 'Liên hệ', path: '/public/contact' },
-  { name: 'Bán hàng', path: '/public/sell' },
+  { name: 'PC', path: '/public/products?category=pc' },
+  { name: 'Thời trang', path: '/public/products?category=fashion' },
+  { name: 'Xe cộ', path: '/public/products?category=vehicles' },
+  { name: 'Máy tính laptop', path: '/public/products?category=laptops' },
 ];
 
 export default function NavLinks({ onLinkClick }: NavLinksProps) {

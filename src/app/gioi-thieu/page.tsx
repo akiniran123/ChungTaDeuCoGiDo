@@ -17,7 +17,7 @@ export default function GioiThieuPage() {
       {/* Lịch sử & Định hướng */}
       <h2 className="text-2xl font-semibold mb-6">Lịch sử phát triển & Định hướng</h2>
       <p className="mb-10 leading-relaxed">
-        Công ty được thành lập năm 2025 với mục tiêu tạo ra một hệ sinh thái thương mại điện tử
+        Công ty được thành lập năm 2025  với mục tiêu tạo ra một hệ sinh thái thương mại điện tử
         đáng tin cậy. Định hướng của chúng tôi trong 5 năm tới là mở rộng ra thị trường quốc tế,
         kết hợp công nghệ AI và dữ liệu lớn để tối ưu hóa trải nghiệm khách hàng.
       </p>
@@ -62,7 +62,7 @@ export default function GioiThieuPage() {
               "Dám nghĩ, Dám làm vươn ra thế giới."
             </p>
             <p className="text-gray-800 max-w-prose mb-8 leading-relaxed">
-              Tầm nhìn của tôi là xây dựng một tổ chức linh hoạt, sáng tạo và có văn hóa doanh nghiệp vững mạnh, đủ sức cạnh tranh trên thị trường quốc tế. Chúng tôi sẽ phát triển đội ngũ tài năng, tăng cường hợp tác toàn cầu, nhằm tạo ra giá trị bền vững và mở rộng quy mô Nexloot ra thế giới.
+              Lãnh đạo không chỉ là quyết định, mà là truyền cảm hứng để cùng hướng tới tầm nhìn chung. Thành công đo bằng giá trị tạo ra, đội ngũ vững mạnh và khả năng đổi mới liên tục. Khi đồng hành cùng đội ngũ, lắng nghe và hành động với tinh thần sáng tạo, chúng ta mới kiến tạo thành công bền lâu.
             </p>
             <p className="text-sm text-gray-500 italic max-w-prose text-right mt-4 pr-6">
               Chủ sở hữu &amp; Đồng sáng lập, Công ty NexLoot

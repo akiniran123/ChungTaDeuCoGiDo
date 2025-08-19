@@ -4,15 +4,15 @@ import { useEffect, useRef, useState } from 'react'
 import { MessageSquare } from 'lucide-react'
 import { useRouter } from 'next/navigation'
 
-interface MessagePreview {
-  id: string
-  sellerName: string
-  lastMessage: string
-  time: string
-  unread: number
-}
-
 export default function MessagesMenu() {
+  interface MessagePreview {
+    id: string
+    sellerName: string
+    lastMessage: string
+    time: string
+    unread: number
+  }
+
   const [messageList, setMessageList] = useState<MessagePreview[]>([])
   const [openMessages, setOpenMessages] = useState(false)
   const [unreadMessages, setUnreadMessages] = useState(0)

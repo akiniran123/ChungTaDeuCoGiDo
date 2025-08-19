@@ -7,11 +7,7 @@ import { supabase } from '@/lib/supabase/client'
 import type { User } from '@supabase/supabase-js'
 import { useRouter } from 'next/navigation'
 
-interface Props {
-  onLoginClick: () => void
-}
-
-export default function UserMenu({ onLoginClick }: Props) {
+export default function UserMenu({ onLoginClick }: { onLoginClick: () => void }) {
   const [user, setUser] = useState<User | null>(null)
   const [loadingUser, setLoadingUser] = useState(true)
   const router = useRouter()
@@ -25,7 +21,9 @@ export default function UserMenu({ onLoginClick }: Props) {
     getUser()
   }, [])
 
-  if (loadingUser) return <Loader2 className="w-5 h-5 animate-spin text-gray-500" />
+  if (loadingUser) {
+    return <Loader2 className="w-5 h-5 animate-spin text-gray-500" />
+  }
 
   if (!user) {
     return (

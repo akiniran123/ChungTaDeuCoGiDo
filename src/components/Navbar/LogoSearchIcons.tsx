@@ -1,21 +1,23 @@
 'use client'
 
 import { useState } from 'react'
-import Logo from '@/components/Navbar/LogoSearchIcon/logo'
-import SearchBar from '@/components/Navbar/LogoSearchIcon/SearchBar'
-import StartSellingButtons from '@/components/Navbar/LogoSearchIcon/StartSellingButtons'
-import MessagesMenu from '@/components/Navbar/LogoSearchIcon/MesagesMenu'
-import NewsMenu from '@/components/Navbar/LogoSearchIcon/NewsMenu'
-import CartMenu from '@/components/Navbar/LogoSearchIcon/CartMenu'
-import UserMenu from '@/components/Navbar/LogoSearchIcon/UserMenu'
-import LoginModal from '@/components/auth/LoginModal'
 import { useRouter } from 'next/navigation'
 
-interface Props {
-  onMenuToggle?: () => void
-}
+import Logo from './LogoSearchIcon/Logo'
+import SearchBar from './LogoSearchIcon/SearchBar'
+import StartSellingButtons from './LogoSearchIcon/StartSellingButtons'
+import MessagesMenu from './LogoSearchIcon/MessagesMenu'
+import NewsMenu from './LogoSearchIcon/NewsMenu'
+import CartMenu from './LogoSearchIcon/CartMenu'
+import UserMenu from './LogoSearchIcon/UserMenu'
 
-export default function LogoSearchIcons({ onMenuToggle }: Props) {
+import LoginModal from '../auth/LoginModal'
+
+export default function LogoSearchIcons({
+  onMenuToggle,
+}: {
+  onMenuToggle?: () => void
+}) {
   const [showLogin, setShowLogin] = useState(false)
   const [pendingRedirect, setPendingRedirect] = useState<string | null>(null)
   const router = useRouter()
@@ -27,10 +29,15 @@ export default function LogoSearchIcons({ onMenuToggle }: Props) {
 
   return (
     <>
-      <header className="w-full border-b border-gray-200 bg-white">
+      <header className="w-full border-b border-gray-200 bg-white dark:bg-gray-900 dark:border-gray-700">
         <div className="max-w-7xl mx-auto px-4 py-3 flex items-center justify-between gap-4">
+          {/* Logo và menu toggle */}
           <Logo onMenuToggle={onMenuToggle} />
+
+          {/* Thanh search desktop */}
           <SearchBar />
+
+          {/* Các nút bên phải */}
           <div className="flex items-center gap-3">
             <StartSellingButtons onRequireLogin={() => openLogin('/sell')} />
             <MessagesMenu />
@@ -40,28 +47,29 @@ export default function LogoSearchIcons({ onMenuToggle }: Props) {
           </div>
         </div>
 
-        {/* Mobile Search: đơn giản (submit thẳng, không gợi ý) */}
+        {/* Thanh search mobile */}
         <div className="sm:hidden px-4 pb-2">
           <form
             onSubmit={(e) => {
               e.preventDefault()
-              const input = (e.currentTarget.elements.namedItem('q') as HTMLInputElement)
+              const input = e.currentTarget.elements.namedItem('q') as HTMLInputElement | null
               const q = input?.value?.trim()
               if (!q) return
               router.push(`/search?query=${encodeURIComponent(q)}`)
-              input.value = ''
+              if (input) input.value = ''
             }}
           >
             <input
               name="q"
               type="text"
               placeholder="Search listings and sellers"
-              className="w-full pr-4 py-2 bg-white border border-gray-300 rounded-full text-sm"
+              className="w-full pr-4 py-2 bg-white dark:bg-gray-800 border border-gray-300 dark:border-gray-600 rounded-full text-sm"
             />
           </form>
         </div>
       </header>
 
+      {/* Modal đăng nhập */}
       {showLogin && (
         <LoginModal
           redirectTo={pendingRedirect ?? undefined}

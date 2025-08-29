@@ -20,17 +20,14 @@ function ToggleFooterSection({
         className="font-semibold mb-2 w-full text-right hover:text-pink-600 transition-colors cursor-pointer"
         onClick={() => setOpen(!open)}
         aria-expanded={open}
-        aria-controls={`footer-section-${title.replace(/\s+/g, "")}`}
       >
         {title}
       </button>
       {open && (
-        <div
-          id={`footer-section-${title.replace(/\s+/g, "")}`}
-          className="flex flex-col gap-1 pr-2 break-words max-w-full"
-        >
+        <div className="flex flex-col gap-1 pr-2 break-words max-w-full">
           {items.map(({ label, href }, i) => {
-            const isExternal = href.startsWith("http") || href.startsWith("mailto:");
+            const isExternal =
+              href.startsWith("http") || href.startsWith("mailto:");
             if (isExternal) {
               return (
                 <a
@@ -123,11 +120,26 @@ export const sampleDeals = Array.from({ length: 12 }).map((_, i) => ({
   seller: sellers[i],
 }));
 
+type Comment = {
+  id: number;
+  user: string;
+  text: string;
+};
+
 export default function HotDealsHomePage() {
   const [deals, setDeals] = useState(sampleDeals);
   const [query, setQuery] = useState("");
   const [page, setPage] = useState(1);
   const perPage = 8;
+
+  const [selectedDeal, setSelectedDeal] = useState<number | null>(null);
+  const [comments, setComments] = useState<Record<number, Comment[]>>({
+    1: [
+      { id: 1, user: "Nam", text: "Giá tốt quá!" },
+      { id: 2, user: "Huy", text: "Mình mới mua, chạy ngon." },
+    ],
+  });
+  const [newComment, setNewComment] = useState("");
 
   function vote(id: number, delta: number) {
     setDeals((prev) =>
@@ -135,52 +147,25 @@ export default function HotDealsHomePage() {
     );
   }
 
+  function handleAddComment() {
+    if (!selectedDeal || !newComment.trim()) return;
+    const newCmt: Comment = {
+      id: Date.now(),
+      user: "Bạn",
+      text: newComment,
+    };
+    setComments((prev) => ({
+      ...prev,
+      [selectedDeal]: [...(prev[selectedDeal] || []), newCmt],
+    }));
+    setNewComment("");
+  }
+
   const filtered = deals.filter((d) =>
     d.title.toLowerCase().includes(query.toLowerCase())
   );
-
   const pages = Math.max(1, Math.ceil(filtered.length / perPage));
   const shown = filtered.slice((page - 1) * perPage, page * perPage);
-
-  const footerSections = [
-{
-  title: "Liên hệ với chúng tôi",
-  items: [
-     { label: "Giới thiệu", href: "/gioi-thieu" }, // Thêm mục này ở trên cùng
-    { label: "19 Vĩnh Hoàng, Quận Hoàng Mai, Hà Nội", href: "#" },
-    { label: "Mã số doanh nghiệp: 0123456789", href: "#" },
-    { label: "SĐT: 0868576379", href: "#" },
-    { label: "Email: contact@nexloot.vn", href: "mailto:contact@nexloot.vn" },
-    { label: "Facebook: fb.com/nexloot", href: "https://fb.com/nexloot" },
-  ],
-},
-
-    {
-      title: "Chính sách quyền riêng tư",
-      items: [
-        { label: "Chính sách bảo mật thông tin", href: "/privacy-policy" },
-        { label: "Chính sách đổi trả hàng", href: "/return-policy" },
-        { label: "Chính sách giao hàng", href: "/shipping-policy" },
-      ],
-    },
-    {
-      title: "Điều khoản & Quy định",
-      items: [
-        { label: "Điều khoản sử dụng", href: "/terms-of-use" },
-        { label: "Quy định cộng đồng", href: "/community-rules" },
-        { label: "Quy định đăng tin", href: "/posting-rules" },
-      ],
-    },
-    {
-      title: "Hỗ trợ",
-      items: [
-        { label: "Hỗ trợ khách hàng", href: "/customer-support" },
-        { label: "Trung tâm trợ giúp", href: "/help-center" },
-        { label: "Liên hệ hỗ trợ", href: "/contact-support" },
-        { label: "Hướng dẫn sử dụng", href: "/user-guide" },
-      ],
-    },
-  ];
 
   return (
     <div className="min-h-screen bg-gradient-to-b from-pink-50 via-white to-blue-50 text-gray-900">
@@ -198,174 +183,158 @@ export default function HotDealsHomePage() {
               setPage(1);
             }}
             className="flex-1 rounded-lg border px-3 py-2 focus:outline-none focus:ring-2 focus:ring-pink-300 bg-white shadow"
-            placeholder="Tìm kiếm ưu đãi, sản phẩm, mã giảm giá..."
+            placeholder="Tìm kiếm ưu đãi..."
           />
-          <nav className="flex items-center gap-3">
-            <button className="px-4 py-2 rounded-lg bg-white text-pink-600 font-semibold hover:bg-pink-100 transition-colors shadow-md">
-              Đăng ưu đãi
-            </button>
-            <button className="px-4 py-2 rounded-lg bg-white text-gray-700 font-semibold hover:bg-gray-100 transition-colors shadow-md">
-              Đăng nhập
-            </button>
-          </nav>
         </div>
       </header>
 
       {/* MAIN */}
-      <main className="max-w-4xl mx-auto px-4 py-6 pt-28 space-y-4">
-        {/* Thanh lọc */}
-        <div className="bg-white rounded-xl shadow-lg p-4 flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
-          <div>
-            <h2 className="text-xl font-bold text-pink-600">🔥 Ưu đãi nổi bật</h2>
-            <p className="text-sm text-gray-500">
-              Ưu đãi được cộng đồng bình chọn — sắp xếp theo mức độ hot.
-            </p>
-          </div>
-          <div className="flex items-center gap-2">
-            <label className="text-sm font-medium">Lọc:</label>
-            <select
-              className="border rounded px-2 py-1 bg-white shadow-sm"
-              onChange={(e) => {
-                const val = e.target.value;
-                if (val === "hot")
-                  setDeals((d) => [...d].sort((a, b) => b.hotness - a.hotness));
-                if (val === "new")
-                  setDeals((d) => [...d].sort((a, b) => b.id - a.id));
-                if (val === "votes")
-                  setDeals((d) => [...d].sort((a, b) => b.votes - a.votes));
-              }}
-            >
-              <option value="hot">Mua nhiều nhất</option>
-              <option value="votes">Nhiều người thích nhất</option>
-              <option value="new">Mới nhất</option>
-            </select>
-          </div>
-        </div>
+      <main className="w-full px-4 py-6 pt-28 grid grid-cols-1 md:grid-cols-4 gap-6">
+        {/* Sidebar trái */}
+        <aside className="md:col-span-1 bg-white rounded-r-xl shadow-md p-4 h-fit sticky top-28">
+          <h3 className="font-bold text-lg mb-3 text-pink-600">Danh mục</h3>
+          <ul className="space-y-2">
+            {categories.map((cat, i) => (
+              <li key={i}>
+                <button
+                  onClick={() => {
+                    setPage(1);
+                    if (cat === "Tất cả") {
+                      setDeals(sampleDeals);
+                    } else {
+                      setDeals(sampleDeals.filter((d) => d.category === cat));
+                    }
+                  }}
+                  className="w-full text-left px-3 py-2 rounded-lg hover:bg-pink-50 hover:text-pink-600 transition-colors"
+                >
+                  {cat}
+                </button>
+              </li>
+            ))}
+          </ul>
+        </aside>
 
         {/* Danh sách ưu đãi */}
-        <div className="space-y-4">
+        <section className="md:col-span-3 space-y-4">
           {shown.map((deal) => (
             <article
               key={deal.id}
               className="bg-white rounded-xl shadow-md hover:shadow-2xl transition-all overflow-hidden flex flex-col sm:flex-row border border-pink-100"
             >
               <div className="sm:w-64 flex-shrink-0 relative">
-                <Link href={`/product/${deal.id}`} className="block">
-                  <img
-                    src={deal.image}
-                    alt={deal.title}
-                    className="object-cover w-full h-full"
-                  />
-                </Link>
-                {/* Category badge góc trên phải */}
-                <div className="absolute top-2 right-2 bg-pink-600 text-white text-xs font-semibold rounded px-2 py-0.5 select-none">
+                <img
+                  src={deal.image}
+                  alt={deal.title}
+                  className="object-cover w-full h-full"
+                />
+                <div className="absolute top-2 right-2 bg-pink-600 text-white text-xs font-semibold rounded px-2 py-0.5">
                   {deal.category}
                 </div>
               </div>
               <div className="flex-1 p-4 flex flex-col justify-between">
-                <div>
-                  <Link href={`/product/${deal.id}`} className="no-underline">
-                    <h3 className="font-semibold text-lg hover:text-pink-500 transition-colors cursor-pointer">
-                      {deal.title}
-                    </h3>
-                  </Link>
-                  {/* Dòng icon + tên người bán dưới tiêu đề */}
-                  <div className="flex items-center gap-2 mt-1 text-gray-600 text-sm">
-                    {/* Icon user */}
-                    <svg
-                      xmlns="http://www.w3.org/2000/svg"
-                      className="h-4 w-4 text-pink-600"
-                      fill="none"
-                      viewBox="0 0 24 24"
-                      stroke="currentColor"
-                      strokeWidth={2}
-                    >
-                      <path
-                        strokeLinecap="round"
-                        strokeLinejoin="round"
-                        d="M5.121 17.804A13.937 13.937 0 0112 15c2.03 0 3.96.485 5.637 1.342M15 11a3 3 0 11-6 0 3 3 0 016 0z"
-                      />
-                    </svg>
-                    <span>{deal.seller}</span>
-                  </div>
-                  <div className="text-sm text-gray-500">
-                    {deal.store} • {deal.category}
-                  </div>
-                </div>
-
+                <h3 className="font-semibold text-lg hover:text-pink-500 transition-colors cursor-pointer">
+                  {deal.title}
+                </h3>
+                <div className="text-sm text-gray-500">{deal.store}</div>
                 <div className="mt-4 flex items-center justify-between">
-                  <div className="flex items-center gap-3">
+                  {/* Cột nút */}
+                  <div className="flex items-center gap-2">
                     <button
                       onClick={() => vote(deal.id, 1)}
-                      className="px-2 py-1 border rounded hover:bg-green-50 text-green-600 transition-colors"
-                      aria-label={`Vote up for ${deal.title}`}
+                      className="px-2 py-1 border rounded hover:bg-green-50 text-green-600"
                     >
                       ▲
                     </button>
-                    <div className="text-sm font-bold text-gray-700">
-                      {deal.votes}
-                    </div>
+                    <div className="text-sm font-bold">{deal.votes}</div>
                     <button
                       onClick={() => vote(deal.id, -1)}
-                      className="px-2 py-1 border rounded hover:bg-red-50 text-red-600 transition-colors"
-                      aria-label={`Vote down for ${deal.title}`}
+                      className="px-2 py-1 border rounded hover:bg-red-50 text-red-600"
                     >
                       ▼
                     </button>
-                    <span className="text-xs text-orange-500 font-semibold">
-                      {deal.hotness}°
-                    </span>
+
+                    {/* Nút comment */}
+                    <button
+                      onClick={() => setSelectedDeal(deal.id)}
+                      className="px-2 py-1 border rounded hover:bg-blue-50 text-blue-600 flex items-center gap-1"
+                    >
+                      💬 <span className="text-xs">{deal.comments}</span>
+                    </button>
+
+                    {/* Nút share */}
+                    <button
+                      onClick={() => {
+                        const url = window.location.href + "#deal-" + deal.id;
+                        if (navigator.share) {
+                          navigator.share({ title: deal.title, url });
+                        } else {
+                          navigator.clipboard.writeText(url);
+                          alert("Đã copy link: " + url);
+                        }
+                      }}
+                      className="px-2 py-1 border rounded hover:bg-gray-50 text-gray-600"
+                    >
+                      🔗
+                    </button>
                   </div>
+
                   <div className="text-right">
-                    <div className="font-bold text-lg text-pink-600">{deal.price}</div>
-                    <div className="text-xs text-gray-500">{deal.comments} bình luận</div>
+                    <div className="font-bold text-lg text-pink-600">
+                      {deal.price}
+                    </div>
+                    <div className="text-xs text-gray-500">
+                      {deal.comments} bình luận
+                    </div>
                   </div>
                 </div>
               </div>
             </article>
           ))}
-        </div>
-
-        {/* Phân trang */}
-        <div className="flex items-center justify-between pt-4">
-          <div className="text-sm text-gray-500">
-            Hiển thị {(page - 1) * perPage + 1}–{Math.min(page * perPage, filtered.length)} trong tổng {filtered.length} ưu đãi
-          </div>
-          <div className="flex items-center gap-2">
-            <button
-              onClick={() => setPage((p) => Math.max(1, p - 1))}
-              className="px-3 py-1 border rounded hover:bg-pink-50 transition-colors"
-              aria-label="Trang trước"
-            >
-              Trước
-            </button>
-            <div className="px-3 py-1 border rounded bg-white shadow-sm" aria-live="polite">
-              {page} / {pages}
-            </div>
-            <button
-              onClick={() => setPage((p) => Math.min(pages, p + 1))}
-              className="px-3 py-1 border rounded hover:bg-pink-50 transition-colors"
-              aria-label="Trang sau"
-            >
-              Sau
-            </button>
-          </div>
-        </div>
+        </section>
       </main>
 
-      {/* Footer */}
-      <footer className="w-full bg-gray-100 border-t border-gray-300 mt-8 px-6 sm:px-10">
-        <div className="max-w-7xl mx-auto grid grid-cols-4 gap-6">
-          {footerSections.map(({ title, items }, idx) => (
-            <ToggleFooterSection
-              key={idx}
-              title={title}
-              items={items}
-              className={title === "Hỗ trợ" ? "max-w-[200px]" : ""}
+      {/* Sidebar comment */}
+      {selectedDeal && (
+        <div className="fixed top-0 right-0 w-96 h-full bg-white border-l shadow-xl flex flex-col z-50">
+          <div className="p-4 border-b flex justify-between items-center">
+            <h3 className="font-bold text-lg text-pink-600">
+              Bình luận sản phẩm #{selectedDeal}
+            </h3>
+            <button
+              onClick={() => setSelectedDeal(null)}
+              className="text-gray-500 hover:text-red-500"
+            >
+              ✕
+            </button>
+          </div>
+          <div className="flex-1 overflow-y-auto p-4 space-y-3">
+            {(comments[selectedDeal] || []).map((cmt) => (
+              <div
+                key={cmt.id}
+                className="p-3 bg-gray-50 rounded-lg shadow-sm text-sm"
+              >
+                <p className="font-semibold">{cmt.user}</p>
+                <p>{cmt.text}</p>
+              </div>
+            ))}
+          </div>
+          <div className="p-3 border-t flex gap-2">
+            <input
+              type="text"
+              value={newComment}
+              onChange={(e) => setNewComment(e.target.value)}
+              placeholder="Viết bình luận..."
+              className="flex-1 border rounded-lg px-3 py-2 text-sm"
             />
-          ))}
+            <button
+              onClick={handleAddComment}
+              className="px-4 py-2 bg-pink-600 text-white rounded-lg"
+            >
+              Gửi
+            </button>
+          </div>
         </div>
-      </footer>
+      )}
     </div>
   );
 }

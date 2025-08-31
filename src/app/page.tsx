@@ -126,6 +126,14 @@ type Comment = {
   text: string;
 };
 
+const communityMembers = [
+  { id: 1, name: "Thành viên A", followers: 1200, stars: 4.8 },
+  { id: 2, name: "Thành viên B", followers: 950, stars: 4.6 },
+  { id: 3, name: "Thành viên C", followers: 800, stars: 4.5 },
+  { id: 4, name: "Thành viên D", followers: 600, stars: 4.2 },
+  { id: 5, name: "Thành viên E", followers: 500, stars: 4.0 },
+];
+
 export default function HotDealsHomePage() {
   const [deals, setDeals] = useState(sampleDeals);
   const [query, setQuery] = useState("");
@@ -168,7 +176,7 @@ export default function HotDealsHomePage() {
   const shown = filtered.slice((page - 1) * perPage, page * perPage);
 
   return (
-    <div className="min-h-screen bg-gradient-to-b from-pink-50 via-white to-blue-50 text-gray-900">
+    <div className="min-h-screen bg-gradient-to-b from-pink-50 via-white to-blue-50 text-gray-900 flex flex-col">
       {/* HEADER */}
       <header className="border-b bg-gradient-to-r from-pink-500 via-red-500 to-orange-400 fixed w-full top-0 z-40 shadow-lg">
         <div className="max-w-7xl mx-auto px-4 py-3 flex items-center gap-4">
@@ -189,7 +197,7 @@ export default function HotDealsHomePage() {
       </header>
 
       {/* MAIN */}
-      <main className="w-full px-4 py-6 pt-28 grid grid-cols-1 md:grid-cols-4 gap-6">
+      <main className="flex-1 w-full px-4 py-6 pt-28 grid grid-cols-1 md:grid-cols-5 gap-6">
         {/* Sidebar trái */}
         <aside className="md:col-span-1 bg-white rounded-r-xl shadow-md p-4 h-fit sticky top-28">
           <h3 className="font-bold text-lg mb-3 text-pink-600">Danh mục</h3>
@@ -291,7 +299,81 @@ export default function HotDealsHomePage() {
             </article>
           ))}
         </section>
+
+        {/* Sidebar phải */}
+        <aside className="md:col-span-1 bg-white rounded-l-xl shadow-md p-4 h-fit sticky top-28">
+          <h3 className="font-bold text-lg mb-3 text-pink-600">
+            Cộng đồng nổi bật
+          </h3>
+          <ul className="space-y-3">
+            {communityMembers.map((member) => (
+              <li
+                key={member.id}
+                className="flex flex-col gap-1 border-b pb-2 last:border-none"
+              >
+                <Link
+                  href={`/user/${member.id}`}
+                  className="font-semibold text-gray-800 hover:text-pink-600 transition-colors"
+                >
+                  {member.name}
+                </Link>
+                <div className="text-xs text-gray-500">
+                  👥 {member.followers} người theo dõi
+                </div>
+                <div className="text-xs text-yellow-500">
+                  ⭐ {member.stars.toFixed(1)}
+                </div>
+              </li>
+            ))}
+          </ul>
+        </aside>
       </main>
+
+     {/* FOOTER */}
+<footer className="bg-gray-900 text-gray-300 py-10 mt-10">
+  <div className="max-w-7xl mx-auto px-4 grid grid-cols-1 md:grid-cols-4 gap-8">
+    <ToggleFooterSection
+      title="Về chúng tôi"
+      items={[
+        { label: "Giới thiệu", href: "/about" },
+        { label: "Tuyển dụng", href: "/jobs" },
+        { label: "Liên hệ", href: "/contact" },
+      ]}
+    />
+
+    <ToggleFooterSection
+      title="Hỗ trợ"
+      items={[
+        { label: "Trung tâm trợ giúp", href: "/help" },
+        { label: "Chính sách bảo mật", href: "/privacy" },
+        { label: "Điều khoản sử dụng", href: "/terms" },
+      ]}
+    />
+
+    <ToggleFooterSection
+      title="Cộng đồng"
+      items={[
+        { label: "Diễn đàn", href: "/forum" },
+        { label: "Blog", href: "/blog" },
+        { label: "Sự kiện", href: "/events" },
+      ]}
+    />
+
+    <ToggleFooterSection
+      title="Kết nối"
+      items={[
+        { label: "Facebook", href: "https://facebook.com" },
+        { label: "Twitter", href: "https://twitter.com" },
+        { label: "Instagram", href: "https://instagram.com" },
+      ]}
+    />
+  </div>
+
+  <div className="text-center text-xs text-gray-500 mt-6">
+    © 2025 HukdClone. All rights reserved.
+  </div>
+</footer>
+
 
       {/* Sidebar comment */}
       {selectedDeal && (

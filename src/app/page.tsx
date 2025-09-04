@@ -3,6 +3,7 @@
 import React, { useState } from "react";
 import Link from "next/link";
 
+// ToggleFooterSection giữ nguyên
 function ToggleFooterSection({
   title,
   items,
@@ -61,14 +62,15 @@ function formatVND(amount: number) {
   return amount.toString().replace(/\B(?=(\d{3})+(?!\d))/g, ",") + "₫";
 }
 
+// ✅ Sửa categories thành dạng có label + href
 const categories = [
-  "Tất cả",
-  "Công nghệ",
-  "Nhà cửa",
-  "Thời trang",
-  "Thực phẩm",
-  "Du lịch",
-  "Mã giảm giá",
+  { label: "PC", href: "/category/PC" },
+  { label: "Công nghệ", href: "/category/cong-nghe" },
+  { label: "Nhà cửa", href: "/category/nha-cua" },
+  { label: "Thời trang", href: "/category/thoi-trang" },
+  { label: "Thực phẩm", href: "/category/thuc-pham" },
+  { label: "Du lịch", href: "/category/du-lich" },
+  { label: "Mã giảm giá", href: "/category/ma-giam-gia" },
 ];
 
 const fixedVotes = [120, 85, 95, 110, 70, 60, 130, 140, 100, 90, 115, 125];
@@ -116,7 +118,7 @@ export const sampleDeals = Array.from({ length: 12 }).map((_, i) => ({
   votes: fixedVotes[i],
   comments: fixedComments[i],
   hotness: fixedHotness[i],
-  category: categories[1 + (i % (categories.length - 1))],
+  category: categories[1 + (i % (categories.length - 1))].label,
   seller: sellers[i],
 }));
 
@@ -177,7 +179,7 @@ export default function HotDealsHomePage() {
 
   return (
     <div className="min-h-screen bg-gradient-to-b from-pink-50 via-white to-blue-50 text-gray-900 flex flex-col">
-      {/* HEADER */}
+      {/* HEADER giữ nguyên */}
       <header className="border-b bg-gradient-to-r from-pink-500 via-red-500 to-orange-400 fixed w-full top-0 z-40 shadow-lg">
         <div className="max-w-7xl mx-auto px-4 py-3 flex items-center gap-4">
           <div className="text-2xl font-extrabold text-white cursor-pointer drop-shadow-md">
@@ -198,38 +200,34 @@ export default function HotDealsHomePage() {
 
       {/* MAIN */}
       <main className="flex-1 w-full px-4 py-6 pt-28 grid grid-cols-1 md:grid-cols-5 gap-6">
-        {/* Sidebar trái */}
+        {/* Sidebar trái - ✅ sửa chỗ này */}
         <aside className="md:col-span-1 bg-white rounded-r-xl shadow-md p-4 h-fit sticky top-28">
           <h3 className="font-bold text-lg mb-3 text-pink-600">Danh mục</h3>
           <ul className="space-y-2">
             {categories.map((cat, i) => (
               <li key={i}>
-                <button
-                  onClick={() => {
-                    setPage(1);
-                    if (cat === "Tất cả") {
-                      setDeals(sampleDeals);
-                    } else {
-                      setDeals(sampleDeals.filter((d) => d.category === cat));
-                    }
-                  }}
-                  className="w-full text-left px-3 py-2 rounded-lg hover:bg-pink-50 hover:text-pink-600 transition-colors"
+                <Link
+                  href={cat.href}
+                  className="block w-full text-left px-3 py-2 rounded-lg hover:bg-pink-50 hover:text-pink-600 transition-colors"
                 >
-                  {cat}
-                </button>
+                  {cat.label}
+                </Link>
               </li>
             ))}
           </ul>
         </aside>
 
-        {/* Danh sách ưu đãi */}
+        {/* Danh sách ưu đãi giữ nguyên */}
         <section className="md:col-span-3 space-y-4">
           {shown.map((deal) => (
             <article
               key={deal.id}
               className="bg-white rounded-xl shadow-md hover:shadow-2xl transition-all overflow-hidden flex flex-col sm:flex-row border border-pink-100"
             >
-              <div className="sm:w-64 flex-shrink-0 relative">
+              <Link
+                href={`/deal/${deal.id}`}
+                className="sm:w-64 flex-shrink-0 relative block"
+              >
                 <img
                   src={deal.image}
                   alt={deal.title}
@@ -238,14 +236,15 @@ export default function HotDealsHomePage() {
                 <div className="absolute top-2 right-2 bg-pink-600 text-white text-xs font-semibold rounded px-2 py-0.5">
                   {deal.category}
                 </div>
-              </div>
+              </Link>
               <div className="flex-1 p-4 flex flex-col justify-between">
-                <h3 className="font-semibold text-lg hover:text-pink-500 transition-colors cursor-pointer">
-                  {deal.title}
-                </h3>
+                <Link href={`/deal/${deal.id}`}>
+                  <h3 className="font-semibold text-lg hover:text-pink-500 transition-colors cursor-pointer">
+                    {deal.title}
+                  </h3>
+                </Link>
                 <div className="text-sm text-gray-500">{deal.store}</div>
                 <div className="mt-4 flex items-center justify-between">
-                  {/* Cột nút */}
                   <div className="flex items-center gap-2">
                     <button
                       onClick={() => vote(deal.id, 1)}
@@ -260,16 +259,12 @@ export default function HotDealsHomePage() {
                     >
                       ▼
                     </button>
-
-                    {/* Nút comment */}
                     <button
                       onClick={() => setSelectedDeal(deal.id)}
                       className="px-2 py-1 border rounded hover:bg-blue-50 text-blue-600 flex items-center gap-1"
                     >
                       💬 <span className="text-xs">{deal.comments}</span>
                     </button>
-
-                    {/* Nút share */}
                     <button
                       onClick={() => {
                         const url = window.location.href + "#deal-" + deal.id;
@@ -300,7 +295,7 @@ export default function HotDealsHomePage() {
           ))}
         </section>
 
-        {/* Sidebar phải */}
+        {/* Sidebar phải giữ nguyên */}
         <aside className="md:col-span-1 bg-white rounded-l-xl shadow-md p-4 h-fit sticky top-28">
           <h3 className="font-bold text-lg mb-3 text-pink-600">
             Cộng đồng nổi bật
@@ -329,53 +324,51 @@ export default function HotDealsHomePage() {
         </aside>
       </main>
 
-     {/* FOOTER */}
-<footer className="bg-gray-900 text-gray-300 py-10 mt-10">
-  <div className="max-w-7xl mx-auto px-4 grid grid-cols-1 md:grid-cols-4 gap-8">
-    <ToggleFooterSection
-      title="Về chúng tôi"
-      items={[
-        { label: "Giới thiệu", href: "/about" },
-        { label: "Tuyển dụng", href: "/jobs" },
-        { label: "Liên hệ", href: "/contact" },
-      ]}
-    />
+      {/* FOOTER + Sidebar comment giữ nguyên */}
+      <footer className="bg-gray-900 text-gray-300 py-10 mt-10">
+        <div className="max-w-7xl mx-auto px-4 grid grid-cols-1 md:grid-cols-4 gap-8">
+          <ToggleFooterSection
+            title="Về chúng tôi"
+            items={[
+              { label: "Giới thiệu", href: "/gioi-thieu" },
+              { label: "Tuyển dụng", href: "/jobs" },
+              { label: "Liên hệ", href: "/contact" },
+            ]}
+          />
 
-    <ToggleFooterSection
-      title="Hỗ trợ"
-      items={[
-        { label: "Trung tâm trợ giúp", href: "/help" },
-        { label: "Chính sách bảo mật", href: "/privacy" },
-        { label: "Điều khoản sử dụng", href: "/terms" },
-      ]}
-    />
+          <ToggleFooterSection
+            title="Hỗ trợ"
+            items={[
+              { label: "Trung tâm trợ giúp", href: "/help" },
+              { label: "Chính sách bảo mật", href: "/privacy" },
+              { label: "Điều khoản sử dụng", href: "/terms" },
+            ]}
+          />
 
-    <ToggleFooterSection
-      title="Cộng đồng"
-      items={[
-        { label: "Diễn đàn", href: "/forum" },
-        { label: "Blog", href: "/blog" },
-        { label: "Sự kiện", href: "/events" },
-      ]}
-    />
+          <ToggleFooterSection
+            title="Cộng đồng"
+            items={[
+              { label: "Diễn đàn", href: "/forum" },
+              { label: "Blog", href: "/blog" },
+              { label: "Sự kiện", href: "/events" },
+            ]}
+          />
 
-    <ToggleFooterSection
-      title="Kết nối"
-      items={[
-        { label: "Facebook", href: "https://facebook.com" },
-        { label: "Twitter", href: "https://twitter.com" },
-        { label: "Instagram", href: "https://instagram.com" },
-      ]}
-    />
-  </div>
+          <ToggleFooterSection
+            title="Kết nối"
+            items={[
+              { label: "Facebook", href: "https://facebook.com" },
+              { label: "Twitter", href: "https://twitter.com" },
+              { label: "Instagram", href: "https://instagram.com" },
+            ]}
+          />
+        </div>
 
-  <div className="text-center text-xs text-gray-500 mt-6">
-    © 2025 HukdClone. All rights reserved.
-  </div>
-</footer>
+        <div className="text-center text-xs text-gray-500 mt-6">
+          © 2025 HukdClone. All rights reserved.
+        </div>
+      </footer>
 
-
-      {/* Sidebar comment */}
       {selectedDeal && (
         <div className="fixed top-0 right-0 w-96 h-full bg-white border-l shadow-xl flex flex-col z-50">
           <div className="p-4 border-b flex justify-between items-center">

@@ -25,19 +25,23 @@ export default function StartSellingButtons({
   }
 
   return (
-    <div className="flex gap-3 items-center">
-      <button
-        onClick={() => router.push('/list')}
-        aria-label="Start Your Build"
-        className="inline-flex items-center justify-center rounded-full bg-blue-600 px-4 py-2 text-sm font-semibold shadow-sm transition duration-200 hover:bg-blue-700 hover:shadow-lg active:scale-[0.98] relative z-30 min-w-[140px] text-white"
-      >
-        <span className="mr-2 text-lg">🚀</span>
-        <span className="whitespace-nowrap">Xây dựng máy tính</span>
-      </button>
+    <div className="flex gap-8 items-center">
+      {/* Tải ứng dụng với QR code */}
+      <div className="flex items-center gap-2">
+        <span className="font-semibold text-sm text-gray-800">
+          Tải ứng dụng
+        </span>
+        <img
+          src="https://api.qrserver.com/v1/create-qr-code/?size=150x150&data=https://example.com/app"
+          alt="QR Code tải ứng dụng"
+          className="w-16 h-16 border rounded-md shadow-sm"
+        />
+      </div>
 
+      {/* Nút bắt đầu bán hàng */}
       <button
         onClick={handleStartSelling}
-        className="inline-flex items-center justify-center bg-[#9b4de0] text-white font-semibold text-sm px-5 py-2 rounded-full cursor-pointer shadow-sm hover:bg-[#873ac7] hover:shadow-lg active:scale-[0.98] transition duration-200 relative z-20"
+        className="inline-flex items-center justify-center bg-[#9b4de0] text-white font-semibold text-sm px-5 py-2 rounded-full cursor-pointer shadow-sm hover:bg-[#873ac7] hover:shadow-lg active:scale-[0.98] transition duration-200"
       >
         Bắt đầu bán hàng
       </button>

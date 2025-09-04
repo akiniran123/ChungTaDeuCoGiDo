@@ -2,6 +2,10 @@
 @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap');
 @import "tailwindcss";
 
+/* Import slick carousel CSS */
+@import "slick-carousel/slick/slick.css";
+@import "slick-carousel/slick/slick-theme.css";
+
 /* Global styles */
 html {
   font-family: 'Inter', sans-serif;
@@ -71,4 +75,18 @@ p, ul, ol {
 
 ul, ol {
   list-style-position: inside;
+}
+
+/* Slick carousel custom style */
+.slick-slide img {
+  display: block;
+  margin: 0 auto;
+}
+
+.slick-dots li button:before {
+  color: #2563eb; /* Tailwind blue-600 */
+}
+
+.slick-dots li.slick-active button:before {
+  color: #1d4ed8; /* Tailwind blue-700 */
 }

@@ -30,7 +30,9 @@ export default function LogoSearchIcons({
   return (
     <>
       <header className="w-full border-b border-gray-200 bg-white dark:bg-gray-900 dark:border-gray-700">
-        <div className="max-w-7xl mx-auto px-4 py-3 flex items-center justify-between gap-4">
+        <div className="w-full py-3 pl-4 flex items-center justify-between gap-4">
+
+
           {/* Logo và menu toggle */}
           <Logo onMenuToggle={onMenuToggle} />
 

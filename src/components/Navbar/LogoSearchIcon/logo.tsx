@@ -9,7 +9,7 @@ export default function Logo({
   onMenuToggle?: () => void
 }) {
   return (
-    <div className="flex items-center gap-3">
+    <div className="flex items-center gap-3 justify-start">
       {/* Nút menu trên mobile */}
       <button
         type="button"
@@ -28,6 +28,18 @@ export default function Logo({
         <span className="text-[#9b4de0]">🛡</span>
         <span className="text-gray-900 dark:text-gray-100">NexLoot</span>
       </Link>
+
+      {/* Tải ứng dụng + QR */}
+      <div className="flex items-center gap-1">
+        <span className="font-semibold text-xs text-white">
+          Tải ứng dụng
+        </span>
+        <img
+          src="https://api.qrserver.com/v1/create-qr-code/?size=150x150&data=https://example.com/app"
+          alt="QR Code tải ứng dụng"
+          className="w-8 h-8 border rounded-md shadow-sm"
+        />
+      </div>
     </div>
   )
 }

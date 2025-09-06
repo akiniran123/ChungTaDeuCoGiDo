@@ -326,48 +326,56 @@ export default function HotDealsHomePage() {
 
       {/* FOOTER + Sidebar comment giữ nguyên */}
       <footer className="bg-gray-900 text-gray-300 py-10 mt-10">
-        <div className="max-w-7xl mx-auto px-4 grid grid-cols-1 md:grid-cols-4 gap-8">
-          <ToggleFooterSection
-            title="Về chúng tôi"
-            items={[
-              { label: "Giới thiệu", href: "/gioi-thieu" },
-              { label: "Tuyển dụng", href: "/jobs" },
-              { label: "Liên hệ", href: "/contact" },
-            ]}
-          />
+  <div className="max-w-7xl mx-auto px-4 grid grid-cols-2 md:grid-cols-4 gap-6 md:gap-8">
+    <div className="h-full">
+      <ToggleFooterSection
+        title="Về chúng tôi"
+        items={[
+          { label: "Giới thiệu", href: "/gioi-thieu" },
+          { label: "Tuyển dụng", href: "/jobs" },
+          { label: "Liên hệ", href: "/contact" },
+        ]}
+      />
+    </div>
 
-          <ToggleFooterSection
-            title="Hỗ trợ"
-            items={[
-              { label: "Trung tâm trợ giúp", href: "/help" },
-              { label: "Chính sách bảo mật", href: "/privacy" },
-              { label: "Điều khoản sử dụng", href: "/terms" },
-            ]}
-          />
+    <div className="h-full">
+      <ToggleFooterSection
+        title="Hỗ trợ"
+        items={[
+          { label: "Trung tâm trợ giúp", href: "/help" },
+          { label: "Chính sách bảo mật", href: "/privacy" },
+          { label: "Điều khoản sử dụng", href: "/terms" },
+        ]}
+      />
+    </div>
 
-          <ToggleFooterSection
-            title="Cộng đồng"
-            items={[
-              { label: "Diễn đàn", href: "/forum" },
-              { label: "Blog", href: "/blog" },
-              { label: "Sự kiện", href: "/events" },
-            ]}
-          />
+    <div className="h-full">
+      <ToggleFooterSection
+        title="Cộng đồng"
+        items={[
+          { label: "Diễn đàn", href: "/forum" },
+          { label: "Blog", href: "/blog" },
+          { label: "Sự kiện", href: "/events" },
+        ]}
+      />
+    </div>
 
-          <ToggleFooterSection
-            title="Kết nối"
-            items={[
-              { label: "Facebook", href: "https://facebook.com" },
-              { label: "Twitter", href: "https://twitter.com" },
-              { label: "Instagram", href: "https://instagram.com" },
-            ]}
-          />
-        </div>
+    <div className="h-full">
+      <ToggleFooterSection
+        title="Kết nối"
+        items={[
+          { label: "Facebook", href: "https://facebook.com" },
+          { label: "Twitter", href: "https://twitter.com" },
+          { label: "Instagram", href: "https://instagram.com" },
+        ]}
+      />
+    </div>
+  </div>
 
-        <div className="text-center text-xs text-gray-500 mt-6">
-          © 2025 HukdClone. All rights reserved.
-        </div>
-      </footer>
+  <div className="text-center text-xs text-gray-500 mt-6">
+    © 2025 HukdClone. All rights reserved.
+  </div>
+</footer>
 
       {selectedDeal && (
         <div className="fixed top-0 right-0 w-96 h-full bg-white border-l shadow-xl flex flex-col z-50">

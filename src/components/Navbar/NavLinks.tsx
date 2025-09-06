@@ -7,17 +7,30 @@ import "slick-carousel/slick/slick-theme.css";
 
 export default function NavLinks() {
   const [isMobile, setIsMobile] = useState(false);
+  const [showAds, setShowAds] = useState(true);
 
   useEffect(() => {
     function handleResize() {
       setIsMobile(window.innerWidth < 768);
     }
+
+    function handleScroll() {
+      // Ẩn quảng cáo khi cuộn xuống quá 100px
+      setShowAds(window.scrollY < 100);
+    }
+
     handleResize();
+    handleScroll();
+
     window.addEventListener('resize', handleResize);
-    return () => window.removeEventListener('resize', handleResize);
+    window.addEventListener('scroll', handleScroll);
+
+    return () => {
+      window.removeEventListener('resize', handleResize);
+      window.removeEventListener('scroll', handleScroll);
+    };
   }, []);
 
-  // Cấu hình slider
   const settings = {
     dots: false,
     infinite: true,
@@ -29,23 +42,47 @@ export default function NavLinks() {
     arrows: false,
   };
 
-  // Hình ảnh quảng cáo thật (Unsplash free)
+  const fallbackImg =
+    'https://images.unsplash.com/photo-1519389950473-47ba0277781c?auto=format&fit=crop&w=1600&q=80';
+
   const ads = [
-    { id: 1, img: 'https://images.unsplash.com/photo-1606813902916-3f3b0b38dd5d?auto=format&fit=crop&w=1600&q=80', link: '/advertising/1' },
-    { id: 2, img: 'https://images.unsplash.com/photo-1581291518857-4e27b48ff24e?auto=format&fit=crop&w=1600&q=80', link: '/advertising/2' },
-    { id: 3, img: 'https://images.unsplash.com/photo-1503602642458-232111445657?auto=format&fit=crop&w=1600&q=80', link: '/advertising/3' },
+    {
+      id: 1,
+      img: 'https://images.unsplash.com/photo-1506765515384-028b60a970df?auto=format&fit=crop&w=1600&q=80',
+      link: '/advertising/1',
+    },
+    {
+      id: 2,
+      img: 'https://images.unsplash.com/photo-1498050108023-c5249f4df085?auto=format&fit=crop&w=1600&q=80',
+      link: '/advertising/2',
+    },
+    {
+      id: 3,
+      img: 'https://images.unsplash.com/photo-1522202176988-66273c2fd55f?auto=format&fit=crop&w=1600&q=80',
+      link: '/advertising/3',
+    },
   ];
 
+  const handleImgError = (e: React.SyntheticEvent<HTMLImageElement, Event>) => {
+    const img = e.currentTarget;
+    img.onerror = null;
+    img.src = fallbackImg;
+  };
+
+  if (!showAds) return null; // Ẩn toàn bộ component nếu không hiển thị quảng cáo
+
   return (
-    <div className="border-none outline-none relative z-10">
+    <div className="static w-full mb-4 overflow-hidden rounded-lg shadow-sm">
       {/* Desktop full-width */}
       <div className="hidden md:block w-full h-[70px] mt-1">
         <Slider {...settings}>
           {ads.map((ad) => (
-            <a key={ad.id} href={ad.link}>
+            <a key={ad.id} href={ad.link} className="block">
               <img
                 src={ad.img}
                 alt={`Ad ${ad.id}`}
+                loading="lazy"
+                onError={handleImgError}
                 className="w-full h-[70px] object-cover"
               />
             </a>
@@ -58,10 +95,12 @@ export default function NavLinks() {
         <div className="w-full h-[50px] mt-1">
           <Slider {...settings}>
             {ads.map((ad) => (
-              <a key={ad.id} href={ad.link}>
+              <a key={ad.id} href={ad.link} className="block">
                 <img
                   src={ad.img}
                   alt={`Ad ${ad.id}`}
+                  loading="lazy"
+                  onError={handleImgError}
                   className="w-full h-[50px] object-cover"
                 />
               </a>

@@ -40,7 +40,9 @@ export default function UserMenu({ onLoginClick }: { onLoginClick: () => void })
         <UserIcon className="w-5 h-5" />
         <ChevronDown className="w-4 h-4" />
       </HeadlessMenu.Button>
-      <HeadlessMenu.Items className="absolute right-0 mt-2 w-44 bg-white border border-gray-200 rounded-md shadow-lg z-50 text-sm">
+      <HeadlessMenu.Items
+        className="absolute right-2 mt-2 w-44 bg-white border border-gray-200 rounded-md shadow-lg z-50 text-sm"
+      >
         <HeadlessMenu.Item>
           {({ active }) => (
             <button

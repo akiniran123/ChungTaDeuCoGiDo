@@ -324,10 +324,9 @@ export default function HotDealsHomePage() {
         </aside>
       </main>
 
-      {/* FOOTER + Sidebar comment giữ nguyên */}
-      <footer className="bg-gray-900 text-gray-300 py-10 mt-10">
-  <div className="max-w-7xl mx-auto px-4 grid grid-cols-2 md:grid-cols-4 gap-6 md:gap-8">
-    <div className="h-full">
+     <footer className="bg-gray-900 text-gray-300 mt-0">
+  <div className="w-full grid grid-cols-2 md:grid-cols-4 gap-2 px-2">
+    <div className="flex flex-col items-center text-xs leading-tight space-y-0">
       <ToggleFooterSection
         title="Về chúng tôi"
         items={[
@@ -338,7 +337,7 @@ export default function HotDealsHomePage() {
       />
     </div>
 
-    <div className="h-full">
+    <div className="flex flex-col items-center text-xs leading-tight space-y-0">
       <ToggleFooterSection
         title="Hỗ trợ"
         items={[
@@ -349,7 +348,7 @@ export default function HotDealsHomePage() {
       />
     </div>
 
-    <div className="h-full">
+    <div className="flex flex-col items-center text-xs leading-tight space-y-0">
       <ToggleFooterSection
         title="Cộng đồng"
         items={[
@@ -360,7 +359,7 @@ export default function HotDealsHomePage() {
       />
     </div>
 
-    <div className="h-full">
+    <div className="flex flex-col items-center text-xs leading-tight space-y-0">
       <ToggleFooterSection
         title="Kết nối"
         items={[
@@ -372,7 +371,7 @@ export default function HotDealsHomePage() {
     </div>
   </div>
 
-  <div className="text-center text-xs text-gray-500 mt-6">
+  <div className="text-center text-[10px] text-gray-500 mt-0">
     © 2025 HukdClone. All rights reserved.
   </div>
 </footer>

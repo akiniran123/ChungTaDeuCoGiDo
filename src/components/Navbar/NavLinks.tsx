@@ -72,9 +72,9 @@ export default function NavLinks() {
   if (!showAds) return null; // Ẩn toàn bộ component nếu không hiển thị quảng cáo
 
   return (
-    <div className="static w-full mb-4 overflow-hidden rounded-lg shadow-sm">
+    <div className="w-full m-0 p-0 rounded-none shadow-none">
       {/* Desktop full-width */}
-      <div className="hidden md:block w-full h-[70px] mt-1">
+      <div className="hidden md:block w-full h-[70px]">
         <Slider {...settings}>
           {ads.map((ad) => (
             <a key={ad.id} href={ad.link} className="block">
@@ -83,7 +83,7 @@ export default function NavLinks() {
                 alt={`Ad ${ad.id}`}
                 loading="lazy"
                 onError={handleImgError}
-                className="w-full h-[70px] object-cover"
+                className="w-full h-[70px] object-cover m-0 p-0"
               />
             </a>
           ))}
@@ -92,7 +92,7 @@ export default function NavLinks() {
 
       {/* Mobile full-width */}
       {isMobile && (
-        <div className="w-full h-[50px] mt-1">
+        <div className="w-full h-[50px]">
           <Slider {...settings}>
             {ads.map((ad) => (
               <a key={ad.id} href={ad.link} className="block">
@@ -101,7 +101,7 @@ export default function NavLinks() {
                   alt={`Ad ${ad.id}`}
                   loading="lazy"
                   onError={handleImgError}
-                  className="w-full h-[50px] object-cover"
+                  className="w-full h-[50px] object-cover m-0 p-0"
                 />
               </a>
             ))}

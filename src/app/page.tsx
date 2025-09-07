@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useState } from "react";
+import React, { useState, useEffect, useRef } from "react";
 import Link from "next/link";
 import { ArrowUp, ArrowDown } from "lucide-react"; // icon vote
 
@@ -68,9 +68,6 @@ const categories = [
   { label: "Mã giảm giá", href: "/category/ma-giam-gia" },
 ];
 
-const fixedVotes = [5900, 4200, 3100, 2700, 1500, 6800];
-const fixedComments = [680, 350, 210, 95, 70, 55];
-
 const productNames = [
   "First site as I open my eyeballs this morning",
   "Camping view with sunrise",
@@ -78,9 +75,32 @@ const productNames = [
   "Night under the stars",
   "Cozy campfire vibes",
   "Rainy morning camping",
+  "Hiking to the peak",
+  "River crossing adventure",
+  "Cooking instant noodles at night",
+  "Backpacking in the forest",
+  "Sunset over the lake",
+  "Lost in the jungle",
+  "Campfire storytelling",
+  "Rain shelter with tarp",
+  "Sleeping under moonlight",
+  "Starry night photography",
+  "Fishing at dawn",
+  "Morning coffee in woods",
+  "Wild animal encounter",
+  "Group camping fun",
+  "Chilling in hammock",
+  "Exploring caves",
+  "Mountain top view",
+  "Snow camping experience",
+  "Cooking BBQ outdoors",
+  "Hot tea in the cold",
+  "Solo camping meditation",
+  "Bikepacking journey",
+  "Kayaking with friends",
+  "Relaxing by the fire",
 ];
 
-// ---- Thêm type Deal ----
 type Deal = {
   id: number;
   title: string;
@@ -95,13 +115,19 @@ type Deal = {
   content: string;
 };
 
-// ---- Sample deals có thêm author + content ----
-export const sampleDeals: Deal[] = Array.from({ length: 6 }).map((_, i) => ({
+type Comment = {
+  id: number;
+  user: string;
+  text: string;
+};
+
+// ---- tạo nhiều deals (30 sản phẩm) ----
+export const sampleDeals: Deal[] = Array.from({ length: 30 }).map((_, i) => ({
   id: i + 1,
-  title: productNames[i],
+  title: productNames[i % productNames.length],
   image: `https://picsum.photos/seed/reddit${i}/800/600`,
-  votes: fixedVotes[i],
-  comments: fixedComments[i],
+  votes: Math.floor(Math.random() * 8000),
+  comments: Math.floor(Math.random() * 500),
   category: "Camping",
   likes: 0,
   hearts: 0,
@@ -109,12 +135,6 @@ export const sampleDeals: Deal[] = Array.from({ length: 6 }).map((_, i) => ({
   author: `Người dùng ${i + 1}`,
   content: `Đây là trải nghiệm camping số ${i + 1}, cảm giác thật tuyệt! 🌲🔥`,
 }));
-
-type Comment = {
-  id: number;
-  user: string;
-  text: string;
-};
 
 const communityMembers = [
   { id: 1, name: "Thành viên A", followers: 1200, stars: 4.8 },
@@ -125,10 +145,11 @@ const communityMembers = [
 ];
 
 export default function HotDealsHomePage() {
-  const [deals, setDeals] = useState<Deal[]>(sampleDeals);
+  const [deals, setDeals] = useState<Deal[]>([]);
   const [query, setQuery] = useState("");
   const [page, setPage] = useState(1);
-  const perPage = 4;
+  const perPage = 6;
+  const loaderRef = useRef<HTMLDivElement | null>(null);
 
   const [selectedDeal, setSelectedDeal] = useState<number | null>(null);
   const [comments, setComments] = useState<Record<number, Comment[]>>({
@@ -138,6 +159,31 @@ export default function HotDealsHomePage() {
     ],
   });
   const [newComment, setNewComment] = useState("");
+
+  // tải thêm sản phẩm khi thay đổi page
+  useEffect(() => {
+    const start = (page - 1) * perPage;
+    const more = sampleDeals.slice(start, start + perPage);
+    setDeals((prev) => [...prev, ...more]);
+  }, [page]);
+
+  // intersection observer cho infinite scroll
+  useEffect(() => {
+    const observer = new IntersectionObserver(
+      (entries) => {
+        if (entries[0].isIntersecting) {
+          if (page * perPage < sampleDeals.length) {
+            setPage((p) => p + 1);
+          }
+        }
+      },
+      { threshold: 1 }
+    );
+    if (loaderRef.current) observer.observe(loaderRef.current);
+    return () => {
+      if (loaderRef.current) observer.unobserve(loaderRef.current);
+    };
+  }, [page]);
 
   function vote(id: number, delta: number) {
     setDeals((prev) =>
@@ -162,8 +208,6 @@ export default function HotDealsHomePage() {
   const filtered = deals.filter((d) =>
     d.title.toLowerCase().includes(query.toLowerCase())
   );
-  const pages = Math.max(1, Math.ceil(filtered.length / perPage));
-  const shown = filtered.slice((page - 1) * perPage, page * perPage);
 
   return (
     <div className="min-h-screen bg-gray-50 text-gray-900 flex flex-col">
@@ -207,10 +251,11 @@ export default function HotDealsHomePage() {
 
         {/* Nội dung chính */}
         <section className="md:col-span-3 space-y-6">
-          {shown.map((deal) => (
+          {filtered.map((deal) => (
             <article
               key={deal.id}
               className="flex flex-col transition-all max-w-xl mx-auto bg-white rounded-lg shadow"
+              id={`deal-${deal.id}`}
             >
               {/* Thông tin người đăng */}
               <div className="flex items-center gap-2 px-3 py-2 border-b text-sm">
@@ -256,6 +301,7 @@ export default function HotDealsHomePage() {
                   </button>
                 </div>
 
+                {/* Nút comment */}
                 <button
                   onClick={() => setSelectedDeal(deal.id)}
                   className="flex items-center gap-1 hover:text-pink-600 transition"
@@ -263,8 +309,7 @@ export default function HotDealsHomePage() {
                   💬 <span>{deal.comments}</span>
                 </button>
 
-                <button className="hover:text-pink-600 transition">🎖️</button>
-
+                {/* Nút chia sẻ */}
                 <button
                   onClick={() => {
                     const url = `${window.location.href}#deal-${deal.id}`;
@@ -282,6 +327,13 @@ export default function HotDealsHomePage() {
               </div>
             </article>
           ))}
+
+          {/* loader */}
+          <div ref={loaderRef} className="h-10 flex justify-center items-center">
+            {page * perPage < sampleDeals.length
+              ? "Đang tải thêm..."
+              : "Hết sản phẩm"}
+          </div>
         </section>
 
         {/* Sidebar phải */}

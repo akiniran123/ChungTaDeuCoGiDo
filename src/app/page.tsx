@@ -2,7 +2,7 @@
 
 import React, { useState } from "react";
 import Link from "next/link";
-import { ArrowUp, ArrowDown } from "lucide-react"; // thêm icon giống ảnh
+import { ArrowUp, ArrowDown } from "lucide-react"; // icon vote
 
 function ToggleFooterSection({
   title,
@@ -58,10 +58,6 @@ function ToggleFooterSection({
   );
 }
 
-function formatVND(amount: number) {
-  return amount.toString().replace(/\B(?=(\d{3})+(?!\d))/g, ",") + "₫";
-}
-
 const categories = [
   { label: "PC", href: "/category/PC" },
   { label: "Công nghệ", href: "/category/cong-nghe" },
@@ -84,7 +80,7 @@ const productNames = [
   "Rainy morning camping",
 ];
 
-// ---- Thêm type Deal đầy đủ ----
+// ---- Thêm type Deal ----
 type Deal = {
   id: number;
   title: string;
@@ -95,9 +91,11 @@ type Deal = {
   likes: number;
   hearts: number;
   reacts: number;
+  author: string;
+  content: string;
 };
 
-// ---- Khởi tạo sampleDeals có các trường mới ----
+// ---- Sample deals có thêm author + content ----
 export const sampleDeals: Deal[] = Array.from({ length: 6 }).map((_, i) => ({
   id: i + 1,
   title: productNames[i],
@@ -108,6 +106,8 @@ export const sampleDeals: Deal[] = Array.from({ length: 6 }).map((_, i) => ({
   likes: 0,
   hearts: 0,
   reacts: 0,
+  author: `Người dùng ${i + 1}`,
+  content: `Đây là trải nghiệm camping số ${i + 1}, cảm giác thật tuyệt! 🌲🔥`,
 }));
 
 type Comment = {
@@ -205,67 +205,84 @@ export default function HotDealsHomePage() {
           </ul>
         </aside>
 
+        {/* Nội dung chính */}
         <section className="md:col-span-3 space-y-6">
-  {shown.map((deal) => (
-  <article key={deal.id} className="flex flex-col transition-all max-w-xl mx-auto">
-    {/* Khối ảnh + overlay caption */}
-    <div className="relative w-full">
-      <img
-        src={deal.image}
-        alt={deal.title}
-        className="object-cover w-full h-72 rounded-md"
-      />
-      <div className="absolute bottom-0 left-0 w-full bg-black/50 text-white p-4 rounded-b-md">
-        <h3 className="font-semibold text-lg leading-snug">{deal.title}</h3>
-        <div className="text-sm text-gray-200">r/{deal.category}</div>
-      </div>
-    </div>
+          {shown.map((deal) => (
+            <article
+              key={deal.id}
+              className="flex flex-col transition-all max-w-xl mx-auto bg-white rounded-lg shadow"
+            >
+              {/* Thông tin người đăng */}
+              <div className="flex items-center gap-2 px-3 py-2 border-b text-sm">
+                <span className="text-xl">👤</span>
+                <div>
+                  <p className="font-semibold">{deal.author}</p>
+                  <p className="text-gray-600">{deal.content}</p>
+                </div>
+              </div>
 
-    {/* Thanh tương tác */}
-    <div className="flex items-center gap-4 mt-3 text-sm text-gray-700 w-fit pl-1">
-      {/* Vote box */}
-      <div className="flex items-center bg-gray-100 rounded-full shadow-sm w-fit">
-        <button onClick={() => vote(deal.id, 1)} className="hover:text-pink-600 px-0.5">
-          <ArrowUp size={14} />
-        </button>
-        <span className="font-semibold text-xs text-center">
-          {deal.votes || "4,5N"}
-        </span>
-        <button onClick={() => vote(deal.id, -1)} className="hover:text-pink-600 px-0.5">
-          <ArrowDown size={14} />
-        </button>
-      </div>
+              {/* Khối ảnh */}
+              <div className="relative w-full">
+                <img
+                  src={deal.image}
+                  alt={deal.title}
+                  className="object-cover w-full h-72 rounded-md"
+                />
+                <div className="absolute bottom-0 left-0 w-full bg-black/50 text-white p-4 rounded-b-md">
+                  <h3 className="font-semibold text-lg leading-snug">
+                    {deal.title}
+                  </h3>
+                  <div className="text-sm text-gray-200">r/{deal.category}</div>
+                </div>
+              </div>
 
-      {/* Bình luận */}
-      <button
-        onClick={() => setSelectedDeal(deal.id)}
-        className="flex items-center gap-1 hover:text-pink-600 transition"
-      >
-        💬 <span>{deal.comments}</span>
-      </button>
+              {/* Thanh tương tác */}
+              <div className="flex items-center gap-4 mt-3 text-sm text-gray-700 w-fit pl-3 mb-3">
+                <div className="flex items-center bg-gray-100 rounded-full shadow-sm w-fit">
+                  <button
+                    onClick={() => vote(deal.id, 1)}
+                    className="hover:text-pink-600 px-0.5"
+                  >
+                    <ArrowUp size={14} />
+                  </button>
+                  <span className="font-semibold text-xs text-center">
+                    {deal.votes || "0"}
+                  </span>
+                  <button
+                    onClick={() => vote(deal.id, -1)}
+                    className="hover:text-pink-600 px-0.5"
+                  >
+                    <ArrowDown size={14} />
+                  </button>
+                </div>
 
-      {/* Badge / Award */}
-      <button className="hover:text-pink-600 transition">🎖️</button>
+                <button
+                  onClick={() => setSelectedDeal(deal.id)}
+                  className="flex items-center gap-1 hover:text-pink-600 transition"
+                >
+                  💬 <span>{deal.comments}</span>
+                </button>
 
-      {/* Chia sẻ */}
-      <button
-        onClick={() => {
-          const url = `${window.location.href}#deal-${deal.id}`;
-          if (navigator.share) {
-            navigator.share({ title: deal.title, url });
-          } else {
-            navigator.clipboard.writeText(url);
-            alert("Đã copy link: " + url);
-          }
-        }}
-        className="flex items-center gap-1 hover:text-pink-600 transition"
-      >
-        🔗 <span>Chia sẻ</span>
-      </button>
-    </div>
-  </article>
-))}
-</section>
+                <button className="hover:text-pink-600 transition">🎖️</button>
+
+                <button
+                  onClick={() => {
+                    const url = `${window.location.href}#deal-${deal.id}`;
+                    if (navigator.share) {
+                      navigator.share({ title: deal.title, url });
+                    } else {
+                      navigator.clipboard.writeText(url);
+                      alert("Đã copy link: " + url);
+                    }
+                  }}
+                  className="flex items-center gap-1 hover:text-pink-600 transition"
+                >
+                  🔗 <span>Chia sẻ</span>
+                </button>
+              </div>
+            </article>
+          ))}
+        </section>
 
         {/* Sidebar phải */}
         <aside className="md:col-span-1 bg-white rounded-l-xl shadow-md p-4 h-fit sticky top-28">

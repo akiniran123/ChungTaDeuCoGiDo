@@ -2,8 +2,8 @@
 
 import React, { useState } from "react";
 import Link from "next/link";
+import { ArrowUp, ArrowDown } from "lucide-react"; // thêm icon giống ảnh
 
-// ToggleFooterSection giữ nguyên
 function ToggleFooterSection({
   title,
   items,
@@ -62,7 +62,6 @@ function formatVND(amount: number) {
   return amount.toString().replace(/\B(?=(\d{3})+(?!\d))/g, ",") + "₫";
 }
 
-// ✅ Sửa categories thành dạng có label + href
 const categories = [
   { label: "PC", href: "/category/PC" },
   { label: "Công nghệ", href: "/category/cong-nghe" },
@@ -73,53 +72,42 @@ const categories = [
   { label: "Mã giảm giá", href: "/category/ma-giam-gia" },
 ];
 
-const fixedVotes = [120, 85, 95, 110, 70, 60, 130, 140, 100, 90, 115, 125];
-const fixedComments = [15, 8, 12, 6, 20, 5, 10, 9, 7, 4, 3, 2];
-const fixedHotness = [500, 480, 520, 510, 470, 460, 530, 540, 550, 560, 570, 580];
-
-const exchangeRate = 30000;
+const fixedVotes = [5900, 4200, 3100, 2700, 1500, 6800];
+const fixedComments = [680, 350, 210, 95, 70, 55];
 
 const productNames = [
-  "Điện thoại thông minh",
-  "Máy tính xách tay",
-  "Tai nghe không dây",
-  "Máy ảnh kỹ thuật số",
-  "Bàn phím cơ",
-  "Chuột chơi game",
-  "Tivi 4K",
-  "Loa Bluetooth",
-  "Đồng hồ thông minh",
-  "Máy lọc không khí",
-  "Nồi chiên không dầu",
-  "Máy pha cà phê",
+  "First site as I open my eyeballs this morning",
+  "Camping view with sunrise",
+  "Unexpected guest in the tent",
+  "Night under the stars",
+  "Cozy campfire vibes",
+  "Rainy morning camping",
 ];
 
-const sellers = [
-  "Người bán Demo 1",
-  "Người bán Demo 2",
-  "Người bán Demo 3",
-  "Người bán Demo 4",
-  "Người bán Demo 5",
-  "Người bán Demo 6",
-  "Người bán Demo 7",
-  "Người bán Demo 8",
-  "Người bán Demo 9",
-  "Người bán Demo 10",
-  "Người bán Demo 11",
-  "Người bán Demo 12",
-];
+// ---- Thêm type Deal đầy đủ ----
+type Deal = {
+  id: number;
+  title: string;
+  image: string;
+  votes: number;
+  comments: number;
+  category: string;
+  likes: number;
+  hearts: number;
+  reacts: number;
+};
 
-export const sampleDeals = Array.from({ length: 12 }).map((_, i) => ({
+// ---- Khởi tạo sampleDeals có các trường mới ----
+export const sampleDeals: Deal[] = Array.from({ length: 6 }).map((_, i) => ({
   id: i + 1,
-  title: `🔥 Ưu đãi #${i + 1} — Giảm giá ${productNames[i]}`,
-  price: formatVND((10 + i * 2) * exchangeRate),
-  store: ["Amazon", "Currys", "Argos"][i % 3],
-  image: `https://picsum.photos/seed/hukd${i}/500/300`,
+  title: productNames[i],
+  image: `https://picsum.photos/seed/reddit${i}/800/600`,
   votes: fixedVotes[i],
   comments: fixedComments[i],
-  hotness: fixedHotness[i],
-  category: categories[1 + (i % (categories.length - 1))].label,
-  seller: sellers[i],
+  category: "Camping",
+  likes: 0,
+  hearts: 0,
+  reacts: 0,
 }));
 
 type Comment = {
@@ -137,16 +125,16 @@ const communityMembers = [
 ];
 
 export default function HotDealsHomePage() {
-  const [deals, setDeals] = useState(sampleDeals);
+  const [deals, setDeals] = useState<Deal[]>(sampleDeals);
   const [query, setQuery] = useState("");
   const [page, setPage] = useState(1);
-  const perPage = 8;
+  const perPage = 4;
 
   const [selectedDeal, setSelectedDeal] = useState<number | null>(null);
   const [comments, setComments] = useState<Record<number, Comment[]>>({
     1: [
-      { id: 1, user: "Nam", text: "Giá tốt quá!" },
-      { id: 2, user: "Huy", text: "Mình mới mua, chạy ngon." },
+      { id: 1, user: "Nam", text: "Ghê thật, mở mắt ra thấy con nhện 🕷" },
+      { id: 2, user: "Huy", text: "Đúng cảm giác camping thật sự 😂" },
     ],
   });
   const [newComment, setNewComment] = useState("");
@@ -178,29 +166,29 @@ export default function HotDealsHomePage() {
   const shown = filtered.slice((page - 1) * perPage, page * perPage);
 
   return (
-    <div className="min-h-screen bg-gradient-to-b from-pink-50 via-white to-blue-50 text-gray-900 flex flex-col">
-      {/* HEADER giữ nguyên */}
-      <header className="border-b bg-gradient-to-r from-pink-500 via-red-500 to-orange-400 fixed w-full top-0 z-40 shadow-lg">
+    <div className="min-h-screen bg-gray-50 text-gray-900 flex flex-col">
+      {/* HEADER */}
+      <header className="border-b bg-white fixed w-full top-0 z-40 shadow-sm">
         <div className="max-w-7xl mx-auto px-4 py-3 flex items-center gap-4">
-          <div className="text-2xl font-extrabold text-white cursor-pointer drop-shadow-md">
-            🔥 HukdClone
+          <div className="text-2xl font-extrabold text-pink-600 cursor-pointer">
+            RedditClone
           </div>
           <input
-            aria-label="Tìm kiếm ưu đãi"
+            aria-label="Tìm kiếm bài viết"
             value={query}
             onChange={(e) => {
               setQuery(e.target.value);
               setPage(1);
             }}
             className="flex-1 rounded-lg border px-3 py-2 focus:outline-none focus:ring-2 focus:ring-pink-300 bg-white shadow"
-            placeholder="Tìm kiếm ưu đãi..."
+            placeholder="Tìm kiếm..."
           />
         </div>
       </header>
 
       {/* MAIN */}
       <main className="flex-1 w-full px-4 py-6 pt-28 grid grid-cols-1 md:grid-cols-5 gap-6">
-        {/* Sidebar trái - ✅ sửa chỗ này */}
+        {/* Sidebar trái */}
         <aside className="md:col-span-1 bg-white rounded-r-xl shadow-md p-4 h-fit sticky top-28">
           <h3 className="font-bold text-lg mb-3 text-pink-600">Danh mục</h3>
           <ul className="space-y-2">
@@ -217,85 +205,69 @@ export default function HotDealsHomePage() {
           </ul>
         </aside>
 
-        {/* Danh sách ưu đãi giữ nguyên */}
-        <section className="md:col-span-3 space-y-4">
-          {shown.map((deal) => (
-            <article
-              key={deal.id}
-              className="bg-white rounded-xl shadow-md hover:shadow-2xl transition-all overflow-hidden flex flex-col sm:flex-row border border-pink-100"
-            >
-              <Link
-                href={`/deal/${deal.id}`}
-                className="sm:w-64 flex-shrink-0 relative block"
-              >
-                <img
-                  src={deal.image}
-                  alt={deal.title}
-                  className="object-cover w-full h-full"
-                />
-                <div className="absolute top-2 right-2 bg-pink-600 text-white text-xs font-semibold rounded px-2 py-0.5">
-                  {deal.category}
-                </div>
-              </Link>
-              <div className="flex-1 p-4 flex flex-col justify-between">
-                <Link href={`/deal/${deal.id}`}>
-                  <h3 className="font-semibold text-lg hover:text-pink-500 transition-colors cursor-pointer">
-                    {deal.title}
-                  </h3>
-                </Link>
-                <div className="text-sm text-gray-500">{deal.store}</div>
-                <div className="mt-4 flex items-center justify-between">
-                  <div className="flex items-center gap-2">
-                    <button
-                      onClick={() => vote(deal.id, 1)}
-                      className="px-2 py-1 border rounded hover:bg-green-50 text-green-600"
-                    >
-                      ▲
-                    </button>
-                    <div className="text-sm font-bold">{deal.votes}</div>
-                    <button
-                      onClick={() => vote(deal.id, -1)}
-                      className="px-2 py-1 border rounded hover:bg-red-50 text-red-600"
-                    >
-                      ▼
-                    </button>
-                    <button
-                      onClick={() => setSelectedDeal(deal.id)}
-                      className="px-2 py-1 border rounded hover:bg-blue-50 text-blue-600 flex items-center gap-1"
-                    >
-                      💬 <span className="text-xs">{deal.comments}</span>
-                    </button>
-                    <button
-                      onClick={() => {
-                        const url = window.location.href + "#deal-" + deal.id;
-                        if (navigator.share) {
-                          navigator.share({ title: deal.title, url });
-                        } else {
-                          navigator.clipboard.writeText(url);
-                          alert("Đã copy link: " + url);
-                        }
-                      }}
-                      className="px-2 py-1 border rounded hover:bg-gray-50 text-gray-600"
-                    >
-                      🔗
-                    </button>
-                  </div>
+        <section className="md:col-span-3 space-y-6">
+  {shown.map((deal) => (
+  <article key={deal.id} className="flex flex-col transition-all max-w-xl mx-auto">
+    {/* Khối ảnh + overlay caption */}
+    <div className="relative w-full">
+      <img
+        src={deal.image}
+        alt={deal.title}
+        className="object-cover w-full h-72 rounded-md"
+      />
+      <div className="absolute bottom-0 left-0 w-full bg-black/50 text-white p-4 rounded-b-md">
+        <h3 className="font-semibold text-lg leading-snug">{deal.title}</h3>
+        <div className="text-sm text-gray-200">r/{deal.category}</div>
+      </div>
+    </div>
 
-                  <div className="text-right">
-                    <div className="font-bold text-lg text-pink-600">
-                      {deal.price}
-                    </div>
-                    <div className="text-xs text-gray-500">
-                      {deal.comments} bình luận
-                    </div>
-                  </div>
-                </div>
-              </div>
-            </article>
-          ))}
-        </section>
+    {/* Thanh tương tác */}
+    <div className="flex items-center gap-4 mt-3 text-sm text-gray-700 w-fit pl-1">
+      {/* Vote box */}
+      <div className="flex items-center bg-gray-100 rounded-full shadow-sm w-fit">
+        <button onClick={() => vote(deal.id, 1)} className="hover:text-pink-600 px-0.5">
+          <ArrowUp size={14} />
+        </button>
+        <span className="font-semibold text-xs text-center">
+          {deal.votes || "4,5N"}
+        </span>
+        <button onClick={() => vote(deal.id, -1)} className="hover:text-pink-600 px-0.5">
+          <ArrowDown size={14} />
+        </button>
+      </div>
 
-        {/* Sidebar phải giữ nguyên */}
+      {/* Bình luận */}
+      <button
+        onClick={() => setSelectedDeal(deal.id)}
+        className="flex items-center gap-1 hover:text-pink-600 transition"
+      >
+        💬 <span>{deal.comments}</span>
+      </button>
+
+      {/* Badge / Award */}
+      <button className="hover:text-pink-600 transition">🎖️</button>
+
+      {/* Chia sẻ */}
+      <button
+        onClick={() => {
+          const url = `${window.location.href}#deal-${deal.id}`;
+          if (navigator.share) {
+            navigator.share({ title: deal.title, url });
+          } else {
+            navigator.clipboard.writeText(url);
+            alert("Đã copy link: " + url);
+          }
+        }}
+        className="flex items-center gap-1 hover:text-pink-600 transition"
+      >
+        🔗 <span>Chia sẻ</span>
+      </button>
+    </div>
+  </article>
+))}
+</section>
+
+        {/* Sidebar phải */}
         <aside className="md:col-span-1 bg-white rounded-l-xl shadow-md p-4 h-fit sticky top-28">
           <h3 className="font-bold text-lg mb-3 text-pink-600">
             Cộng đồng nổi bật
@@ -324,63 +296,60 @@ export default function HotDealsHomePage() {
         </aside>
       </main>
 
-     <footer className="bg-gray-900 text-gray-300 mt-0">
-  <div className="w-full grid grid-cols-2 md:grid-cols-4 gap-2 px-2">
-    <div className="flex flex-col items-center text-xs leading-tight space-y-0">
-      <ToggleFooterSection
-        title="Về chúng tôi"
-        items={[
-          { label: "Giới thiệu", href: "/gioi-thieu" },
-          { label: "Tuyển dụng", href: "/jobs" },
-          { label: "Liên hệ", href: "/contact" },
-        ]}
-      />
-    </div>
-
-    <div className="flex flex-col items-center text-xs leading-tight space-y-0">
-      <ToggleFooterSection
-        title="Hỗ trợ"
-        items={[
-          { label: "Trung tâm trợ giúp", href: "/help" },
-          { label: "Chính sách bảo mật", href: "/privacy" },
-          { label: "Điều khoản sử dụng", href: "/terms" },
-        ]}
-      />
-    </div>
-
-    <div className="flex flex-col items-center text-xs leading-tight space-y-0">
-      <ToggleFooterSection
-        title="Cộng đồng"
-        items={[
-          { label: "Diễn đàn", href: "/forum" },
-          { label: "Blog", href: "/blog" },
-          { label: "Sự kiện", href: "/events" },
-        ]}
-      />
-    </div>
-
-    <div className="flex flex-col items-center text-xs leading-tight space-y-0">
-      <ToggleFooterSection
-        title="Kết nối"
-        items={[
-          { label: "Facebook", href: "https://facebook.com" },
-          { label: "Twitter", href: "https://twitter.com" },
-          { label: "Instagram", href: "https://instagram.com" },
-        ]}
-      />
-    </div>
-  </div>
-
-  <div className="text-center text-[10px] text-gray-500 mt-0">
-    © 2025 HukdClone. All rights reserved.
-  </div>
-</footer>
+      {/* FOOTER */}
+      <footer className="bg-gray-900 text-gray-300 mt-0">
+        <div className="w-full grid grid-cols-2 md:grid-cols-4 gap-2 px-2">
+          <div className="flex flex-col items-center text-xs leading-tight space-y-0">
+            <ToggleFooterSection
+              title="Về chúng tôi"
+              items={[
+                { label: "Giới thiệu", href: "/gioi-thieu" },
+                { label: "Tuyển dụng", href: "/jobs" },
+                { label: "Liên hệ", href: "/contact" },
+              ]}
+            />
+          </div>
+          <div className="flex flex-col items-center text-xs leading-tight space-y-0">
+            <ToggleFooterSection
+              title="Hỗ trợ"
+              items={[
+                { label: "Trung tâm trợ giúp", href: "/help" },
+                { label: "Chính sách bảo mật", href: "/privacy" },
+                { label: "Điều khoản sử dụng", href: "/terms" },
+              ]}
+            />
+          </div>
+          <div className="flex flex-col items-center text-xs leading-tight space-y-0">
+            <ToggleFooterSection
+              title="Cộng đồng"
+              items={[
+                { label: "Diễn đàn", href: "/forum" },
+                { label: "Blog", href: "/blog" },
+                { label: "Sự kiện", href: "/events" },
+              ]}
+            />
+          </div>
+          <div className="flex flex-col items-center text-xs leading-tight space-y-0">
+            <ToggleFooterSection
+              title="Kết nối"
+              items={[
+                { label: "Facebook", href: "https://facebook.com" },
+                { label: "Twitter", href: "https://twitter.com" },
+                { label: "Instagram", href: "https://instagram.com" },
+              ]}
+            />
+          </div>
+        </div>
+        <div className="text-center text-[10px] text-gray-500 mt-0">
+          © 2025 RedditClone. All rights reserved.
+        </div>
+      </footer>
 
       {selectedDeal && (
         <div className="fixed top-0 right-0 w-96 h-full bg-white border-l shadow-xl flex flex-col z-50">
           <div className="p-4 border-b flex justify-between items-center">
             <h3 className="font-bold text-lg text-pink-600">
-              Bình luận sản phẩm #{selectedDeal}
+              Bình luận bài #{selectedDeal}
             </h3>
             <button
               onClick={() => setSelectedDeal(null)}

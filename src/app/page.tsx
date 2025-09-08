@@ -2,7 +2,7 @@
 
 import React, { useState, useEffect, useRef } from "react";
 import Link from "next/link";
-import { ArrowUp, ArrowDown } from "lucide-react"; // icon vote
+import { ArrowUp, ArrowDown, Menu } from "lucide-react"; // icon vote + icon 3 gạch
 
 function ToggleFooterSection({
   title,
@@ -160,6 +160,8 @@ export default function HotDealsHomePage() {
   });
   const [newComment, setNewComment] = useState("");
 
+  const [showSidebar, setShowSidebar] = useState(true); // trạng thái ẩn/hiện sidebar
+
   // tải thêm sản phẩm khi thay đổi page
   useEffect(() => {
     const start = (page - 1) * perPage;
@@ -231,26 +233,49 @@ export default function HotDealsHomePage() {
       </header>
 
       {/* MAIN */}
-      <main className="flex-1 w-full px-4 py-6 pt-28 grid grid-cols-1 md:grid-cols-5 gap-6">
+      <main className="flex-1 w-full px-4 py-6 pt-28 grid grid-cols-1 md:grid-cols-5 gap-6 transition-all">
         {/* Sidebar trái */}
-        <aside className="md:col-span-1 bg-white rounded-r-xl shadow-md p-4 h-fit sticky top-28">
-          <h3 className="font-bold text-lg mb-3 text-pink-600">Danh mục</h3>
-          <ul className="space-y-2">
-            {categories.map((cat, i) => (
-              <li key={i}>
-                <Link
-                  href={cat.href}
-                  className="block w-full text-left px-3 py-2 rounded-lg hover:bg-pink-50 hover:text-pink-600 transition-colors"
-                >
-                  {cat.label}
-                </Link>
-              </li>
-            ))}
-          </ul>
-        </aside>
+        {showSidebar && (
+          <aside className="md:col-span-1 bg-white rounded-r-xl shadow-md p-4 h-fit sticky top-28">
+            <div className="flex items-center justify-between mb-3">
+              <h3 className="font-bold text-lg text-pink-600">Danh mục</h3>
+              <button
+                onClick={() => setShowSidebar(false)}
+                className="text-gray-600 hover:text-pink-600"
+              >
+                <Menu size={20} />
+              </button>
+            </div>
+            <ul className="space-y-2">
+              {categories.map((cat, i) => (
+                <li key={i}>
+                  <Link
+                    href={cat.href}
+                    className="block w-full text-left px-3 py-2 rounded-lg hover:bg-pink-50 hover:text-pink-600 transition-colors"
+                  >
+                    {cat.label}
+                  </Link>
+                </li>
+              ))}
+            </ul>
+          </aside>
+        )}
 
         {/* Nội dung chính */}
-        <section className="md:col-span-3 space-y-6">
+        <section
+          className={`${
+            showSidebar ? "md:col-span-3" : "md:col-span-4"
+          } space-y-6`}
+        >
+          {!showSidebar && (
+            <button
+              onClick={() => setShowSidebar(true)}
+              className="flex items-center gap-2 mb-4 text-gray-600 hover:text-pink-600"
+            >
+              <Menu size={22} /> Hiện danh mục
+            </button>
+          )}
+
           {filtered.map((deal) => (
             <article
               key={deal.id}

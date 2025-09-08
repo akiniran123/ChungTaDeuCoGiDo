@@ -8,7 +8,7 @@ export default function MessagesMenu() {
   interface MessagePreview {
     id: string
     sellerName: string
-    lastMessage: string
+    lastMessage: string 
     time: string
     unread: number
   }

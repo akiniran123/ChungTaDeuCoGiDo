@@ -38,7 +38,8 @@ export default function Navbar() {
                   ✕
                 </button>
               </div>
-              <NavLinks onLinkClick={closeMenu} />
+              {/* ❌ bỏ onLinkClick đi */}
+              <NavLinks />
             </motion.div>
           )}
         </AnimatePresence>

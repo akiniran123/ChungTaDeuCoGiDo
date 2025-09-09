@@ -1,7 +1,6 @@
 "use client";
 import React from "react";
 import Link from "next/link";
-import { Menu } from "lucide-react";
 
 export default function SidebarLeft({
   categories,
@@ -11,16 +10,9 @@ export default function SidebarLeft({
   setShowSidebar: (value: boolean) => void;
 }) {
   return (
-    <aside className="md:col-span-1 bg-white rounded-r-xl shadow-md p-4 h-fit sticky top-28">
+    <aside className="md:col-span-1 bg-white rounded-r-xl shadow-md p-4 h-full">
       <div className="flex items-center justify-between mb-3">
         <h3 className="font-bold text-lg text-pink-600">Danh mục</h3>
-        <button
-          onClick={() => setShowSidebar(false)}
-          className="text-gray-600 hover:text-pink-600"
-          aria-label="Ẩn danh mục"
-        >
-          <Menu size={20} />
-        </button>
       </div>
       <ul className="space-y-2">
         {categories.map((cat, i) => (

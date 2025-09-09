@@ -8,7 +8,6 @@ import Footer from "@/components/Trang_chu/Footer";
 
 import { sampleDeals, categories, communityMembers } from "@/data/data";
 
-// ---- Đưa type ra export ----
 export type Deal = {
   id: number;
   title: string;
@@ -26,7 +25,6 @@ export type Comment = {
   text: string;
 };
 
-// ---- Component chính ----
 export default function HotDealsHomePage() {
   const [deals, setDeals] = useState<Deal[]>([]);
   const [query, setQuery] = useState("");
@@ -67,14 +65,12 @@ export default function HotDealsHomePage() {
     };
   }, [page]);
 
-  // Vote
   function vote(id: number, delta: number) {
     setDeals((prev) =>
       prev.map((d) => (d.id === id ? { ...d, votes: d.votes + delta } : d))
     );
   }
 
-  // Thêm bình luận
   function handleAddComment() {
     if (!selectedDeal || !newComment.trim()) return;
     const newCmt: Comment = { id: Date.now(), user: "Bạn", text: newComment };
@@ -89,15 +85,15 @@ export default function HotDealsHomePage() {
     d.title.toLowerCase().includes(query.toLowerCase())
   );
 
+  // Sidebar width
+  const SIDEBAR_WIDTH = "16rem"; // = w-64 (256px)
+
   return (
     <div className="min-h-screen bg-gray-50 text-gray-900 flex flex-col">
       {/* Header */}
       <header className="border-b bg-white fixed w-full top-0 z-40 shadow-sm">
         <div className="max-w-7xl mx-auto px-4 py-3 flex items-center gap-4">
-          <div
-            className="text-2xl font-extrabold text-pink-600 cursor-pointer"
-            aria-label="Logo RedditClone"
-          >
+          <div className="text-2xl font-extrabold text-pink-600 cursor-pointer">
             RedditClone
           </div>
           <input
@@ -113,31 +109,50 @@ export default function HotDealsHomePage() {
         </div>
       </header>
 
-      <main className="flex-1 w-full px-4 py-6 pt-28 grid grid-cols-1 md:grid-cols-5 gap-6 transition-all">
-        {showSidebar && (
-          <SidebarLeft categories={categories} setShowSidebar={setShowSidebar} />
-        )}
-
-        <section
-          className={`${showSidebar ? "md:col-span-3" : "md:col-span-4"} space-y-6`}
+      <main className="flex-1 w-full px-4 py-6 pt-28 grid grid-cols-1 md:grid-cols-5 gap-6 relative overflow-hidden">
+        {/* LEFT COLUMN */}
+        <div
+          className="md:col-span-1 relative z-20"
+          style={{ ["--sidebar-w" as any]: SIDEBAR_WIDTH } as React.CSSProperties}
         >
-          {!showSidebar && (
-            <button
-              onClick={() => setShowSidebar(true)}
-              className="flex items-center gap-2 mb-4 text-gray-600 hover:text-pink-600"
-            >
-              <span className="sr-only">Hiện danh mục</span>
-              <svg className="w-5 h-5" viewBox="0 0 24 24" fill="none">
-                <path
-                  d="M4 6h16M4 12h16M4 18h16"
-                  stroke="currentColor"
-                  strokeWidth="2"
-                />
-              </svg>
-              Hiện danh mục
-            </button>
-          )}
+          {/* Sidebar wrapper */}
+          <div
+            className="absolute top-0 left-0 h-full flex overflow-hidden transition-transform duration-300 ease-in-out"
+            style={{
+              width: "var(--sidebar-w)",
+              transform: showSidebar
+                ? "translateX(0)"
+                : "translateX(calc(-1 * var(--sidebar-w)))",
+            }}
+          >
+            {/* SidebarLeft content */}
+            <div className="w-full">
+              <SidebarLeft categories={categories} setShowSidebar={setShowSidebar} />
+            </div>
+            {/* Divider */}
+            <div className="w-px bg-gray-300 h-full" />
+          </div>
 
+          {/* Hamburger button */}
+          <button
+            onClick={() => setShowSidebar((s) => !s)}
+            aria-label={showSidebar ? "Đóng menu" : "Mở menu"}
+            className="absolute top-4 z-30 flex items-center justify-center w-10 h-10
+                       text-gray-600 hover:text-pink-600 bg-white rounded-r-md shadow
+                       transition-all duration-300 ease-in-out"
+            style={{
+              left: showSidebar ? "calc(var(--sidebar-w))" : "0px",
+              transition: "left 0.3s ease-in-out", // thêm hiệu ứng mượt
+            }}
+          >
+            <svg className="w-5 h-5" viewBox="0 0 24 24" fill="none">
+              <path d="M4 6h16M4 12h16M4 18h16" stroke="currentColor" strokeWidth="2" />
+            </svg>
+          </button>
+        </div>
+
+        {/* Nội dung chính */}
+        <section className="md:col-span-3 space-y-6">
           {filtered.map((deal) => (
             <DealCard
               key={deal.id}
@@ -148,13 +163,14 @@ export default function HotDealsHomePage() {
           ))}
 
           <div ref={loaderRef} className="h-10 flex justify-center items-center">
-            {page * perPage < sampleDeals.length
-              ? "Đang tải thêm..."
-              : "Hết sản phẩm"}
+            {page * perPage < sampleDeals.length ? "Đang tải thêm..." : "Hết sản phẩm"}
           </div>
         </section>
 
-        <SidebarRight communityMembers={communityMembers} />
+        {/* SidebarRight */}
+        <div className="md:col-span-1 relative z-10">
+          <SidebarRight communityMembers={communityMembers} />
+        </div>
       </main>
 
       <Footer />

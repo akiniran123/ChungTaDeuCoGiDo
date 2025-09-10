@@ -10,7 +10,7 @@ export default function SidebarLeft({
   setShowSidebar: (value: boolean) => void;
 }) {
   return (
-    <aside className="md:col-span-1 bg-white rounded-r-xl shadow-md p-4 h-full">
+    <aside className="md:col-span-1 bg-white rounded-r-xl shadow-md p-4 min-h-screen">
       <div className="flex items-center justify-between mb-3">
         <h3 className="font-bold text-lg text-pink-600">Danh mục</h3>
       </div>

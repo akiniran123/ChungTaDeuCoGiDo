@@ -1,5 +1,6 @@
 "use client";
 import React, { useState, useEffect, useRef } from "react";
+
 import SidebarLeft from "@/components/Trang_chu/SidebarLeft";
 import SidebarRight from "@/components/Trang_chu/SidebarRight";
 import DealCard from "@/components/Trang_chu/DealCard";
@@ -109,7 +110,7 @@ export default function HotDealsHomePage() {
         </div>
       </header>
 
-      <main className="flex-1 w-full px-4 py-6 pt-28 grid grid-cols-1 md:grid-cols-5 gap-6 relative overflow-hidden">
+      <main className="flex-1 w-full px-4 py-6 pt-28 grid grid-cols-1 md:grid-cols-5 gap-6 relative">
         {/* LEFT COLUMN */}
         <div
           className="md:col-span-1 relative z-20"
@@ -117,7 +118,8 @@ export default function HotDealsHomePage() {
         >
           {/* Sidebar wrapper */}
           <div
-            className="absolute top-0 left-0 h-full flex overflow-hidden transition-transform duration-300 ease-in-out"
+            className="sticky top-24 h-fit max-h-[calc(100vh-6rem)] flex overflow-hidden 
+                       transition-transform duration-300 ease-in-out bg-white shadow-md rounded-r-xl"
             style={{
               width: "var(--sidebar-w)",
               transform: showSidebar
@@ -133,16 +135,18 @@ export default function HotDealsHomePage() {
             <div className="w-px bg-gray-300 h-full" />
           </div>
 
-          {/* Hamburger button */}
+          {/* Hamburger button - luôn hiện */}
           <button
             onClick={() => setShowSidebar((s) => !s)}
             aria-label={showSidebar ? "Đóng menu" : "Mở menu"}
-            className="absolute top-4 z-30 flex items-center justify-center w-10 h-10
+            className="fixed top-32 left-0 z-50 flex items-center justify-center w-10 h-10
                        text-gray-600 hover:text-pink-600 bg-white rounded-r-md shadow
-                       transition-all duration-300 ease-in-out"
+                       transition-transform duration-300 ease-in-out"
             style={{
-              left: showSidebar ? "calc(var(--sidebar-w))" : "0px",
-              transition: "left 0.3s ease-in-out", // thêm hiệu ứng mượt
+              transform: showSidebar
+                ? `translateX(var(--sidebar-w))`
+                : "translateX(0)",
+              transition: "transform 0.3s ease-in-out",
             }}
           >
             <svg className="w-5 h-5" viewBox="0 0 24 24" fill="none">
@@ -188,3 +192,4 @@ export default function HotDealsHomePage() {
     </div>
   );
 }
+

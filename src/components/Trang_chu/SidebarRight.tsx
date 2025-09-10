@@ -13,11 +13,14 @@ export default function SidebarRight({
   }[];
 }) {
   return (
-    <aside className="md:col-span-1 bg-white rounded-l-xl shadow-md p-4 h-fit sticky top-28">
+    <aside className="md:col-span-1 bg-white rounded-l-xl shadow-md p-4 h-[400px] overflow-y-auto sticky top-28">
       <h3 className="font-bold text-lg mb-3 text-pink-600">Cộng đồng nổi bật</h3>
       <ul className="space-y-3">
         {communityMembers.map((member) => (
-          <li key={member.id} className="flex flex-col gap-1 border-b pb-2 last:border-none">
+          <li
+            key={member.id}
+            className="flex flex-col gap-1 border-b pb-2 last:border-none"
+          >
             <Link
               href={`/user/${member.id}`}
               className="font-semibold text-gray-800 hover:text-pink-600 transition-colors"

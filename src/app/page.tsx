@@ -43,14 +43,12 @@ export default function HotDealsHomePage() {
   const [newComment, setNewComment] = useState("");
   const [showSidebar, setShowSidebar] = useState(true);
 
-  // Load deals theo trang
   useEffect(() => {
     const start = (page - 1) * perPage;
     const more = sampleDeals.slice(start, start + perPage);
     setDeals((prev) => [...prev, ...more]);
   }, [page]);
 
-  // Infinite scroll
   useEffect(() => {
     const observer = new IntersectionObserver(
       (entries) => {
@@ -86,12 +84,10 @@ export default function HotDealsHomePage() {
     d.title.toLowerCase().includes(query.toLowerCase())
   );
 
-  // Sidebar width
-  const SIDEBAR_WIDTH = "16rem"; // = w-64 (256px)
+  const SIDEBAR_WIDTH = "16rem";
 
   return (
     <div className="min-h-screen bg-gray-50 text-gray-900 flex flex-col">
-      {/* Header */}
       <header className="border-b bg-white fixed w-full top-0 z-40 shadow-sm">
         <div className="max-w-7xl mx-auto px-4 py-3 flex items-center gap-4">
           <div className="text-2xl font-extrabold text-pink-600 cursor-pointer">
@@ -111,12 +107,10 @@ export default function HotDealsHomePage() {
       </header>
 
       <main className="flex-1 w-full px-4 py-6 pt-28 grid grid-cols-1 md:grid-cols-5 gap-6 relative">
-        {/* LEFT COLUMN */}
         <div
           className="md:col-span-1 relative z-20"
           style={{ ["--sidebar-w" as any]: SIDEBAR_WIDTH } as React.CSSProperties}
         >
-          {/* Sidebar wrapper */}
           <div
             className="sticky top-24 h-fit max-h-[calc(100vh-6rem)] flex overflow-hidden 
                        transition-transform duration-300 ease-in-out bg-white shadow-md rounded-r-xl"
@@ -127,19 +121,17 @@ export default function HotDealsHomePage() {
                 : "translateX(calc(-1 * var(--sidebar-w)))",
             }}
           >
-            {/* SidebarLeft content */}
             <div className="w-full">
               <SidebarLeft categories={categories} setShowSidebar={setShowSidebar} />
             </div>
-            {/* Divider */}
             <div className="w-px bg-gray-300 h-full" />
           </div>
 
-          {/* Hamburger button - luôn hiện */}
+          {/* Hamburger button - đã hạ xuống thấp hơn */}
           <button
             onClick={() => setShowSidebar((s) => !s)}
             aria-label={showSidebar ? "Đóng menu" : "Mở menu"}
-            className="fixed top-32 left-0 z-50 flex items-center justify-center w-10 h-10
+            className="fixed top-64 left-0 z-50 flex items-center justify-center w-10 h-10
                        text-gray-600 hover:text-pink-600 bg-white rounded-r-md shadow
                        transition-transform duration-300 ease-in-out"
             style={{
@@ -155,7 +147,6 @@ export default function HotDealsHomePage() {
           </button>
         </div>
 
-        {/* Nội dung chính */}
         <section className="md:col-span-3 space-y-6">
           {filtered.map((deal) => (
             <DealCard
@@ -171,7 +162,6 @@ export default function HotDealsHomePage() {
           </div>
         </section>
 
-        {/* SidebarRight */}
         <div className="md:col-span-1 relative z-10">
           <SidebarRight communityMembers={communityMembers} />
         </div>
@@ -192,4 +182,3 @@ export default function HotDealsHomePage() {
     </div>
   );
 }
-

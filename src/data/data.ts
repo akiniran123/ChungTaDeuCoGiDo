@@ -6,6 +6,44 @@ export const categories = [
   { label: "Thực phẩm", href: "/category/thuc-pham" },
   { label: "Du lịch", href: "/category/du-lich" },
   { label: "Mã giảm giá", href: "/category/ma-giam-gia" },
+
+  // Các menu cha có submenu nằm bên phải
+  {
+    label: "Về chúng tôi",
+    href: "", // cha không có link, chỉ để hiện submenu
+    children: [
+      { label: "Giới thiệu", href: "/about" },
+      { label: "Tuyển dụng", href: "/jobs" },
+      { label: "Liên hệ", href: "/contact" },
+    ],
+  },
+  {
+    label: "Hỗ trợ",
+    href: "",
+    children: [
+      { label: "Trung tâm trợ giúp", href: "/help" },
+      { label: "Chính sách bảo mật", href: "/privacy" },
+      { label: "Điều khoản sử dụng", href: "/terms" },
+    ],
+  },
+  {
+    label: "Cộng đồng",
+    href: "",
+    children: [
+      { label: "Diễn đàn", href: "/forum" },
+      { label: "Blog", href: "/blog" },
+      { label: "Sự kiện", href: "/events" },
+    ],
+  },
+  {
+    label: "Kết nối",
+    href: "",
+    children: [
+      { label: "Facebook", href: "https://facebook.com" },
+      { label: "Twitter", href: "https://twitter.com" },
+      { label: "Instagram", href: "https://instagram.com" },
+    ],
+  },
 ];
 
 export const communityMembers = [

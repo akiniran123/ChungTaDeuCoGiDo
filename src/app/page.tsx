@@ -5,7 +5,9 @@ import SidebarLeft from "@/components/Trang_chu/SidebarLeft";
 import SidebarRight from "@/components/Trang_chu/SidebarRight";
 import DealCard from "@/components/Trang_chu/DealCard";
 import CommentPanel from "@/components/Trang_chu/CommentPanel";
-import Footer from "@/components/Trang_chu/Footer";
+
+// ❌ Bỏ Footer đi
+// import Footer from "@/data/Footer";
 
 import { sampleDeals, categories, communityMembers } from "@/data/data";
 
@@ -127,7 +129,7 @@ export default function HotDealsHomePage() {
             <div className="w-px bg-gray-300 h-full" />
           </div>
 
-          {/* Hamburger button - đã hạ xuống thấp hơn */}
+          {/* Hamburger button */}
           <button
             onClick={() => setShowSidebar((s) => !s)}
             aria-label={showSidebar ? "Đóng menu" : "Mở menu"}
@@ -167,7 +169,8 @@ export default function HotDealsHomePage() {
         </div>
       </main>
 
-      <Footer />
+      {/* ❌ Bỏ Footer đi */}
+      {/* <Footer /> */}
 
       {selectedDeal && (
         <CommentPanel

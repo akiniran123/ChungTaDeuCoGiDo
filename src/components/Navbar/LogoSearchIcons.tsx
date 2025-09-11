@@ -3,7 +3,7 @@
 import { useState } from 'react'
 import { useRouter } from 'next/navigation'
 
-import Logo from './LogoSearchIcon/Logo'
+import Logo from './LogoSearchIcon/logo'
 import SearchBar from './LogoSearchIcon/SearchBar'
 import StartSellingButtons from './LogoSearchIcon/StartSellingButtons'
 import MessagesMenu from './LogoSearchIcon/MessagesMenu'

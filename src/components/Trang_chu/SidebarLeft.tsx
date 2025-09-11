@@ -39,7 +39,7 @@ export default function SidebarLeft({
                 <>
                   <button
                     onClick={() => handleToggle(cat.label)}
-                    className="w-full text-left px-3 py-2 rounded-lg hover:bg-pink-50 hover:text-pink-600 transition-colors font-semibold text-gray-700"
+                    className="w-full text-left px-3 py-2 rounded-lg font-semibold !text-gray-800 hover:bg-pink-50 hover:text-pink-600 transition-colors"
                   >
                     {cat.label}
                   </button>
@@ -51,7 +51,7 @@ export default function SidebarLeft({
                         <li key={child.href}>
                           <Link
                             href={child.href}
-                            className="block w-full text-left px-3 py-1.5 rounded-md hover:bg-pink-50 hover:text-pink-600 transition-colors text-sm"
+                            className="block w-full text-left px-3 py-1.5 rounded-md !text-gray-800 hover:bg-pink-50 hover:text-pink-600 transition-colors text-sm"
                           >
                             {child.label}
                           </Link>
@@ -63,7 +63,7 @@ export default function SidebarLeft({
               ) : (
                 <Link
                   href={cat.href!}
-                  className="block w-full text-left px-3 py-2 rounded-lg hover:bg-pink-50 hover:text-pink-600 transition-colors"
+                  className="block w-full text-left px-3 py-2 rounded-lg !text-gray-800 hover:bg-pink-50 hover:text-pink-600 transition-colors"
                 >
                   {cat.label}
                 </Link>
@@ -75,3 +75,4 @@ export default function SidebarLeft({
     </aside>
   );
 }
+

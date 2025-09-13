@@ -1,6 +1,14 @@
 "use client";
 import React, { useState } from "react";
 import Link from "next/link";
+import {
+  Home,
+  Info,
+  HelpCircle,
+  Users,
+  Link2,
+  Folder,
+} from "lucide-react"; // icon đen trắng
 
 type Category = {
   label: string;
@@ -37,11 +45,37 @@ export default function SidebarLeft({
     }
   };
 
+  // Map icon theo nhãn
+  const getIcon = (label: string) => {
+    switch (label) {
+      case "Về chúng tôi":
+        return <Info className="w-4 h-4 inline-block mr-2 text-black" />;
+      case "Hỗ trợ":
+        return <HelpCircle className="w-4 h-4 inline-block mr-2 text-black" />;
+      case "Cộng đồng":
+        return <Users className="w-4 h-4 inline-block mr-2 text-black" />;
+      case "Kết nối":
+        return <Link2 className="w-4 h-4 inline-block mr-2 text-black" />;
+      default:
+        return <Folder className="w-4 h-4 inline-block mr-2 text-black" />;
+    }
+  };
+
   return (
-    <aside className="md:col-span-1 bg-white rounded-r-xl shadow-md p-4 h-full">
-      <div className="flex items-center justify-between mb-3">
+    <aside className="md:col-span-1 bg-white rounded-r-xl shadow-md p-4 h-full overflow-y-auto">
+      <div className="flex flex-col mb-3">
+        {/* ✅ Trang chủ luôn màu xám-800 */}
+        <Link
+          href="/"
+          className="font-bold text-xl flex items-center mb-2 px-2 py-1 rounded-lg !text-gray-800 no-underline hover:bg-gray-100 transition-colors"
+        >
+          <Home className="w-5 h-5 mr-2 text-gray-800" />
+          Trang chủ
+        </Link>
+
         <h3 className="font-bold text-lg text-pink-600">Danh mục</h3>
       </div>
+
       <ul className="space-y-2">
         {categories.map((cat, i) => (
           <React.Fragment key={i}>
@@ -55,8 +89,9 @@ export default function SidebarLeft({
                 <>
                   <button
                     onClick={() => handleToggle(cat.label)}
-                    className="w-full text-left px-3 py-2 rounded-lg font-semibold !text-gray-800 hover:bg-pink-50 hover:text-pink-600 transition-colors"
+                    className="w-full flex items-center text-left px-3 py-2 rounded-lg font-semibold !text-gray-800 hover:bg-pink-50 hover:text-pink-600 transition-colors"
                   >
+                    {getIcon(cat.label)}
                     {cat.label}
                   </button>
 
@@ -81,8 +116,9 @@ export default function SidebarLeft({
               ) : (
                 <Link
                   href={cat.href!}
-                  className="block w-full text-left px-3 py-2 rounded-lg !text-gray-800 hover:bg-pink-50 hover:text-pink-600 transition-colors"
+                  className="flex items-center w-full text-left px-3 py-2 rounded-lg !text-gray-800 hover:bg-pink-50 hover:text-pink-600 transition-colors"
                 >
+                  {getIcon(cat.label)}
                   {cat.label}
                 </Link>
               )}

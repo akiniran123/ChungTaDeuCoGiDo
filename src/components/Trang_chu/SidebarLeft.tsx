@@ -21,6 +21,22 @@ export default function SidebarLeft({
     setOpenMenu(openMenu === label ? null : label);
   };
 
+  // Hàm kiểm tra nếu mục con thuộc nhóm nào để đổi màu
+  const getChildTextColor = (parentLabel: string) => {
+    switch (parentLabel) {
+      case "Về chúng tôi":
+        return "text-blue-600";
+      case "Hỗ trợ":
+        return "text-green-600";
+      case "Cộng đồng":
+        return "text-purple-600";
+      case "Kết nối":
+        return "text-yellow-600";
+      default:
+        return "text-gray-800";
+    }
+  };
+
   return (
     <aside className="md:col-span-1 bg-white rounded-r-xl shadow-md p-4 h-full">
       <div className="flex items-center justify-between mb-3">
@@ -51,7 +67,9 @@ export default function SidebarLeft({
                         <li key={child.href}>
                           <Link
                             href={child.href}
-                            className="block w-full text-left px-3 py-1.5 rounded-md !text-gray-800 hover:bg-pink-50 hover:text-pink-600 transition-colors text-sm"
+                            className={`block w-full text-left px-3 py-1.5 rounded-md hover:bg-pink-50 hover:text-pink-600 transition-colors text-sm ${getChildTextColor(
+                              cat.label
+                            )}`}
                           >
                             {child.label}
                           </Link>
@@ -75,4 +93,3 @@ export default function SidebarLeft({
     </aside>
   );
 }
-

@@ -2,7 +2,7 @@
 
 export default function BuildHeader() {
   return (
-    <header className="flex flex-col sm:flex-row justify-between items-center mb-8">
+    <header className="flex flex-col sm:flex-row justify-between items-center mb-8 pt-[64px]">
       <h1 className="text-4xl font-bold tracking-tight text-gray-900 dark:text-gray-100">
         New PC Build
       </h1>

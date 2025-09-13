@@ -15,7 +15,7 @@ export default function TinTucPage() {
   ];
 
   return (
-    <div className="p-6">
+    <div className="p-6 pt-[64px] min-h-screen bg-gray-50">
       <h1 className="text-2xl font-bold">Tin tức</h1>
       <p className="mt-2 text-gray-600">Thông tin và cập nhật mới nhất.</p>
 
@@ -27,3 +27,4 @@ export default function TinTucPage() {
     </div>
   );
 }
+

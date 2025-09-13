@@ -20,15 +20,15 @@ export default function ChatPage() {
     if (!input.trim()) return;
     setMessages(prev => [
       ...prev,
-      { id: Date.now(), from: 'you', text: input.trim(), time: new Date().toLocaleTimeString() },
+      { id: Date.now(), from: 'you', text: input.trim(), time: new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }) },
     ]);
     setInput('');
   };
 
   return (
-    <div className="flex flex-col h-screen bg-gray-50">
+    <div className="flex flex-col h-[calc(100vh-64px)] bg-gray-50 pt-[64px]">
       {/* Header */}
-      <div className="p-4 bg-white border-b">
+      <div className="p-4 bg-white border-b fixed top-[64px] left-0 right-0 z-10">
         <div className="max-w-4xl mx-auto">
           <div className="font-semibold">Đoạn chat #{chatId}</div>
           <div className="text-xs text-gray-500">Bạn đang trò chuyện với người bán</div>
@@ -36,7 +36,7 @@ export default function ChatPage() {
       </div>
 
       {/* Messages */}
-      <div className="flex-1 overflow-y-auto">
+      <div className="flex-1 overflow-y-auto mt-[96px] mb-[64px]">
         <div className="max-w-4xl mx-auto px-4 py-4 space-y-2">
           {messages.map(m => (
             <div
@@ -48,7 +48,11 @@ export default function ChatPage() {
               }`}
             >
               <div>{m.text}</div>
-              <div className={`mt-1 text-[10px] ${m.from === 'you' ? 'text-white/80' : 'text-gray-500'}`}>
+              <div
+                className={`mt-1 text-[10px] ${
+                  m.from === 'you' ? 'text-white/80' : 'text-gray-500'
+                }`}
+              >
                 {m.time}
               </div>
             </div>
@@ -57,7 +61,7 @@ export default function ChatPage() {
       </div>
 
       {/* Input */}
-      <div className="p-3 bg-white border-t">
+      <div className="p-3 bg-white border-t fixed bottom-0 left-0 right-0 z-10">
         <div className="max-w-4xl mx-auto flex gap-2">
           <input
             value={input}

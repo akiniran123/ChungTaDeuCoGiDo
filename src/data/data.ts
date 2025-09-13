@@ -12,7 +12,7 @@ export const categories = [
     label: "Về chúng tôi",
     href: "", // cha không có link, chỉ để hiện submenu
     children: [
-      { label: "Giới thiệu", href: "/about" },
+      { label: "Giới thiệu", href: "/gioi-thieu" }, // ✅ sửa lại đúng route
       { label: "Tuyển dụng", href: "/jobs" },
       { label: "Liên hệ", href: "/contact" },
     ],

@@ -15,7 +15,7 @@ export default function GioHangPage() {
   ];
 
   return (
-    <div className="p-6">
+    <div className="p-6 pt-[64px] min-h-screen bg-gray-50">
       <h1 className="text-2xl font-bold">Giỏ hàng</h1>
       <p className="mt-2 text-gray-600">Các sản phẩm bạn đã thêm vào giỏ.</p>
 

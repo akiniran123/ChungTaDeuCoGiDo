@@ -6,9 +6,6 @@ import SidebarRight from "@/components/Trang_chu/SidebarRight";
 import DealCard from "@/components/Trang_chu/DealCard";
 import CommentPanel from "@/components/Trang_chu/CommentPanel";
 
-// ❌ Bỏ Footer đi
-// import Footer from "@/data/Footer";
-
 import { sampleDeals, categories, communityMembers } from "@/data/data";
 
 export type Deal = {
@@ -91,8 +88,7 @@ export default function HotDealsHomePage() {
   return (
     <div className="min-h-screen bg-gray-50 text-gray-900 flex flex-col">
       <header className="border-b bg-white fixed w-full top-0 z-40 shadow-sm">
-        {/* ❌ bỏ max-w-7xl mx-auto */}
-        <div className="px-4 py-3 flex items-center gap-4">
+        <div className="max-w-7xl mx-auto px-4 py-3 flex items-center gap-4">
           <div className="text-2xl font-extrabold text-pink-600 cursor-pointer">
             RedditClone
           </div>
@@ -109,15 +105,15 @@ export default function HotDealsHomePage() {
         </div>
       </header>
 
-      {/* ❌ bỏ px-4 để sát viền */}
       <main className="flex-1 w-full py-6 pt-28 grid grid-cols-1 md:grid-cols-5 gap-6 relative">
+        {/* ✅ SidebarLeft cố định full height */}
         <div
           className="md:col-span-1 relative z-20"
           style={{ ["--sidebar-w" as any]: SIDEBAR_WIDTH } as React.CSSProperties}
         >
           <div
-            className="sticky top-24 h-fit max-h-[calc(100vh-6rem)] flex overflow-hidden 
-                       transition-transform duration-300 ease-in-out bg-white shadow-md rounded-r-xl"
+            className="fixed md:sticky top-[5rem] left-0 h-[calc(100vh-5rem)] overflow-y-auto
+                       transition-transform duration-300 ease-in-out bg-white"
             style={{
               width: "var(--sidebar-w)",
               transform: showSidebar
@@ -125,13 +121,10 @@ export default function HotDealsHomePage() {
                 : "translateX(calc(-1 * var(--sidebar-w)))",
             }}
           >
-            <div className="w-full">
-              <SidebarLeft categories={categories} setShowSidebar={setShowSidebar} />
-            </div>
-            <div className="w-px bg-gray-300 h-full" />
+            <SidebarLeft categories={categories} setShowSidebar={setShowSidebar} />
           </div>
 
-          {/* Hamburger button */}
+          {/* Hamburger toggle */}
           <button
             onClick={() => setShowSidebar((s) => !s)}
             aria-label={showSidebar ? "Đóng menu" : "Mở menu"}
@@ -151,6 +144,7 @@ export default function HotDealsHomePage() {
           </button>
         </div>
 
+        {/* Content */}
         <section className="md:col-span-3 space-y-6">
           {filtered.map((deal) => (
             <DealCard
@@ -166,13 +160,11 @@ export default function HotDealsHomePage() {
           </div>
         </section>
 
+        {/* SidebarRight vẫn sticky */}
         <div className="md:col-span-1 relative z-10">
           <SidebarRight communityMembers={communityMembers} />
         </div>
       </main>
-
-      {/* ❌ Bỏ Footer đi */}
-      {/* <Footer /> */}
 
       {selectedDeal && (
         <CommentPanel

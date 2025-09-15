@@ -91,7 +91,8 @@ export default function HotDealsHomePage() {
   return (
     <div className="min-h-screen bg-gray-50 text-gray-900 flex flex-col">
       <header className="border-b bg-white fixed w-full top-0 z-40 shadow-sm">
-        <div className="max-w-7xl mx-auto px-4 py-3 flex items-center gap-4">
+        {/* ❌ bỏ max-w-7xl mx-auto */}
+        <div className="px-4 py-3 flex items-center gap-4">
           <div className="text-2xl font-extrabold text-pink-600 cursor-pointer">
             RedditClone
           </div>
@@ -108,7 +109,8 @@ export default function HotDealsHomePage() {
         </div>
       </header>
 
-      <main className="flex-1 w-full px-4 py-6 pt-28 grid grid-cols-1 md:grid-cols-5 gap-6 relative">
+      {/* ❌ bỏ px-4 để sát viền */}
+      <main className="flex-1 w-full py-6 pt-28 grid grid-cols-1 md:grid-cols-5 gap-6 relative">
         <div
           className="md:col-span-1 relative z-20"
           style={{ ["--sidebar-w" as any]: SIDEBAR_WIDTH } as React.CSSProperties}

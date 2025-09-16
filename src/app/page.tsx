@@ -84,7 +84,7 @@ export default function HotDealsHomePage() {
   return (
     <div className="min-h-screen bg-white text-gray-900 flex flex-col">
       {/* Header */}
-      <header className="border-b bg-white fixed w-full top-0 z-40 shadow-sm">
+      <header className="border-b-[1.5px] border-gray-300 bg-white fixed w-full top-0 z-40 shadow-sm">
         <div className="max-w-7xl mx-auto px-4 py-3 flex items-center gap-4">
           <div className="text-2xl font-extrabold text-pink-600 cursor-pointer">
             RedditClone

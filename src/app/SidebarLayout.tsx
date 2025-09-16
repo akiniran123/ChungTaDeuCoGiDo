@@ -11,10 +11,10 @@ export default function SidebarLayout({ children }: { children: React.ReactNode 
     <div className="flex">
       {/* SidebarLeft */}
       <div
-        className="fixed left-0 top-[8rem] bg-white border-r transition-transform duration-300 ease-in-out"
+        className="fixed left-0 top-[8rem] bg-white border-r-[1.5px] border-gray-300 transition-transform duration-300 ease-in-out"
         style={{
           width: SIDEBAR_WIDTH,
-          height: "calc(100vh - 8rem)", // trừ đúng phần đã nâng lên
+          height: "calc(100vh - 8rem)",
           transform: showSidebar ? "translateX(0)" : `translateX(-${SIDEBAR_WIDTH}px)`,
         }}
       >
@@ -26,7 +26,7 @@ export default function SidebarLayout({ children }: { children: React.ReactNode 
         onClick={() => setShowSidebar((s) => !s)}
         className="fixed z-50 w-10 h-10 bg-white border shadow rounded-l transition-all duration-300 ease-in-out"
         style={{
-          top: "12rem", // kéo nút toggle lên cùng sidebar
+          top: "12rem",
           left: showSidebar ? `${SIDEBAR_WIDTH}px` : "0px",
           transform: "translateX(-33%)",
         }}

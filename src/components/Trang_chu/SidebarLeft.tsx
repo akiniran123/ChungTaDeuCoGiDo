@@ -9,13 +9,11 @@ type Category = {
   children?: { label: string; href: string }[];
 };
 
-export default function SidebarLeft({
-  categories,
-  setShowSidebar,
-}: {
+type SidebarLeftProps = {
   categories: Category[];
-  setShowSidebar: (value: boolean) => void;
-}) {
+};
+
+export default function SidebarLeft({ categories }: SidebarLeftProps) {
   const [openMenu, setOpenMenu] = useState<string | null>(null);
 
   const handleToggle = (label: string) => {
@@ -54,7 +52,7 @@ export default function SidebarLeft({
 
   return (
     <div className="h-[calc(100vh-5rem)] overflow-y-auto px-2">
-      {/* Header của sidebar */}
+      {/* Header */}
       <div className="flex flex-col mb-3">
         <Link
           href="/"

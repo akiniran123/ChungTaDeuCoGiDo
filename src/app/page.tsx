@@ -1,7 +1,6 @@
 "use client";
 import React, { useState, useEffect, useRef } from "react";
 
-import SidebarLeft from "@/components/Trang_chu/SidebarLeft";
 import SidebarRight from "@/components/Trang_chu/SidebarRight";
 import DealCard from "@/components/Trang_chu/DealCard";
 import CommentPanel from "@/components/Trang_chu/CommentPanel";
@@ -40,7 +39,6 @@ export default function HotDealsHomePage() {
     ],
   });
   const [newComment, setNewComment] = useState("");
-  const [showSidebar, setShowSidebar] = useState(true);
 
   useEffect(() => {
     const start = (page - 1) * perPage;
@@ -83,8 +81,6 @@ export default function HotDealsHomePage() {
     d.title.toLowerCase().includes(query.toLowerCase())
   );
 
-  const SIDEBAR_WIDTH = "16rem";
-
   return (
     <div className="min-h-screen bg-white text-gray-900 flex flex-col">
       {/* Header */}
@@ -106,51 +102,7 @@ export default function HotDealsHomePage() {
         </div>
       </header>
 
-      <main className="flex-1 w-full py-6 pt-28 grid grid-cols-1 md:grid-cols-5 gap-6 relative">
-        {/* ✅ SidebarLeft + border dọc */}
-        <div
-          className="md:col-span-1 relative z-20"
-          style={{ ["--sidebar-w" as any]: SIDEBAR_WIDTH } as React.CSSProperties}
-        >
-          <div
-            className="fixed left-0 top-[9rem] h-[calc(100vh-9rem)] 
-                       flex flex-row transition-transform duration-300 ease-in-out bg-white"
-            style={{
-              width: "var(--sidebar-w)",
-              transform: showSidebar
-                ? "translateX(0)"
-                : "translateX(calc(-1 * var(--sidebar-w) + 1px))", // ✅ chừa 1px
-            }}
-          >
-            {/* Sidebar nội dung */}
-            <div className="flex-1">
-              <SidebarLeft categories={categories} setShowSidebar={setShowSidebar} />
-            </div>
-
-            {/* ✅ Đường kẻ dọc gắn liền sidebar */}
-            <div className="w-px h-full bg-gray-300" />
-          </div>
-
-          {/* Hamburger toggle */}
-          <button
-            onClick={() => setShowSidebar((s) => !s)}
-            aria-label={showSidebar ? "Đóng menu" : "Mở menu"}
-            className="fixed top-64 left-0 z-50 flex items-center justify-center w-10 h-10
-                       text-gray-600 hover:text-pink-600 bg-white rounded-r-md shadow
-                       transition-transform duration-300 ease-in-out"
-            style={{
-              transform: showSidebar
-                ? `translateX(var(--sidebar-w))`
-                : "translateX(0)",
-              transition: "transform 0.3s ease-in-out",
-            }}
-          >
-            <svg className="w-5 h-5" viewBox="0 0 24 24" fill="none">
-              <path d="M4 6h16M4 12h16M4 18h16" stroke="currentColor" strokeWidth="2" />
-            </svg>
-          </button>
-        </div>
-
+      <main className="flex-1 w-full py-6 pt-28 grid grid-cols-1 md:grid-cols-4 gap-6 relative">
         {/* Content */}
         <section className="md:col-span-3 space-y-6">
           {filtered.map((deal) => (
@@ -163,7 +115,9 @@ export default function HotDealsHomePage() {
           ))}
 
           <div ref={loaderRef} className="h-10 flex justify-center items-center">
-            {page * perPage < sampleDeals.length ? "Đang tải thêm..." : "Hết sản phẩm"}
+            {page * perPage < sampleDeals.length
+              ? "Đang tải thêm..."
+              : "Hết sản phẩm"}
           </div>
         </section>
 

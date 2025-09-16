@@ -14,7 +14,8 @@ export default function Navbar() {
 
   return (
     <>
-      <header className="fixed top-0 left-0 w-full z-50 bg-white border-b shadow-sm">
+      {/* ✅ Bỏ border-b ở đây */}
+      <header className="fixed top-0 left-0 w-full z-50 bg-white shadow-sm">
         <TopBar />
         <LogoSearchIcons onMenuToggle={toggleMenu} />
 
@@ -38,7 +39,6 @@ export default function Navbar() {
                   ✕
                 </button>
               </div>
-              {/* ❌ bỏ onLinkClick đi */}
               <NavLinks />
             </motion.div>
           )}

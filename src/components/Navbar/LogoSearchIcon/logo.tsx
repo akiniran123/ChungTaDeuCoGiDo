@@ -15,7 +15,7 @@ export default function Logo({
         type="button"
         onClick={onMenuToggle}
         aria-label="Toggle menu"
-        className="sm:hidden text-gray-700 dark:text-gray-200"
+        className="sm:hidden text-gray-800"
       >
         <Menu className="w-6 h-6" />
       </button>
@@ -23,15 +23,15 @@ export default function Logo({
       {/* Logo */}
       <Link
         href="/"
-        className="flex items-center space-x-2 text-2xl font-bold"
+        className="flex items-center space-x-2 text-2xl font-extrabold"
       >
         <span className="text-[#9b4de0]">🛡</span>
-        <span className="text-gray-900 dark:text-gray-100">NexLoot</span>
+        <span className="text-gray-800">NexLoot</span>
       </Link>
 
       {/* Tải ứng dụng + QR */}
       <div className="flex items-center gap-1">
-        <span className="font-semibold text-xs text-white">
+        <span className="font-bold text-xs text-gray-800">
           Tải ứng dụng
         </span>
         <img

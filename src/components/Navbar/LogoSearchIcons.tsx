@@ -29,8 +29,8 @@ export default function LogoSearchIcons({
 
   return (
     <>
-      <header className="w-full border-b border-gray-200 bg-white dark:bg-gray-900 dark:border-gray-700">
-        {/* thêm pr-4 ở đây để cụm icon bên phải không sát viền */}
+      {/* Header với border đồng điệu SidebarLeft */}
+      <header className="w-full border-b-2 border-gray-300 bg-white pb-5">
         <div className="w-full py-3 pl-4 pr-4 flex items-center justify-between gap-4">
           {/* Logo và menu toggle */}
           <Logo onMenuToggle={onMenuToggle} />

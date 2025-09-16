@@ -86,7 +86,8 @@ export default function HotDealsHomePage() {
   const SIDEBAR_WIDTH = "16rem";
 
   return (
-    <div className="min-h-screen bg-gray-50 text-gray-900 flex flex-col">
+    <div className="min-h-screen bg-white text-gray-900 flex flex-col">
+      {/* Header */}
       <header className="border-b bg-white fixed w-full top-0 z-40 shadow-sm">
         <div className="max-w-7xl mx-auto px-4 py-3 flex items-center gap-4">
           <div className="text-2xl font-extrabold text-pink-600 cursor-pointer">
@@ -106,22 +107,28 @@ export default function HotDealsHomePage() {
       </header>
 
       <main className="flex-1 w-full py-6 pt-28 grid grid-cols-1 md:grid-cols-5 gap-6 relative">
-        {/* ✅ SidebarLeft cố định full height */}
+        {/* ✅ SidebarLeft + border dọc */}
         <div
           className="md:col-span-1 relative z-20"
           style={{ ["--sidebar-w" as any]: SIDEBAR_WIDTH } as React.CSSProperties}
         >
           <div
-            className="fixed md:sticky top-[5rem] left-0 h-[calc(100vh-5rem)] overflow-y-auto
-                       transition-transform duration-300 ease-in-out bg-white"
+            className="fixed left-0 top-[9rem] h-[calc(100vh-9rem)] 
+                       flex flex-row transition-transform duration-300 ease-in-out bg-white"
             style={{
               width: "var(--sidebar-w)",
               transform: showSidebar
                 ? "translateX(0)"
-                : "translateX(calc(-1 * var(--sidebar-w)))",
+                : "translateX(calc(-1 * var(--sidebar-w) + 1px))", // ✅ chừa 1px
             }}
           >
-            <SidebarLeft categories={categories} setShowSidebar={setShowSidebar} />
+            {/* Sidebar nội dung */}
+            <div className="flex-1">
+              <SidebarLeft categories={categories} setShowSidebar={setShowSidebar} />
+            </div>
+
+            {/* ✅ Đường kẻ dọc gắn liền sidebar */}
+            <div className="w-px h-full bg-gray-300" />
           </div>
 
           {/* Hamburger toggle */}
@@ -160,12 +167,13 @@ export default function HotDealsHomePage() {
           </div>
         </section>
 
-        {/* SidebarRight vẫn sticky */}
+        {/* SidebarRight */}
         <div className="md:col-span-1 relative z-10">
           <SidebarRight communityMembers={communityMembers} />
         </div>
       </main>
 
+      {/* Comment panel */}
       {selectedDeal && (
         <CommentPanel
           selectedDeal={selectedDeal}

@@ -1,5 +1,6 @@
 "use client";
 import React, { useState, useEffect, useRef } from "react";
+import { Package } from "lucide-react";
 
 import SidebarRight from "@/components/Trang_chu/SidebarRight";
 import DealCard from "@/components/Trang_chu/DealCard";
@@ -16,7 +17,7 @@ export type Deal = {
   category: string;
   author: string;
   content: string;
-  createdAt?: string; // ✅ thêm createdAt
+  createdAt?: string;
 };
 
 export type Comment = {
@@ -41,14 +42,16 @@ export default function HotDealsHomePage() {
   });
   const [newComment, setNewComment] = useState("");
 
-  // modal xem ảnh lớn
   const [selectedImage, setSelectedImage] = useState<string | null>(null);
+
+  const [filterOpen, setFilterOpen] = useState(false);
+  const [activeFilter, setActiveFilter] = useState<string>("");
 
   useEffect(() => {
     const start = (page - 1) * perPage;
     const more = sampleDeals.slice(start, start + perPage).map((deal) => ({
       ...deal,
-      createdAt: deal.createdAt || "2 giờ trước", // ✅ giả lập giờ đăng
+      createdAt: deal.createdAt || "2025-09-16T10:00:00",
     }));
     setDeals((prev) => [...prev, ...more]);
   }, [page]);
@@ -84,9 +87,22 @@ export default function HotDealsHomePage() {
     setNewComment("");
   }
 
-  const filtered = deals.filter((d) =>
-    d.title.toLowerCase().includes(query.toLowerCase())
-  );
+  const filtered = deals
+    .filter((d) => d.title.toLowerCase().includes(query.toLowerCase()))
+    .sort((a, b) => {
+      if (activeFilter === "hot") return b.votes - a.votes;
+      if (activeFilter === "new")
+        return (
+          new Date(b.createdAt || "").getTime() -
+          new Date(a.createdAt || "").getTime()
+        );
+      if (activeFilter === "best") return b.comments - a.comments;
+      if (activeFilter === "top")
+        return b.votes + b.comments - (a.votes + a.comments);
+      if (activeFilter === "trending")
+        return b.comments * 2 + b.votes - (a.comments * 2 + a.votes);
+      return 0;
+    });
 
   return (
     <div className="min-h-screen bg-white text-gray-900 flex flex-col">
@@ -109,8 +125,70 @@ export default function HotDealsHomePage() {
         </div>
       </header>
 
-      <main className="flex-1 w-full py-6 pt-28 grid grid-cols-1 md:grid-cols-4 gap-6 relative">
-        {/* Content */}
+      {/* Bộ lọc */}
+      <div className="mt-16 border-none bg-white sticky top-[56px] z-30">
+        <div className="max-w-7xl mx-auto px-4 py-2 relative">
+          <button
+            onClick={() => setFilterOpen((p) => !p)}
+            className="flex items-center justify-center p-2 bg-transparent text-gray-800 hover:text-gray-900 ml-20 cursor-pointer"
+          >
+            <Package className="w-6 h-6" />
+          </button>
+
+          {filterOpen && (
+            <div className="absolute mt-2 bg-white border rounded-lg shadow-lg w-40 z-50">
+              <button
+                onClick={() => {
+                  setActiveFilter("best");
+                  setFilterOpen(false);
+                }}
+                className="block w-full text-left px-4 py-2 hover:bg-gray-100 cursor-pointer"
+              >
+                Hay nhất
+              </button>
+              <button
+                onClick={() => {
+                  setActiveFilter("hot");
+                  setFilterOpen(false);
+                }}
+                className="block w-full text-left px-4 py-2 hover:bg-gray-100 cursor-pointer"
+              >
+                Hot
+              </button>
+              <button
+                onClick={() => {
+                  setActiveFilter("new");
+                  setFilterOpen(false);
+                }}
+                className="block w-full text-left px-4 py-2 hover:bg-gray-100 cursor-pointer"
+              >
+                Mới
+              </button>
+              <button
+                onClick={() => {
+                  setActiveFilter("top");
+                  setFilterOpen(false);
+                }}
+                className="block w-full text-left px-4 py-2 hover:bg-gray-100 cursor-pointer"
+              >
+                Hàng đầu
+              </button>
+              <button
+                onClick={() => {
+                  setActiveFilter("trending");
+                  setFilterOpen(false);
+                }}
+                className="block w-full text-left px-4 py-2 hover:bg-gray-100 cursor-pointer"
+              >
+                Đang nổi
+              </button>
+            </div>
+          )}
+        </div>
+      </div>
+
+      {/* Nội dung */}
+      <main className="flex-1 w-full py-6 grid grid-cols-1 md:grid-cols-4 gap-6 relative">
         <section className="md:col-span-3 space-y-6">
           {filtered.map((deal) => (
             <DealCard
@@ -130,13 +208,11 @@ export default function HotDealsHomePage() {
           </div>
         </section>
 
-        {/* SidebarRight */}
         <div className="md:col-span-1 relative z-10">
           <SidebarRight communityMembers={communityMembers} />
         </div>
       </main>
 
-      {/* Comment panel */}
       {selectedDeal && (
         <CommentPanel
           selectedDeal={selectedDeal}
@@ -148,7 +224,6 @@ export default function HotDealsHomePage() {
         />
       )}
 
-      {/* Modal phóng to ảnh */}
       {selectedImage && (
         <div
           className="fixed inset-0 bg-black bg-opacity-70 flex items-center justify-center z-50"

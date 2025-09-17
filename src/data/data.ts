@@ -6,13 +6,11 @@ export const categories = [
   { label: "Thực phẩm", href: "/category/thuc-pham" },
   { label: "Du lịch", href: "/category/du-lich" },
   { label: "Mã giảm giá", href: "/category/ma-giam-gia" },
-
-  // Các menu cha có submenu nằm bên phải
   {
     label: "Về chúng tôi",
-    href: "", // cha không có link, chỉ để hiện submenu
+    href: "",
     children: [
-      { label: "Giới thiệu", href: "/gioi-thieu" }, // ✅ sửa lại đúng route
+      { label: "Giới thiệu", href: "/gioi-thieu" },
       { label: "Tuyển dụng", href: "/jobs" },
       { label: "Liên hệ", href: "/contact" },
     ],
@@ -99,7 +97,19 @@ export type Deal = {
   reacts: number;
   author: string;
   content: string;
+  createdAt?: string; // ✅ thêm createdAt
 };
+
+// ✅ Hàm random thời gian
+function getRandomTimeAgo() {
+  const minutes = Math.floor(Math.random() * 60);
+  const hours = Math.floor(Math.random() * 24);
+  const days = Math.floor(Math.random() * 7);
+
+  if (days > 0) return `${days} ngày trước`;
+  if (hours > 0) return `${hours} giờ trước`;
+  return `${minutes} phút trước`;
+}
 
 export const sampleDeals: Deal[] = Array.from({ length: 30 }).map((_, i) => ({
   id: i + 1,
@@ -113,4 +123,5 @@ export const sampleDeals: Deal[] = Array.from({ length: 30 }).map((_, i) => ({
   reacts: 0,
   author: `Người dùng ${i + 1}`,
   content: `Đây là trải nghiệm camping số ${i + 1}, cảm giác thật tuyệt! 🌲🔥`,
+  createdAt: getRandomTimeAgo(), // ✅ random thời gian
 }));

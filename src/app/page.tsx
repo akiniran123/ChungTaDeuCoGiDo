@@ -16,6 +16,7 @@ export type Deal = {
   category: string;
   author: string;
   content: string;
+  createdAt?: string; // ✅ thêm createdAt
 };
 
 export type Comment = {
@@ -45,7 +46,10 @@ export default function HotDealsHomePage() {
 
   useEffect(() => {
     const start = (page - 1) * perPage;
-    const more = sampleDeals.slice(start, start + perPage);
+    const more = sampleDeals.slice(start, start + perPage).map((deal) => ({
+      ...deal,
+      createdAt: deal.createdAt || "2 giờ trước", // ✅ giả lập giờ đăng
+    }));
     setDeals((prev) => [...prev, ...more]);
   }, [page]);
 
@@ -114,8 +118,8 @@ export default function HotDealsHomePage() {
               deal={deal}
               vote={vote}
               setSelectedDeal={setSelectedDeal}
-              onImageClick={() => setSelectedImage(deal.image)} // 👉 thêm sự kiện click ảnh
-              bigger // 👉 prop để DealCard hiển thị to hơn
+              onImageClick={() => setSelectedImage(deal.image)}
+              bigger
             />
           ))}
 

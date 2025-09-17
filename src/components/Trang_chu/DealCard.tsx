@@ -18,6 +18,7 @@ export default function DealCard({
     category: string;
     author: string;
     content: string;
+    createdAt?: string; // 👉 thêm thời gian đăng
   };
   vote: (id: number, delta: number) => void;
   setSelectedDeal: (id: number) => void;
@@ -45,7 +46,15 @@ export default function DealCard({
       <div className="flex items-center gap-2 px-3 py-2 border-b text-sm">
         <span className="text-xl">👤</span>
         <div>
-          <p className="font-semibold">{deal.author}</p>
+          {/* tên + giờ đăng */}
+          <p className="font-semibold">
+            {deal.author}
+            {deal.createdAt && (
+              <span className="ml-2 text-gray-500 font-normal">
+                · {deal.createdAt}
+              </span>
+            )}
+          </p>
           <p className="text-gray-600">{deal.content}</p>
         </div>
       </div>

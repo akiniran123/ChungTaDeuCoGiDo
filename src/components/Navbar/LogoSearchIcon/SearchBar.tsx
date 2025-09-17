@@ -61,7 +61,7 @@ export default function SearchBar() {
   }
 
   return (
-    <div className="hidden sm:block flex-1 max-w-xl relative">
+    <div className="hidden sm:block flex-1 max-w-md relative">
       <form onSubmit={handleSubmit}>
         <input
           type="text"

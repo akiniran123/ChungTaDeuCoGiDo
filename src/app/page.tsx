@@ -5,7 +5,7 @@ import SidebarRight from "@/components/Trang_chu/SidebarRight";
 import DealCard from "@/components/Trang_chu/DealCard";
 import CommentPanel from "@/components/Trang_chu/CommentPanel";
 
-import { sampleDeals, categories, communityMembers } from "@/data/data";
+import { sampleDeals, communityMembers } from "@/data/data";
 
 export type Deal = {
   id: number;
@@ -39,6 +39,9 @@ export default function HotDealsHomePage() {
     ],
   });
   const [newComment, setNewComment] = useState("");
+
+  // modal xem ảnh lớn
+  const [selectedImage, setSelectedImage] = useState<string | null>(null);
 
   useEffect(() => {
     const start = (page - 1) * perPage;
@@ -111,6 +114,8 @@ export default function HotDealsHomePage() {
               deal={deal}
               vote={vote}
               setSelectedDeal={setSelectedDeal}
+              onImageClick={() => setSelectedImage(deal.image)} // 👉 thêm sự kiện click ảnh
+              bigger // 👉 prop để DealCard hiển thị to hơn
             />
           ))}
 
@@ -137,6 +142,20 @@ export default function HotDealsHomePage() {
           handleAddComment={handleAddComment}
           setSelectedDeal={setSelectedDeal}
         />
+      )}
+
+      {/* Modal phóng to ảnh */}
+      {selectedImage && (
+        <div
+          className="fixed inset-0 bg-black bg-opacity-70 flex items-center justify-center z-50"
+          onClick={() => setSelectedImage(null)}
+        >
+          <img
+            src={selectedImage}
+            alt="Zoom"
+            className="max-w-[90%] max-h-[90%] rounded-lg shadow-lg"
+          />
+        </div>
       )}
     </div>
   );

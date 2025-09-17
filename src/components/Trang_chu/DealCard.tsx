@@ -6,6 +6,8 @@ export default function DealCard({
   deal,
   vote,
   setSelectedDeal,
+  onImageClick,
+  bigger = false, // ✅ mặc định false
 }: {
   deal: {
     id: number;
@@ -19,6 +21,8 @@ export default function DealCard({
   };
   vote: (id: number, delta: number) => void;
   setSelectedDeal: (id: number) => void;
+  onImageClick?: () => void;
+  bigger?: boolean; // ✅ thêm prop này
 }) {
   const handleShare = () => {
     const url = `${window.location.href}#deal-${deal.id}`;
@@ -32,7 +36,9 @@ export default function DealCard({
 
   return (
     <article
-      className="flex flex-col transition-all max-w-xl mx-auto bg-white rounded-lg shadow"
+      className={`flex flex-col transition-all mx-auto bg-white rounded-lg shadow ${
+        bigger ? "max-w-3xl" : "max-w-xl"
+      }`} // ✅ to hơn nếu có prop bigger
       id={`deal-${deal.id}`}
     >
       {/* Thông tin người đăng */}
@@ -49,7 +55,10 @@ export default function DealCard({
         <img
           src={deal.image}
           alt={deal.title}
-          className="object-cover w-full h-72 rounded-md"
+          className={`object-cover w-full rounded-md cursor-pointer ${
+            bigger ? "h-[480px]" : "h-72"
+          }`} // ✅ ảnh cao hơn khi to
+          onClick={onImageClick}
         />
         <div className="absolute bottom-0 left-0 w-full bg-black/50 text-white p-4 rounded-b-md">
           <h3 className="font-semibold text-lg leading-snug">{deal.title}</h3>

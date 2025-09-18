@@ -129,7 +129,7 @@ export default function DealCard({
               onClick={prevMedia}
               className="absolute left-2 top-1/2 -translate-y-1/2 
                          bg-black/20 hover:bg-black/30 text-white 
-                         p-2 rounded-full 
+                         p-2 rounded-full cursor-pointer
                          opacity-0 group-hover:opacity-100 hover:opacity-80
                          transition-all duration-300"
             >
@@ -139,7 +139,7 @@ export default function DealCard({
               onClick={nextMedia}
               className="absolute right-2 top-1/2 -translate-y-1/2 
                          bg-black/20 hover:bg-black/30 text-white 
-                         p-2 rounded-full 
+                         p-2 rounded-full cursor-pointer
                          opacity-0 group-hover:opacity-100 hover:opacity-80
                          transition-all duration-300"
             >
@@ -225,5 +225,4 @@ export default function DealCard({
     </article>
   );
 }
-
 

@@ -58,7 +58,7 @@ export default function NewsMenu() {
         onClick={() => setOpenNews((v) => !v)}
         aria-label="Tin tức"
         aria-expanded={openNews}
-        className="relative cursor-pointer focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-[#9b4de0] p-1 rounded"
+        className="relative cursor-pointer p-1 rounded"
       >
         <Bell className="w-5 h-5 text-gray-600 hover:text-[#9b4de0]" />
         {unreadNews > 0 && (
@@ -69,7 +69,11 @@ export default function NewsMenu() {
       </button>
 
       {openNews && (
-        <div className="absolute right-0 mt-2 w-96 bg-white border border-gray-200 rounded-xl shadow-xl z-50" role="dialog" aria-label="Thông báo">
+        <div
+          className="absolute right-0 mt-2 w-96 bg-white border border-gray-200 rounded-xl shadow-xl z-50"
+          role="dialog"
+          aria-label="Thông báo"
+        >
           <div className="flex items-center justify-between px-4 py-3 border-b">
             <h3 className="text-sm font-semibold flex items-center gap-2">
               Thông báo
@@ -102,14 +106,24 @@ export default function NewsMenu() {
                 <li key={n.id}>
                   <button
                     onClick={() => {
-                      setNewsList((prev) => prev.map((it) => (it.id === n.id ? { ...it, read: true } : it)))
+                      setNewsList((prev) =>
+                        prev.map((it) => (it.id === n.id ? { ...it, read: true } : it))
+                      )
                       router.push(n.href || `/tin-tuc/${n.id}`)
                     }}
-                    className={`w-full text-left px-4 py-3 hover:bg-gray-50 cursor-pointer ${!n.read ? 'bg-[#f9f5ff]' : ''}`}
+                    className={`w-full text-left px-4 py-3 hover:bg-gray-50 cursor-pointer ${
+                      !n.read ? 'bg-[#f9f5ff]' : ''
+                    }`}
                   >
                     <div className="flex items-start justify-between gap-3">
                       <div className="min-w-0">
-                        <p className={`text-sm font-medium truncate ${!n.read ? 'text-[#9b4de0]' : ''}`}>{n.title}</p>
+                        <p
+                          className={`text-sm font-medium truncate ${
+                            !n.read ? 'text-[#9b4de0]' : ''
+                          }`}
+                        >
+                          {n.title}
+                        </p>
                         <p className="text-xs text-gray-500">{n.time}</p>
                       </div>
                     </div>

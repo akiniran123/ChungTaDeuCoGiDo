@@ -13,7 +13,8 @@ export default function SidebarRight({
   }[];
 }) {
   return (
-    <>
+    <aside className="sticky top-32 self-start">
+      {/* 👆 top-32 = 128px, tránh bị che bởi TopBar + Navbar */}
       <h3 className="font-bold text-lg mb-3 text-pink-600">Cộng đồng nổi bật</h3>
       <ul className="space-y-3">
         {communityMembers.map((member) => (
@@ -36,7 +37,6 @@ export default function SidebarRight({
           </li>
         ))}
       </ul>
-    </>
+    </aside>
   );
 }
-

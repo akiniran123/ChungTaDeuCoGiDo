@@ -21,7 +21,6 @@ export default function CartMenu({ initialItems }: { initialItems?: CartItem[] }
   const firstFocusableRef = useRef<HTMLButtonElement | null>(null)
   const router = useRouter()
 
-  // Load cart from localStorage (demo). In production, replace with server-side / context
   useEffect(() => {
     try {
       const saved = typeof window !== 'undefined' ? localStorage.getItem('cart_v1') : null
@@ -29,12 +28,8 @@ export default function CartMenu({ initialItems }: { initialItems?: CartItem[] }
         setCartItems(JSON.parse(saved))
         return
       }
-    } catch (e) {
-      // ignore parse errors
-    }
-
+    } catch (e) {}
     if (!initialItems) {
-      // Demo data – thay bằng state/DB thực tế
       setCartItems([
         { id: 'p1', title: 'CPU Ryzen 7 7800X3D', price: 9_990_000, qty: 1 },
         { id: 'p2', title: 'RAM DDR5 32GB 6000MHz', price: 2_290_000, qty: 2 },
@@ -42,13 +37,10 @@ export default function CartMenu({ initialItems }: { initialItems?: CartItem[] }
     }
   }, [initialItems])
 
-  // Persist to localStorage (demo)
   useEffect(() => {
     try {
       if (typeof window !== 'undefined') localStorage.setItem('cart_v1', JSON.stringify(cartItems))
-    } catch (e) {
-      // ignore
-    }
+    } catch (e) {}
   }, [cartItems])
 
   const cartTotal = useMemo(
@@ -56,8 +48,7 @@ export default function CartMenu({ initialItems }: { initialItems?: CartItem[] }
     [cartItems]
   )
 
-  // Business rules (tune these values to your store)
-  const shippingFreeThreshold = 2_000_000 // miễn phí vận chuyển nếu >= 2 triệu
+  const shippingFreeThreshold = 2_000_000
   const shippingFee = cartTotal === 0 ? 0 : cartTotal >= shippingFreeThreshold ? 0 : 30_000
   const taxRate = 0.1
   const tax = Math.round(cartTotal * taxRate)
@@ -65,7 +56,6 @@ export default function CartMenu({ initialItems }: { initialItems?: CartItem[] }
 
   const formatCurrency = (v: number) => v.toLocaleString('vi-VN') + '₫'
 
-  // Close when clicking outside or pressing Escape
   useEffect(() => {
     const handler = (e: MouseEvent) => {
       if (cartRef.current && !cartRef.current.contains(e.target as Node)) {
@@ -83,7 +73,6 @@ export default function CartMenu({ initialItems }: { initialItems?: CartItem[] }
     }
   }, [])
 
-  // Focus management: focus first action when opening, return focus to button when closing
   useEffect(() => {
     if (openCart) {
       setTimeout(() => firstFocusableRef.current?.focus(), 0)
@@ -112,7 +101,7 @@ export default function CartMenu({ initialItems }: { initialItems?: CartItem[] }
         onClick={() => setOpenCart((v) => !v)}
         aria-label="Giỏ hàng"
         aria-expanded={openCart}
-        className="relative cursor-pointer focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-[#9b4de0] p-1 rounded"
+        className="relative cursor-pointer p-1 rounded"
       >
         <ShoppingCart className="w-5 h-5 text-gray-600 hover:text-[#9b4de0]" />
         {cartItems.length > 0 && (

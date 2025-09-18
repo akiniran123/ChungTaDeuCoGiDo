@@ -189,7 +189,7 @@ export default function HotDealsHomePage() {
 
       {/* Nội dung */}
       <main className="flex-1 w-full py-2 grid grid-cols-1 md:grid-cols-4 gap-6 relative">
-        <section className="md:col-span-3 space-y-6">
+        <section className="md:col-span-3 space-y-20">
           {filtered.map((deal) => (
             <DealCard
               key={deal.id}

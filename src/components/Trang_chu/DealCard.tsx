@@ -145,6 +145,18 @@ export default function DealCard({
             >
               ›
             </button>
+
+            {/* Indicators */}
+            <div className="absolute bottom-3 left-1/2 -translate-x-1/2 flex space-x-2 bg-black/40 px-3 py-1 rounded-full">
+              {mediaList.map((_, index) => (
+                <span
+                  key={index}
+                  className={`w-3 h-3 rounded-full transition-all duration-300 ${
+                    index === currentIndex ? "bg-white" : "bg-white/50"
+                  }`}
+                />
+              ))}
+            </div>
           </>
         )}
 
@@ -213,4 +225,5 @@ export default function DealCard({
     </article>
   );
 }
+
 

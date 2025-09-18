@@ -88,60 +88,71 @@ export default function DealCard({
       </div>
 
       {/* Khối media */}
-<div className="relative w-full overflow-hidden">
-  {mediaList.length > 0 && (
-    <div
-      className="flex transition-transform duration-500 ease-in-out"
-      style={{ transform: `translateX(-${currentIndex * 100}%)` }}
-    >
-      {mediaList.map((item, idx) =>
-        item.endsWith(".mp4") ? (
-          <video
-            key={idx}
-            src={item}
-            controls
-            className={`object-cover w-full flex-shrink-0 rounded-md ${
-              bigger ? "h-[540px]" : "h-80"
-            }`}
-          />
-        ) : (
-          <img
-            key={idx}
-            src={item}
-            alt={deal.title}
-            className={`object-cover w-full flex-shrink-0 rounded-md cursor-pointer ${
-              bigger ? "h-[540px]" : "h-80"
-            }`}
-            onClick={onImageClick}
-          />
-        )
-      )}
-    </div>
-  )}
-
-  {mediaList.length > 1 && (
-    <>
-      <button
-        onClick={prevMedia}
-        className="absolute left-2 top-1/2 -translate-y-1/2 bg-black/40 text-white p-2 rounded-full"
+      <div
+        className="relative w-full overflow-hidden group"
+        onTouchStart={handleTouchStart}
+        onTouchEnd={handleTouchEnd}
       >
-        ‹
-      </button>
-      <button
-        onClick={nextMedia}
-        className="absolute right-2 top-1/2 -translate-y-1/2 bg-black/40 text-white p-2 rounded-full"
-      >
-        ›
-      </button>
-    </>
-  )}
+        {mediaList.length > 0 && (
+          <div
+            className="flex transition-transform duration-500 ease-in-out"
+            style={{ transform: `translateX(-${currentIndex * 100}%)` }}
+          >
+            {mediaList.map((item, idx) =>
+              item.endsWith(".mp4") ? (
+                <video
+                  key={idx}
+                  src={item}
+                  controls
+                  className={`object-cover w-full flex-shrink-0 rounded-md ${
+                    bigger ? "h-[600px]" : "h-96"
+                  }`}
+                />
+              ) : (
+                <img
+                  key={idx}
+                  src={item}
+                  alt={deal.title}
+                  className={`object-cover w-full flex-shrink-0 rounded-md cursor-pointer ${
+                    bigger ? "h-[600px]" : "h-96"
+                  }`}
+                  onClick={onImageClick}
+                />
+              )
+            )}
+          </div>
+        )}
 
-  <div className="absolute bottom-0 left-0 w-full bg-black/50 text-white p-4 rounded-b-md">
-    <h3 className="font-semibold text-lg leading-snug">{deal.title}</h3>
-    <div className="text-sm text-gray-200">r/{deal.category}</div>
-  </div>
-</div>
+        {mediaList.length > 1 && (
+          <>
+            <button
+              onClick={prevMedia}
+              className="absolute left-2 top-1/2 -translate-y-1/2 
+                         bg-black/20 hover:bg-black/30 text-white 
+                         p-2 rounded-full 
+                         opacity-0 group-hover:opacity-100 hover:opacity-80
+                         transition-all duration-300"
+            >
+              ‹
+            </button>
+            <button
+              onClick={nextMedia}
+              className="absolute right-2 top-1/2 -translate-y-1/2 
+                         bg-black/20 hover:bg-black/30 text-white 
+                         p-2 rounded-full 
+                         opacity-0 group-hover:opacity-100 hover:opacity-80
+                         transition-all duration-300"
+            >
+              ›
+            </button>
+          </>
+        )}
 
+        <div className="absolute bottom-0 left-0 w-full bg-black/50 text-white p-4 rounded-b-md">
+          <h3 className="font-semibold text-lg leading-snug">{deal.title}</h3>
+          <div className="text-sm text-gray-200">r/{deal.category}</div>
+        </div>
+      </div>
 
       {/* Thanh tương tác */}
       <div className="flex items-center gap-2 mt-3 text-sm text-gray-700 pl-3 mb-3">

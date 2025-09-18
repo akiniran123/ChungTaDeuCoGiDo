@@ -21,7 +21,7 @@ export default function SidebarLayout({ children }: { children: React.ReactNode 
         <SidebarLeft categories={categories} />
       </div>
 
-      {/* Nút toggle đè 1/3 lên border */}
+      {/* Nút toggle */}
       <button
         onClick={() => setShowSidebar((s) => !s)}
         className="fixed z-50 w-10 h-10 bg-white border shadow rounded-l transition-all duration-300 ease-in-out"
@@ -34,8 +34,15 @@ export default function SidebarLayout({ children }: { children: React.ReactNode 
         ☰
       </button>
 
-      {/* Nội dung */}
-      <div className="flex-1 ml-64 p-4">{children}</div>
+      {/* Nội dung chính */}
+      <div
+        className="flex-1 p-4 transition-all duration-300 ease-in-out"
+        style={{
+          marginLeft: showSidebar ? SIDEBAR_WIDTH : 0,
+        }}
+      >
+        {children}
+      </div>
     </div>
   );
 }

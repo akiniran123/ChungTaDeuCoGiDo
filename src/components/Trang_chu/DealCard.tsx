@@ -1,5 +1,5 @@
 "use client";
-import React from "react";
+import React, { useState } from "react";
 import { ArrowUp, ArrowDown, MessageSquare, Share2 } from "lucide-react";
 import Link from "next/link";
 
@@ -13,7 +13,8 @@ export default function DealCard({
   deal: {
     id: number;
     title: string;
-    image: string;
+    image?: string;
+    media?: string[];
     votes: number;
     comments: number;
     category: string;
@@ -26,6 +27,17 @@ export default function DealCard({
   onImageClick?: () => void;
   bigger?: boolean;
 }) {
+  const [currentIndex, setCurrentIndex] = useState(0);
+
+  const mediaList =
+    deal.media && deal.media.length > 0 ? deal.media : deal.image ? [deal.image] : [];
+
+  const nextMedia = () =>
+    setCurrentIndex((prev) => (prev + 1) % mediaList.length);
+
+  const prevMedia = () =>
+    setCurrentIndex((prev) => (prev - 1 + mediaList.length) % mediaList.length);
+
   const handleShare = () => {
     const url = `${window.location.href}#deal-${deal.id}`;
     if (navigator.share) {
@@ -48,10 +60,9 @@ export default function DealCard({
         <span className="text-xl">👤</span>
         <div>
           <p className="font-semibold">
-            {/* ✅ Link sang trang user */}
             <Link
               href={`/user/${deal.author}`}
-              className="!text-gray-700 no-underline hover:!underline hover:!text-gray-900"
+              className="!text-black !hover:text-black hover:underline"
             >
               {deal.author}
             </Link>
@@ -65,16 +76,45 @@ export default function DealCard({
         </div>
       </div>
 
-      {/* Khối ảnh */}
+      {/* Khối media */}
       <div className="relative w-full">
-        <img
-          src={deal.image}
-          alt={deal.title}
-          className={`object-cover w-full rounded-md cursor-pointer ${
-            bigger ? "h-[480px]" : "h-72"
-          }`}
-          onClick={onImageClick}
-        />
+        {mediaList.length > 0 &&
+          (mediaList[currentIndex].endsWith(".mp4") ? (
+            <video
+              src={mediaList[currentIndex]}
+              controls
+              className={`object-cover w-full rounded-md ${
+                bigger ? "h-[480px]" : "h-72"
+              }`}
+            />
+          ) : (
+            <img
+              src={mediaList[currentIndex]}
+              alt={deal.title}
+              className={`object-cover w-full rounded-md cursor-pointer ${
+                bigger ? "h-[480px]" : "h-72"
+              }`}
+              onClick={onImageClick}
+            />
+          ))}
+
+        {mediaList.length > 1 && (
+          <>
+            <button
+              onClick={prevMedia}
+              className="absolute left-2 top-1/2 -translate-y-1/2 bg-black/40 text-white p-2 rounded-full"
+            >
+              ‹
+            </button>
+            <button
+              onClick={nextMedia}
+              className="absolute right-2 top-1/2 -translate-y-1/2 bg-black/40 text-white p-2 rounded-full"
+            >
+              ›
+            </button>
+          </>
+        )}
+
         <div className="absolute bottom-0 left-0 w-full bg-black/50 text-white p-4 rounded-b-md">
           <h3 className="font-semibold text-lg leading-snug">{deal.title}</h3>
           <div className="text-sm text-gray-200">r/{deal.category}</div>
@@ -83,7 +123,6 @@ export default function DealCard({
 
       {/* Thanh tương tác */}
       <div className="flex items-center gap-2 mt-3 text-sm text-gray-700 pl-3 mb-3">
-        {/* Vote */}
         <div className="flex items-center bg-gray-100 rounded-full px-2 py-1 shadow-sm">
           <button
             onClick={() => vote(deal.id, 1)}
@@ -104,7 +143,6 @@ export default function DealCard({
           </button>
         </div>
 
-        {/* Bình luận */}
         <div className="flex items-center bg-gray-100 rounded-full px-2 py-1 shadow-sm">
           <button
             onClick={() => setSelectedDeal(deal.id)}
@@ -118,7 +156,6 @@ export default function DealCard({
           </span>
         </div>
 
-        {/* Chia sẻ */}
         <div className="flex items-center bg-gray-100 rounded-full px-2 py-1 shadow-sm">
           <button
             onClick={handleShare}

@@ -166,7 +166,8 @@ export const users = [
 export type Deal = {
   id: number;
   title: string;
-  image: string;
+  image: string;     // ✅ vẫn giữ cho code cũ
+  media: string[];   // ✅ mới để chứa nhiều ảnh/video
   votes: number;
   comments: number;
   category: string;
@@ -175,7 +176,7 @@ export type Deal = {
   reacts: number;
   author: string;
   content: string;
-  createdAt?: string; // ✅ thêm createdAt
+  createdAt?: string;
 };
 
 // ✅ Hàm random thời gian
@@ -189,17 +190,26 @@ function getRandomTimeAgo() {
   return `${minutes} phút trước`;
 }
 
-export const sampleDeals: Deal[] = Array.from({ length: 30 }).map((_, i) => ({
-  id: i + 1,
-  title: productNames[i % productNames.length],
-  image: `https://picsum.photos/seed/reddit${i}/800/600`,
-  votes: Math.floor(Math.random() * 8000),
-  comments: Math.floor(Math.random() * 500),
-  category: "Camping",
-  likes: 0,
-  hearts: 0,
-  reacts: 0,
-  author: userNames[i % userNames.length], // ✅ dùng tên từ userNames
-  content: `Đây là trải nghiệm camping số ${i + 1}, cảm giác thật tuyệt! 🌲🔥`,
-  createdAt: getRandomTimeAgo(), // ✅ random thời gian
-}));
+export const sampleDeals: Deal[] = Array.from({ length: 30 }).map((_, i) => {
+  const mainImage = `https://picsum.photos/seed/reddit${i}/800/600`;
+  return {
+    id: i + 1,
+    title: productNames[i % productNames.length],
+    image: mainImage, // ✅ vẫn có ảnh chính
+    media: [
+      mainImage,
+      `https://picsum.photos/seed/reddit${i}-2/800/600`,
+      `https://picsum.photos/seed/reddit${i}-3/800/600`,
+      // bạn có thể thêm video dạng URL .mp4 nếu muốn
+    ],
+    votes: Math.floor(Math.random() * 8000),
+    comments: Math.floor(Math.random() * 500),
+    category: "Camping",
+    likes: 0,
+    hearts: 0,
+    reacts: 0,
+    author: userNames[i % userNames.length],
+    content: `Đây là trải nghiệm camping số ${i + 1}, cảm giác thật tuyệt! 🌲🔥`,
+    createdAt: getRandomTimeAgo(),
+  };
+});

@@ -85,6 +85,20 @@ const productNames = [
   "Relaxing by the fire",
 ];
 
+// ✅ Thay tên "Người dùng 1,2..." thành danh sách tên đẹp
+const userNames = [
+  "Nam",
+  "Huy",
+  "Lan",
+  "Trang",
+  "Minh",
+  "Hoa",
+  "Tuấn",
+  "Ngọc",
+  "Linh",
+  "Quang",
+];
+
 export type Deal = {
   id: number;
   title: string;
@@ -121,7 +135,7 @@ export const sampleDeals: Deal[] = Array.from({ length: 30 }).map((_, i) => ({
   likes: 0,
   hearts: 0,
   reacts: 0,
-  author: `Người dùng ${i + 1}`,
+  author: userNames[i % userNames.length], // ✅ lấy tên thay vì "Người dùng X"
   content: `Đây là trải nghiệm camping số ${i + 1}, cảm giác thật tuyệt! 🌲🔥`,
   createdAt: getRandomTimeAgo(), // ✅ random thời gian
 }));

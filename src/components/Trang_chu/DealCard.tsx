@@ -1,6 +1,7 @@
 "use client";
 import React from "react";
 import { ArrowUp, ArrowDown, MessageSquare, Share2 } from "lucide-react";
+import Link from "next/link";
 
 export default function DealCard({
   deal,
@@ -47,7 +48,13 @@ export default function DealCard({
         <span className="text-xl">👤</span>
         <div>
           <p className="font-semibold">
-            {deal.author}
+            {/* ✅ Link sang trang user */}
+            <Link
+              href={`/user/${deal.author}`}
+              className="hover:underline text-pink-600"
+            >
+              {deal.author}
+            </Link>
             {deal.createdAt && (
               <span className="ml-2 text-gray-500 font-normal">
                 · {deal.createdAt}

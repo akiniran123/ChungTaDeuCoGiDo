@@ -28,6 +28,7 @@ export default function DealCard({
   bigger?: boolean;
 }) {
   const [currentIndex, setCurrentIndex] = useState(0);
+  const [startX, setStartX] = useState<number | null>(null);
 
   const mediaList =
     deal.media && deal.media.length > 0 ? deal.media : deal.image ? [deal.image] : [];
@@ -38,14 +39,24 @@ export default function DealCard({
   const prevMedia = () =>
     setCurrentIndex((prev) => (prev - 1 + mediaList.length) % mediaList.length);
 
-  const handleShare = () => {
-    const url = `${window.location.href}#deal-${deal.id}`;
-    if (navigator.share) {
-      navigator.share({ title: deal.title, url });
-    } else {
-      navigator.clipboard.writeText(url);
-      alert("Đã copy link: " + url);
+  // Xử lý kéo ảnh
+  const handleTouchStart = (e: React.TouchEvent) => {
+    setStartX(e.touches[0].clientX);
+  };
+
+  const handleTouchEnd = (e: React.TouchEvent) => {
+    if (startX === null) return;
+    const endX = e.changedTouches[0].clientX;
+    const deltaX = endX - startX;
+
+    if (Math.abs(deltaX) > 50) {
+      if (deltaX > 0) {
+        prevMedia(); // kéo sang phải -> ảnh trước
+      } else {
+        nextMedia(); // kéo sang trái -> ảnh sau
+      }
     }
+    setStartX(null);
   };
 
   return (
@@ -77,52 +88,64 @@ export default function DealCard({
       </div>
 
       {/* Khối media */}
-      <div className="relative w-full">
-        {mediaList.length > 0 &&
-          (mediaList[currentIndex].endsWith(".mp4") ? (
-            <video
-              src={mediaList[currentIndex]}
-              controls
-              className={`object-cover w-full rounded-md ${
-                bigger ? "h-[480px]" : "h-72"
-              }`}
-            />
-          ) : (
-            <img
-              src={mediaList[currentIndex]}
-              alt={deal.title}
-              className={`object-cover w-full rounded-md cursor-pointer ${
-                bigger ? "h-[480px]" : "h-72"
-              }`}
-              onClick={onImageClick}
-            />
-          ))}
+<div className="relative w-full overflow-hidden">
+  {mediaList.length > 0 && (
+    <div
+      className="flex transition-transform duration-500 ease-in-out"
+      style={{ transform: `translateX(-${currentIndex * 100}%)` }}
+    >
+      {mediaList.map((item, idx) =>
+        item.endsWith(".mp4") ? (
+          <video
+            key={idx}
+            src={item}
+            controls
+            className={`object-cover w-full flex-shrink-0 rounded-md ${
+              bigger ? "h-[540px]" : "h-80"
+            }`}
+          />
+        ) : (
+          <img
+            key={idx}
+            src={item}
+            alt={deal.title}
+            className={`object-cover w-full flex-shrink-0 rounded-md cursor-pointer ${
+              bigger ? "h-[540px]" : "h-80"
+            }`}
+            onClick={onImageClick}
+          />
+        )
+      )}
+    </div>
+  )}
 
-        {mediaList.length > 1 && (
-          <>
-            <button
-              onClick={prevMedia}
-              className="absolute left-2 top-1/2 -translate-y-1/2 bg-black/40 text-white p-2 rounded-full"
-            >
-              ‹
-            </button>
-            <button
-              onClick={nextMedia}
-              className="absolute right-2 top-1/2 -translate-y-1/2 bg-black/40 text-white p-2 rounded-full"
-            >
-              ›
-            </button>
-          </>
-        )}
+  {mediaList.length > 1 && (
+    <>
+      <button
+        onClick={prevMedia}
+        className="absolute left-2 top-1/2 -translate-y-1/2 bg-black/40 text-white p-2 rounded-full"
+      >
+        ‹
+      </button>
+      <button
+        onClick={nextMedia}
+        className="absolute right-2 top-1/2 -translate-y-1/2 bg-black/40 text-white p-2 rounded-full"
+      >
+        ›
+      </button>
+    </>
+  )}
 
-        <div className="absolute bottom-0 left-0 w-full bg-black/50 text-white p-4 rounded-b-md">
-          <h3 className="font-semibold text-lg leading-snug">{deal.title}</h3>
-          <div className="text-sm text-gray-200">r/{deal.category}</div>
-        </div>
-      </div>
+  <div className="absolute bottom-0 left-0 w-full bg-black/50 text-white p-4 rounded-b-md">
+    <h3 className="font-semibold text-lg leading-snug">{deal.title}</h3>
+    <div className="text-sm text-gray-200">r/{deal.category}</div>
+  </div>
+</div>
+
 
       {/* Thanh tương tác */}
       <div className="flex items-center gap-2 mt-3 text-sm text-gray-700 pl-3 mb-3">
+        {/* Votes */}
         <div className="flex items-center bg-gray-100 rounded-full px-2 py-1 shadow-sm">
           <button
             onClick={() => vote(deal.id, 1)}
@@ -143,6 +166,7 @@ export default function DealCard({
           </button>
         </div>
 
+        {/* Comments */}
         <div className="flex items-center bg-gray-100 rounded-full px-2 py-1 shadow-sm">
           <button
             onClick={() => setSelectedDeal(deal.id)}
@@ -156,9 +180,18 @@ export default function DealCard({
           </span>
         </div>
 
+        {/* Share */}
         <div className="flex items-center bg-gray-100 rounded-full px-2 py-1 shadow-sm">
           <button
-            onClick={handleShare}
+            onClick={() => {
+              const url = `${window.location.href}#deal-${deal.id}`;
+              if (navigator.share) {
+                navigator.share({ title: deal.title, url });
+              } else {
+                navigator.clipboard.writeText(url);
+                alert("Đã copy link: " + url);
+              }
+            }}
             className="hover:text-pink-600 p-1"
             aria-label="Chia sẻ bài viết"
           >

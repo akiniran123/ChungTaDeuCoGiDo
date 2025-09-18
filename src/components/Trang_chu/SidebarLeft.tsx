@@ -52,11 +52,10 @@ export default function SidebarLeft({ categories }: SidebarLeftProps) {
 
   return (
     <div className="h-[calc(100vh-5rem)] overflow-y-auto px-2">
-      {/* Header */}
       <div className="flex flex-col mb-3">
         <Link
           href="/"
-          className="font-bold text-xl flex items-center mb-2 px-2 py-1 rounded-lg !text-gray-800 no-underline hover:bg-gray-100 transition-colors"
+          className="font-bold text-xl flex items-center mb-2 px-2 py-1 rounded-lg !text-gray-800 no-underline hover:bg-gray-100 transition-colors cursor-pointer"
         >
           <Home className="w-5 h-5 mr-2 text-gray-800" />
           Trang chủ
@@ -64,53 +63,50 @@ export default function SidebarLeft({ categories }: SidebarLeftProps) {
         <h3 className="font-bold text-lg text-pink-600 px-2">Danh mục</h3>
       </div>
 
-      {/* Danh mục */}
       <ul className="space-y-2">
-        {categories.map((cat, i) => (
-          <React.Fragment key={i}>
+        {categories.map((cat, index) => (
+          <li key={cat.label}>
+            {/* Thêm đường kẻ trước "Về chúng tôi" */}
             {cat.label === "Về chúng tôi" && (
-              <hr className="border-t-2 border-gray-300 my-2" />
+              <hr className="my-2 border-t border-gray-300 border-[1.5px]" />
             )}
 
-            <li>
-              {cat.children ? (
-                <>
-                  <button
-                    onClick={() => handleToggle(cat.label)}
-                    className="w-full flex items-center text-left px-3 py-2 rounded-lg font-semibold !text-gray-800 hover:bg-pink-50 hover:text-pink-600 transition-colors"
-                  >
-                    {getIcon(cat.label)}
-                    {cat.label}
-                  </button>
-
-                  {openMenu === cat.label && (
-                    <ul className="ml-4 mt-1 space-y-1">
-                      {cat.children.map((child) => (
-                        <li key={child.href}>
-                          <Link
-                            href={child.href}
-                            className={`block w-full text-left px-3 py-1.5 rounded-md hover:bg-pink-50 hover:text-pink-600 transition-colors text-sm ${getChildTextColor(
-                              cat.label
-                            )}`}
-                          >
-                            {child.label}
-                          </Link>
-                        </li>
-                      ))}
-                    </ul>
-                  )}
-                </>
-              ) : (
-                <Link
-                  href={cat.href!}
-                  className="flex items-center w-full text-left px-3 py-2 rounded-lg !text-gray-800 hover:bg-pink-50 hover:text-pink-600 transition-colors"
+            {cat.children ? (
+              <>
+                <button
+                  onClick={() => handleToggle(cat.label)}
+                  className="w-full flex items-center text-left px-3 py-2 rounded-lg font-semibold !text-gray-800 hover:bg-pink-50 hover:text-pink-600 transition-colors cursor-pointer"
                 >
                   {getIcon(cat.label)}
                   {cat.label}
-                </Link>
-              )}
-            </li>
-          </React.Fragment>
+                </button>
+                {openMenu === cat.label && (
+                  <ul className="ml-4 mt-1 space-y-1">
+                    {cat.children.map((child) => (
+                      <li key={child.href}>
+                        <Link
+                          href={child.href}
+                          className={`block w-full text-left px-3 py-1.5 rounded-md hover:bg-pink-50 hover:text-pink-600 transition-colors text-sm cursor-pointer ${getChildTextColor(
+                            cat.label
+                          )}`}
+                        >
+                          {child.label}
+                        </Link>
+                      </li>
+                    ))}
+                  </ul>
+                )}
+              </>
+            ) : (
+              <Link
+                href={cat.href!}
+                className="flex items-center w-full text-left px-3 py-2 rounded-lg !text-gray-800 hover:bg-pink-50 hover:text-pink-600 transition-colors cursor-pointer"
+              >
+                {getIcon(cat.label)}
+                {cat.label}
+              </Link>
+            )}
+          </li>
         ))}
       </ul>
     </div>

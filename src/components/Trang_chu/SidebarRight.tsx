@@ -13,7 +13,7 @@ export default function SidebarRight({
   }[];
 }) {
   return (
-    <aside className="md:col-span-1 bg-white rounded-l-xl shadow-md p-4 h-[400px] overflow-y-auto sticky top-28">
+    <>
       <h3 className="font-bold text-lg mb-3 text-pink-600">Cộng đồng nổi bật</h3>
       <ul className="space-y-3">
         {communityMembers.map((member) => (
@@ -36,6 +36,6 @@ export default function SidebarRight({
           </li>
         ))}
       </ul>
-    </aside>
+    </>
   );
 }

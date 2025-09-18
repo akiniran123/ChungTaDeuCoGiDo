@@ -126,8 +126,8 @@ export default function HotDealsHomePage() {
       </header>
 
       {/* Bộ lọc */}
-      <div className="mt-16 border-none bg-white sticky top-[56px] z-30">
-        <div className="max-w-7xl mx-auto px-4 py-2 relative">
+      <div className="mt-0 border-none bg-white sticky top-[56px] z-30">
+        <div className="max-w-7xl mx-auto px-4 py-1 relative">
           <button
             onClick={() => setFilterOpen((p) => !p)}
             className="flex items-center justify-center p-2 bg-transparent text-gray-800 hover:text-gray-900 ml-20 cursor-pointer"
@@ -136,7 +136,7 @@ export default function HotDealsHomePage() {
           </button>
 
           {filterOpen && (
-            <div className="absolute mt-2 bg-white border rounded-lg shadow-lg w-40 z-50">
+            <div className="absolute mt-1 bg-white border rounded-lg shadow-lg w-40 z-50">
               <button
                 onClick={() => {
                   setActiveFilter("best");
@@ -188,7 +188,7 @@ export default function HotDealsHomePage() {
       </div>
 
       {/* Nội dung */}
-      <main className="flex-1 w-full py-6 grid grid-cols-1 md:grid-cols-4 gap-6 relative">
+      <main className="flex-1 w-full py-2 grid grid-cols-1 md:grid-cols-4 gap-6 relative">
         <section className="md:col-span-3 space-y-6">
           {filtered.map((deal) => (
             <DealCard

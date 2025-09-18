@@ -51,9 +51,9 @@ export default function DealCard({
 
     if (Math.abs(deltaX) > 50) {
       if (deltaX > 0) {
-        prevMedia(); // kéo sang phải -> ảnh trước
+        prevMedia();
       } else {
-        nextMedia(); // kéo sang trái -> ảnh sau
+        nextMedia();
       }
     }
     setStartX(null);
@@ -71,6 +71,7 @@ export default function DealCard({
         <span className="text-xl">👤</span>
         <div>
           <p className="font-semibold">
+            {/* User name giữ nguyên riêng */}
             <Link
               href={`/user/${deal.author}`}
               className="!text-black !hover:text-black hover:underline"
@@ -160,10 +161,23 @@ export default function DealCard({
           </>
         )}
 
-        <div className="absolute bottom-0 left-0 w-full bg-black/50 text-white p-4 rounded-b-md">
-          <h3 className="font-semibold text-lg leading-snug">{deal.title}</h3>
-          <div className="text-sm text-gray-200">r/{deal.category}</div>
-        </div>
+        {/* Khung trắng trên ảnh, click được */}
+<Link
+  href={`/deal/${deal.id}`}
+  className="absolute bottom-0 left-0 w-full bg-black/50 text-white p-4 rounded-b-md 
+             cursor-pointer hover:bg-black/60 transition block z-20"
+>
+  <div>
+    <h3 className="font-semibold text-lg leading-snug">
+      {deal.title}
+    </h3>
+    <div className="text-sm text-gray-200">
+      r/{deal.category}
+    </div>
+  </div>
+</Link>
+
+
       </div>
 
       {/* Thanh tương tác */}

@@ -85,7 +85,7 @@ const productNames = [
   "Relaxing by the fire",
 ];
 
-// ✅ Thay tên "Người dùng 1,2..." thành danh sách tên đẹp
+// ✅ Danh sách tên người dùng thay cho "Người dùng 1,2..."
 const userNames = [
   "Nam",
   "Huy",
@@ -97,6 +97,70 @@ const userNames = [
   "Ngọc",
   "Linh",
   "Quang",
+];
+
+// ✅ Danh sách user thật để hiện profile
+export const users = [
+  {
+    name: "Nam",
+    avatar: "https://api.dicebear.com/7.x/avataaars/svg?seed=Nam",
+    joinDate: "2024-01-15",
+    bio: "Mình là Nam, thích camping và chia sẻ deal hot 🔥",
+  },
+  {
+    name: "Huy",
+    avatar: "https://api.dicebear.com/7.x/avataaars/svg?seed=Huy",
+    joinDate: "2024-02-20",
+    bio: "Huy đây, chuyên đăng các deal công nghệ 💻",
+  },
+  {
+    name: "Lan",
+    avatar: "https://api.dicebear.com/7.x/avataaars/svg?seed=Lan",
+    joinDate: "2024-03-05",
+    bio: "Lan yêu thích thời trang và shopping 👗",
+  },
+  {
+    name: "Trang",
+    avatar: "https://api.dicebear.com/7.x/avataaars/svg?seed=Trang",
+    joinDate: "2024-03-12",
+    bio: "Trang thích du lịch và trải nghiệm ✈️",
+  },
+  {
+    name: "Minh",
+    avatar: "https://api.dicebear.com/7.x/avataaars/svg?seed=Minh",
+    joinDate: "2024-04-01",
+    bio: "Minh chuyên săn deal đồ gia dụng 🏠",
+  },
+  {
+    name: "Hoa",
+    avatar: "https://api.dicebear.com/7.x/avataaars/svg?seed=Hoa",
+    joinDate: "2024-04-10",
+    bio: "Hoa thích nấu ăn và ẩm thực 🍲",
+  },
+  {
+    name: "Tuấn",
+    avatar: "https://api.dicebear.com/7.x/avataaars/svg?seed=Tuấn",
+    joinDate: "2024-05-02",
+    bio: "Tuấn mê công nghệ và xe 🚗",
+  },
+  {
+    name: "Ngọc",
+    avatar: "https://api.dicebear.com/7.x/avataaars/svg?seed=Ngọc",
+    joinDate: "2024-05-18",
+    bio: "Ngọc yêu thích sách và viết lách 📚",
+  },
+  {
+    name: "Linh",
+    avatar: "https://api.dicebear.com/7.x/avataaars/svg?seed=Linh",
+    joinDate: "2024-06-01",
+    bio: "Linh thích âm nhạc và nghệ thuật 🎶",
+  },
+  {
+    name: "Quang",
+    avatar: "https://api.dicebear.com/7.x/avataaars/svg?seed=Quang",
+    joinDate: "2024-06-15",
+    bio: "Quang thích thể thao và du lịch mạo hiểm 🏔️",
+  },
 ];
 
 export type Deal = {
@@ -135,7 +199,7 @@ export const sampleDeals: Deal[] = Array.from({ length: 30 }).map((_, i) => ({
   likes: 0,
   hearts: 0,
   reacts: 0,
-  author: userNames[i % userNames.length], // ✅ lấy tên thay vì "Người dùng X"
+  author: userNames[i % userNames.length], // ✅ dùng tên từ userNames
   content: `Đây là trải nghiệm camping số ${i + 1}, cảm giác thật tuyệt! 🌲🔥`,
   createdAt: getRandomTimeAgo(), // ✅ random thời gian
 }));

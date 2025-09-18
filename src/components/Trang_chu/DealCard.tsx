@@ -71,7 +71,6 @@ export default function DealCard({
         <span className="text-xl">👤</span>
         <div>
           <p className="font-semibold">
-            {/* User name giữ nguyên riêng */}
             <Link
               href={`/user/${deal.author}`}
               className="!text-black !hover:text-black hover:underline"
@@ -162,22 +161,18 @@ export default function DealCard({
         )}
 
         {/* Khung trắng trên ảnh, click được */}
-<Link
-  href={`/deal/${deal.id}`}
-  className="absolute bottom-0 left-0 w-full bg-black/50 text-white p-4 rounded-b-md 
+        <Link
+          href={`/deal/${deal.id}`}
+          className="absolute bottom-0 left-0 w-full bg-black/50 text-white p-4 rounded-b-md 
              cursor-pointer hover:bg-black/60 transition block z-20"
->
-  <div>
-    <h3 className="font-semibold text-lg leading-snug">
-      {deal.title}
-    </h3>
-    <div className="text-sm text-gray-200">
-      r/{deal.category}
-    </div>
-  </div>
-</Link>
-
-
+        >
+          <div>
+            <h3 className="font-semibold text-lg leading-snug">
+              {deal.title}
+            </h3>
+            <div className="text-sm text-gray-200">r/{deal.category}</div>
+          </div>
+        </Link>
       </div>
 
       {/* Thanh tương tác */}
@@ -186,7 +181,7 @@ export default function DealCard({
         <div className="flex items-center bg-gray-100 rounded-full px-2 py-1 shadow-sm">
           <button
             onClick={() => vote(deal.id, 1)}
-            className="hover:text-pink-600 p-1"
+            className="hover:text-pink-600 p-1 cursor-pointer"
             aria-label="Vote up"
           >
             <ArrowUp size={16} />
@@ -196,7 +191,7 @@ export default function DealCard({
           </span>
           <button
             onClick={() => vote(deal.id, -1)}
-            className="hover:text-pink-600 p-1"
+            className="hover:text-pink-600 p-1 cursor-pointer"
             aria-label="Vote down"
           >
             <ArrowDown size={16} />
@@ -207,7 +202,7 @@ export default function DealCard({
         <div className="flex items-center bg-gray-100 rounded-full px-2 py-1 shadow-sm">
           <button
             onClick={() => setSelectedDeal(deal.id)}
-            className="hover:text-pink-600 p-1"
+            className="hover:text-pink-600 p-1 cursor-pointer"
             aria-label="Xem bình luận"
           >
             <MessageSquare size={16} />
@@ -229,7 +224,7 @@ export default function DealCard({
                 alert("Đã copy link: " + url);
               }
             }}
-            className="hover:text-pink-600 p-1"
+            className="hover:text-pink-600 p-1 cursor-pointer"
             aria-label="Chia sẻ bài viết"
           >
             <Share2 size={16} />

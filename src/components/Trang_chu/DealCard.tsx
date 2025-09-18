@@ -51,7 +51,7 @@ export default function DealCard({
             {/* ✅ Link sang trang user */}
             <Link
               href={`/user/${deal.author}`}
-              className="hover:underline text-pink-600"
+              className="!text-gray-700 no-underline hover:!underline hover:!text-gray-900"
             >
               {deal.author}
             </Link>
@@ -132,3 +132,4 @@ export default function DealCard({
     </article>
   );
 }
+

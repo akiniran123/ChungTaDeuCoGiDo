@@ -20,21 +20,6 @@ export default function SidebarLeft({ categories }: SidebarLeftProps) {
     setOpenMenu(openMenu === label ? null : label);
   };
 
-  const getChildTextColor = (parentLabel: string) => {
-    switch (parentLabel) {
-      case "Về chúng tôi":
-        return "text-blue-600";
-      case "Hỗ trợ":
-        return "text-green-600";
-      case "Cộng đồng":
-        return "text-purple-600";
-      case "Kết nối":
-        return "text-yellow-600";
-      default:
-        return "text-gray-800";
-    }
-  };
-
   const getIcon = (label: string) => {
     switch (label) {
       case "Về chúng tôi":
@@ -50,6 +35,9 @@ export default function SidebarLeft({ categories }: SidebarLeftProps) {
     }
   };
 
+  const isSpecialCategory = (label: string) =>
+    ["Về chúng tôi", "Hỗ trợ", "Cộng đồng", "Kết nối"].includes(label);
+
   return (
     <div className="h-[calc(100vh-5rem)] overflow-y-auto px-2">
       <div className="flex flex-col mb-3">
@@ -64,9 +52,8 @@ export default function SidebarLeft({ categories }: SidebarLeftProps) {
       </div>
 
       <ul className="space-y-2">
-        {categories.map((cat, index) => (
+        {categories.map((cat) => (
           <li key={cat.label}>
-            {/* Thêm đường kẻ trước "Về chúng tôi" */}
             {cat.label === "Về chúng tôi" && (
               <hr className="my-2 border-t border-gray-300 border-[1.5px]" />
             )}
@@ -86,9 +73,11 @@ export default function SidebarLeft({ categories }: SidebarLeftProps) {
                       <li key={child.href}>
                         <Link
                           href={child.href}
-                          className={`block w-full text-left px-3 py-1.5 rounded-md hover:bg-pink-50 hover:text-pink-600 transition-colors text-sm cursor-pointer ${getChildTextColor(
-                            cat.label
-                          )}`}
+                          className={`block w-full text-left px-3 py-1.5 rounded-md text-sm cursor-pointer no-underline ${
+                            isSpecialCategory(cat.label)
+                              ? "!text-gray-500 hover:!text-gray-700 hover:bg-gray-100"
+                              : "!text-gray-600 hover:!text-pink-600 hover:bg-pink-50"
+                          } transition-colors`}
                         >
                           {child.label}
                         </Link>
@@ -100,7 +89,7 @@ export default function SidebarLeft({ categories }: SidebarLeftProps) {
             ) : (
               <Link
                 href={cat.href!}
-                className="flex items-center w-full text-left px-3 py-2 rounded-lg !text-gray-800 hover:bg-pink-50 hover:text-pink-600 transition-colors cursor-pointer"
+                className="flex items-center w-full text-left px-3 py-2 rounded-lg !text-gray-800 no-underline hover:bg-pink-50 hover:text-pink-600 transition-colors cursor-pointer"
               >
                 {getIcon(cat.label)}
                 {cat.label}

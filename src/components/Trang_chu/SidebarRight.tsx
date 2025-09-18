@@ -23,7 +23,7 @@ export default function SidebarRight({
           >
             <Link
               href={`/user/${member.id}`}
-              className="font-semibold text-gray-800 hover:text-pink-600 transition-colors"
+              className="font-semibold !text-gray-800 hover:!text-pink-600 !no-underline"
             >
               {member.name}
             </Link>
@@ -39,3 +39,4 @@ export default function SidebarRight({
     </>
   );
 }
+

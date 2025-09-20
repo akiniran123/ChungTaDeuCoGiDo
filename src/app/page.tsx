@@ -1,6 +1,6 @@
 "use client";
 import React, { useState, useEffect, useRef } from "react";
-import { Package } from "lucide-react";
+import { Package, LayoutGrid, LayoutPanelTop } from "lucide-react";
 
 import SidebarRight from "@/components/Trang_chu/SidebarRight";
 import DealCard from "@/components/Trang_chu/DealCard";
@@ -46,6 +46,9 @@ export default function HotDealsHomePage() {
 
   const [filterOpen, setFilterOpen] = useState(false);
   const [activeFilter, setActiveFilter] = useState<string>("");
+
+  // thêm state để toggle toàn bộ layout
+  const [gridMode, setGridMode] = useState(false);
 
   useEffect(() => {
     const start = (page - 1) * perPage;
@@ -190,15 +193,41 @@ export default function HotDealsHomePage() {
       {/* Nội dung */}
       <main className="flex-1 w-full py-2 grid grid-cols-1 md:grid-cols-4 gap-6 relative">
         <section className="md:col-span-3 space-y-20">
-          {filtered.map((deal) => (
-            <DealCard
-              key={deal.id}
-              deal={deal}
-              vote={vote}
-              setSelectedDeal={setSelectedDeal}
-              onImageClick={() => setSelectedImage(deal.image)}
-              bigger
-            />
+          {filtered.map((deal, idx) => (
+            <div key={deal.id} className="relative">
+              {/* Nút toggle lưới chỉ hiển thị trên bài đầu tiên */}
+              {idx === 0 && (
+                <div className="absolute top-2 right-2 z-20">
+                  <button
+                    onClick={() => setGridMode((p) => !p)}
+                    className="bg-gray-100 rounded-full p-2 shadow hover:bg-gray-200 transition"
+                  >
+                    {gridMode ? (
+                      <LayoutPanelTop className="w-5 h-5 text-gray-700" />
+                    ) : (
+                      <LayoutGrid className="w-5 h-5 text-gray-700" />
+                    )}
+                  </button>
+                </div>
+              )}
+
+              {/* Thêm hiệu ứng trượt */}
+              <div
+                className={`transition-all duration-500 ease-in-out transform ${
+                  gridMode
+                    ? "scale-95 opacity-90 translate-y-2"
+                    : "scale-100 opacity-100 translate-y-0"
+                }`}
+              >
+                <DealCard
+                  deal={deal}
+                  vote={vote}
+                  setSelectedDeal={setSelectedDeal}
+                  onImageClick={() => setSelectedImage(deal.image)}
+                  bigger={!gridMode} // nếu gridMode = true thì tất cả đều nhỏ
+                />
+              </div>
+            </div>
           ))}
 
           <div ref={loaderRef} className="h-10 flex justify-center items-center">

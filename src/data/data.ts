@@ -38,7 +38,7 @@ export const categories = [
     href: "",
     children: [
       { label: "Facebook", href: "https://facebook.com" },
-      { label: "Twitter", href: "https://twitter.com" },
+      { label: "YouTube", href: "https://youtube.com" },
       { label: "Instagram", href: "https://instagram.com" },
     ],
   },

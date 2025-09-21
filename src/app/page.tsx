@@ -47,7 +47,7 @@ export default function HotDealsHomePage() {
   const [filterOpen, setFilterOpen] = useState(false);
   const [activeFilter, setActiveFilter] = useState<string>("");
 
-  // thêm state để toggle toàn bộ layout
+  // toggle toàn bộ layout
   const [gridMode, setGridMode] = useState(false);
 
   useEffect(() => {
@@ -192,7 +192,7 @@ export default function HotDealsHomePage() {
 
       {/* Nội dung */}
       <main className="flex-1 w-full py-2 grid grid-cols-1 md:grid-cols-4 gap-6 relative">
-        <section className="md:col-span-3 space-y-20">
+        <section className="md:col-span-3 space-y-12">
           {filtered.map((deal, idx) => (
             <div key={deal.id} className="relative">
               {/* Nút toggle lưới chỉ hiển thị trên bài đầu tiên */}
@@ -211,22 +211,37 @@ export default function HotDealsHomePage() {
                 </div>
               )}
 
-              {/* Thêm hiệu ứng trượt */}
-              <div
-                className={`transition-all duration-500 ease-in-out transform ${
-                  gridMode
-                    ? "scale-95 opacity-90 translate-y-2"
-                    : "scale-100 opacity-100 translate-y-0"
-                }`}
-              >
+              {/* Khi gridMode = false 👉 ảnh to (DealCard gốc) */}
+              {!gridMode ? (
                 <DealCard
                   deal={deal}
                   vote={vote}
                   setSelectedDeal={setSelectedDeal}
                   onImageClick={() => setSelectedImage(deal.image)}
-                  bigger={!gridMode} // nếu gridMode = true thì tất cả đều nhỏ
+                  bigger={true}
                 />
-              </div>
+              ) : (
+                /* Khi gridMode = true 👉 thẻ ngang nhỏ, bỏ khung */
+                <div className="flex items-start gap-4 p-2 bg-transparent shadow-none transition-all duration-300">
+                  <img
+                    src={deal.image}
+                    alt={deal.title}
+                    className="w-40 h-28 object-cover rounded-lg cursor-pointer"
+                    onClick={() => setSelectedImage(deal.image)}
+                  />
+                  <div className="flex-1">
+                    <h3 className="font-semibold text-lg">{deal.title}</h3>
+                    <p className="text-sm text-gray-600 line-clamp-2">
+                      {deal.content}
+                    </p>
+                    <div className="flex items-center gap-4 mt-2 text-sm text-gray-500">
+                      <span>👍 {deal.votes}</span>
+                      <span>💬 {deal.comments}</span>
+                      <span>👤 {deal.author}</span>
+                    </div>
+                  </div>
+                </div>
+              )}
             </div>
           ))}
 

@@ -132,20 +132,30 @@ export default function DealCard({
             >
               <MessageSquare size={16} /> {deal.comments}
             </button>
-            <button
-              onClick={() => {
-                const url = `${window.location.href}#deal-${deal.id}`;
-                if (navigator.share) {
-                  navigator.share({ title: deal.title, url });
-                } else {
-                  navigator.clipboard.writeText(url);
-                  alert("Đã copy link: " + url);
-                }
-              }}
-              className="flex items-center gap-1 hover:text-pink-600"
-            >
-              <Share2 size={16} /> Chia sẻ
-            </button>
+            {/* Share */}
+<button
+ onClick={() => {
+  const url = `${window.location.href}#deal-${deal.id}`;
+  if (navigator.share) {
+    navigator.share({ title: deal.title, url });
+  } else {
+    navigator.clipboard.writeText(url).then(() => {
+      alert("📋 Link đã được copy: " + url);
+    }).catch(err => {
+      console.error("Copy thất bại:", err);
+      alert("Không copy được link!");
+    });
+  }
+}}
+
+  className="hover:text-pink-600"
+  aria-label="Chia sẻ bài viết"
+>
+  <span className="w-9 h-9 flex items-center justify-center rounded-full border border-gray-300">
+    <Share2 className="w-4 h-4" />
+  </span>
+</button>
+
           </div>
         </div>
       </article>

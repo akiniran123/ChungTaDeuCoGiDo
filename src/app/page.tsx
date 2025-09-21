@@ -1,6 +1,14 @@
 "use client";
 import React, { useState, useEffect, useRef } from "react";
-import { Package, LayoutGrid, LayoutPanelTop } from "lucide-react";
+import {
+  Package,
+  LayoutGrid,
+  LayoutPanelTop,
+  ArrowUp,
+  ArrowDown,
+  MessageSquare,
+  Share2,
+} from "lucide-react";
 
 import SidebarRight from "@/components/Trang_chu/SidebarRight";
 import DealCard from "@/components/Trang_chu/DealCard";
@@ -221,8 +229,8 @@ export default function HotDealsHomePage() {
                   bigger={true}
                 />
               ) : (
-                /* Khi gridMode = true 👉 thẻ ngang nhỏ, bỏ khung */
-                <div className="flex items-start gap-4 p-2 bg-transparent shadow-none transition-all duration-300">
+                /* Khi gridMode = true 👉 thẻ ngang nhỏ, bỏ khung nhưng vẫn có nút */
+                <div className="flex items-start gap-4 p-2 bg-transparent shadow-none border-b border-gray-200">
                   <img
                     src={deal.image}
                     alt={deal.title}
@@ -235,10 +243,55 @@ export default function HotDealsHomePage() {
                       {deal.content}
                     </p>
                     <div className="flex items-center gap-4 mt-2 text-sm text-gray-500">
-                      <span>👍 {deal.votes}</span>
-                      <span>💬 {deal.comments}</span>
                       <span>👤 {deal.author}</span>
                     </div>
+                    {/* Action buttons */}
+<div className="flex items-center gap-4 mt-3 text-gray-600">
+  {/* Vote box (ngang, gọn) */}
+  <div className="flex items-center justify-center gap-2 px-2 py-1 rounded-full border border-gray-300">
+    <button
+      onClick={() => vote(deal.id, 1)}
+      className="hover:text-pink-600"
+    >
+      <ArrowUp className="w-4 h-4" />
+    </button>
+    <span className="text-sm font-medium">{deal.votes}</span>
+    <button
+      onClick={() => vote(deal.id, -1)}
+      className="hover:text-blue-600"
+    >
+      <ArrowDown className="w-4 h-4" />
+    </button>
+  </div>
+
+  {/* Comment */}
+  <button
+    onClick={() => setSelectedDeal(deal.id)}
+    className="flex items-center gap-1 hover:text-green-600"
+  >
+    <span className="w-9 h-9 flex items-center justify-center rounded-full border border-gray-300">
+      <MessageSquare className="w-4 h-4" />
+    </span>
+    {deal.comments}
+  </button>
+
+  {/* Share (giữ logic cũ, chỉ đổi UI) */}
+<button
+  onClick={() => {
+    // logic share cũ của bạn để đây
+    console.log("Chia sẻ deal:", deal.id);
+  }}
+  className="hover:text-purple-600"
+>
+  <span className="w-9 h-9 flex items-center justify-center rounded-full border border-gray-300">
+    <Share2 className="w-4 h-4" />
+  </span>
+</button>
+
+</div>
+
+
+
                   </div>
                 </div>
               )}

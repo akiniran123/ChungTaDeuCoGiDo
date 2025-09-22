@@ -58,6 +58,9 @@ export default function HotDealsHomePage() {
   // toggle toàn bộ layout
   const [gridMode, setGridMode] = useState(false);
 
+  // state cho chia sẻ
+  const [selectedDealShare, setSelectedDealShare] = useState<Deal | null>(null);
+
   useEffect(() => {
     const start = (page - 1) * perPage;
     const more = sampleDeals.slice(start, start + perPage).map((deal) => ({
@@ -246,52 +249,45 @@ export default function HotDealsHomePage() {
                       <span>👤 {deal.author}</span>
                     </div>
                     {/* Action buttons */}
-<div className="flex items-center gap-4 mt-3 text-gray-600">
-  {/* Vote box (ngang, gọn) */}
-  <div className="flex items-center justify-center gap-2 px-2 py-1 rounded-full border border-gray-300">
-    <button
-      onClick={() => vote(deal.id, 1)}
-      className="hover:text-pink-600"
-    >
-      <ArrowUp className="w-4 h-4" />
-    </button>
-    <span className="text-sm font-medium">{deal.votes}</span>
-    <button
-      onClick={() => vote(deal.id, -1)}
-      className="hover:text-blue-600"
-    >
-      <ArrowDown className="w-4 h-4" />
-    </button>
-  </div>
+                    <div className="flex items-center gap-4 mt-3 text-gray-600">
+                      {/* Vote box (ngang, gọn) */}
+                      <div className="flex items-center justify-center gap-2 px-2 py-1 rounded-full border border-gray-300">
+                        <button
+                          onClick={() => vote(deal.id, 1)}
+                          className="hover:text-pink-600"
+                        >
+                          <ArrowUp className="w-4 h-4" />
+                        </button>
+                        <span className="text-sm font-medium">{deal.votes}</span>
+                        <button
+                          onClick={() => vote(deal.id, -1)}
+                          className="hover:text-blue-600"
+                        >
+                          <ArrowDown className="w-4 h-4" />
+                        </button>
+                      </div>
 
-  {/* Comment */}
-  <button
-    onClick={() => setSelectedDeal(deal.id)}
-    className="flex items-center gap-1 hover:text-green-600"
-  >
-    <span className="w-9 h-9 flex items-center justify-center rounded-full border border-gray-300">
-      <MessageSquare className="w-4 h-4" />
-    </span>
-    {deal.comments}
-  </button>
+                      {/* Comment */}
+                      <button
+                        onClick={() => setSelectedDeal(deal.id)}
+                        className="flex items-center gap-1 hover:text-green-600"
+                      >
+                        <span className="w-9 h-9 flex items-center justify-center rounded-full border border-gray-300">
+                          <MessageSquare className="w-4 h-4" />
+                        </span>
+                        {deal.comments}
+                      </button>
 
-  {/* Share (giữ logic cũ, chỉ đổi UI) */}
-<button
-  onClick={() => {
-    // logic share cũ của bạn để đây
-    console.log("Chia sẻ deal:", deal.id);
-  }}
-  className="hover:text-purple-600"
->
-  <span className="w-9 h-9 flex items-center justify-center rounded-full border border-gray-300">
-    <Share2 className="w-4 h-4" />
-  </span>
-</button>
-
-</div>
-
-
-
+                      {/* Share */}
+                      <button
+                        onClick={() => setSelectedDealShare(deal)}
+                        className="hover:text-purple-600"
+                      >
+                        <span className="w-9 h-9 flex items-center justify-center rounded-full border border-gray-300">
+                          <Share2 className="w-4 h-4" />
+                        </span>
+                      </button>
+                    </div>
                   </div>
                 </div>
               )}
@@ -321,6 +317,7 @@ export default function HotDealsHomePage() {
         />
       )}
 
+      {/* Modal ảnh */}
       {selectedImage && (
         <div
           className="fixed inset-0 bg-black bg-opacity-70 flex items-center justify-center z-50"
@@ -331,6 +328,27 @@ export default function HotDealsHomePage() {
             alt="Zoom"
             className="max-w-[90%] max-h-[90%] rounded-lg shadow-lg"
           />
+        </div>
+      )}
+
+      {/* Modal chia sẻ dạng to */}
+      {selectedDealShare && (
+        <div className="fixed inset-0 bg-black bg-opacity-70 flex items-center justify-center z-50">
+          <div className="bg-white max-w-3xl w-full rounded-lg p-4 relative">
+            <button
+              onClick={() => setSelectedDealShare(null)}
+              className="absolute top-2 right-2 bg-gray-200 rounded-full p-2 hover:bg-gray-300"
+            >
+              ✕
+            </button>
+            <DealCard
+              deal={selectedDealShare}
+              vote={vote}
+              setSelectedDeal={setSelectedDeal}
+              onImageClick={() => setSelectedImage(selectedDealShare.image)}
+              bigger={true}
+            />
+          </div>
         </div>
       )}
     </div>

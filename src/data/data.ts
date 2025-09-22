@@ -1,5 +1,15 @@
 export const categories = [
-  { label: "PC", href: "/category/PC" },
+  {
+  label: "Máy tính",
+  href: "",
+  children: [
+    { label: "Xây dựng máy tính riêng", href: "/may-tinh/xay-dung" },
+    { label: "Máy tính PC đầy đủ", href: "/may-tinh-PC-day-du" }, // ✅ URL public
+    { label: "Máy tính Laptop", href: "/may-tinh/laptop" },
+  ],
+},
+
+
   { label: "Công nghệ", href: "/category/cong-nghe" },
   { label: "Nhà cửa", href: "/category/nha-cua" },
   { label: "Thời trang", href: "/category/thoi-trang" },
@@ -43,6 +53,7 @@ export const categories = [
     ],
   },
 ];
+
 
 export const communityMembers = [
   { id: 1, name: "Thành viên A", followers: 1200, stars: 4.8 },

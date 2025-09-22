@@ -5,9 +5,10 @@ export const categories = [
   children: [
     { label: "Xây dựng máy tính PC riêng", href: "/xay-dung-may-tinh-rieng" },
     { label: "Máy tính PC đầy đủ", href: "/may-tinh-PC-day-du" }, // ✅ URL public
-    { label: "Máy tính Laptop", href: "/may-tinh/laptop" },
+    { label: "Máy tính Laptop", href: "/may-tinh-laptop" },
   ],
 },
+
 
   { label: "Công nghệ", href: "/category/cong-nghe" },
   { label: "Nhà cửa", href: "/category/nha-cua" },

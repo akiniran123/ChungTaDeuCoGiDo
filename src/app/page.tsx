@@ -15,6 +15,7 @@ import DealCard from "@/components/Trang_chu/DealCard";
 import CommentPanel from "@/components/Trang_chu/CommentPanel";
 
 import { sampleDeals, communityMembers } from "@/data/data";
+import { motion, AnimatePresence } from "framer-motion"; // ✅ thêm
 
 export type Deal = {
   id: number;
@@ -222,75 +223,93 @@ export default function HotDealsHomePage() {
                 </div>
               )}
 
-              {/* Khi gridMode = false 👉 ảnh to (DealCard gốc) */}
-              {!gridMode ? (
-                <DealCard
-                  deal={deal}
-                  vote={vote}
-                  setSelectedDeal={setSelectedDeal}
-                  onImageClick={() => setSelectedImage(deal.image)}
-                  bigger={true}
-                />
-              ) : (
-                /* Khi gridMode = true 👉 thẻ ngang nhỏ, bỏ khung nhưng vẫn có nút */
-                <div className="flex items-start gap-4 p-2 bg-transparent shadow-none border-b border-gray-200">
-                  <img
-                    src={deal.image}
-                    alt={deal.title}
-                    className="w-40 h-28 object-cover rounded-lg cursor-pointer"
-                    onClick={() => setSelectedImage(deal.image)}
-                  />
-                  <div className="flex-1">
-                    <h3 className="font-semibold text-lg">{deal.title}</h3>
-                    <p className="text-sm text-gray-600 line-clamp-2">
-                      {deal.content}
-                    </p>
-                    <div className="flex items-center gap-4 mt-2 text-sm text-gray-500">
-                      <span>👤 {deal.author}</span>
-                    </div>
-                    {/* Action buttons */}
-                    <div className="flex items-center gap-4 mt-3 text-gray-600">
-                      {/* Vote box (ngang, gọn) */}
-                      <div className="flex items-center justify-center gap-2 px-2 py-1 rounded-full border border-gray-300">
+              {/* AnimatePresence để animate khi đổi layout */}
+              <AnimatePresence mode="wait">
+                {!gridMode ? (
+                  <motion.div
+                    key="card"
+                    initial={{ opacity: 0, x: -50 }}
+                    animate={{ opacity: 1, x: 0 }}
+                    exit={{ opacity: 0, x: 50 }}
+                    transition={{ duration: 0.3 }}
+                  >
+                    <DealCard
+                      deal={deal}
+                      vote={vote}
+                      setSelectedDeal={setSelectedDeal}
+                      onImageClick={() => setSelectedImage(deal.image)}
+                      bigger={true}
+                    />
+                  </motion.div>
+                ) : (
+                  <motion.div
+                    key="grid"
+                    initial={{ opacity: 0, x: 50 }}
+                    animate={{ opacity: 1, x: 0 }}
+                    exit={{ opacity: 0, x: -50 }}
+                    transition={{ duration: 0.3 }}
+                    className="flex items-start gap-4 p-2 bg-transparent shadow-none border-b border-gray-200"
+                  >
+                    <img
+                      src={deal.image}
+                      alt={deal.title}
+                      className="w-40 h-28 object-cover rounded-lg cursor-pointer"
+                      onClick={() => setSelectedImage(deal.image)}
+                    />
+                    <div className="flex-1">
+                      <h3 className="font-semibold text-lg">{deal.title}</h3>
+                      <p className="text-sm text-gray-600 line-clamp-2">
+                        {deal.content}
+                      </p>
+                      <div className="flex items-center gap-4 mt-2 text-sm text-gray-500">
+                        <span>👤 {deal.author}</span>
+                      </div>
+                      {/* Action buttons */}
+                      <div className="flex items-center gap-4 mt-3 text-gray-600">
+                        {/* Vote box */}
+                        <div className="flex items-center justify-center gap-2 px-2 py-1 rounded-full border border-gray-300">
+                          <button
+                            onClick={() => vote(deal.id, 1)}
+                            className="hover:text-pink-600"
+                          >
+                            <ArrowUp className="w-4 h-4" />
+                          </button>
+                          <span className="text-sm font-medium">
+                            {deal.votes}
+                          </span>
+                          <button
+                            onClick={() => vote(deal.id, -1)}
+                            className="hover:text-blue-600"
+                          >
+                            <ArrowDown className="w-4 h-4" />
+                          </button>
+                        </div>
+
+                        {/* Comment */}
                         <button
-                          onClick={() => vote(deal.id, 1)}
-                          className="hover:text-pink-600"
+                          onClick={() => setSelectedDeal(deal.id)}
+                          className="flex items-center gap-1 hover:text-green-600"
                         >
-                          <ArrowUp className="w-4 h-4" />
+                          <span className="w-9 h-9 flex items-center justify-center rounded-full border border-gray-300">
+                            <MessageSquare className="w-4 h-4" />
+                          </span>
+                          {deal.comments}
                         </button>
-                        <span className="text-sm font-medium">{deal.votes}</span>
+
+                        {/* Share */}
                         <button
-                          onClick={() => vote(deal.id, -1)}
-                          className="hover:text-blue-600"
+                          onClick={() => setSelectedDealShare(deal)}
+                          className="hover:text-purple-600"
                         >
-                          <ArrowDown className="w-4 h-4" />
+                          <span className="w-9 h-9 flex items-center justify-center rounded-full border border-gray-300">
+                            <Share2 className="w-4 h-4" />
+                          </span>
                         </button>
                       </div>
-
-                      {/* Comment */}
-                      <button
-                        onClick={() => setSelectedDeal(deal.id)}
-                        className="flex items-center gap-1 hover:text-green-600"
-                      >
-                        <span className="w-9 h-9 flex items-center justify-center rounded-full border border-gray-300">
-                          <MessageSquare className="w-4 h-4" />
-                        </span>
-                        {deal.comments}
-                      </button>
-
-                      {/* Share */}
-                      <button
-                        onClick={() => setSelectedDealShare(deal)}
-                        className="hover:text-purple-600"
-                      >
-                        <span className="w-9 h-9 flex items-center justify-center rounded-full border border-gray-300">
-                          <Share2 className="w-4 h-4" />
-                        </span>
-                      </button>
                     </div>
-                  </div>
-                </div>
-              )}
+                  </motion.div>
+                )}
+              </AnimatePresence>
             </div>
           ))}
 

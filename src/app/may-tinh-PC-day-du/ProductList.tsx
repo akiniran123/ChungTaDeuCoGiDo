@@ -6,51 +6,48 @@ import { Product } from "./types"
 import { motion, AnimatePresence } from "framer-motion"
 
 type Props = {
-  paginated?: Product[] // nếu page.tsx truyền paginated, component sẽ render mảng này
+  paginated?: Product[] // danh sách truyền từ ngoài
+  onSelectProduct?: (id: number) => void // thêm callback chọn sản phẩm
 }
 
-export default function ProductList({ paginated }: Props) {
+export default function ProductList({ paginated, onSelectProduct }: Props) {
   const [currentPage, setCurrentPage] = useState(1)
-  const [direction, setDirection] = useState(0) // 1 = next, -1 = prev
+  const [direction, setDirection] = useState(0)
   const itemsPerPage = 9
 
-  const isExternal = Array.isArray(paginated) // liệu danh sách được cung cấp từ ngoài chưa
-  // nếu có paginated thì render paginated, nếu không thì slice từ allProducts theo currentPage
+  const isExternal = Array.isArray(paginated)
   const paginatedProducts = isExternal
     ? (paginated as Product[])
     : allProducts.slice((currentPage - 1) * itemsPerPage, currentPage * itemsPerPage)
 
   const totalPages = Math.max(1, Math.ceil(allProducts.length / itemsPerPage))
 
-  // animation variants (dùng custom để biết hướng)
   const variants = {
-    enter: (dir: number) => ({
-      x: dir > 0 ? 100 : -100,
-      opacity: 0,
-    }),
-    center: {
-      x: 0,
-      opacity: 1,
-    },
-    exit: (dir: number) => ({
-      x: dir > 0 ? -100 : 100,
-      opacity: 0,
-    }),
-  }
+  enter: (dir: number) => ({
+    x: dir > 0 ? 100 : -100,
+    opacity: 0,
+  }),
+  center: {
+    x: 0,
+    opacity: 1,
+  },
+  exit: (dir: number) => ({
+    x: dir > 0 ? -100 : 100,
+    opacity: 0,
+  }),
+}
 
-  // key để animate khi đổi trang hoặc khi paginated từ ngoài thay đổi
+
   const animateKey = isExternal
     ? `external-${paginatedProducts.length}-${paginatedProducts[0]?.id ?? 0}`
     : `internal-${currentPage}`
 
-  // Nếu không có sản phẩm nào
   if (!paginatedProducts || paginatedProducts.length === 0) {
     return <p className="text-gray-500">Không có sản phẩm nào.</p>
   }
 
   return (
     <div className="flex flex-col gap-6">
-      {/* Danh sách sản phẩm */}
       <AnimatePresence mode="wait" custom={direction}>
         <motion.div
           key={animateKey}
@@ -66,6 +63,7 @@ export default function ProductList({ paginated }: Props) {
             <div
               key={p.id}
               className="flex items-center border rounded-lg p-4 shadow-sm hover:shadow-md transition cursor-pointer"
+              onClick={() => onSelectProduct?.(p.id)} // 👈 gọi callback khi click
             >
               {/* Ảnh */}
               <div className="w-32 h-32 flex-shrink-0">
@@ -93,8 +91,6 @@ export default function ProductList({ paginated }: Props) {
         </motion.div>
       </AnimatePresence>
 
-      {/* Nếu paginated được truyền từ ngoài, page controls sẽ nằm ở ngoài (page.tsx) => không hiển thị nội bộ.
-          Nếu không có paginated (component tự quản trang), hiển thị controls tại đây. */}
       {!isExternal && (
         <div className="flex justify-center gap-2 mt-2">
           <button

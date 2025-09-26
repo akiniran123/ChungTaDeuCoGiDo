@@ -223,14 +223,20 @@ export default function PCPage() {
 
         <FilterChips chips={chips} />
 
-        <ProductList paginated={paginated} />
+        {/* Chuyển trang chi tiết sản phẩm */}
+        <ProductList
+          paginated={paginated}
+          onSelectProduct={(id) => router.push(`/may-tinh-PC-day-du/${id}`)}
+        />
 
         <div className="mt-6 flex justify-center gap-2">
           {Array.from({ length: totalPages }, (_, i) => i + 1).map((n) => (
             <button
               key={n}
               onClick={() => setPage(n)}
-              className={`px-3 py-1 border rounded ${n === page ? "bg-[#9b4de0] text-white" : "bg-white"}`}
+              className={`px-3 py-1 border rounded ${
+                n === page ? "bg-[#9b4de0] text-white" : "bg-white"
+              }`}
             >
               {n}
             </button>

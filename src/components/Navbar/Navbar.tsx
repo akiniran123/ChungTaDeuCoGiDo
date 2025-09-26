@@ -5,6 +5,7 @@ import TopBar from './TopBar';
 import LogoSearchIcons from './LogoSearchIcons';
 import NavLinks from './NavLinks';
 import { AnimatePresence, motion } from 'framer-motion';
+import { useCart } from '@/app/context/CartContext'; // ✅ import CartContext
 
 export default function Navbar() {
   const [menuOpen, setMenuOpen] = useState(false);
@@ -12,12 +13,26 @@ export default function Navbar() {
   const toggleMenu = () => setMenuOpen(!menuOpen);
   const closeMenu = () => setMenuOpen(false);
 
+  // ✅ Lấy giỏ hàng từ context
+  const { cart } = useCart();
+  const totalItems = cart.reduce((sum, item) => sum + item.quantity, 0);
+
   return (
     <>
-      {/* ✅ Bỏ border-b ở đây */}
       <header className="fixed top-0 left-0 w-full z-50 bg-white shadow-sm">
         <TopBar />
-        <LogoSearchIcons onMenuToggle={toggleMenu} />
+        <div className="flex items-center justify-between">
+          <LogoSearchIcons onMenuToggle={toggleMenu} />
+
+          {/* ✅ Chỉ hiển thị số lượng giỏ hàng, không có icon */}
+          {totalItems > 0 && (
+            <div className="mr-4 sm:mr-6">
+              <span className="bg-red-500 text-white rounded-full px-2 py-1 text-xs">
+                {totalItems} sản phẩm
+              </span>
+            </div>
+          )}
+        </div>
 
         {/* ✅ Mobile Nav with animation */}
         <AnimatePresence>
@@ -50,7 +65,7 @@ export default function Navbar() {
         </div>
       </header>
 
-      {/* ✅ Spacer to prevent content being hidden behind fixed navbar */}
+      {/* ✅ Spacer để tránh content bị che bởi fixed navbar */}
       <div className="h-28 sm:h-[120px]" />
     </>
   );

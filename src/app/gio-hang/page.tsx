@@ -7,11 +7,19 @@ import { useState } from "react";
 export default function GioHangPage() {
   const { cart, removeFromCart, clearCart } = useCart();
   const [showQR, setShowQR] = useState(false);
+  const [paymentConfirmed, setPaymentConfirmed] = useState(false);
 
   const total = cart.reduce(
     (sum: number, item: CartItem) => sum + item.price * item.quantity,
     0
   );
+
+  const handleConfirmPayment = () => {
+    setPaymentConfirmed(true);
+    setShowQR(false); // đóng popup
+    alert("✅ Thanh toán thành công! Đơn hàng của bạn đã được ghi nhận.");
+    clearCart(); // giả lập đã thanh toán thì xóa giỏ hàng
+  };
 
   return (
     <div className="p-6 pt-[64px] min-h-screen bg-gray-50">
@@ -74,26 +82,40 @@ export default function GioHangPage() {
           {/* Popup QR */}
           {showQR && (
             <div className="fixed inset-0 bg-black/50 flex items-center justify-center">
-              <div className="bg-white p-6 rounded shadow-md relative">
+              <div className="bg-white p-6 rounded shadow-md relative w-[320px]">
                 <button
                   onClick={() => setShowQR(false)}
                   className="absolute top-2 right-2 text-gray-500"
                 >
                   ✕
                 </button>
-                <h2 className="text-lg font-semibold mb-4">
+                <h2 className="text-lg font-semibold mb-4 text-center">
                   Quét mã QR để thanh toán
                 </h2>
                 <img
-                  src="/qr-code.png" // 👉 thay ảnh QR code thật của bạn ở đây
+                  src="/qr-code.png" // 👉 thay ảnh QR code thật ở đây
                   alt="QR Code"
                   className="w-64 h-64 mx-auto"
                 />
                 <p className="mt-4 text-center font-semibold">
                   Số tiền: {total.toLocaleString()} VND
                 </p>
+
+                <button
+                  onClick={handleConfirmPayment}
+                  className="mt-4 w-full bg-green-600 text-white py-2 rounded"
+                >
+                  Tôi đã thanh toán
+                </button>
               </div>
             </div>
+          )}
+
+          {/* Hiển thị trạng thái đã thanh toán */}
+          {paymentConfirmed && (
+            <p className="mt-6 text-green-600 font-semibold">
+              ✅ Bạn đã thanh toán thành công!
+            </p>
           )}
         </>
       )}

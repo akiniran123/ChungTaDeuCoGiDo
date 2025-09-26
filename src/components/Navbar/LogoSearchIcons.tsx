@@ -12,6 +12,7 @@ import CartMenu from './LogoSearchIcon/CartMenu'
 import UserMenu from './LogoSearchIcon/UserMenu'
 
 import LoginModal from '../auth/LoginModal'
+import { useCart } from '@/app/context/CartContext' // ✅ import CartContext
 
 export default function LogoSearchIcons({
   onMenuToggle,
@@ -21,6 +22,10 @@ export default function LogoSearchIcons({
   const [showLogin, setShowLogin] = useState(false)
   const [pendingRedirect, setPendingRedirect] = useState<string | null>(null)
   const router = useRouter()
+
+  // ✅ Lấy giỏ hàng từ context
+  const { cart } = useCart()
+  const totalItems = cart.reduce((sum, item) => sum + item.quantity, 0)
 
   const openLogin = (redirectTo?: string) => {
     setPendingRedirect(redirectTo ?? null)
@@ -43,7 +48,17 @@ export default function LogoSearchIcons({
             <StartSellingButtons onRequireLogin={() => openLogin('/sell')} />
             <MessagesMenu />
             <NewsMenu />
-            <CartMenu />
+
+            {/* Cart với badge số lượng */}
+            <div className="relative">
+              <CartMenu /> {/* icon giỏ hàng */}
+              {totalItems > 0 && (
+                <span className="absolute -top-2 -right-2 bg-red-500 text-white rounded-full w-5 h-5 flex items-center justify-center text-xs">
+                  {totalItems}
+                </span>
+              )}
+            </div>
+
             <UserMenu onLoginClick={() => openLogin()} />
           </div>
         </div>
@@ -53,7 +68,9 @@ export default function LogoSearchIcons({
           <form
             onSubmit={(e) => {
               e.preventDefault()
-              const input = e.currentTarget.elements.namedItem('q') as HTMLInputElement | null
+              const input = e.currentTarget.elements.namedItem(
+                'q'
+              ) as HTMLInputElement | null
               const q = input?.value?.trim()
               if (!q) return
               router.push(`/search?query=${encodeURIComponent(q)}`)

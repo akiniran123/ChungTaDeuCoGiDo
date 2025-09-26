@@ -23,15 +23,6 @@ export default function Navbar() {
         <TopBar />
         <div className="flex items-center justify-between">
           <LogoSearchIcons onMenuToggle={toggleMenu} />
-
-          {/* ✅ Chỉ hiển thị số lượng giỏ hàng, không có icon */}
-          {totalItems > 0 && (
-            <div className="mr-4 sm:mr-6">
-              <span className="bg-red-500 text-white rounded-full px-2 py-1 text-xs">
-                {totalItems} sản phẩm
-              </span>
-            </div>
-          )}
         </div>
 
         {/* ✅ Mobile Nav with animation */}

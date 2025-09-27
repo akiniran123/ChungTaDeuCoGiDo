@@ -266,12 +266,13 @@ export default function HotDealsHomePage() {
                         {/* ✅ Link chỉnh lại */}
                         <div className="flex items-center gap-4 mt-2 text-sm">
                           <Link
-                            href={`/user/${deal.author}`}
-                            className="flex items-center gap-1 text-gray-700 no-underline"
-                          >
-                            <span className="text-base">👤</span>
-                            <span className="font-medium">{deal.author}</span>
-                          </Link>
+  href={`/user/${deal.author}`}
+  className="flex items-center gap-2 !text-gray-700 !no-underline hover:!text-gray-900"
+>
+  <span className="text-lg">👤</span>
+  <span className="font-semibold">{deal.author}</span>
+</Link>
+
                         </div>
                         {/* Action buttons */}
                         <div className="flex items-center gap-4 mt-3 text-gray-600">

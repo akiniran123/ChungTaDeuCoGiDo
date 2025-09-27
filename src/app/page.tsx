@@ -206,111 +206,152 @@ export default function HotDealsHomePage() {
       <main className="flex-1 w-full py-2 grid grid-cols-1 md:grid-cols-4 gap-6 relative">
         <section className="md:col-span-3 space-y-12">
           {filtered.map((deal, idx) => (
-            <div key={deal.id} className="relative">
-              {/* Nút toggle lưới chỉ hiển thị trên bài đầu tiên */}
-              {idx === 0 && (
-                <div className="absolute top-2 right-2 z-20">
-                  <button
-                    onClick={() => setGridMode((p) => !p)}
-                    className="bg-gray-100 rounded-full p-2 shadow hover:bg-gray-200 transition"
-                  >
-                    {gridMode ? (
-                      <LayoutPanelTop className="w-5 h-5 text-gray-700" />
-                    ) : (
-                      <LayoutGrid className="w-5 h-5 text-gray-700" />
-                    )}
-                  </button>
-                </div>
-              )}
+            <React.Fragment key={deal.id}>
+              <div className="relative">
+                {/* Nút toggle lưới chỉ hiển thị trên bài đầu tiên */}
+                {idx === 0 && (
+                  <div className="absolute top-2 right-2 z-20">
+                    <button
+                      onClick={() => setGridMode((p) => !p)}
+                      className="bg-gray-100 rounded-full p-2 shadow hover:bg-gray-200 transition"
+                    >
+                      {gridMode ? (
+                        <LayoutPanelTop className="w-5 h-5 text-gray-700" />
+                      ) : (
+                        <LayoutGrid className="w-5 h-5 text-gray-700" />
+                      )}
+                    </button>
+                  </div>
+                )}
 
-              {/* AnimatePresence để animate khi đổi layout */}
-              <AnimatePresence mode="wait">
-                {!gridMode ? (
-                  <motion.div
-                    key="card"
-                    initial={{ opacity: 0, x: -50 }}
-                    animate={{ opacity: 1, x: 0 }}
-                    exit={{ opacity: 0, x: 50 }}
-                    transition={{ duration: 0.3 }}
-                  >
-                    <DealCard
-                      deal={deal}
-                      vote={vote}
-                      setSelectedDeal={setSelectedDeal}
-                      onImageClick={() => setSelectedImage(deal.image)}
-                      bigger={true}
-                    />
-                  </motion.div>
-                ) : (
-                  <motion.div
-                    key="grid"
-                    initial={{ opacity: 0, x: 50 }}
-                    animate={{ opacity: 1, x: 0 }}
-                    exit={{ opacity: 0, x: -50 }}
-                    transition={{ duration: 0.3 }}
-                    className="flex items-start gap-4 p-2 bg-transparent shadow-none border-b border-gray-200"
-                  >
-                    <img
-                      src={deal.image}
-                      alt={deal.title}
-                      className="w-40 h-28 object-cover rounded-lg cursor-pointer"
-                      onClick={() => setSelectedImage(deal.image)}
-                    />
-                    <div className="flex-1">
-                      <h3 className="font-semibold text-lg">{deal.title}</h3>
-                      <p className="text-sm text-gray-600 line-clamp-2">
-                        {deal.content}
-                      </p>
-                      <div className="flex items-center gap-4 mt-2 text-sm text-gray-500">
-                        <span>👤 {deal.author}</span>
-                      </div>
-                      {/* Action buttons */}
-                      <div className="flex items-center gap-4 mt-3 text-gray-600">
-                        {/* Vote box */}
-                        <div className="flex items-center justify-center gap-2 px-2 py-1 rounded-full border border-gray-300">
+                {/* AnimatePresence để animate khi đổi layout */}
+                <AnimatePresence mode="wait">
+                  {!gridMode ? (
+                    <motion.div
+                      key={`card-${deal.id}`}
+                      initial={{ opacity: 0, x: -50 }}
+                      animate={{ opacity: 1, x: 0 }}
+                      exit={{ opacity: 0, x: 50 }}
+                      transition={{ duration: 0.3 }}
+                    >
+                      <DealCard
+                        deal={deal}
+                        vote={vote}
+                        setSelectedDeal={setSelectedDeal}
+                        onImageClick={() => setSelectedImage(deal.image)}
+                        bigger={true}
+                      />
+                    </motion.div>
+                  ) : (
+                    <motion.div
+                      key={`grid-${deal.id}`}
+                      initial={{ opacity: 0, x: 50 }}
+                      animate={{ opacity: 1, x: 0 }}
+                      exit={{ opacity: 0, x: -50 }}
+                      transition={{ duration: 0.3 }}
+                      className="flex items-start gap-4 p-2 bg-transparent shadow-none border-b border-gray-200"
+                    >
+                      <img
+                        src={deal.image}
+                        alt={deal.title}
+                        className="w-40 h-28 object-cover rounded-lg cursor-pointer"
+                        onClick={() => setSelectedImage(deal.image)}
+                      />
+                      <div className="flex-1">
+                        <h3 className="font-semibold text-lg">{deal.title}</h3>
+                        <p className="text-sm text-gray-600 line-clamp-2">
+                          {deal.content}
+                        </p>
+                        <div className="flex items-center gap-4 mt-2 text-sm text-gray-500">
+                          <span>👤 {deal.author}</span>
+                        </div>
+                        {/* Action buttons */}
+                        <div className="flex items-center gap-4 mt-3 text-gray-600">
+                          <div className="flex items-center justify-center gap-2 px-2 py-1 rounded-full border border-gray-300">
+                            <button
+                              onClick={() => vote(deal.id, 1)}
+                              className="hover:text-pink-600"
+                            >
+                              <ArrowUp className="w-4 h-4" />
+                            </button>
+                            <span className="text-sm font-medium">
+                              {deal.votes}
+                            </span>
+                            <button
+                              onClick={() => vote(deal.id, -1)}
+                              className="hover:text-blue-600"
+                            >
+                              <ArrowDown className="w-4 h-4" />
+                            </button>
+                          </div>
                           <button
-                            onClick={() => vote(deal.id, 1)}
-                            className="hover:text-pink-600"
+                            onClick={() => setSelectedDeal(deal.id)}
+                            className="flex items-center gap-1 hover:text-green-600"
                           >
-                            <ArrowUp className="w-4 h-4" />
+                            <span className="w-9 h-9 flex items-center justify-center rounded-full border border-gray-300">
+                              <MessageSquare className="w-4 h-4" />
+                            </span>
+                            {deal.comments}
                           </button>
-                          <span className="text-sm font-medium">
-                            {deal.votes}
-                          </span>
                           <button
-                            onClick={() => vote(deal.id, -1)}
-                            className="hover:text-blue-600"
+                            onClick={() => setSelectedDealShare(deal)}
+                            className="hover:text-purple-600"
                           >
-                            <ArrowDown className="w-4 h-4" />
+                            <span className="w-9 h-9 flex items-center justify-center rounded-full border border-gray-300">
+                              <Share2 className="w-4 h-4" />
+                            </span>
                           </button>
                         </div>
+                      </div>
+                    </motion.div>
+                  )}
+                </AnimatePresence>
+              </div>
 
-                        {/* Comment */}
-                        <button
-                          onClick={() => setSelectedDeal(deal.id)}
-                          className="flex items-center gap-1 hover:text-green-600"
-                        >
-                          <span className="w-9 h-9 flex items-center justify-center rounded-full border border-gray-300">
-                            <MessageSquare className="w-4 h-4" />
-                          </span>
-                          {deal.comments}
-                        </button>
-
-                        {/* Share */}
-                        <button
-                          onClick={() => setSelectedDealShare(deal)}
-                          className="hover:text-purple-600"
-                        >
-                          <span className="w-9 h-9 flex items-center justify-center rounded-full border border-gray-300">
-                            <Share2 className="w-4 h-4" />
-                          </span>
-                        </button>
+              {/* Quảng cáo sau mỗi 4 bài */}
+              {(idx + 1) % 4 === 0 && (
+                <>
+                  {!gridMode ? (
+                    <DealCard
+                      deal={{
+                        id: -1,
+                        title: "🔥 Quảng cáo hấp dẫn!",
+                        image: "/ads/ad1.jpg",
+                        votes: 0,
+                        comments: 0,
+                        category: "Ad",
+                        author: "Quảng cáo",
+                        content: "Xem ngay ưu đãi đặc biệt!",
+                      }}
+                      vote={() => {}}
+                      setSelectedDeal={() => {}}
+                      onImageClick={() => {}}
+                      bigger={true}
+                      isAd={true} // ✅ quảng cáo
+                    />
+                  ) : (
+                    <div className="flex items-start gap-4 p-2 bg-yellow-50 border-l-4 border-yellow-400 rounded-lg">
+                      <img
+                        src="/ads/ad1.jpg"
+                        alt="Quảng cáo"
+                        className="w-40 h-28 object-cover rounded-lg"
+                      />
+                      <div className="flex-1">
+                        <span className="text-sm font-bold text-yellow-700">
+                          Quảng cáo
+                        </span>
+                        <h3 className="font-semibold text-lg">
+                          🔥 Quảng cáo hấp dẫn!
+                        </h3>
+                        <p className="text-sm text-gray-600">
+                          Xem ngay ưu đãi đặc biệt!
+                        </p>
                       </div>
                     </div>
-                  </motion.div>
-                )}
-              </AnimatePresence>
-            </div>
+                  )}
+                </>
+              )}
+            </React.Fragment>
           ))}
 
           <div ref={loaderRef} className="h-10 flex justify-center items-center">

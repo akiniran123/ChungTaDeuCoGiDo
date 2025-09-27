@@ -3,30 +3,36 @@ import React, { useState } from "react";
 import { ArrowUp, ArrowDown, MessageSquare, Share2 } from "lucide-react";
 import Link from "next/link";
 
-export default function DealCard({
+export type DealType = {
+  id: number;
+  title: string;
+  image?: string;
+  media?: string[];
+  votes: number;
+  comments: number;
+  category: string;
+  author: string;
+  content: string;
+  createdAt?: string;
+};
+
+export interface DealCardProps {
+  deal: DealType;
+  vote: (id: number, delta: number) => void;
+  setSelectedDeal: (id: number) => void;
+  onImageClick?: () => void;
+  bigger?: boolean;
+  isAd?: boolean;
+}
+
+const DealCard: React.FC<DealCardProps> = ({
   deal,
   vote,
   setSelectedDeal,
   onImageClick,
   bigger = false,
-}: {
-  deal: {
-    id: number;
-    title: string;
-    image?: string;
-    media?: string[];
-    votes: number;
-    comments: number;
-    category: string;
-    author: string;
-    content: string;
-    createdAt?: string;
-  };
-  vote: (id: number, delta: number) => void;
-  setSelectedDeal: (id: number) => void;
-  onImageClick?: () => void;
-  bigger?: boolean;
-}) {
+  isAd = false,
+}) => {
   const [currentIndex, setCurrentIndex] = useState(0);
   const [startX, setStartX] = useState<number | null>(null);
 
@@ -43,7 +49,6 @@ export default function DealCard({
   const prevMedia = () =>
     setCurrentIndex((prev) => (prev - 1 + mediaList.length) % mediaList.length);
 
-  // Xử lý kéo ảnh
   const handleTouchStart = (e: React.TouchEvent) => {
     setStartX(e.touches[0].clientX);
   };
@@ -64,26 +69,23 @@ export default function DealCard({
   };
 
   // =========================
-  // Layout ngang (list view)
+  // Layout ngang (small card)
   // =========================
   if (!bigger) {
     return (
       <article
         id={`deal-${deal.id}`}
-        className="flex items-start gap-3 bg-white rounded-lg border shadow-sm p-3 max-w-3xl mx-auto"
+        className={`flex items-start gap-3 rounded-lg border shadow-sm p-3 max-w-3xl mx-auto ${
+          isAd ? "bg-yellow-50 border-l-4 border-yellow-400" : "bg-white"
+        }`}
       >
-        {/* Ảnh/Media nhỏ bên trái */}
         {mediaList.length > 0 && (
           <div
             className="w-32 h-24 flex-shrink-0 overflow-hidden rounded-md cursor-pointer"
-            onClick={onImageClick}
+            onClick={!isAd ? onImageClick : undefined}
           >
             {mediaList[0].endsWith(".mp4") ? (
-              <video
-                src={mediaList[0]}
-                className="object-cover w-full h-full"
-                muted
-              />
+              <video src={mediaList[0]} className="object-cover w-full h-full" muted />
             ) : (
               <img
                 src={mediaList[0]}
@@ -94,7 +96,6 @@ export default function DealCard({
           </div>
         )}
 
-        {/* Nội dung bên phải */}
         <div className="flex-1 min-w-0">
           <div className="flex items-center gap-2 text-xs text-gray-500 mb-1">
             <Link
@@ -113,50 +114,49 @@ export default function DealCard({
             {deal.title}
           </Link>
 
-          <div className="flex items-center gap-3 mt-2 text-sm text-gray-600">
-            <button
-              onClick={() => vote(deal.id, 1)}
-              className="flex items-center gap-1 hover:text-pink-600"
-            >
-              <ArrowUp size={16} /> {deal.votes}
-            </button>
-            <button
-              onClick={() => vote(deal.id, -1)}
-              className="hover:text-pink-600"
-            >
-              <ArrowDown size={16} />
-            </button>
-            <button
-              onClick={() => setSelectedDeal(deal.id)}
-              className="flex items-center gap-1 hover:text-pink-600"
-            >
-              <MessageSquare size={16} /> {deal.comments}
-            </button>
-            {/* Share */}
-<button
- onClick={() => {
-  const url = `${window.location.href}#deal-${deal.id}`;
-  if (navigator.share) {
-    navigator.share({ title: deal.title, url });
-  } else {
-    navigator.clipboard.writeText(url).then(() => {
-      alert("📋 Link đã được copy: " + url);
-    }).catch(err => {
-      console.error("Copy thất bại:", err);
-      alert("Không copy được link!");
-    });
-  }
-}}
+          {isAd && (
+            <span className="text-xs font-bold text-yellow-700 inline-block mt-1">
+              Quảng cáo
+            </span>
+          )}
 
-  className="hover:text-pink-600"
-  aria-label="Chia sẻ bài viết"
->
-  <span className="w-9 h-9 flex items-center justify-center rounded-full border border-gray-300">
-    <Share2 className="w-4 h-4" />
-  </span>
-</button>
-
-          </div>
+          {!isAd && (
+            <div className="flex items-center gap-3 mt-2 text-sm text-gray-600">
+              <button
+                onClick={() => vote(deal.id, 1)}
+                className="flex items-center gap-1 hover:text-pink-600"
+              >
+                <ArrowUp size={16} /> {deal.votes}
+              </button>
+              <button
+                onClick={() => vote(deal.id, -1)}
+                className="hover:text-pink-600"
+              >
+                <ArrowDown size={16} />
+              </button>
+              <button
+                onClick={() => setSelectedDeal(deal.id)}
+                className="flex items-center gap-1 hover:text-pink-600"
+              >
+                <MessageSquare size={16} /> {deal.comments}
+              </button>
+              <button
+                onClick={() => {
+                  const url = `${window.location.href}#deal-${deal.id}`;
+                  if (navigator.share) {
+                    navigator.share({ title: deal.title, url });
+                  } else {
+                    navigator.clipboard.writeText(url);
+                    alert("📋 Link đã được copy: " + url);
+                  }
+                }}
+                className="hover:text-pink-600"
+                aria-label="Chia sẻ bài viết"
+              >
+                <Share2 size={16} />
+              </button>
+            </div>
+          )}
         </div>
       </article>
     );
@@ -167,12 +167,17 @@ export default function DealCard({
   // =========================
   return (
     <article
-      className={`flex flex-col transition-all mx-auto bg-white rounded-lg shadow ${
+      className={`flex flex-col transition-all mx-auto rounded-lg shadow ${
         bigger ? "max-w-3xl" : "max-w-xl"
-      }`}
+      } ${isAd ? "bg-yellow-50 border-l-4 border-yellow-400" : "bg-white"}`}
       id={`deal-${deal.id}`}
     >
-      {/* Thông tin người đăng */}
+      {isAd && (
+        <span className="text-sm font-bold text-yellow-700 m-3 inline-block">
+          Quảng cáo
+        </span>
+      )}
+
       <div className="flex items-center gap-2 px-3 py-2 border-b text-sm">
         <span className="text-xl">👤</span>
         <div>
@@ -193,7 +198,6 @@ export default function DealCard({
         </div>
       </div>
 
-      {/* Khối media */}
       <div
         className="relative w-full overflow-hidden group"
         onTouchStart={handleTouchStart}
@@ -209,7 +213,7 @@ export default function DealCard({
                 <video
                   key={idx}
                   src={item}
-                  controls
+                  controls={!isAd}
                   className={`object-cover w-full flex-shrink-0 rounded-md ${
                     bigger ? "h-[600px]" : "h-96"
                   }`}
@@ -219,17 +223,17 @@ export default function DealCard({
                   key={idx}
                   src={item}
                   alt={deal.title}
-                  className={`object-cover w-full flex-shrink-0 rounded-md cursor-pointer ${
+                  className={`object-cover w-full flex-shrink-0 rounded-md ${
                     bigger ? "h-[600px]" : "h-96"
                   }`}
-                  onClick={onImageClick}
+                  onClick={!isAd ? onImageClick : undefined}
                 />
               )
             )}
           </div>
         )}
 
-        {mediaList.length > 1 && (
+        {mediaList.length > 1 && !isAd && (
           <>
             <button
               onClick={prevMedia}
@@ -251,92 +255,77 @@ export default function DealCard({
             >
               ›
             </button>
-
-            {/* Indicators */}
-            <div className="absolute bottom-3 left-1/2 -translate-x-1/2 flex space-x-2 bg-black/40 px-3 py-1 rounded-full">
-              {mediaList.map((_, index) => (
-                <span
-                  key={index}
-                  className={`w-3 h-3 rounded-full transition-all duration-300 ${
-                    index === currentIndex ? "bg-white" : "bg-white/50"
-                  }`}
-                />
-              ))}
-            </div>
           </>
         )}
 
-        {/* Khung trắng trên ảnh, click được */}
         <Link
           href={`/deal/${deal.id}`}
           className="absolute bottom-0 left-0 w-full bg-black/50 text-white p-4 rounded-b-md 
              cursor-pointer hover:bg-black/60 transition block z-20"
         >
           <div>
-            <h3 className="font-semibold text-lg leading-snug">
-              {deal.title}
-            </h3>
+            <h3 className="font-semibold text-lg leading-snug">{deal.title}</h3>
             <div className="text-sm text-gray-200">r/{deal.category}</div>
           </div>
         </Link>
       </div>
 
-      {/* Thanh tương tác */}
-      <div className="flex items-center gap-2 mt-3 text-sm text-gray-700 pl-3 mb-3">
-        {/* Votes */}
-        <div className="flex items-center bg-gray-100 rounded-full px-2 py-1 shadow-sm">
-          <button
-            onClick={() => vote(deal.id, 1)}
-            className="hover:text-pink-600 p-1 cursor-pointer"
-            aria-label="Vote up"
-          >
-            <ArrowUp size={16} />
-          </button>
-          <span className="font-semibold text-xs text-center min-w-[20px]">
-            {deal.votes || "0"}
-          </span>
-          <button
-            onClick={() => vote(deal.id, -1)}
-            className="hover:text-pink-600 p-1 cursor-pointer"
-            aria-label="Vote down"
-          >
-            <ArrowDown size={16} />
-          </button>
-        </div>
+      {!isAd && (
+        <div className="flex items-center gap-2 mt-3 text-sm text-gray-700 pl-3 mb-3">
+          <div className="flex items-center bg-gray-100 rounded-full px-2 py-1 shadow-sm">
+            <button
+              onClick={() => vote(deal.id, 1)}
+              className="hover:text-pink-600 p-1 cursor-pointer"
+              aria-label="Vote up"
+            >
+              <ArrowUp size={16} />
+            </button>
+            <span className="font-semibold text-xs text-center min-w-[20px]">
+              {deal.votes || "0"}
+            </span>
+            <button
+              onClick={() => vote(deal.id, -1)}
+              className="hover:text-pink-600 p-1 cursor-pointer"
+              aria-label="Vote down"
+            >
+              <ArrowDown size={16} />
+            </button>
+          </div>
 
-        {/* Comments */}
-        <div className="flex items-center bg-gray-100 rounded-full px-2 py-1 shadow-sm">
-          <button
-            onClick={() => setSelectedDeal(deal.id)}
-            className="hover:text-pink-600 p-1 cursor-pointer"
-            aria-label="Xem bình luận"
-          >
-            <MessageSquare size={16} />
-          </button>
-          <span className="font-semibold text-xs text-center min-w-[20px]">
-            {deal.comments || "0"}
-          </span>
-        </div>
+          <div className="flex items-center bg-gray-100 rounded-full px-2 py-1 shadow-sm">
+            <button
+              onClick={() => setSelectedDeal(deal.id)}
+              className="hover:text-pink-600 p-1 cursor-pointer"
+              aria-label="Xem bình luận"
+            >
+              <MessageSquare size={16} />
+            </button>
+            <span className="font-semibold text-xs text-center min-w-[20px]">
+              {deal.comments || "0"}
+            </span>
+          </div>
 
-        {/* Share */}
-        <div className="flex items-center bg-gray-100 rounded-full px-2 py-1 shadow-sm">
-          <button
-            onClick={() => {
-              const url = `${window.location.href}#deal-${deal.id}`;
-              if (navigator.share) {
-                navigator.share({ title: deal.title, url });
-              } else {
-                navigator.clipboard.writeText(url);
-                alert("Đã copy link: " + url);
-              }
-            }}
-            className="hover:text-pink-600 p-1 cursor-pointer"
-            aria-label="Chia sẻ bài viết"
-          >
-            <Share2 size={16} />
-          </button>
+          <div className="flex items-center bg-gray-100 rounded-full px-2 py-1 shadow-sm">
+            <button
+              onClick={() => {
+                const url = `${window.location.href}#deal-${deal.id}`;
+                if (navigator.share) {
+                  navigator.share({ title: deal.title, url });
+                } else {
+                  navigator.clipboard.writeText(url);
+                  alert("Đã copy link: " + url);
+                }
+              }}
+              className="hover:text-pink-600 p-1 cursor-pointer"
+              aria-label="Chia sẻ bài viết"
+            >
+              <Share2 size={16} />
+            </button>
+          </div>
         </div>
-      </div>
+      )}
     </article>
   );
-}
+};
+
+export default DealCard;

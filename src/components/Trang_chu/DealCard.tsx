@@ -69,102 +69,6 @@ const DealCard: React.FC<DealCardProps> = ({
   };
 
   // =========================
-  // Layout ngang (small card)
-  // =========================
-  if (!bigger) {
-    return (
-      <article
-        id={`deal-${deal.id}`}
-        className={`flex items-start gap-3 rounded-lg border shadow-sm p-3 max-w-3xl mx-auto ${
-          isAd ? "bg-yellow-50 border-l-4 border-yellow-400" : "bg-white"
-        }`}
-      >
-        {mediaList.length > 0 && (
-          <div
-            className="w-32 h-24 flex-shrink-0 overflow-hidden rounded-md cursor-pointer"
-            onClick={!isAd ? onImageClick : undefined}
-          >
-            {mediaList[0].endsWith(".mp4") ? (
-              <video src={mediaList[0]} className="object-cover w-full h-full" muted />
-            ) : (
-              <img
-                src={mediaList[0]}
-                alt={deal.title}
-                className="object-cover w-full h-full"
-              />
-            )}
-          </div>
-        )}
-
-        <div className="flex-1 min-w-0">
-          <div className="flex items-center gap-2 text-xs text-gray-500 mb-1">
-            {/* ✅ sửa chỗ này: bọc icon + tên người bán bằng Link */}
-            <Link
-              href={`/user/${deal.author}`}
-              className="flex items-center gap-2 hover:underline text-gray-800"
-            >
-              <span className="text-lg">👤</span>
-              <span className="font-semibold">{deal.author}</span>
-            </Link>
-            {deal.createdAt && <span>· {deal.createdAt}</span>}
-          </div>
-
-          <Link
-            href={`/deal/${deal.id}`}
-            className="block font-semibold text-gray-900 hover:underline line-clamp-2"
-          >
-            {deal.title}
-          </Link>
-
-          {isAd && (
-            <span className="text-xs font-bold text-yellow-700 inline-block mt-1">
-              Quảng cáo
-            </span>
-          )}
-
-          {!isAd && (
-            <div className="flex items-center gap-3 mt-2 text-sm text-gray-600">
-              <button
-                onClick={() => vote(deal.id, 1)}
-                className="flex items-center gap-1 hover:text-pink-600"
-              >
-                <ArrowUp size={16} /> {deal.votes}
-              </button>
-              <button
-                onClick={() => vote(deal.id, -1)}
-                className="hover:text-pink-600"
-              >
-                <ArrowDown size={16} />
-              </button>
-              <button
-                onClick={() => setSelectedDeal(deal.id)}
-                className="flex items-center gap-1 hover:text-pink-600"
-              >
-                <MessageSquare size={16} /> {deal.comments}
-              </button>
-              <button
-                onClick={() => {
-                  const url = `${window.location.href}#deal-${deal.id}`;
-                  if (navigator.share) {
-                    navigator.share({ title: deal.title, url });
-                  } else {
-                    navigator.clipboard.writeText(url);
-                    alert("📋 Link đã được copy: " + url);
-                  }
-                }}
-                className="hover:text-pink-600"
-                aria-label="Chia sẻ bài viết"
-              >
-                <Share2 size={16} />
-              </button>
-            </div>
-          )}
-        </div>
-      </article>
-    );
-  }
-
-  // =========================
   // Layout dọc (big card)
   // =========================
   return (
@@ -183,7 +87,7 @@ const DealCard: React.FC<DealCardProps> = ({
       <div className="flex items-center gap-2 px-3 py-2 border-b text-sm">
         <Link
           href={`/user/${deal.author}`}
-          className="flex items-center gap-2 hover:underline text-gray-800"
+          className="flex items-center gap-2 !text-gray-700 !no-underline hover:!text-gray-900"
         >
           <span className="text-xl">👤</span>
           <span className="font-semibold">{deal.author}</span>

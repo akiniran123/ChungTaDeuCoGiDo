@@ -98,11 +98,13 @@ const DealCard: React.FC<DealCardProps> = ({
 
         <div className="flex-1 min-w-0">
           <div className="flex items-center gap-2 text-xs text-gray-500 mb-1">
+            {/* ✅ sửa chỗ này: bọc icon + tên người bán bằng Link */}
             <Link
               href={`/user/${deal.author}`}
-              className="font-semibold hover:underline text-gray-800"
+              className="flex items-center gap-2 hover:underline text-gray-800"
             >
-              {deal.author}
+              <span className="text-lg">👤</span>
+              <span className="font-semibold">{deal.author}</span>
             </Link>
             {deal.createdAt && <span>· {deal.createdAt}</span>}
           </div>
@@ -179,23 +181,16 @@ const DealCard: React.FC<DealCardProps> = ({
       )}
 
       <div className="flex items-center gap-2 px-3 py-2 border-b text-sm">
-        <span className="text-xl">👤</span>
-        <div>
-          <p className="font-semibold">
-            <Link
-              href={`/user/${deal.author}`}
-              className="!text-black !hover:text-black hover:underline"
-            >
-              {deal.author}
-            </Link>
-            {deal.createdAt && (
-              <span className="ml-2 text-gray-500 font-normal">
-                · {deal.createdAt}
-              </span>
-            )}
-          </p>
-          <p className="text-gray-600">{deal.content}</p>
-        </div>
+        <Link
+          href={`/user/${deal.author}`}
+          className="flex items-center gap-2 hover:underline text-gray-800"
+        >
+          <span className="text-xl">👤</span>
+          <span className="font-semibold">{deal.author}</span>
+        </Link>
+        {deal.createdAt && (
+          <span className="text-gray-500 font-normal">· {deal.createdAt}</span>
+        )}
       </div>
 
       <div

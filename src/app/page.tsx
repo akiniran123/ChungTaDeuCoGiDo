@@ -16,6 +16,7 @@ import CommentPanel from "@/components/Trang_chu/CommentPanel";
 
 import { sampleDeals, communityMembers } from "@/data/data";
 import { motion, AnimatePresence } from "framer-motion"; // ✅ thêm
+import Link from "next/link"; // ✅ thêm
 
 export type Deal = {
   id: number;
@@ -249,7 +250,7 @@ export default function HotDealsHomePage() {
                       animate={{ opacity: 1, x: 0 }}
                       exit={{ opacity: 0, x: -50 }}
                       transition={{ duration: 0.3 }}
-                      className="flex items-start gap-4 p-2 bg-transparent shadow-none border-b border-gray-200"
+                      className="flex items-start gap-4 p-2 bg-transparent shadow-none border-b border-gray-200 ml-4"
                     >
                       <img
                         src={deal.image}
@@ -262,9 +263,16 @@ export default function HotDealsHomePage() {
                         <p className="text-sm text-gray-600 line-clamp-2">
                           {deal.content}
                         </p>
+                        {/* ✅ chỗ này đã sửa thành Link */}
                         <div className="flex items-center gap-4 mt-2 text-sm text-gray-500">
-                          <span>👤 {deal.author}</span>
-                        </div>
+                           <Link 
+    href={`/user/${deal.author}`} 
+    className="flex items-center gap-1 hover:underline text-gray-900"
+  >
+    <span className="text-base">👤</span>
+    <span className="font-medium">{deal.author}</span>
+  </Link>
+</div>
                         {/* Action buttons */}
                         <div className="flex items-center gap-4 mt-3 text-gray-600">
                           <div className="flex items-center justify-center gap-2 px-2 py-1 rounded-full border border-gray-300">
@@ -327,10 +335,10 @@ export default function HotDealsHomePage() {
                       setSelectedDeal={() => {}}
                       onImageClick={() => {}}
                       bigger={true}
-                      isAd={true} // ✅ quảng cáo
+                      isAd={true}
                     />
                   ) : (
-                    <div className="flex items-start gap-4 p-2 bg-yellow-50 border-l-4 border-yellow-400 rounded-lg">
+                    <div className="flex items-start gap-4 p-2 bg-yellow-50 border-l-4 border-yellow-400 rounded-lg ml-4">
                       <img
                         src="/ads/ad1.jpg"
                         alt="Quảng cáo"

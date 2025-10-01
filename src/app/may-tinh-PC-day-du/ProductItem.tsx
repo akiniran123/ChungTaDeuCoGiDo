@@ -37,14 +37,16 @@ export default function ProductItem({ product }: { product: Product }) {
           {/* Thông tin */}
           <div className="flex flex-col">
             {/* Tên sản phẩm (bọc link, màu đen nhạt) */}
-            <h3 className="font-semibold text-lg text-gray-800">
-              <Link
-                href={`/may-tinh-PC-day-du/${product.id}`}
-                className="hover:underline"
-              >
-                {product.name}
-              </Link>
-            </h3>
+         <h3 className="font-semibold text-lg">
+  <Link
+    href={`/may-tinh-PC-day-du/${product.id}`}
+    className="text-gray-900 hover:text-gray-700 hover:underline transition-colors duration-200 !no-underline"
+    style={{ color: "#1f2937" }} // Tailwind gray-800 chính xác
+  >
+    {product.name}
+  </Link>
+</h3>
+
 
             {/* Mô tả (không bọc) */}
             <p className="text-gray-600 text-sm">{product.shortDesc}</p>

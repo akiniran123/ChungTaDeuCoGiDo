@@ -1,6 +1,7 @@
+// src/app/may-tinh-PC-day-du/types.ts
 export type Product = {
   id: number
-  type: 'gaming' | 'office' | 'workstation' | 'mini'
+  type: "gaming" | "office" | "workstation" | "mini"
   brand: string
   cpu: string
   gpu: string
@@ -11,9 +12,9 @@ export type Product = {
   shortDesc?: string
   images: string[]
   stock?: number
-  seller?: {
-    id: number // 👈 thêm nếu bạn đang dùng
+  seller: {
+    id: number
     name: string
-    avatar: string // 👈 sửa lại nếu bạn viết nhầm thành 'antar'
+    avatar: string
   }
 }

@@ -2,6 +2,7 @@
 
 import React, { useState, useMemo, useEffect } from "react"
 import { usePathname, useRouter } from "next/navigation"
+import { Monitor } from "lucide-react" // icon
 
 import { products } from "./data"
 import ProductList from "./ProductList"
@@ -198,6 +199,12 @@ export default function PCPage() {
       />
 
       <main className="flex-1">
+        {/* Thêm tiêu đề + icon */}
+        <div className="flex items-center gap-2 mb-6">
+          <Monitor className="w-6 h-6 text-[#9b4de0]" />
+          <h1 className="text-xl font-semibold">Danh sách PC</h1>
+        </div>
+
         <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4 mb-4">
           <input
             type="text"

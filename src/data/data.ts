@@ -9,9 +9,8 @@ export const categories = [
   ],
 },
 
-
   { label: "Công nghệ", href: "/category/cong-nghe" },
-  { label: "Nhà cửa", href: "/category/nha-cua" },
+  { label: "Xe cộ", href: "/category/xe-co" },
   { label: "Thời trang", href: "/category/thoi-trang" },
   { label: "Thực phẩm", href: "/category/thuc-pham" },
   { label: "Du lịch", href: "/category/du-lich" },

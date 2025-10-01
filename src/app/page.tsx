@@ -266,16 +266,16 @@ export default function HotDealsHomePage() {
                         {/* ✅ Link chỉnh lại */}
                         <div className="flex items-center gap-4 mt-2 text-sm">
                           <Link
-  href={`/user/${deal.author}`}
-  className="flex items-center gap-2 !text-gray-700 !no-underline hover:!text-gray-900"
->
-  <span className="text-lg">👤</span>
-  <span className="font-semibold">{deal.author}</span>
-</Link>
-
+                            href={`/user/${deal.author}`}
+                            className="flex items-center gap-2 !text-gray-700 !no-underline hover:!text-gray-900"
+                          >
+                            <span className="text-lg">👤</span>
+                            <span className="font-semibold">{deal.author}</span>
+                          </Link>
                         </div>
                         {/* Action buttons */}
                         <div className="flex items-center gap-4 mt-3 text-gray-600">
+                          {/* Vote box */}
                           <div className="flex items-center justify-center gap-2 px-2 py-1 rounded-full border border-gray-300">
                             <button
                               onClick={() => vote(deal.id, 1)}
@@ -293,17 +293,38 @@ export default function HotDealsHomePage() {
                               <ArrowDown className="w-4 h-4" />
                             </button>
                           </div>
+
+                          {/* ✅ Comment button */}
+                          {/* Comment box */}
+<div
+  onClick={() => setSelectedDeal(deal.id)}
+  className="flex items-center justify-center gap-2 px-3 py-1 rounded-full border border-gray-300 cursor-pointer hover:text-green-600"
+>
+  <MessageSquare className="w-4 h-4" />
+  <span className="text-sm font-medium">{deal.comments}</span>
+</div>
+
+
+                          {/* Share button */}
                           <button
-                            onClick={() => setSelectedDeal(deal.id)}
-                            className="flex items-center gap-1 hover:text-green-600"
-                          >
-                            <span className="w-9 h-9 flex items-center justify-center rounded-full border border-gray-300">
-                              <MessageSquare className="w-4 h-4" />
-                            </span>
-                            {deal.comments}
-                          </button>
-                          <button
-                            onClick={() => setSelectedDealShare(deal)}
+                            onClick={() => {
+                              if (navigator.share) {
+                                navigator.share({
+                                  title: deal.title,
+                                  text: deal.content,
+                                  url:
+                                    window.location.origin +
+                                    "/#deal-" +
+                                    deal.id,
+                                });
+                              } else {
+                                // fallback: copy link
+                                navigator.clipboard.writeText(
+                                  window.location.origin + "/#deal-" + deal.id
+                                );
+                                alert("Đã copy link vào clipboard!");
+                              }
+                            }}
                             className="hover:text-purple-600"
                           >
                             <span className="w-9 h-9 flex items-center justify-center rounded-full border border-gray-300">
@@ -423,3 +444,4 @@ export default function HotDealsHomePage() {
     </div>
   );
 }
+

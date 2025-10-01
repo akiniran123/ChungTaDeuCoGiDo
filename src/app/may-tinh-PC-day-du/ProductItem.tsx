@@ -9,18 +9,20 @@ export default function ProductItem({ product }: { product: Product }) {
     <div className="flex items-stretch border p-4 rounded-lg shadow-sm bg-white w-full min-h-[180px]">
       <div className="flex-1 flex flex-col gap-3">
         {/* Người bán (không bọc link) */}
-        {product.seller && (
-          <div className="flex items-center gap-2 mb-2">
-            <img
-              src={product.seller.avatar}
-              alt={product.seller.name}
-              className="w-6 h-6 rounded-full"
-            />
-            <span className="text-sm font-medium text-gray-800">
-              {product.seller.name}
-            </span>
-          </div>
-        )}
+      
+{/* Người bán (không bọc link) */}
+{product.seller && (
+  <div className="flex items-center gap-2 mb-2 ml-27">
+    <img
+      src={product.seller.avatar}
+      alt={product.seller.name}
+      className="w-6 h-6 rounded-full"
+    />
+    <span className="text-sm font-medium text-gray-800">
+      {product.seller.name}
+    </span>
+  </div>
+)}
 
         <div className="flex gap-4">
           {/* Ảnh (bọc link, KHÔNG có khung viền) */}
@@ -46,7 +48,6 @@ export default function ProductItem({ product }: { product: Product }) {
     {product.name}
   </Link>
 </h3>
-
 
             {/* Mô tả (không bọc) */}
             <p className="text-gray-600 text-sm">{product.shortDesc}</p>

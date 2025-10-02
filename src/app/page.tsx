@@ -295,15 +295,13 @@ export default function HotDealsHomePage() {
                           </div>
 
                           {/* ✅ Comment button */}
-                          {/* Comment box */}
-<div
-  onClick={() => setSelectedDeal(deal.id)}
-  className="flex items-center justify-center gap-2 px-3 py-1 rounded-full border border-gray-300 cursor-pointer hover:text-green-600"
->
-  <MessageSquare className="w-4 h-4" />
-  <span className="text-sm font-medium">{deal.comments}</span>
-</div>
-
+                          <div
+                            onClick={() => setSelectedDeal(deal.id)}
+                            className="flex items-center justify-center gap-2 px-3 py-1 rounded-full border border-gray-300 cursor-pointer hover:text-green-600"
+                          >
+                            <MessageSquare className="w-4 h-4" />
+                            <span className="text-sm font-medium">{deal.comments}</span>
+                          </div>
 
                           {/* Share button */}
                           <button
@@ -404,6 +402,12 @@ export default function HotDealsHomePage() {
           setNewComment={setNewComment}
           handleAddComment={handleAddComment}
           setSelectedDeal={setSelectedDeal}
+          // ✅ Thêm khả năng nhấn Enter
+          inputProps={{
+            onKeyDown: (e: React.KeyboardEvent<HTMLInputElement>) => {
+              if (e.key === "Enter") handleAddComment();
+            },
+          }}
         />
       )}
 
@@ -444,4 +448,3 @@ export default function HotDealsHomePage() {
     </div>
   );
 }
-

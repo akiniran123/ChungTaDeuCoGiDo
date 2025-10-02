@@ -1,6 +1,22 @@
 "use client";
 import React from "react";
 
+type Comment = {
+  id: number;
+  user: string;
+  text: string;
+};
+
+type CommentPanelProps = {
+  selectedDeal: number;
+  comments: Record<number, Comment[]>;
+  newComment: string;
+  setNewComment: (value: string) => void;
+  handleAddComment: () => void;
+  setSelectedDeal: (value: number | null) => void;
+  inputProps?: React.InputHTMLAttributes<HTMLInputElement>; // 👈 thêm inputProps
+};
+
 export default function CommentPanel({
   selectedDeal,
   comments,
@@ -8,21 +24,8 @@ export default function CommentPanel({
   setNewComment,
   handleAddComment,
   setSelectedDeal,
-}: {
-  selectedDeal: number;
-  comments: Record<
-    number,
-    {
-      id: number;
-      user: string;
-      text: string;
-    }[]
-  >;
-  newComment: string;
-  setNewComment: (value: string) => void;
-  handleAddComment: () => void;
-  setSelectedDeal: (value: number | null) => void;
-}) {
+  inputProps,
+}: CommentPanelProps) {
   return (
     <div className="fixed top-0 right-0 w-96 h-full bg-white border-l shadow-xl flex flex-col z-50">
       {/* Tiêu đề panel */}
@@ -61,6 +64,7 @@ export default function CommentPanel({
           placeholder="Viết bình luận..."
           className="flex-1 border rounded-lg px-3 py-2 text-sm"
           aria-label="Nhập bình luận"
+          {...inputProps} // 👈 dùng để nhận các props truyền vào ngoài
         />
         <button
           onClick={handleAddComment}

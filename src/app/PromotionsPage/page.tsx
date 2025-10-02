@@ -46,7 +46,7 @@ export default function PromotionsPage() {
             Ưu đãi định kỳ chỉ dành riêng cho bạn
           </h2>
           <p>
-            Đăng ký nhận bản tin để được gửi những khuyến mãi "bí mật" định kỳ mà không phải ai cũng biết. Đây là những ưu đãi riêng tư được gửi qua email hoặc tài khoản của bạn. Hãy luôn sẵn sàng mở thông báo để không bỏ lỡ những món quà bất ngờ từ chúng tôi!
+            {'Đăng ký nhận bản tin để được gửi những khuyến mãi "bí mật" định kỳ mà không phải ai cũng biết. Đây là những ưu đãi riêng tư được gửi qua email hoặc tài khoản của bạn. Hãy luôn sẵn sàng mở thông báo để không bỏ lỡ những món quà bất ngờ từ chúng tôi!'}
           </p>
         </div>
 

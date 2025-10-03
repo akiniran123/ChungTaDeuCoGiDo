@@ -40,7 +40,7 @@ export interface DealCardProps {
 }
 
 // ======================
-// Grid nhỏ của page (sửa lại)
+// Grid nhỏ của page (đã bỏ underline xanh)
 // ======================
 const DealCardSmall: React.FC<DealCardProps> = ({
   deal,
@@ -67,7 +67,7 @@ const DealCardSmall: React.FC<DealCardProps> = ({
       <div className="flex-1 flex flex-col justify-between">
         <Link
           href={`/deal/${deal.id}`}
-          className="hover:underline"
+          className="no-underline hover:text-pink-600"
         >
           <div>
             <h3 className="font-semibold text-base md:text-lg">{deal.title}</h3>

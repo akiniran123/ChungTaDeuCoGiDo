@@ -15,8 +15,25 @@ import DealCard from "@/components/Trang_chu/DealCard";
 import CommentPanel from "@/components/Trang_chu/CommentPanel";
 
 import { sampleDeals, communityMembers } from "@/data/data";
-import { motion, AnimatePresence } from "framer-motion"; // ✅ thêm
-import Link from "next/link"; // ✅ thêm
+import { motion, AnimatePresence } from "framer-motion";
+import Link from "next/link";
+
+// ✅ Hàm tính thời gian đăng
+function timeAgo(dateString?: string) {
+  if (!dateString) return "Vừa đăng";
+  const date = new Date(dateString);
+  if (isNaN(date.getTime())) return "Vừa đăng";
+
+  const now = new Date();
+  const diff = Math.floor((now.getTime() - date.getTime()) / 1000); // giây
+
+  if (diff < 60) return "Vừa đăng";
+  if (diff < 3600) return `${Math.floor(diff / 60)} phút trước`;
+  if (diff < 86400) return `${Math.floor(diff / 3600)} giờ trước`;
+  if (diff < 2592000) return `${Math.floor(diff / 86400)} ngày trước`;
+  if (diff < 31536000) return `${Math.floor(diff / 2592000)} tháng trước`;
+  return `${Math.floor(diff / 31536000)} năm trước`;
+}
 
 export type Deal = {
   id: number;
@@ -63,12 +80,10 @@ export default function HotDealsHomePage() {
   // state cho chia sẻ
   const [selectedDealShare, setSelectedDealShare] = useState<Deal | null>(null);
 
+  // ✅ Chỉ lấy dữ liệu, không random lại createdAt nữa
   useEffect(() => {
     const start = (page - 1) * perPage;
-    const more = sampleDeals.slice(start, start + perPage).map((deal) => ({
-      ...deal,
-      createdAt: deal.createdAt || "2025-09-16T10:00:00",
-    }));
+    const more = sampleDeals.slice(start, start + perPage);
     setDeals((prev) => [...prev, ...more]);
   }, [page]);
 
@@ -225,159 +240,46 @@ export default function HotDealsHomePage() {
                   </div>
                 )}
 
-                {/* AnimatePresence để animate khi đổi layout */}
                 <AnimatePresence mode="wait">
-                  {!gridMode ? (
-                    <motion.div
-                      key={`card-${deal.id}`}
-                      initial={{ opacity: 0, x: -50 }}
-                      animate={{ opacity: 1, x: 0 }}
-                      exit={{ opacity: 0, x: 50 }}
-                      transition={{ duration: 0.3 }}
-                    >
-                      <DealCard
-                        deal={deal}
-                        vote={vote}
-                        setSelectedDeal={setSelectedDeal}
-                        onImageClick={() => setSelectedImage(deal.image)}
-                        bigger={true}
-                      />
-                    </motion.div>
-                  ) : (
-                    <motion.div
-                      key={`grid-${deal.id}`}
-                      initial={{ opacity: 0, x: 50 }}
-                      animate={{ opacity: 1, x: 0 }}
-                      exit={{ opacity: 0, x: -50 }}
-                      transition={{ duration: 0.3 }}
-                      className="flex items-start gap-4 p-2 bg-transparent shadow-none border-b border-gray-200 ml-4"
-                    >
-                      <img
-                        src={deal.image}
-                        alt={deal.title}
-                        className="w-40 h-28 object-cover rounded-lg cursor-pointer"
-                        onClick={() => setSelectedImage(deal.image)}
-                      />
-                      <div className="flex-1">
-                        <h3 className="font-semibold text-lg">{deal.title}</h3>
-                        <p className="text-sm text-gray-600 line-clamp-2">
-                          {deal.content}
-                        </p>
-                        {/* ✅ Link chỉnh lại */}
-                        <div className="flex items-center gap-4 mt-2 text-sm">
-                          <Link
-                            href={`/user/${deal.author}`}
-                            className="flex items-center gap-2 !text-gray-700 !no-underline hover:!text-gray-900"
-                          >
-                            <span className="text-lg">👤</span>
-                            <span className="font-semibold">{deal.author}</span>
-                          </Link>
-                        </div>
-                        {/* Action buttons */}
-                        <div className="flex items-center gap-4 mt-3 text-gray-600">
-                          {/* Vote box */}
-                          <div className="flex items-center justify-center gap-2 px-2 py-1 rounded-full border border-gray-300">
-                            <button
-                              onClick={() => vote(deal.id, 1)}
-                              className="hover:text-pink-600"
-                            >
-                              <ArrowUp className="w-4 h-4" />
-                            </button>
-                            <span className="text-sm font-medium">
-                              {deal.votes}
-                            </span>
-                            <button
-                              onClick={() => vote(deal.id, -1)}
-                              className="hover:text-blue-600"
-                            >
-                              <ArrowDown className="w-4 h-4" />
-                            </button>
-                          </div>
-
-                          {/* ✅ Comment button */}
-                          <div
-                            onClick={() => setSelectedDeal(deal.id)}
-                            className="flex items-center justify-center gap-2 px-3 py-1 rounded-full border border-gray-300 cursor-pointer hover:text-green-600"
-                          >
-                            <MessageSquare className="w-4 h-4" />
-                            <span className="text-sm font-medium">{deal.comments}</span>
-                          </div>
-
-                          {/* Share button */}
-                          <button
-                            onClick={() => {
-                              if (navigator.share) {
-                                navigator.share({
-                                  title: deal.title,
-                                  text: deal.content,
-                                  url:
-                                    window.location.origin +
-                                    "/#deal-" +
-                                    deal.id,
-                                });
-                              } else {
-                                // fallback: copy link
-                                navigator.clipboard.writeText(
-                                  window.location.origin + "/#deal-" + deal.id
-                                );
-                                alert("Đã copy link vào clipboard!");
-                              }
-                            }}
-                            className="hover:text-purple-600"
-                          >
-                            <span className="w-9 h-9 flex items-center justify-center rounded-full border border-gray-300">
-                              <Share2 className="w-4 h-4" />
-                            </span>
-                          </button>
-                        </div>
-                      </div>
-                    </motion.div>
-                  )}
+                  <motion.div
+                    key={`${gridMode ? "grid" : "card"}-${deal.id}`}
+                    initial={{ opacity: 0, x: gridMode ? 50 : -50 }}
+                    animate={{ opacity: 1, x: 0 }}
+                    exit={{ opacity: 0, x: gridMode ? -50 : 50 }}
+                    transition={{ duration: 0.3 }}
+                  >
+                    <DealCard
+                      deal={deal}
+                      vote={vote}
+                      setSelectedDeal={setSelectedDeal}
+                      onImageClick={() => setSelectedImage(deal.image)}
+                      bigger={!gridMode}
+                      gridView={gridMode} // ✅ dùng layout nhỏ
+                    />
+                  </motion.div>
                 </AnimatePresence>
               </div>
 
               {/* Quảng cáo sau mỗi 4 bài */}
               {(idx + 1) % 4 === 0 && (
-                <>
-                  {!gridMode ? (
-                    <DealCard
-                      deal={{
-                        id: -1,
-                        title: "🔥 Quảng cáo hấp dẫn!",
-                        image: "/ads/ad1.jpg",
-                        votes: 0,
-                        comments: 0,
-                        category: "Ad",
-                        author: "Quảng cáo",
-                        content: "Xem ngay ưu đãi đặc biệt!",
-                      }}
-                      vote={() => {}}
-                      setSelectedDeal={() => {}}
-                      onImageClick={() => {}}
-                      bigger={true}
-                      isAd={true}
-                    />
-                  ) : (
-                    <div className="flex items-start gap-4 p-2 bg-yellow-50 border-l-4 border-yellow-400 rounded-lg ml-4">
-                      <img
-                        src="/ads/ad1.jpg"
-                        alt="Quảng cáo"
-                        className="w-40 h-28 object-cover rounded-lg"
-                      />
-                      <div className="flex-1">
-                        <span className="text-sm font-bold text-yellow-700">
-                          Quảng cáo
-                        </span>
-                        <h3 className="font-semibold text-lg">
-                          🔥 Quảng cáo hấp dẫn!
-                        </h3>
-                        <p className="text-sm text-gray-600">
-                          Xem ngay ưu đãi đặc biệt!
-                        </p>
-                      </div>
-                    </div>
-                  )}
-                </>
+                <DealCard
+                  deal={{
+                    id: -1,
+                    title: "🔥 Quảng cáo hấp dẫn!",
+                    image: "/ads/ad1.jpg",
+                    votes: 0,
+                    comments: 0,
+                    category: "Ad",
+                    author: "Quảng cáo",
+                    content: "Xem ngay ưu đãi đặc biệt!",
+                  }}
+                  vote={() => {}}
+                  setSelectedDeal={() => {}}
+                  onImageClick={() => {}}
+                  bigger={!gridMode}
+                  gridView={gridMode}
+                  isAd={true}
+                />
               )}
             </React.Fragment>
           ))}
@@ -402,7 +304,6 @@ export default function HotDealsHomePage() {
           setNewComment={setNewComment}
           handleAddComment={handleAddComment}
           setSelectedDeal={setSelectedDeal}
-          // ✅ Thêm khả năng nhấn Enter
           inputProps={{
             onKeyDown: (e: React.KeyboardEvent<HTMLInputElement>) => {
               if (e.key === "Enter") handleAddComment();

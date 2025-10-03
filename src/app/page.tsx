@@ -4,10 +4,6 @@ import {
   Package,
   LayoutGrid,
   LayoutPanelTop,
-  ArrowUp,
-  ArrowDown,
-  MessageSquare,
-  Share2,
 } from "lucide-react";
 
 import SidebarRight from "@/components/Trang_chu/SidebarRight";
@@ -248,14 +244,17 @@ export default function HotDealsHomePage() {
                     exit={{ opacity: 0, x: gridMode ? -50 : 50 }}
                     transition={{ duration: 0.3 }}
                   >
-                    <DealCard
-                      deal={deal}
-                      vote={vote}
-                      setSelectedDeal={setSelectedDeal}
-                      onImageClick={() => setSelectedImage(deal.image)}
-                      bigger={!gridMode}
-                      gridView={gridMode} // ✅ dùng layout nhỏ
-                    />
+                    {/* ✅ Bọc DealCard bằng Link để sang trang chi tiết */}
+                    <Link href={`/deal/${deal.id}`}>
+                      <DealCard
+                        deal={deal}
+                        vote={vote}
+                        setSelectedDeal={setSelectedDeal}
+                        onImageClick={() => setSelectedImage(deal.image)}
+                        bigger={!gridMode}
+                        gridView={gridMode} // ✅ dùng layout nhỏ
+                      />
+                    </Link>
                   </motion.div>
                 </AnimatePresence>
               </div>

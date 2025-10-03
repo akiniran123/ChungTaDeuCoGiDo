@@ -82,53 +82,49 @@ const DealCardSmall: React.FC<DealCardProps> = ({
           <span>• {deal.createdAt || getRandomTimeAgo()}</span>
         </div>
 
-        {/* Action buttons */}
-        <div className="flex items-center gap-4 mt-3 text-gray-600">
+        {/* Action buttons giống grid lớn */}
+        <div className="flex items-center gap-2 mt-3 text-gray-700">
           {/* Vote */}
-          <div className="flex items-center gap-2 px-2 py-1 rounded-full border border-gray-300">
-            <button onClick={() => vote(deal.id, 1)} className="hover:text-pink-600">
-              <ArrowUp className="w-4 h-4" />
+          <div className="flex items-center bg-gray-100 rounded-full px-2 py-1 shadow-sm">
+            <button onClick={() => vote(deal.id, 1)} className="hover:text-pink-600 p-1 cursor-pointer">
+              <ArrowUp size={16} />
             </button>
-            <span className="text-sm font-medium">{deal.votes}</span>
-            <button onClick={() => vote(deal.id, -1)} className="hover:text-blue-600">
-              <ArrowDown className="w-4 h-4" />
+            <span className="font-semibold text-xs text-center min-w-[20px]">{deal.votes || "0"}</span>
+            <button onClick={() => vote(deal.id, -1)} className="hover:text-pink-600 p-1 cursor-pointer">
+              <ArrowDown size={16} />
             </button>
           </div>
 
           {/* Comment */}
-          <div
-            onClick={() => setSelectedDeal(deal.id)}
-            className="flex items-center gap-2 px-3 py-1 rounded-full border border-gray-300 cursor-pointer hover:text-green-600"
-          >
-            <MessageSquare className="w-4 h-4" />
-            <span className="text-sm font-medium">{deal.comments}</span>
+          <div className="flex items-center bg-gray-100 rounded-full px-2 py-1 shadow-sm">
+            <button onClick={() => setSelectedDeal(deal.id)} className="hover:text-pink-600 p-1 cursor-pointer">
+              <MessageSquare size={16} />
+            </button>
+            <span className="font-semibold text-xs text-center min-w-[20px]">{deal.comments || "0"}</span>
           </div>
 
           {/* Share */}
-          <button
-            onClick={() => {
-              if (navigator.share) {
-                navigator.share({
-                  title: deal.title,
-                  text: deal.content,
-                  url: window.location.origin + "/#deal-" + deal.id,
-                });
-              } else {
-                navigator.clipboard.writeText(window.location.origin + "/#deal-" + deal.id);
-                alert("Đã copy link vào clipboard!");
-              }
-            }}
-            className="hover:text-purple-600"
-          >
-            <span className="w-9 h-9 flex items-center justify-center rounded-full border border-gray-300">
-              <Share2 className="w-4 h-4" />
-            </span>
-          </button>
+          <div className="flex items-center bg-gray-100 rounded-full px-2 py-1 shadow-sm">
+            <button
+              onClick={() => {
+                const url = `${window.location.href}#deal-${deal.id}`;
+                if (navigator.share) navigator.share({ title: deal.title, url });
+                else {
+                  navigator.clipboard.writeText(url);
+                  alert("Đã copy link: " + url);
+                }
+              }}
+              className="hover:text-pink-600 p-1 cursor-pointer"
+            >
+              <Share2 size={16} />
+            </button>
+          </div>
         </div>
       </div>
     </motion.div>
   );
 };
+
 
 // ======================
 // DealCard chính

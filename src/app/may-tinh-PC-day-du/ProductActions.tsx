@@ -1,7 +1,7 @@
 "use client"
 
 import React, { useState } from "react"
-import { ThumbsUp, ThumbsDown, MessageCircle, Share2, X } from "lucide-react"
+import { ArrowUp, ArrowDown, MessageSquare, Share2, X } from "lucide-react"
 
 type Props = {
   productId: number
@@ -45,35 +45,29 @@ export default function ProductActions({ productId }: Props) {
 
   return (
     <>
-      <div className="flex flex-row items-center gap-4 mt-3 text-gray-600 text-sm w-full">
+      <div className="flex flex-row items-center gap-2 mt-3 text-gray-700 text-sm">
         {/* Vote */}
-        <div className="flex items-center gap-2 px-3 py-2 rounded-full bg-white border shadow">
-          <button onClick={handleUpvote} className="hover:text-blue-500">
-            <ThumbsUp size={18} />
+        <div className="flex items-center bg-gray-100 rounded-full px-2 py-1 shadow-sm">
+          <button onClick={handleUpvote} className="hover:text-pink-600 p-1 cursor-pointer">
+            <ArrowUp size={16} />
           </button>
-          <span className="font-medium">{votes}</span>
-          <button onClick={handleDownvote} className="hover:text-blue-500">
-            <ThumbsDown size={18} />
+          <span className="font-semibold text-xs text-center min-w-[20px]">{votes || "0"}</span>
+          <button onClick={handleDownvote} className="hover:text-pink-600 p-1 cursor-pointer">
+            <ArrowDown size={16} />
           </button>
         </div>
 
         {/* Comment */}
-        <button
-          onClick={handleToggleCommentSidebar}
-          className="flex items-center gap-1 p-2 rounded-full bg-white border shadow hover:text-blue-500"
-        >
-          <MessageCircle size={18} />
-          <span>{comments.length}</span>
-        </button>
+        <div className="flex items-center bg-gray-100 rounded-full px-2 py-1 shadow-sm cursor-pointer hover:text-pink-600" onClick={handleToggleCommentSidebar}>
+          <MessageSquare size={16} />
+          <span className="font-semibold text-xs text-center min-w-[20px]">{comments.length || "0"}</span>
+        </div>
 
         {/* Share */}
-        <button
-          onClick={handleShare}
-          className="flex items-center gap-1 p-2 rounded-full bg-white border shadow hover:text-blue-500"
-        >
-          <Share2 size={18} />
-          <span>{shareCount}</span>
-        </button>
+        <div className="flex items-center bg-gray-100 rounded-full px-2 py-1 shadow-sm cursor-pointer hover:text-pink-600" onClick={handleShare}>
+          <Share2 size={16} />
+          <span className="font-semibold text-xs text-center min-w-[20px]">{shareCount || "0"}</span>
+        </div>
       </div>
 
       {/* Sidebar Bình luận */}
@@ -106,27 +100,26 @@ export default function ProductActions({ productId }: Props) {
           </div>
 
           {/* Input thêm bình luận */}
-<div className="p-4 border-t flex gap-2">
-  <input
-    type="text"
-    value={newComment}
-    onChange={(e) => setNewComment(e.target.value)}
-    onKeyDown={(e) => {
-      if (e.key === "Enter") {
-        handleAddComment()
-      }
-    }}
-    placeholder="Viết bình luận..."
-    className="flex-1 p-2 border rounded"
-  />
-  <button
-    onClick={handleAddComment}
-    className="px-4 py-2 bg-blue-500 text-white rounded hover:bg-blue-600"
-  >
-    Gửi
-  </button>
-</div>
-
+          <div className="p-4 border-t flex gap-2">
+            <input
+              type="text"
+              value={newComment}
+              onChange={(e) => setNewComment(e.target.value)}
+              onKeyDown={(e) => {
+                if (e.key === "Enter") {
+                  handleAddComment()
+                }
+              }}
+              placeholder="Viết bình luận..."
+              className="flex-1 p-2 border rounded"
+            />
+            <button
+              onClick={handleAddComment}
+              className="px-4 py-2 bg-blue-500 text-white rounded hover:bg-blue-600"
+            >
+              Gửi
+            </button>
+          </div>
         </div>
       )}
     </>

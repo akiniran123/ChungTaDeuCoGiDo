@@ -40,7 +40,7 @@ export interface DealCardProps {
 }
 
 // ======================
-// Grid nhỏ của page
+// Grid nhỏ của page (sửa lại)
 // ======================
 const DealCardSmall: React.FC<DealCardProps> = ({
   deal,
@@ -54,7 +54,7 @@ const DealCardSmall: React.FC<DealCardProps> = ({
       animate={{ opacity: 1, y: 0 }}
       exit={{ opacity: 0, y: -20 }}
       transition={{ duration: 0.3 }}
-      className="flex flex-col md:flex-row items-start gap-3 p-3 bg-white rounded-lg shadow-sm border border-gray-200 hover:shadow-md transition cursor-pointer"
+      className="flex flex-col md:flex-row items-start gap-3 p-3 border-b border-gray-200 cursor-pointer"
     >
       {/* Hình ảnh bên trái */}
       <img
@@ -65,10 +65,15 @@ const DealCardSmall: React.FC<DealCardProps> = ({
 
       {/* Nội dung bên phải */}
       <div className="flex-1 flex flex-col justify-between">
-        <div>
-          <h3 className="font-semibold text-base md:text-lg">{deal.title}</h3>
-          <p className="text-sm text-gray-600 line-clamp-2">{deal.content}</p>
-        </div>
+        <Link
+          href={`/deal/${deal.id}`}
+          className="hover:underline"
+        >
+          <div>
+            <h3 className="font-semibold text-base md:text-lg">{deal.title}</h3>
+            <p className="text-sm text-gray-600 line-clamp-2">{deal.content}</p>
+          </div>
+        </Link>
 
         {/* Author + thời gian */}
         <div className="flex items-center gap-2 mt-2 text-sm text-gray-500">
@@ -125,9 +130,8 @@ const DealCardSmall: React.FC<DealCardProps> = ({
   );
 };
 
-
 // ======================
-// DealCard chính
+// DealCard chính (không đổi)
 // ======================
 const DealCard: React.FC<DealCardProps> = ({
   deal,
@@ -138,7 +142,6 @@ const DealCard: React.FC<DealCardProps> = ({
   isAd = false,
   gridView = false,
 }) => {
-  // ================= hooks luôn được gọi =================
   const [timeAgoState, setTimeAgoState] = useState<string>("");
   const [currentIndex, setCurrentIndex] = useState(0);
   const [startX, setStartX] = useState<number | null>(null);
@@ -161,14 +164,11 @@ const DealCard: React.FC<DealCardProps> = ({
     setStartX(null);
   };
 
-  // ================= JSX =================
   return (
     <>
       {gridView ? (
-        // ------------------ Grid nhỏ của page ------------------
         <DealCardSmall deal={deal} vote={vote} setSelectedDeal={setSelectedDeal} />
       ) : (
-        // ------------------ Dạng lớn ------------------
         <article
           className={`flex flex-col transition-all mx-auto rounded-lg shadow ${
             bigger ? "max-w-3xl" : "max-w-xl"
@@ -193,11 +193,12 @@ const DealCard: React.FC<DealCardProps> = ({
                 · {deal.createdAt ? deal.createdAt : timeAgoState}
               </span>
             </div>
-            {/* Tiêu đề + content giống grid nhỏ */}
-            <div className="mt-2">
+
+            {/* Tiêu đề + content được bọc Link */}
+            <Link href={`/deal/${deal.id}`} className="block mt-2 no-underline hover:text-pink-600 transition-colors">
               <h3 className="font-semibold text-base md:text-lg">{deal.title}</h3>
               <p className="text-sm text-gray-600 line-clamp-2">{deal.content}</p>
-            </div>
+            </Link>
           </div>
 
           {/* phần media */}

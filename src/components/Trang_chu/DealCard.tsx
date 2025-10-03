@@ -183,17 +183,25 @@ const DealCard: React.FC<DealCardProps> = ({
             <span className="text-sm font-bold text-yellow-700 m-3 inline-block">Quảng cáo</span>
           )}
 
-          <div className="flex items-center gap-2 px-3 py-2 border-b text-sm">
-            <Link
-              href={`/user/${deal.author}`}
-              className="flex items-center gap-2 !text-gray-700 !no-underline hover:!text-gray-900"
-            >
-              <span className="text-xl">👤</span>
-              <span className="font-semibold">{deal.author}</span>
-            </Link>
-            <span className="text-gray-500 font-normal">
-              · {deal.createdAt ? deal.createdAt : timeAgoState}
-            </span>
+          <div className="flex flex-col px-3 py-2 border-b">
+            {/* Author */}
+            <div className="flex items-center gap-2 text-sm">
+              <Link
+                href={`/user/${deal.author}`}
+                className="flex items-center gap-2 !text-gray-700 !no-underline hover:!text-gray-900"
+              >
+                <span className="text-xl">👤</span>
+                <span className="font-semibold">{deal.author}</span>
+              </Link>
+              <span className="text-gray-500 font-normal">
+                · {deal.createdAt ? deal.createdAt : timeAgoState}
+              </span>
+            </div>
+            {/* Tiêu đề + content giống grid nhỏ */}
+            <div className="mt-2">
+              <h3 className="font-semibold text-base md:text-lg">{deal.title}</h3>
+              <p className="text-sm text-gray-600 line-clamp-2">{deal.content}</p>
+            </div>
           </div>
 
           {/* phần media */}
@@ -263,7 +271,6 @@ const DealCard: React.FC<DealCardProps> = ({
                  cursor-pointer hover:bg-black/60 transition block z-20"
             >
               <div>
-                <h3 className="font-semibold text-lg leading-snug">{deal.title}</h3>
                 <div className="text-sm text-gray-200">r/{deal.category}</div>
               </div>
             </Link>

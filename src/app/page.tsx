@@ -1,10 +1,6 @@
 "use client";
 import React, { useState, useEffect, useRef } from "react";
-import {
-  Package,
-  LayoutGrid,
-  LayoutPanelTop,
-} from "lucide-react";
+import { Package, LayoutGrid, LayoutPanelTop } from "lucide-react";
 
 import SidebarRight from "@/components/Trang_chu/SidebarRight";
 import DealCard from "@/components/Trang_chu/DealCard";
@@ -165,7 +161,7 @@ export default function HotDealsHomePage() {
             <div className="absolute mt-1 bg-white border rounded-lg shadow-lg w-40 z-50">
               {["best", "hot", "new", "top", "trending"].map((f) => (
                 <button
-                  key={f}
+                  key={`filter-${f}`}
                   onClick={() => {
                     setActiveFilter(f);
                     setFilterOpen(false);
@@ -192,7 +188,7 @@ export default function HotDealsHomePage() {
       <main className="flex-1 w-full py-2 grid grid-cols-1 md:grid-cols-4 gap-6 relative">
         <section className="md:col-span-3 space-y-12">
           {filtered.map((deal, idx) => (
-            <React.Fragment key={deal.id}>
+            <React.Fragment key={`deal-${deal.id}-${idx}`}>
               <div className="relative">
                 {idx === 0 && (
                   <div className="absolute top-2 right-2 z-20">
@@ -211,13 +207,12 @@ export default function HotDealsHomePage() {
 
                 <AnimatePresence mode="wait">
                   <motion.div
-                    key={`${gridMode ? "grid" : "card"}-${deal.id}`}
+                    key={`${gridMode ? "grid" : "card"}-${deal.id}-${idx}`}
                     initial={{ opacity: 0, x: gridMode ? 50 : -50 }}
                     animate={{ opacity: 1, x: 0 }}
                     exit={{ opacity: 0, x: gridMode ? -50 : 50 }}
                     transition={{ duration: 0.3 }}
                   >
-                    {/* ✅ Không bọc toàn bộ DealCard bằng Link nữa */}
                     <DealCard
                       deal={deal}
                       vote={vote}
@@ -232,6 +227,7 @@ export default function HotDealsHomePage() {
 
               {(idx + 1) % 4 === 0 && (
                 <DealCard
+                  key={`ad-${idx}`}
                   deal={{
                     id: -1,
                     title: "🔥 Quảng cáo hấp dẫn!",
@@ -252,6 +248,7 @@ export default function HotDealsHomePage() {
               )}
             </React.Fragment>
           ))}
+
           <div ref={loaderRef} className="h-10 flex justify-center items-center">
             {page * perPage < sampleDeals.length
               ? "Đang tải thêm..."

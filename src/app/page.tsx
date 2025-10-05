@@ -12,7 +12,6 @@ import CommentPanel from "@/components/Trang_chu/CommentPanel";
 
 import { sampleDeals, communityMembers } from "@/data/data";
 import { motion, AnimatePresence } from "framer-motion";
-import Link from "next/link";
 
 // ✅ Hàm tính thời gian đăng
 function timeAgo(dateString?: string) {
@@ -76,7 +75,7 @@ export default function HotDealsHomePage() {
   // state cho chia sẻ
   const [selectedDealShare, setSelectedDealShare] = useState<Deal | null>(null);
 
-  // ✅ Chỉ lấy dữ liệu, không random lại createdAt nữa
+  // ✅ chỉ lấy dữ liệu
   useEffect(() => {
     const start = (page - 1) * perPage;
     const more = sampleDeals.slice(start, start + perPage);
@@ -164,51 +163,26 @@ export default function HotDealsHomePage() {
 
           {filterOpen && (
             <div className="absolute mt-1 bg-white border rounded-lg shadow-lg w-40 z-50">
-              <button
-                onClick={() => {
-                  setActiveFilter("best");
-                  setFilterOpen(false);
-                }}
-                className="block w-full text-left px-4 py-2 hover:bg-gray-100 cursor-pointer"
-              >
-                Hay nhất
-              </button>
-              <button
-                onClick={() => {
-                  setActiveFilter("hot");
-                  setFilterOpen(false);
-                }}
-                className="block w-full text-left px-4 py-2 hover:bg-gray-100 cursor-pointer"
-              >
-                Hot
-              </button>
-              <button
-                onClick={() => {
-                  setActiveFilter("new");
-                  setFilterOpen(false);
-                }}
-                className="block w-full text-left px-4 py-2 hover:bg-gray-100 cursor-pointer"
-              >
-                Mới
-              </button>
-              <button
-                onClick={() => {
-                  setActiveFilter("top");
-                  setFilterOpen(false);
-                }}
-                className="block w-full text-left px-4 py-2 hover:bg-gray-100 cursor-pointer"
-              >
-                Hàng đầu
-              </button>
-              <button
-                onClick={() => {
-                  setActiveFilter("trending");
-                  setFilterOpen(false);
-                }}
-                className="block w-full text-left px-4 py-2 hover:bg-gray-100 cursor-pointer"
-              >
-                Đang nổi
-              </button>
+              {["best", "hot", "new", "top", "trending"].map((f) => (
+                <button
+                  key={f}
+                  onClick={() => {
+                    setActiveFilter(f);
+                    setFilterOpen(false);
+                  }}
+                  className="block w-full text-left px-4 py-2 hover:bg-gray-100 cursor-pointer capitalize"
+                >
+                  {f === "best"
+                    ? "Hay nhất"
+                    : f === "hot"
+                    ? "Hot"
+                    : f === "new"
+                    ? "Mới"
+                    : f === "top"
+                    ? "Hàng đầu"
+                    : "Đang nổi"}
+                </button>
+              ))}
             </div>
           )}
         </div>
@@ -220,7 +194,6 @@ export default function HotDealsHomePage() {
           {filtered.map((deal, idx) => (
             <React.Fragment key={deal.id}>
               <div className="relative">
-                {/* Nút toggle lưới chỉ hiển thị trên bài đầu tiên */}
                 {idx === 0 && (
                   <div className="absolute top-2 right-2 z-20">
                     <button
@@ -244,22 +217,19 @@ export default function HotDealsHomePage() {
                     exit={{ opacity: 0, x: gridMode ? -50 : 50 }}
                     transition={{ duration: 0.3 }}
                   >
-                    {/* ✅ Bọc DealCard bằng Link để sang trang chi tiết */}
-                    <Link href={`/deal/${deal.id}`}>
-                      <DealCard
-                        deal={deal}
-                        vote={vote}
-                        setSelectedDeal={setSelectedDeal}
-                        onImageClick={() => setSelectedImage(deal.image)}
-                        bigger={!gridMode}
-                        gridView={gridMode} // ✅ dùng layout nhỏ
-                      />
-                    </Link>
+                    {/* ✅ Không bọc toàn bộ DealCard bằng Link nữa */}
+                    <DealCard
+                      deal={deal}
+                      vote={vote}
+                      setSelectedDeal={setSelectedDeal}
+                      onImageClick={() => setSelectedImage(deal.image)}
+                      bigger={!gridMode}
+                      gridView={gridMode}
+                    />
                   </motion.div>
                 </AnimatePresence>
               </div>
 
-              {/* Quảng cáo sau mỗi 4 bài */}
               {(idx + 1) % 4 === 0 && (
                 <DealCard
                   deal={{
@@ -282,7 +252,6 @@ export default function HotDealsHomePage() {
               )}
             </React.Fragment>
           ))}
-
           <div ref={loaderRef} className="h-10 flex justify-center items-center">
             {page * perPage < sampleDeals.length
               ? "Đang tải thêm..."
@@ -311,7 +280,6 @@ export default function HotDealsHomePage() {
         />
       )}
 
-      {/* Modal ảnh */}
       {selectedImage && (
         <div
           className="fixed inset-0 bg-black bg-opacity-70 flex items-center justify-center z-50"
@@ -325,7 +293,6 @@ export default function HotDealsHomePage() {
         </div>
       )}
 
-      {/* Modal chia sẻ dạng to */}
       {selectedDealShare && (
         <div className="fixed inset-0 bg-black bg-opacity-70 flex items-center justify-center z-50">
           <div className="bg-white max-w-3xl w-full rounded-lg p-4 relative">

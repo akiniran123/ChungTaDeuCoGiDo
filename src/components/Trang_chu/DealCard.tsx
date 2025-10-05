@@ -1,7 +1,7 @@
 "use client";
 import React, { useState, useEffect } from "react";
 import { motion } from "framer-motion";
-import { ArrowUp, ArrowDown, MessageSquare, Share2 } from "lucide-react";
+import { ArrowUp, ArrowDown, MessageSquare, Share2, Bookmark } from "lucide-react";
 import Link from "next/link";
 
 // ======================
@@ -47,6 +47,8 @@ const DealCardSmall: React.FC<DealCardProps> = ({
   vote,
   setSelectedDeal,
 }) => {
+  const [saved, setSaved] = useState(false);
+
   return (
     <motion.div
       key={`grid-${deal.id}`}
@@ -88,40 +90,54 @@ const DealCardSmall: React.FC<DealCardProps> = ({
         </div>
 
         {/* Action buttons giống grid lớn */}
-        <div className="flex items-center gap-2 mt-3 text-gray-700">
-          {/* Vote */}
-          <div className="flex items-center bg-gray-100 rounded-full px-2 py-1 shadow-sm">
-            <button onClick={() => vote(deal.id, 1)} className="hover:text-pink-600 p-1 cursor-pointer">
-              <ArrowUp size={16} />
-            </button>
-            <span className="font-semibold text-xs text-center min-w-[20px]">{deal.votes || "0"}</span>
-            <button onClick={() => vote(deal.id, -1)} className="hover:text-pink-600 p-1 cursor-pointer">
-              <ArrowDown size={16} />
-            </button>
+        <div className="flex items-center justify-between mt-3 text-gray-700">
+          <div className="flex items-center gap-2">
+            {/* Vote */}
+            <div className="flex items-center bg-gray-100 rounded-full px-2 py-1 shadow-sm">
+              <button onClick={() => vote(deal.id, 1)} className="hover:text-pink-600 p-1 cursor-pointer">
+                <ArrowUp size={16} />
+              </button>
+              <span className="font-semibold text-xs text-center min-w-[20px]">{deal.votes || "0"}</span>
+              <button onClick={() => vote(deal.id, -1)} className="hover:text-pink-600 p-1 cursor-pointer">
+                <ArrowDown size={16} />
+              </button>
+            </div>
+
+            {/* Comment */}
+            <div className="flex items-center bg-gray-100 rounded-full px-2 py-1 shadow-sm">
+              <button onClick={() => setSelectedDeal(deal.id)} className="hover:text-pink-600 p-1 cursor-pointer">
+                <MessageSquare size={16} />
+              </button>
+              <span className="font-semibold text-xs text-center min-w-[20px]">{deal.comments || "0"}</span>
+            </div>
+
+            {/* Share */}
+            <div className="flex items-center bg-gray-100 rounded-full px-2 py-1 shadow-sm">
+              <button
+                onClick={() => {
+                  const url = `${window.location.href}#deal-${deal.id}`;
+                  if (navigator.share) navigator.share({ title: deal.title, url });
+                  else {
+                    navigator.clipboard.writeText(url);
+                    alert("Đã copy link: " + url);
+                  }
+                }}
+                className="hover:text-pink-600 p-1 cursor-pointer"
+              >
+                <Share2 size={16} />
+              </button>
+            </div>
           </div>
 
-          {/* Comment */}
-          <div className="flex items-center bg-gray-100 rounded-full px-2 py-1 shadow-sm">
-            <button onClick={() => setSelectedDeal(deal.id)} className="hover:text-pink-600 p-1 cursor-pointer">
-              <MessageSquare size={16} />
-            </button>
-            <span className="font-semibold text-xs text-center min-w-[20px]">{deal.comments || "0"}</span>
-          </div>
-
-          {/* Share */}
+          {/* Save Icon */}
           <div className="flex items-center bg-gray-100 rounded-full px-2 py-1 shadow-sm">
             <button
-              onClick={() => {
-                const url = `${window.location.href}#deal-${deal.id}`;
-                if (navigator.share) navigator.share({ title: deal.title, url });
-                else {
-                  navigator.clipboard.writeText(url);
-                  alert("Đã copy link: " + url);
-                }
-              }}
-              className="hover:text-pink-600 p-1 cursor-pointer"
+              onClick={() => setSaved(!saved)}
+              className={`hover:text-pink-600 p-1 cursor-pointer ${
+                saved ? "text-pink-600" : ""
+              }`}
             >
-              <Share2 size={16} />
+              <Bookmark size={16} fill={saved ? "currentColor" : "none"} />
             </button>
           </div>
         </div>
@@ -131,7 +147,7 @@ const DealCardSmall: React.FC<DealCardProps> = ({
 };
 
 // ======================
-// DealCard chính (không đổi)
+// DealCard chính
 // ======================
 const DealCard: React.FC<DealCardProps> = ({
   deal,
@@ -145,6 +161,7 @@ const DealCard: React.FC<DealCardProps> = ({
   const [timeAgoState, setTimeAgoState] = useState<string>("");
   const [currentIndex, setCurrentIndex] = useState(0);
   const [startX, setStartX] = useState<number | null>(null);
+  const [saved, setSaved] = useState(false);
 
   useEffect(() => {
     if (!deal.createdAt) setTimeAgoState(getRandomTimeAgo());
@@ -194,7 +211,7 @@ const DealCard: React.FC<DealCardProps> = ({
               </span>
             </div>
 
-            {/* Tiêu đề + content được bọc Link */}
+            {/* Tiêu đề + content */}
             <Link href={`/deal/${deal.id}`} className="block mt-2 no-underline hover:text-pink-600 transition-colors">
               <h3 className="font-semibold text-base md:text-lg">{deal.title}</h3>
               <p className="text-sm text-gray-600 line-clamp-2">{deal.content}</p>
@@ -273,41 +290,59 @@ const DealCard: React.FC<DealCardProps> = ({
             </Link>
           </div>
 
+          {/* ===== Hàng icon cuối cùng (vote, comment, share, save) ===== */}
           {!isAd && (
-            <div className="flex items-center gap-2 mt-3 text-sm text-gray-700 pl-3 mb-3">
-              <div className="flex items-center bg-gray-100 rounded-full px-2 py-1 shadow-sm">
-                <button onClick={() => vote(deal.id, 1)} className="hover:text-pink-600 p-1 cursor-pointer">
-                  <ArrowUp size={16} />
-                </button>
-                <span className="font-semibold text-xs text-center min-w-[20px]">{deal.votes || "0"}</span>
-                <button onClick={() => vote(deal.id, -1)} className="hover:text-pink-600 p-1 cursor-pointer">
-                  <ArrowDown size={16} />
-                </button>
+            <div className="flex items-center justify-between gap-2 mt-3 text-sm text-gray-700 pl-3 mb-3">
+              <div className="flex items-center gap-2">
+                {/* Vote */}
+                <div className="flex items-center bg-gray-100 rounded-full px-2 py-1 shadow-sm">
+                  <button onClick={() => vote(deal.id, 1)} className="hover:text-pink-600 p-1 cursor-pointer">
+                    <ArrowUp size={16} />
+                  </button>
+                  <span className="font-semibold text-xs text-center min-w-[20px]">{deal.votes || "0"}</span>
+                  <button onClick={() => vote(deal.id, -1)} className="hover:text-pink-600 p-1 cursor-pointer">
+                    <ArrowDown size={16} />
+                  </button>
+                </div>
+
+                {/* Comment */}
+                <div className="flex items-center bg-gray-100 rounded-full px-2 py-1 shadow-sm">
+                  <button
+                    onClick={() => setSelectedDeal(deal.id)}
+                    className="hover:text-pink-600 p-1 cursor-pointer"
+                  >
+                    <MessageSquare size={16} />
+                  </button>
+                  <span className="font-semibold text-xs text-center min-w-[20px]">{deal.comments || "0"}</span>
+                </div>
+
+                {/* Share */}
+                <div className="flex items-center bg-gray-100 rounded-full px-2 py-1 shadow-sm">
+                  <button
+                    onClick={() => {
+                      const url = `${window.location.href}#deal-${deal.id}`;
+                      if (navigator.share) navigator.share({ title: deal.title, url });
+                      else {
+                        navigator.clipboard.writeText(url);
+                        alert("Đã copy link: " + url);
+                      }
+                    }}
+                    className="hover:text-pink-600 p-1 cursor-pointer"
+                  >
+                    <Share2 size={16} />
+                  </button>
+                </div>
               </div>
 
-              <div className="flex items-center bg-gray-100 rounded-full px-2 py-1 shadow-sm">
+              {/* Save Icon */}
+              <div className="flex items-center bg-gray-100 rounded-full px-2 py-1 shadow-sm mr-3">
                 <button
-                  onClick={() => setSelectedDeal(deal.id)}
-                  className="hover:text-pink-600 p-1 cursor-pointer"
+                  onClick={() => setSaved(!saved)}
+                  className={`hover:text-pink-600 p-1 cursor-pointer ${
+                    saved ? "text-pink-600" : ""
+                  }`}
                 >
-                  <MessageSquare size={16} />
-                </button>
-                <span className="font-semibold text-xs text-center min-w-[20px]">{deal.comments || "0"}</span>
-              </div>
-
-              <div className="flex items-center bg-gray-100 rounded-full px-2 py-1 shadow-sm">
-                <button
-                  onClick={() => {
-                    const url = `${window.location.href}#deal-${deal.id}`;
-                    if (navigator.share) navigator.share({ title: deal.title, url });
-                    else {
-                      navigator.clipboard.writeText(url);
-                      alert("Đã copy link: " + url);
-                    }
-                  }}
-                  className="hover:text-pink-600 p-1 cursor-pointer"
-                >
-                  <Share2 size={16} />
+                  <Bookmark size={16} fill={saved ? "currentColor" : "none"} />
                 </button>
               </div>
             </div>

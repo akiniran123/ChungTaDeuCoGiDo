@@ -3,6 +3,7 @@ import React, { useState, useEffect } from "react";
 import { motion } from "framer-motion";
 import { ArrowUp, ArrowDown, MessageSquare, Share2, Bookmark } from "lucide-react";
 import Link from "next/link";
+import { useCart } from "@/app/context/CartContext"; // ✅ Thêm dòng này
 
 // ======================
 // Hàm random thời gian
@@ -40,7 +41,7 @@ export interface DealCardProps {
 }
 
 // ======================
-// Grid nhỏ của page (đã bỏ underline xanh)
+// Grid nhỏ của page
 // ======================
 const DealCardSmall: React.FC<DealCardProps> = ({
   deal,
@@ -48,6 +49,18 @@ const DealCardSmall: React.FC<DealCardProps> = ({
   setSelectedDeal,
 }) => {
   const [saved, setSaved] = useState(false);
+  const { addToCart } = useCart(); // ✅ Lấy hàm addToCart từ context
+
+  const handleSave = () => {
+    setSaved(!saved);
+    addToCart({
+      id: deal.id,
+      name: deal.title,
+      price: 0, // ✅ Bạn có thể thay bằng giá thật nếu có
+      image: deal.image || "",
+      quantity: 1,
+    });
+  };
 
   return (
     <motion.div
@@ -58,26 +71,20 @@ const DealCardSmall: React.FC<DealCardProps> = ({
       transition={{ duration: 0.3 }}
       className="flex flex-col md:flex-row items-start gap-3 p-3 border-b border-gray-200 cursor-pointer"
     >
-      {/* Hình ảnh bên trái */}
       <img
         src={deal.image}
         alt={deal.title}
         className="w-full md:w-40 h-32 object-cover rounded-md"
       />
 
-      {/* Nội dung bên phải */}
       <div className="flex-1 flex flex-col justify-between">
-        <Link
-          href={`/deal/${deal.id}`}
-          className="no-underline hover:text-pink-600"
-        >
+        <Link href={`/deal/${deal.id}`} className="no-underline hover:text-pink-600">
           <div>
             <h3 className="font-semibold text-base md:text-lg">{deal.title}</h3>
             <p className="text-sm text-gray-600 line-clamp-2">{deal.content}</p>
           </div>
         </Link>
 
-        {/* Author + thời gian */}
         <div className="flex items-center gap-2 mt-2 text-sm text-gray-500">
           <Link
             href={`/user/${deal.author}`}
@@ -89,29 +96,29 @@ const DealCardSmall: React.FC<DealCardProps> = ({
           <span>• {deal.createdAt || getRandomTimeAgo()}</span>
         </div>
 
-        {/* Action buttons giống grid lớn */}
         <div className="flex items-center justify-between mt-3 text-gray-700">
           <div className="flex items-center gap-2">
-            {/* Vote */}
             <div className="flex items-center bg-gray-100 rounded-full px-2 py-1 shadow-sm">
               <button onClick={() => vote(deal.id, 1)} className="hover:text-pink-600 p-1 cursor-pointer">
                 <ArrowUp size={16} />
               </button>
-              <span className="font-semibold text-xs text-center min-w-[20px]">{deal.votes || "0"}</span>
+              <span className="font-semibold text-xs text-center min-w-[20px]">
+                {deal.votes || "0"}
+              </span>
               <button onClick={() => vote(deal.id, -1)} className="hover:text-pink-600 p-1 cursor-pointer">
                 <ArrowDown size={16} />
               </button>
             </div>
 
-            {/* Comment */}
             <div className="flex items-center bg-gray-100 rounded-full px-2 py-1 shadow-sm">
               <button onClick={() => setSelectedDeal(deal.id)} className="hover:text-pink-600 p-1 cursor-pointer">
                 <MessageSquare size={16} />
               </button>
-              <span className="font-semibold text-xs text-center min-w-[20px]">{deal.comments || "0"}</span>
+              <span className="font-semibold text-xs text-center min-w-[20px]">
+                {deal.comments || "0"}
+              </span>
             </div>
 
-            {/* Share */}
             <div className="flex items-center bg-gray-100 rounded-full px-2 py-1 shadow-sm">
               <button
                 onClick={() => {
@@ -129,10 +136,10 @@ const DealCardSmall: React.FC<DealCardProps> = ({
             </div>
           </div>
 
-          {/* Save Icon */}
+          {/* ✅ Save (Thêm vào giỏ) */}
           <div className="flex items-center bg-gray-100 rounded-full px-2 py-1 shadow-sm">
             <button
-              onClick={() => setSaved(!saved)}
+              onClick={handleSave}
               className={`hover:text-pink-600 p-1 cursor-pointer ${
                 saved ? "text-pink-600" : ""
               }`}
@@ -162,6 +169,7 @@ const DealCard: React.FC<DealCardProps> = ({
   const [currentIndex, setCurrentIndex] = useState(0);
   const [startX, setStartX] = useState<number | null>(null);
   const [saved, setSaved] = useState(false);
+  const { addToCart } = useCart(); // ✅ Thêm dòng này
 
   useEffect(() => {
     if (!deal.createdAt) setTimeAgoState(getRandomTimeAgo());
@@ -181,6 +189,18 @@ const DealCard: React.FC<DealCardProps> = ({
     setStartX(null);
   };
 
+  // ✅ Hàm xử lý khi click nút lưu
+  const handleSave = () => {
+    setSaved(!saved);
+    addToCart({
+      id: deal.id,
+      name: deal.title,
+      price: 0,
+      image: deal.image || "",
+      quantity: 1,
+    });
+  };
+
   return (
     <>
       {gridView ? (
@@ -193,11 +213,12 @@ const DealCard: React.FC<DealCardProps> = ({
           id={`deal-${deal.id}`}
         >
           {isAd && (
-            <span className="text-sm font-bold text-yellow-700 m-3 inline-block">Quảng cáo</span>
+            <span className="text-sm font-bold text-yellow-700 m-3 inline-block">
+              Quảng cáo
+            </span>
           )}
 
           <div className="flex flex-col px-3 py-2 border-b">
-            {/* Author */}
             <div className="flex items-center gap-2 text-sm">
               <Link
                 href={`/user/${deal.author}`}
@@ -211,14 +232,16 @@ const DealCard: React.FC<DealCardProps> = ({
               </span>
             </div>
 
-            {/* Tiêu đề + content */}
-            <Link href={`/deal/${deal.id}`} className="block mt-2 no-underline hover:text-pink-600 transition-colors">
+            <Link
+              href={`/deal/${deal.id}`}
+              className="block mt-2 no-underline hover:text-pink-600 transition-colors"
+            >
               <h3 className="font-semibold text-base md:text-lg">{deal.title}</h3>
               <p className="text-sm text-gray-600 line-clamp-2">{deal.content}</p>
             </Link>
           </div>
 
-          {/* phần media */}
+          {/* Media */}
           <div
             className="relative w-full overflow-hidden group"
             onTouchStart={handleTouchStart}
@@ -253,59 +276,24 @@ const DealCard: React.FC<DealCardProps> = ({
                 )}
               </div>
             )}
-
-            {mediaList.length > 1 && !isAd && (
-              <>
-                <button
-                  onClick={prevMedia}
-                  className="absolute left-2 top-1/2 -translate-y-1/2 
-                             bg-black/20 hover:bg-black/30 text-white 
-                             p-2 rounded-full cursor-pointer
-                             opacity-0 group-hover:opacity-100 hover:opacity-80
-                             transition-all duration-300"
-                >
-                  ‹
-                </button>
-                <button
-                  onClick={nextMedia}
-                  className="absolute right-2 top-1/2 -translate-y-1/2 
-                             bg-black/20 hover:bg-black/30 text-white 
-                             p-2 rounded-full cursor-pointer
-                             opacity-0 group-hover:opacity-100 hover:opacity-80
-                             transition-all duration-300"
-                >
-                  ›
-                </button>
-              </>
-            )}
-
-            <Link
-              href={`/deal/${deal.id}`}
-              className="absolute bottom-0 left-0 w-full bg-black/50 text-white p-4 rounded-b-md 
-                 cursor-pointer hover:bg-black/60 transition block z-20"
-            >
-              <div>
-                <div className="text-sm text-gray-200">r/{deal.category}</div>
-              </div>
-            </Link>
           </div>
 
-          {/* ===== Hàng icon cuối cùng (vote, comment, share, save) ===== */}
+          {/* Icon hàng cuối */}
           {!isAd && (
             <div className="flex items-center justify-between gap-2 mt-3 text-sm text-gray-700 pl-3 mb-3">
               <div className="flex items-center gap-2">
-                {/* Vote */}
                 <div className="flex items-center bg-gray-100 rounded-full px-2 py-1 shadow-sm">
                   <button onClick={() => vote(deal.id, 1)} className="hover:text-pink-600 p-1 cursor-pointer">
                     <ArrowUp size={16} />
                   </button>
-                  <span className="font-semibold text-xs text-center min-w-[20px]">{deal.votes || "0"}</span>
+                  <span className="font-semibold text-xs text-center min-w-[20px]">
+                    {deal.votes || "0"}
+                  </span>
                   <button onClick={() => vote(deal.id, -1)} className="hover:text-pink-600 p-1 cursor-pointer">
                     <ArrowDown size={16} />
                   </button>
                 </div>
 
-                {/* Comment */}
                 <div className="flex items-center bg-gray-100 rounded-full px-2 py-1 shadow-sm">
                   <button
                     onClick={() => setSelectedDeal(deal.id)}
@@ -313,10 +301,11 @@ const DealCard: React.FC<DealCardProps> = ({
                   >
                     <MessageSquare size={16} />
                   </button>
-                  <span className="font-semibold text-xs text-center min-w-[20px]">{deal.comments || "0"}</span>
+                  <span className="font-semibold text-xs text-center min-w-[20px]">
+                    {deal.comments || "0"}
+                  </span>
                 </div>
 
-                {/* Share */}
                 <div className="flex items-center bg-gray-100 rounded-full px-2 py-1 shadow-sm">
                   <button
                     onClick={() => {
@@ -334,10 +323,10 @@ const DealCard: React.FC<DealCardProps> = ({
                 </div>
               </div>
 
-              {/* Save Icon */}
+              {/* ✅ Save → Thêm vào giỏ */}
               <div className="flex items-center bg-gray-100 rounded-full px-2 py-1 shadow-sm mr-3">
                 <button
-                  onClick={() => setSaved(!saved)}
+                  onClick={handleSave}
                   className={`hover:text-pink-600 p-1 cursor-pointer ${
                     saved ? "text-pink-600" : ""
                   }`}

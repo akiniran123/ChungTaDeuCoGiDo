@@ -1,3 +1,4 @@
+// src/components/LogoSearchIcons.tsx
 'use client'
 
 import { useState } from 'react'
@@ -12,24 +13,41 @@ import CartMenu from './LogoSearchIcon/CartMenu'
 import UserMenu from './LogoSearchIcon/UserMenu'
 
 import LoginModal from '../auth/LoginModal'
-import { useCart } from '@/app/context/CartContext' // ✅ import CartContext
+import { useCart } from '@/app/context/CartContext'
+
+type Props = {
+  onMenuToggle?: () => void
+  onCartClick?: () => void
+  totalItems?: number
+}
 
 export default function LogoSearchIcons({
   onMenuToggle,
-}: {
-  onMenuToggle?: () => void
-}) {
+  onCartClick,
+  totalItems,
+}: Props) {
   const [showLogin, setShowLogin] = useState(false)
   const [pendingRedirect, setPendingRedirect] = useState<string | null>(null)
   const router = useRouter()
 
-  // ✅ Lấy giỏ hàng từ context
+  // nếu parent không truyền totalItems thì tính từ context
   const { cart } = useCart()
-  const totalItems = cart.reduce((sum, item) => sum + item.quantity, 0)
+  const computedTotal = typeof totalItems === 'number'
+    ? totalItems
+    : cart.reduce((sum, item) => sum + item.quantity, 0)
 
   const openLogin = (redirectTo?: string) => {
     setPendingRedirect(redirectTo ?? null)
     setShowLogin(true)
+  }
+
+  // nếu parent truyền onCartClick dùng nó, nếu không thì mặc định điều hướng
+  const handleCartClick = () => {
+    if (onCartClick) {
+      onCartClick()
+      return
+    }
+    router.push('/gio-hang')
   }
 
   return (
@@ -49,12 +67,19 @@ export default function LogoSearchIcons({
             <MessagesMenu />
             <NewsMenu />
 
-            {/* Cart với badge số lượng */}
-            <div className="relative">
-              <CartMenu /> {/* icon giỏ hàng */}
-              {totalItems > 0 && (
+            {/* Giỏ hàng: click => handleCartClick, hiển thị badge */}
+            <div
+              className="relative cursor-pointer"
+              onClick={handleCartClick}
+              role="button"
+              tabIndex={0}
+              onKeyDown={(e) => { if (e.key === 'Enter' || e.key === ' ') handleCartClick() }}
+              aria-label="Xem giỏ hàng"
+            >
+              <CartMenu />
+              {computedTotal > 0 && (
                 <span className="absolute -top-2 -right-2 bg-red-500 text-white rounded-full w-5 h-5 flex items-center justify-center text-xs">
-                  {totalItems}
+                  {computedTotal}
                 </span>
               )}
             </div>
@@ -68,9 +93,7 @@ export default function LogoSearchIcons({
           <form
             onSubmit={(e) => {
               e.preventDefault()
-              const input = e.currentTarget.elements.namedItem(
-                'q'
-              ) as HTMLInputElement | null
+              const input = e.currentTarget.elements.namedItem('q') as HTMLInputElement | null
               const q = input?.value?.trim()
               if (!q) return
               router.push(`/search?query=${encodeURIComponent(q)}`)

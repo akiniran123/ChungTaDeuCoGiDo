@@ -1,30 +1,25 @@
-import ProductCard from "@/components/ProductCard/ProductCard";
+import Link from "next/link";
+import Image from "next/image";
+import { newsData } from "./data";
 
-export default function TinTucPage() {
-  const products = [
-    {
-      title: "Ra mắt sản phẩm mới",
-      description: "Chúng tôi vừa ra mắt dòng laptop mới hiệu suất cao.",
-      image: "/images/new-laptop.jpg",
-    },
-    {
-      title: "Sự kiện công nghệ 2025",
-      description: "Hội chợ công nghệ lớn nhất Việt Nam diễn ra vào tháng tới.",
-      image: "/images/event.jpg",
-    },
-  ];
-
+export default function NewsPage() {
   return (
     <div className="p-6 pt-[64px] min-h-screen bg-gray-50">
-      <h1 className="text-2xl font-bold">Tin tức</h1>
-      <p className="mt-2 text-gray-600">Thông tin và cập nhật mới nhất.</p>
-
-      <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-6 mt-6">
-        {products.map((p, index) => (
-          <ProductCard key={index} {...p} />
+      <div className="max-w-5xl mx-auto grid sm:grid-cols-2 lg:grid-cols-3 gap-6">
+        {newsData.map((news) => (
+          <Link
+            key={news.slug}
+            href={`/tin-tuc/${news.slug}`}
+            className="bg-white border border-gray-200 rounded-2xl shadow-sm hover:shadow-md transition p-4"
+          >
+            <div className="relative w-full h-48 rounded-lg overflow-hidden mb-4">
+              <Image src={news.image} alt={news.title} fill className="object-cover" />
+            </div>
+            <h2 className="text-lg font-semibold text-gray-800">{news.title}</h2>
+            <p className="text-sm text-gray-500 mt-2">{news.description}</p>
+          </Link>
         ))}
       </div>
     </div>
   );
 }
-

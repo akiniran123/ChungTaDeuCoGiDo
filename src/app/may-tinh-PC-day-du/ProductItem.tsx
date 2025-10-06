@@ -12,22 +12,21 @@ export default function ProductItem({ product }: { product: Product }) {
   const { addToCart } = useCart() // ✅ Lấy hàm addToCart từ context
 
   const handleSaveToCart = () => {
-  addToCart({
-    ...product,
-    image: product.images?.[0] || "", // ✅ lấy ảnh đầu tiên của sản phẩm
-    quantity: 1, // ✅ thêm số lượng mặc định
-  })
-  setAdded(true)
-  setTimeout(() => setAdded(false), 600)
-}
-
+    addToCart({
+      ...product,
+      image: product.images?.[0] || "", // ✅ lấy ảnh đầu tiên của sản phẩm
+      quantity: 1, // ✅ thêm số lượng mặc định
+    })
+    setAdded(true)
+    setTimeout(() => setAdded(false), 600)
+  }
 
   return (
     <div className="relative flex items-stretch border p-4 rounded-lg shadow-sm bg-white w-full min-h-[180px]">
       {/* ===== ICON LƯU (Bookmark chuẩn style 3 icon) ===== */}
       <button
         onClick={handleSaveToCart}
-        className={`absolute top-3 right-3 flex items-center justify-center rounded-full px-2.5 py-2 shadow-sm border transition-all
+        className={`absolute top-3 right-3 flex items-center justify-center rounded-full px-2.5 py-2 shadow-sm border transition-all cursor-pointer
           ${
             added
               ? "bg-pink-100 border-pink-200 text-pink-600"

@@ -1,15 +1,24 @@
 "use client";
 import React, { useState, useEffect } from "react";
 import { motion } from "framer-motion";
-import { ArrowUp, ArrowDown, MessageSquare, Share2, Bookmark } from "lucide-react";
+import {
+  ArrowUp,
+  ArrowDown,
+  MessageSquare,
+  Share2,
+  Bookmark,
+  ChevronLeft,
+  ChevronRight,
+  X,
+} from "lucide-react";
 import Link from "next/link";
-import { useCart } from "@/app/context/CartContext"; // ✅ Thêm dòng này
+import { useCart } from "@/app/context/CartContext";
 
 // ======================
 // Hàm random thời gian
 // ======================
 function getRandomTimeAgo() {
-  const minutes = Math.floor(Math.random() * 60) + 1; // 1 - 60 phút
+  const minutes = Math.floor(Math.random() * 60) + 1;
   if (minutes < 60) return `${minutes} phút trước`;
   const hours = Math.floor(minutes / 60);
   if (hours < 24) return `${hours} giờ trước`;
@@ -37,7 +46,7 @@ export interface DealCardProps {
   onImageClick?: () => void;
   bigger?: boolean;
   isAd?: boolean;
-  gridView?: boolean; // ✅ bật chế độ grid nhỏ
+  gridView?: boolean;
 }
 
 // ======================
@@ -49,14 +58,14 @@ const DealCardSmall: React.FC<DealCardProps> = ({
   setSelectedDeal,
 }) => {
   const [saved, setSaved] = useState(false);
-  const { addToCart } = useCart(); // ✅ Lấy hàm addToCart từ context
+  const { addToCart } = useCart();
 
   const handleSave = () => {
     setSaved(!saved);
     addToCart({
       id: deal.id,
       name: deal.title,
-      price: 0, // ✅ Bạn có thể thay bằng giá thật nếu có
+      price: 0,
       image: deal.image || "",
       quantity: 1,
     });
@@ -169,7 +178,8 @@ const DealCard: React.FC<DealCardProps> = ({
   const [currentIndex, setCurrentIndex] = useState(0);
   const [startX, setStartX] = useState<number | null>(null);
   const [saved, setSaved] = useState(false);
-  const { addToCart } = useCart(); // ✅ Thêm dòng này
+  const [showLightbox, setShowLightbox] = useState(false);
+  const { addToCart } = useCart();
 
   useEffect(() => {
     if (!deal.createdAt) setTimeAgoState(getRandomTimeAgo());
@@ -189,7 +199,6 @@ const DealCard: React.FC<DealCardProps> = ({
     setStartX(null);
   };
 
-  // ✅ Hàm xử lý khi click nút lưu
   const handleSave = () => {
     setSaved(!saved);
     addToCart({
@@ -241,42 +250,120 @@ const DealCard: React.FC<DealCardProps> = ({
             </Link>
           </div>
 
-          {/* Media */}
-          <div
-            className="relative w-full overflow-hidden group"
-            onTouchStart={handleTouchStart}
-            onTouchEnd={handleTouchEnd}
-          >
-            {mediaList.length > 0 && (
-              <div
-                className="flex transition-transform duration-500 ease-in-out"
-                style={{ transform: `translateX(-${currentIndex * 100}%)` }}
-              >
-                {mediaList.map((item, idx) =>
-                  item.endsWith(".mp4") ? (
-                    <video
-                      key={idx}
-                      src={item}
-                      controls={!isAd}
-                      className={`object-cover w-full flex-shrink-0 rounded-md ${
-                        bigger ? "h-[600px]" : "h-96"
-                      }`}
-                    />
-                  ) : (
-                    <img
-                      key={idx}
-                      src={item}
-                      alt={deal.title}
-                      className={`object-cover w-full flex-shrink-0 rounded-md ${
-                        bigger ? "h-[600px]" : "h-96"
-                      }`}
-                      onClick={!isAd ? onImageClick : undefined}
-                    />
-                  )
-                )}
-              </div>
-            )}
-          </div>
+          {/* ✅ Media có next / prev */}
+<div
+  className="relative w-full overflow-hidden group"
+  onTouchStart={handleTouchStart}
+  onTouchEnd={handleTouchEnd}
+>
+  {mediaList.length > 0 && (
+    <>
+      <div
+        className="flex transition-transform duration-500 ease-in-out"
+        style={{ transform: `translateX(-${currentIndex * 100}%)` }}
+      >
+        {mediaList.map((item, idx) =>
+          item.endsWith(".mp4") ? (
+            <video
+              key={idx}
+              src={item}
+              controls={!isAd}
+              className={`object-cover w-full flex-shrink-0 rounded-md ${
+                bigger ? "h-[600px]" : "h-96"
+              }`}
+            />
+          ) : (
+            <img
+              key={idx}
+              src={item}
+              alt={deal.title}
+              className={`object-cover w-full flex-shrink-0 rounded-md ${
+                bigger ? "h-[600px]" : "h-96"
+              }`}
+              onClick={() => setShowLightbox(true)}
+            />
+          )
+        )}
+      </div>
+
+      {/* 🌫️ Nút Prev – siêu trong suốt */}
+      <button
+        onClick={prevMedia}
+        className="absolute left-4 top-1/2 -translate-y-1/2 z-10
+                   text-white/90 bg-black/10 backdrop-blur-sm border border-white/5
+                   rounded-full p-3 shadow-sm transition-all duration-300
+                   hover:bg-black/25 hover:shadow-lg hover:scale-105 active:scale-95"
+      >
+        <ChevronLeft size={30} className="drop-shadow-sm" />
+      </button>
+
+      {/* 🌫️ Nút Next – siêu trong suốt */}
+      <button
+        onClick={nextMedia}
+        className="absolute right-4 top-1/2 -translate-y-1/2 z-10
+                   text-white/90 bg-black/10 backdrop-blur-sm border border-white/5
+                   rounded-full p-3 shadow-sm transition-all duration-300
+                   hover:bg-black/25 hover:shadow-lg hover:scale-105 active:scale-95"
+      >
+        <ChevronRight size={30} className="drop-shadow-sm" />
+      </button>
+    </>
+  )}
+</div>
+
+          {/* ✅ Lightbox phóng to ảnh — đã fix nút Next/Prev */}
+{showLightbox && (
+  <div
+    className="fixed inset-0 bg-black/90 backdrop-blur-sm flex items-center justify-center z-[9999]"
+    onClick={() => setShowLightbox(false)}
+  >
+    <img
+      src={mediaList[currentIndex]}
+      alt="Zoomed"
+      className="max-h-[90vh] max-w-[90vw] object-contain rounded-lg"
+    />
+
+    {/* Prev */}
+    <button
+      onClick={(e) => {
+        e.stopPropagation();
+        prevMedia();
+      }}
+      className="absolute left-6 top-1/2 -translate-y-1/2 text-white/90
+                 bg-black/20 backdrop-blur-sm border border-white/10 rounded-full p-3
+                 transition-all duration-300 hover:bg-black/40 hover:scale-110 active:scale-95
+                 z-[10000]"
+    >
+      <ChevronLeft size={36} className="drop-shadow-md" />
+    </button>
+
+    {/* Next */}
+    <button
+      onClick={(e) => {
+        e.stopPropagation();
+        nextMedia();
+      }}
+      className="absolute right-6 top-1/2 -translate-y-1/2 text-white/90
+                 bg-black/20 backdrop-blur-sm border border-white/10 rounded-full p-3
+                 transition-all duration-300 hover:bg-black/40 hover:scale-110 active:scale-95
+                 z-[10000]"
+    >
+      <ChevronRight size={36} className="drop-shadow-md" />
+    </button>
+
+    {/* Close */}
+    <button
+      onClick={(e) => {
+        e.stopPropagation();
+        setShowLightbox(false);
+      }}
+      className="absolute top-6 right-6 text-white/80 bg-black/20 backdrop-blur-sm
+                 rounded-full p-2 hover:bg-black/40 transition-all z-[10000]"
+    >
+      <X size={24} />
+    </button>
+  </div>
+)}
 
           {/* Icon hàng cuối */}
           {!isAd && (

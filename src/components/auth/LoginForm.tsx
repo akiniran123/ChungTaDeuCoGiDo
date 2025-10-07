@@ -5,10 +5,13 @@ import { useForm } from 'react-hook-form';
 import { z } from 'zod';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { FcGoogle } from 'react-icons/fc';
-import { createPagesBrowserClient } from '@supabase/auth-helpers-nextjs';
+// ❌ bỏ `createPagesBrowserClient`
+// ✅ thay bằng client.ts của bạn
+import { supabase } from '@/lib/supabase/client';
 import SignUpModal from '@/components/auth/SignUpModal';
 import ForgotPasswordModal from '@/components/auth/ForgotPasswordModal';
 import type { Database } from '@/types/supabase';
+import { useRouter } from 'next/navigation';
 
 const loginSchema = z.object({
   email: z.string().email(),
@@ -22,7 +25,7 @@ export default function LoginForm({
 }: {
   onLoginSuccess?: () => void;
 }) {
-  const supabase = createPagesBrowserClient<Database>();
+  const router = useRouter();
   const [errorMsg, setErrorMsg] = useState('');
   const [loading, setLoading] = useState(false);
   const [showSignUpModal, setShowSignUpModal] = useState(false);
@@ -34,26 +37,50 @@ export default function LoginForm({
     formState: { errors },
   } = useForm<LoginFormSchema>({ resolver: zodResolver(loginSchema) });
 
+  // ✅ Sửa phần xử lý đăng nhập
   const onSubmit = async (data: LoginFormSchema) => {
-    setLoading(true);
-    setErrorMsg('');
-    const { error } = await supabase.auth.signInWithPassword(data);
+    try {
+      setLoading(true);
+      setErrorMsg('');
 
-    if (error) {
-      setErrorMsg(error.message);
-    } else {
+      const { data: res, error } = await supabase.auth.signInWithPassword({
+        email: data.email,
+        password: data.password,
+      });
+
+      if (error) throw error;
+
+      console.log('✅ Đăng nhập thành công:', res);
+      router.refresh();
       onLoginSuccess?.();
+      window.location.href = '/';
+    } catch (err: any) {
+      setErrorMsg(err.message || 'Login failed');
+    } finally {
+      setLoading(false);
     }
-
-    setLoading(false);
   };
 
+  // ✅ Sửa phần đăng nhập Google
   const handleGoogleLogin = async () => {
-    setLoading(true);
-    const { error } = await supabase.auth.signInWithOAuth({ provider: 'google' });
+    try {
+      setLoading(true);
+      setErrorMsg('');
 
-    if (error) setErrorMsg(error.message);
-    setLoading(false);
+      const { data, error } = await supabase.auth.signInWithOAuth({
+        provider: 'google',
+        options: {
+          redirectTo: `${window.location.origin}/auth/callback`, // ✅ đường callback
+        },
+      });
+
+      if (error) throw error;
+      console.log('🔗 Google login redirect:', data?.url);
+    } catch (err: any) {
+      setErrorMsg(err.message || 'Google login failed');
+    } finally {
+      setLoading(false);
+    }
   };
 
   return (
@@ -63,24 +90,32 @@ export default function LoginForm({
 
         {/* Email */}
         <div>
-          <label className="block text-sm text-gray-700 dark:text-gray-300 mb-1">Email</label>
+          <label className="block text-sm text-gray-700 dark:text-gray-300 mb-1">
+            Email
+          </label>
           <input
             type="email"
             {...register('email')}
             className="w-full px-3 py-2 border rounded-md bg-gray-50 dark:bg-gray-800 dark:border-gray-700 text-sm"
           />
-          {errors.email && <p className="text-red-500 text-xs mt-1">{errors.email.message}</p>}
+          {errors.email && (
+            <p className="text-red-500 text-xs mt-1">{errors.email.message}</p>
+          )}
         </div>
 
         {/* Password */}
         <div>
-          <label className="block text-sm text-gray-700 dark:text-gray-300 mb-1">Password</label>
+          <label className="block text-sm text-gray-700 dark:text-gray-300 mb-1">
+            Password
+          </label>
           <input
             type="password"
             {...register('password')}
             className="w-full px-3 py-2 border rounded-md bg-gray-50 dark:bg-gray-800 dark:border-gray-700 text-sm"
           />
-          {errors.password && <p className="text-red-500 text-xs mt-1">{errors.password.message}</p>}
+          {errors.password && (
+            <p className="text-red-500 text-xs mt-1">{errors.password.message}</p>
+          )}
         </div>
 
         {/* Submit */}
@@ -95,7 +130,9 @@ export default function LoginForm({
         {/* Divider */}
         <div className="relative text-center my-3">
           <span className="absolute left-0 top-1/2 w-full border-t border-gray-300 dark:border-gray-700" />
-          <span className="relative bg-white dark:bg-gray-900 px-2 text-sm text-gray-500">or</span>
+          <span className="relative bg-white dark:bg-gray-900 px-2 text-sm text-gray-500">
+            or
+          </span>
         </div>
 
         {/* Google */}

@@ -7,6 +7,7 @@ import { createPagesBrowserClient } from '@supabase/auth-helpers-nextjs'
 import { useRouter } from 'next/navigation'
 import LoginForm from './LoginForm'
 import type { Database } from '@/types/supabase'
+import type { AuthChangeEvent, Session } from '@supabase/supabase-js'
 
 export default function LoginModal({
   onClose,
@@ -23,7 +24,7 @@ export default function LoginModal({
   useEffect(() => {
     const {
       data: { subscription },
-    } = supabase.auth.onAuthStateChange((event, session) => {
+    } = supabase.auth.onAuthStateChange((event: AuthChangeEvent, session: Session | null) => {
       if (event === 'SIGNED_IN' && session?.user) {
         onClose()
         onLoginSuccess?.()
@@ -39,7 +40,6 @@ export default function LoginModal({
   return (
     <Transition appear show as={Fragment}>
       <Dialog as="div" className="relative z-50" onClose={onClose}>
-        {/* Overlay */}
         <Transition.Child
           as={Fragment}
           enter="ease-out duration-300"
@@ -64,43 +64,23 @@ export default function LoginModal({
               leaveTo="opacity-0 scale-95"
             >
               <Dialog.Panel
-                className="
-                  relative
-                  w-full 
-                  max-w-md 
-                  sm:max-w-lg 
-                  md:max-w-xl 
-                  lg:max-w-2xl
-                  transform 
-                  overflow-hidden 
-                  rounded-xl 
-                  bg-white 
-                  dark:bg-gray-900 
-                  p-8 
-                  shadow-2xl 
-                  transition-all 
-                  max-h-[90vh] 
-                  overflow-y-auto
-                "
+                className="relative w-full max-w-md sm:max-w-lg md:max-w-xl lg:max-w-2xl
+                transform overflow-hidden rounded-xl bg-white dark:bg-gray-900 
+                p-8 shadow-2xl transition-all max-h-[90vh] overflow-y-auto"
               >
-                {/* Close button */}
                 <button
                   onClick={onClose}
                   className="absolute top-4 right-4 text-gray-400 hover:text-gray-600 dark:hover:text-gray-300 transition"
-                  aria-label="Close"
                 >
                   <XMarkIcon className="h-6 w-6" />
                 </button>
 
-                {/* Title */}
                 <Dialog.Title className="text-xl font-semibold text-center text-gray-900 dark:text-white mb-6">
                   Sign in to Jawa.gg
                 </Dialog.Title>
 
-                {/* Login Form */}
                 <LoginForm onLoginSuccess={onLoginSuccess} />
 
-                {/* Cancel fallback */}
                 <button
                   onClick={onClose}
                   className="mt-6 w-full text-sm text-center text-gray-500 hover:underline"

@@ -1,7 +1,14 @@
-import { createBrowserClient } from '@supabase/ssr'
-import type { Database } from '@/types/supabase'
+import { createClient } from "@supabase/supabase-js";
+import type { Database } from "@/types/supabase";
 
-export const supabase = createBrowserClient<Database>(
+export const supabase = createClient<Database>(
   process.env.NEXT_PUBLIC_SUPABASE_URL!,
-  process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!
-)
+  process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!,
+  {
+    auth: {
+      persistSession: true,        // ✅ Giữ session sau khi đăng nhập
+      autoRefreshToken: true,      // ✅ Tự refresh khi token hết hạn
+      detectSessionInUrl: true,    // ✅ Dùng cho đăng nhập Google (callback)
+    },
+  }
+);

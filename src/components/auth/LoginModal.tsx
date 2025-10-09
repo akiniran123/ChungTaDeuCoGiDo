@@ -36,43 +36,47 @@ export default function LoginModal({
   } = useForm<LoginFormSchema>({ resolver: zodResolver(loginSchema) });
 
   // ✅ Hàm tạo hoặc cập nhật hồ sơ người dùng
-  const createUserProfile = async (user: any) => {
-    try {
-      const { data: existingUser } = await supabase
-        .from("người_dùng")
-        .select("*")
-        .eq("id", user.id)
-        .maybeSingle(); // tránh lỗi .single() khi không có dữ liệu
+  // ✅ Tạo hoặc cập nhật hồ sơ người dùng trong bảng "users"
+const createUserProfile = async (user: any) => {
+  try {
+    const { data: existingUser, error: fetchError } = await supabase
+      .from("users")
+      .select("id")
+      .eq("id", user.id)
+      .maybeSingle();
 
-      if (!existingUser) {
-        const newUser: Database["public"]["Tables"]["người_dùng"]["Insert"] = {
-          id: user.id,
-          email: user.email,
-          name: user.user_metadata?.full_name || user.email,
-          avatar_url: user.user_metadata?.avatar_url || null,
-          created_at: new Date().toISOString(),
-          is_online: true,
-        };
+    if (fetchError) throw fetchError;
 
-        const { error: insertError } = await supabase
-          .from("người_dùng")
-          .insert([newUser]);
+    if (!existingUser) {
+      const newUser: Database["public"]["Tables"]["users"]["Insert"] = {
+        id: user.id,
+        username: user.user_metadata?.username || user.email.split("@")[0],
+        email: user.email,
+        created_at: new Date().toISOString(),
+        avatar_url: user.user_metadata?.avatar_url || null,
+        
+        is_online: true,
+      };
 
-        if (insertError) throw insertError;
-        console.log("🆕 Hồ sơ người dùng mới đã được tạo");
-      } else {
-        // Cập nhật trạng thái online nếu đã có
-        const { error: updateError } = await supabase
-          .from("người_dùng")
-          .update({ is_online: true })
-          .eq("id", user.id);
+      const { error: insertError } = await supabase
+        .from("users")
+        .insert([newUser]);
 
-        if (updateError) throw updateError;
-      }
-    } catch (err) {
-      console.error("❌ Lỗi tạo hồ sơ người dùng:", err);
+      if (insertError) throw insertError;
+      console.log("🆕 Hồ sơ người dùng mới đã được tạo trong bảng 'users'");
+    } else {
+      const { error: updateError } = await supabase
+        .from("users")
+        .update({ is_online: true })
+        .eq("id", user.id);
+
+      if (updateError) throw updateError;
+      console.log("✅ Trạng thái online đã được cập nhật");
     }
-  };
+  } catch (err) {
+    console.error("❌ Lỗi xử lý hồ sơ người dùng:", err);
+  }
+};
 
   // ✅ Xử lý đăng nhập email/password
   const onSubmit = async (data: LoginFormSchema) => {

@@ -1,24 +1,26 @@
-'use client';
+"use client";
 
-import { useState } from 'react';
-import { useForm } from 'react-hook-form';
-import { z } from 'zod';
-import { zodResolver } from '@hookform/resolvers/zod';
-import { FcGoogle } from 'react-icons/fc';
-// ❌ bỏ `createPagesBrowserClient`
-// ✅ thay bằng client.ts của bạn
-import { supabase } from '@/lib/supabase/client';
-import SignUpModal from '@/components/auth/SignUpModal';
-import ForgotPasswordModal from '@/components/auth/ForgotPasswordModal';
-import type { Database } from '@/types/supabase';
-import { useRouter } from 'next/navigation';
+import { useState } from "react";
+import { useForm } from "react-hook-form";
+import { z } from "zod";
+import { zodResolver } from "@hookform/resolvers/zod";
+import { FcGoogle } from "react-icons/fc";
+import { supabase } from "@/lib/supabase/client";
+import SignUpModal from "@/components/auth/SignUpModal";
+import ForgotPasswordModal from "@/components/auth/ForgotPasswordModal";
+import type { Database } from "@/types/supabase";
+import { useRouter } from "next/navigation";
 
 const loginSchema = z.object({
   email: z.string().email(),
-  password: z.string().min(6, 'Password must be at least 6 characters'),
+  password: z.string().min(6, "Password must be at least 6 characters"),
 });
 
 type LoginFormSchema = z.infer<typeof loginSchema>;
+
+// ✅ Khai báo kiểu ngắn gọn cho bảng users
+type UserInsert = Database["public"]["Tables"]["users"]["Insert"];
+type UserUpdate = Database["public"]["Tables"]["users"]["Update"];
 
 export default function LoginForm({
   onLoginSuccess,
@@ -26,7 +28,7 @@ export default function LoginForm({
   onLoginSuccess?: () => void;
 }) {
   const router = useRouter();
-  const [errorMsg, setErrorMsg] = useState('');
+  const [errorMsg, setErrorMsg] = useState("");
   const [loading, setLoading] = useState(false);
   const [showSignUpModal, setShowSignUpModal] = useState(false);
   const [showForgotPasswordModal, setShowForgotPasswordModal] = useState(false);
@@ -37,11 +39,60 @@ export default function LoginForm({
     formState: { errors },
   } = useForm<LoginFormSchema>({ resolver: zodResolver(loginSchema) });
 
-  // ✅ Sửa phần xử lý đăng nhập
+  // ✅ Tạo hoặc cập nhật hồ sơ người dùng trong bảng "users"
+const createUserProfile = async (user: any) => {
+  try {
+    const { data: existingUser, error: fetchError } = await supabase
+      .from("users")
+      .select("*")
+      .eq("id", user.id)
+      .single();
+
+    if (fetchError && fetchError.code !== "PGRST116") {
+      throw fetchError;
+    }
+
+    if (!existingUser) {
+      const newUser: UserInsert = {
+        id: user.id,
+        email: user.email,
+        username: user.user_metadata?.full_name || user.email,
+        avatar_url: user.user_metadata?.avatar_url || null,
+        created_at: new Date().toISOString(),
+        karma: 0,            // ✅ Đổi từ level -> karma
+        is_online: true,
+      };
+
+      // ✅ Chèn người dùng mới
+      const { error: insertError } = await supabase
+        .from("users")
+        .insert([newUser]);
+
+      if (insertError) throw insertError;
+
+      console.log("✅ Hồ sơ người dùng mới đã được tạo");
+    } else {
+      // ✅ Nếu đã có thì chỉ cập nhật trạng thái online
+      const updateData: UserUpdate = { is_online: true };
+
+      const { error: updateError } = await supabase
+        .from("users")
+        .update(updateData)
+        .eq("id", user.id);
+
+      if (updateError) throw updateError;
+    }
+  } catch (err) {
+    console.error("❌ Lỗi tạo hồ sơ người dùng:", err);
+  }
+};
+
+
+  // ✅ Xử lý đăng nhập email/password
   const onSubmit = async (data: LoginFormSchema) => {
     try {
       setLoading(true);
-      setErrorMsg('');
+      setErrorMsg("");
 
       const { data: res, error } = await supabase.auth.signInWithPassword({
         email: data.email,
@@ -50,34 +101,39 @@ export default function LoginForm({
 
       if (error) throw error;
 
-      console.log('✅ Đăng nhập thành công:', res);
+      const user = res.user;
+      if (user) {
+        await createUserProfile(user);
+      }
+
+      console.log("✅ Đăng nhập thành công:", res);
       router.refresh();
       onLoginSuccess?.();
-      window.location.href = '/';
+      window.location.href = "/";
     } catch (err: any) {
-      setErrorMsg(err.message || 'Login failed');
+      setErrorMsg(err.message || "Login failed");
     } finally {
       setLoading(false);
     }
   };
 
-  // ✅ Sửa phần đăng nhập Google
+  // ✅ Đăng nhập bằng Google
   const handleGoogleLogin = async () => {
     try {
       setLoading(true);
-      setErrorMsg('');
+      setErrorMsg("");
 
       const { data, error } = await supabase.auth.signInWithOAuth({
-        provider: 'google',
+        provider: "google",
         options: {
-          redirectTo: `${window.location.origin}/auth/callback`, // ✅ đường callback
+          redirectTo: `${window.location.origin}/auth/callback`,
         },
       });
 
       if (error) throw error;
-      console.log('🔗 Google login redirect:', data?.url);
+      console.log("🔗 Google login redirect:", data?.url);
     } catch (err: any) {
-      setErrorMsg(err.message || 'Google login failed');
+      setErrorMsg(err.message || "Google login failed");
     } finally {
       setLoading(false);
     }
@@ -86,7 +142,9 @@ export default function LoginForm({
   return (
     <>
       <form onSubmit={handleSubmit(onSubmit)} className="space-y-4">
-        {errorMsg && <p className="text-red-500 text-sm text-center">{errorMsg}</p>}
+        {errorMsg && (
+          <p className="text-red-500 text-sm text-center">{errorMsg}</p>
+        )}
 
         {/* Email */}
         <div>
@@ -95,11 +153,13 @@ export default function LoginForm({
           </label>
           <input
             type="email"
-            {...register('email')}
+            {...register("email")}
             className="w-full px-3 py-2 border rounded-md bg-gray-50 dark:bg-gray-800 dark:border-gray-700 text-sm"
           />
           {errors.email && (
-            <p className="text-red-500 text-xs mt-1">{errors.email.message}</p>
+            <p className="text-red-500 text-xs mt-1">
+              {errors.email.message}
+            </p>
           )}
         </div>
 
@@ -110,11 +170,13 @@ export default function LoginForm({
           </label>
           <input
             type="password"
-            {...register('password')}
+            {...register("password")}
             className="w-full px-3 py-2 border rounded-md bg-gray-50 dark:bg-gray-800 dark:border-gray-700 text-sm"
           />
           {errors.password && (
-            <p className="text-red-500 text-xs mt-1">{errors.password.message}</p>
+            <p className="text-red-500 text-xs mt-1">
+              {errors.password.message}
+            </p>
           )}
         </div>
 
@@ -124,7 +186,7 @@ export default function LoginForm({
           disabled={loading}
           className="w-full bg-indigo-600 hover:bg-indigo-700 text-white py-2 rounded-md text-sm font-medium"
         >
-          {loading ? 'Signing in...' : 'Sign in'}
+          {loading ? "Signing in..." : "Sign in"}
         </button>
 
         {/* Divider */}
@@ -166,7 +228,9 @@ export default function LoginForm({
       </form>
 
       {/* Modals */}
-      {showSignUpModal && <SignUpModal onClose={() => setShowSignUpModal(false)} />}
+      {showSignUpModal && (
+        <SignUpModal onClose={() => setShowSignUpModal(false)} />
+      )}
       {showForgotPasswordModal && (
         <ForgotPasswordModal onClose={() => setShowForgotPasswordModal(false)} />
       )}

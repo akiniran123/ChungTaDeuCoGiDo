@@ -35,50 +35,48 @@ export default function LoginModal({
     formState: { errors },
   } = useForm<LoginFormSchema>({ resolver: zodResolver(loginSchema) });
 
-  // ✅ Hàm tạo hoặc cập nhật hồ sơ người dùng
   // ✅ Tạo hoặc cập nhật hồ sơ người dùng trong bảng "users"
-const createUserProfile = async (user: any) => {
-  try {
-    const { data: existingUser, error: fetchError } = await supabase
-      .from("users")
-      .select("id")
-      .eq("id", user.id)
-      .maybeSingle();
-
-    if (fetchError) throw fetchError;
-
-    if (!existingUser) {
-      const newUser: Database["public"]["Tables"]["users"]["Insert"] = {
-        id: user.id,
-        username: user.user_metadata?.username || user.email.split("@")[0],
-        email: user.email,
-        created_at: new Date().toISOString(),
-        avatar_url: user.user_metadata?.avatar_url || null,
-        
-        is_online: true,
-      };
-
-      const { error: insertError } = await supabase
+  const createUserProfile = async (user: any) => {
+    try {
+      const { data: existingUser, error: fetchError } = await supabase
         .from("users")
-        .insert([newUser]);
+        .select("id")
+        .eq("id", user.id)
+        .maybeSingle();
 
-      if (insertError) throw insertError;
-      console.log("🆕 Hồ sơ người dùng mới đã được tạo trong bảng 'users'");
-    } else {
-      const { error: updateError } = await supabase
-        .from("users")
-        .update({ is_online: true })
-        .eq("id", user.id);
+      if (fetchError) throw fetchError;
 
-      if (updateError) throw updateError;
-      console.log("✅ Trạng thái online đã được cập nhật");
+      if (!existingUser) {
+        const newUser: Database["public"]["Tables"]["users"]["Insert"] = {
+          id: user.id,
+          username: user.user_metadata?.username || user.email.split("@")[0],
+          email: user.email,
+          created_at: new Date().toISOString(),
+          avatar_url: user.user_metadata?.avatar_url || null,
+          is_online: true,
+        };
+
+        const { error: insertError } = await supabase
+          .from("users")
+          .insert([newUser]);
+
+        if (insertError) throw insertError;
+        console.log("🆕 Hồ sơ người dùng mới đã được tạo trong bảng 'users'");
+      } else {
+        const { error: updateError } = await supabase
+          .from("users")
+          .update({ is_online: true })
+          .eq("id", user.id);
+
+        if (updateError) throw updateError;
+        console.log("✅ Trạng thái online đã được cập nhật");
+      }
+    } catch (err) {
+      console.error("❌ Lỗi xử lý hồ sơ người dùng:", err);
     }
-  } catch (err) {
-    console.error("❌ Lỗi xử lý hồ sơ người dùng:", err);
-  }
-};
+  };
 
-  // ✅ Xử lý đăng nhập email/password
+  // ✅ Đăng nhập bằng email/password
   const onSubmit = async (data: LoginFormSchema) => {
     try {
       setLoading(true);
@@ -115,6 +113,7 @@ const createUserProfile = async (user: any) => {
         provider: "google",
         options: {
           redirectTo: `${window.location.origin}/auth/callback`,
+          queryParams: { prompt: "select_account" }, // 🔥 hiện danh sách tài khoản Google
         },
       });
 
@@ -172,7 +171,7 @@ const createUserProfile = async (user: any) => {
           <button
             type="submit"
             disabled={loading}
-            className="w-full bg-indigo-600 hover:bg-indigo-700 text-white py-2 rounded-md text-sm font-medium"
+            className="w-full bg-indigo-600 hover:bg-indigo-700 text-white py-2 rounded-md text-sm font-medium transition-all duration-200 disabled:opacity-60"
           >
             {loading ? "Signing in..." : "Sign in"}
           </button>
@@ -185,15 +184,22 @@ const createUserProfile = async (user: any) => {
             </span>
           </div>
 
-          {/* Google */}
+          {/* Google button (sáng rõ + hover đẹp) */}
           <button
             type="button"
             onClick={handleGoogleLogin}
             disabled={loading}
-            className="w-full border px-4 py-2 rounded-md flex items-center justify-center gap-2 text-sm hover:bg-gray-50 dark:hover:bg-gray-800"
+            className={`w-full border px-4 py-2 rounded-md flex items-center justify-center gap-2 text-sm font-medium 
+              transition-all duration-200 
+              ${loading
+                ? "opacity-70 cursor-not-allowed"
+                : "bg-white dark:bg-gray-800 hover:bg-gray-100 dark:hover:bg-gray-700 active:scale-[0.98]"
+              }`}
           >
             <FcGoogle className="w-5 h-5" />
-            Continue with Google
+            <span className="text-gray-800 dark:text-gray-100">
+              Continue with Google
+            </span>
           </button>
 
           {/* Links */}

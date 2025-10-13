@@ -1,13 +1,13 @@
 "use client"
 
 import React, { useState, useMemo } from "react"
-import { Product } from "./types"
+import { NormalizedProduct } from "@/utils/normalizeProducts" // ✅ import kiểu đúng
 import { fmt } from "./utils"
 
 type Props = {
   showFilter: boolean
   setShowFilter: React.Dispatch<React.SetStateAction<boolean>>
-  products: Product[]
+  products: NormalizedProduct[] // ✅ dùng kiểu có brand/cpu/gpu/ram
   brands: string[]
   types: string[]
   cpus: string[]
@@ -31,7 +31,7 @@ type Props = {
   setRamMax: (v: number | null) => void
   priceRange: { min: number; max: number }
   resetFilters: () => void
-  applyToUrl?: () => void   // 👈 thêm prop này để fix lỗi
+  applyToUrl?: () => void
 }
 
 export default function FilterPanel({
@@ -61,14 +61,13 @@ export default function FilterPanel({
   setRamMax,
   priceRange,
   resetFilters,
-  applyToUrl,   // 👈 destructure thêm prop
+  applyToUrl,
 }: Props) {
-  // search input
   const [brandQuery, setBrandQuery] = useState("")
   const [cpuQuery, setCpuQuery] = useState("")
   const [gpuQuery, setGpuQuery] = useState("")
 
-  // counts
+  // ✅ Đếm số lượng sản phẩm theo thuộc tính
   const counts = useMemo(() => {
     const map = {
       brand: new Map<string, number>(),
@@ -76,19 +75,24 @@ export default function FilterPanel({
       gpu: new Map<string, number>(),
       ram: new Map<number, number>(),
     }
+
     for (const p of products) {
-      map.brand.set(p.brand, (map.brand.get(p.brand) ?? 0) + 1)
-      map.cpu.set(p.cpu, (map.cpu.get(p.cpu) ?? 0) + 1)
-      map.gpu.set(p.gpu, (map.gpu.get(p.gpu) ?? 0) + 1)
-      const ramValue = typeof p.ram === "string" ? parseInt(p.ram, 10) : p.ram
-      if (!isNaN(ramValue)) {
+      const brand = p.brand ?? "" // ✅ fallback rỗng để không lỗi type
+      const cpu = p.cpu ?? ""
+      const gpu = p.gpu ?? ""
+      const ramValue =
+        typeof p.ram === "string" ? parseInt(p.ram, 10) : p.ram ?? 0
+
+      if (brand) map.brand.set(brand, (map.brand.get(brand) ?? 0) + 1)
+      if (cpu) map.cpu.set(cpu, (map.cpu.get(cpu) ?? 0) + 1)
+      if (gpu) map.gpu.set(gpu, (map.gpu.get(gpu) ?? 0) + 1)
+      if (!isNaN(ramValue) && ramValue > 0)
         map.ram.set(ramValue, (map.ram.get(ramValue) ?? 0) + 1)
-      }
     }
+
     return map
   }, [products])
 
-  // filter helpers
   const toggleSet = (
     setFn: React.Dispatch<React.SetStateAction<Set<string>>>,
     value: string
@@ -251,7 +255,7 @@ export default function FilterPanel({
           </div>
         </div>
 
-        {/* Price */}
+        {/* Giá */}
         <div className="mb-4">
           <div className="flex items-center justify-between mb-2">
             <div className="text-sm font-medium">Giá</div>
@@ -279,7 +283,7 @@ export default function FilterPanel({
         <button
           onClick={() => {
             resetFilters()
-            applyToUrl?.()   // 👈 gọi thêm nếu có truyền
+            applyToUrl?.()
           }}
           className="w-full px-3 py-2 border rounded bg-white"
         >

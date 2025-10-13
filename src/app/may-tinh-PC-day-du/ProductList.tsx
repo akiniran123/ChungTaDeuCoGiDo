@@ -2,7 +2,7 @@
 
 import React, { useState } from "react"
 import { products as allProducts } from "./data"
-import { Product } from "./types"
+import { Product } from "./types.local.bak"
 import { motion, AnimatePresence } from "framer-motion"
 import ProductItem from "./ProductItem"
 

@@ -1,218 +1,197 @@
-"use client"
+"use client";
 
-import React, { useState, useMemo, useEffect } from "react"
-import { usePathname, useRouter } from "next/navigation"
-import { Monitor } from "lucide-react" // icon
+import React, { useState, useEffect, useMemo } from "react";
+import { useRouter, usePathname } from "next/navigation";
+import { Monitor } from "lucide-react";
+import { supabase } from "@/lib/supabase/client";
+import { Product } from "@/types";
+import { normalizeProducts } from "@/utils/normalizeProducts";
 
-import { products } from "./data"
-import ProductList from "./ProductList"
-import FilterPanel from "./FilterPanel"
-import FilterChips from "./FilterChips"
+import ProductList from "./ProductList";
+import FilterPanel from "./FilterPanel";
+import FilterChips from "./FilterChips";
 
 export default function PCPage() {
-  const router = useRouter()
-  const pathname = usePathname()
+  const router = useRouter();
+  const pathname = usePathname();
 
   // STATE
-  const [showFilter, setShowFilter] = useState(false)
-  const [search, setSearch] = useState("")
-  const [selectedTypes, setSelectedTypes] = useState<Set<string>>(new Set())
-  const [selectedBrands, setSelectedBrands] = useState<Set<string>>(new Set())
-  const [selectedCPUs, setSelectedCPUs] = useState<Set<string>>(new Set())
-  const [selectedGPUs, setSelectedGPUs] = useState<Set<string>>(new Set())
-  const [minPrice, setMinPrice] = useState<number | null>(null)
-  const [maxPrice, setMaxPrice] = useState<number | null>(null)
-  const [ramMin, setRamMin] = useState<number | null>(null)
-  const [ramMax, setRamMax] = useState<number | null>(null)
-  const [sortBy, setSortBy] = useState<"relevance" | "price-asc" | "price-desc" | "name-asc">(
-    "relevance"
-  )
-  const [page, setPage] = useState(1)
-  const perPage = 9
+  const [loading, setLoading] = useState(true);
+  const [products, setProducts] = useState<Product[]>([]);
+  const [showFilter, setShowFilter] = useState(false);
+  const [search, setSearch] = useState("");
+  const [selectedBrands, setSelectedBrands] = useState<Set<string>>(new Set());
+  const [minPrice, setMinPrice] = useState<number | null>(null);
+  const [maxPrice, setMaxPrice] = useState<number | null>(null);
+  const [sortBy, setSortBy] = useState<
+    "relevance" | "price-asc" | "price-desc" | "name-asc"
+  >("relevance");
+  const [page, setPage] = useState(1);
+  const perPage = 9;
 
-  // FACETS
-  const brands = useMemo(() => Array.from(new Set(products.map((p) => p.brand))).sort(), [])
-  const types = useMemo(() => Array.from(new Set(products.map((p) => p.type))).sort(), [])
-  const cpus = useMemo(() => Array.from(new Set(products.map((p) => p.cpu))).sort(), [])
-  const gpus = useMemo(() => Array.from(new Set(products.map((p) => p.gpu))).sort(), [])
-  const ramValues = useMemo(
-    () => Array.from(new Set(products.map((p) => parseInt(p.ram)))).sort((a, b) => a - b),
-    []
-  )
-
-  const priceRange = useMemo(() => {
-    const values = products.map((p) => p.price)
-    return { min: Math.min(...values), max: Math.max(...values) }
-  }, [])
-
+  // 🧠 LOAD DATA FROM SUPABASE
   useEffect(() => {
-    setMinPrice(priceRange.min)
-    setMaxPrice(priceRange.max)
-    setRamMin(ramValues[0] ?? null)
-    setRamMax(ramValues[ramValues.length - 1] ?? null)
-  }, [priceRange, ramValues])
+    const fetchProducts = async () => {
+      setLoading(true);
+      const { data, error } = await supabase
+        .from("products")
+        .select("*")
+        .eq("category", "may-tinh-PC-day-du")
+        .order("created_at", { ascending: false });
 
-  const resetFilters = () => {
-    setSearch("")
-    setSelectedTypes(new Set())
-    setSelectedBrands(new Set())
-    setSelectedCPUs(new Set())
-    setSelectedGPUs(new Set())
-    setMinPrice(priceRange.min)
-    setMaxPrice(priceRange.max)
-    setRamMin(ramValues[0] ?? null)
-    setRamMax(ramValues[ramValues.length - 1] ?? null)
-    setSortBy("relevance")
-    setPage(1)
-  }
+      if (error) {
+        console.error("Lỗi khi load sản phẩm:", error.message);
+        setProducts([]);
+      } else {
+        // ✅ Chuẩn hóa dữ liệu thật để dễ lọc/sắp xếp
+        const normalized = normalizeProducts(data || []);
+        setProducts(normalized);
+      }
+      setLoading(false);
+    };
 
-  // FILTER + SORT
+    fetchProducts();
+  }, []);
+
+  // 👉 Lấy danh sách thương hiệu (brand)
+  const brands = useMemo(
+    () =>
+      Array.from(
+        new Set(products.map((p: any) => p.brand || ""))
+      ).filter(Boolean),
+    [products]
+  );
+
+  // 👉 Lọc + tìm kiếm
   const filtered = useMemo(() => {
-    const s = search.trim().toLowerCase()
+    const s = search.trim().toLowerCase();
+
     return products
-      .filter((p) => {
-        if (s) {
-          const text = `${p.name} ${p.cpu} ${p.gpu} ${p.brand}`.toLowerCase()
-          if (!text.includes(s)) return false
-        }
-        if (selectedTypes.size > 0 && !selectedTypes.has(p.type)) return false
-        if (selectedBrands.size > 0 && !selectedBrands.has(p.brand)) return false
-        if (selectedCPUs.size > 0 && !selectedCPUs.has(p.cpu)) return false
-        if (selectedGPUs.size > 0 && !selectedGPUs.has(p.gpu)) return false
-        if (minPrice !== null && p.price < minPrice) return false
-        if (maxPrice !== null && p.price > maxPrice) return false
-        const pr = parseInt(p.ram)
-        if (ramMin !== null && pr < ramMin) return false
-        if (ramMax !== null && pr > ramMax) return false
-        return true
-      })
-      .sort((a, b) => {
-        if (sortBy === "price-asc") return a.price - b.price
-        if (sortBy === "price-desc") return b.price - a.price
-        if (sortBy === "name-asc") return a.name.localeCompare(b.name)
-        return a.id - b.id
-      })
-  }, [
-    search,
-    selectedTypes,
-    selectedBrands,
-    selectedCPUs,
-    selectedGPUs,
-    minPrice,
-    maxPrice,
-    ramMin,
-    ramMax,
-    sortBy,
-  ])
+      .filter((p: any) => {
+        if (s && !`${p.title} ${p.description}`.toLowerCase().includes(s))
+          return false;
 
-  // PAGINATION
+        if (selectedBrands.size > 0 && !selectedBrands.has(p.brand)) return false;
+        if (minPrice !== null && (p.price || 0) < minPrice) return false;
+        if (maxPrice !== null && (p.price || 0) > maxPrice) return false;
+        return true;
+      })
+      .sort((a: any, b: any) => {
+        if (sortBy === "price-asc") return (a.price || 0) - (b.price || 0);
+        if (sortBy === "price-desc") return (b.price || 0) - (a.price || 0);
+        if (sortBy === "name-asc") return (a.title || "").localeCompare(b.title || "");
+        return 0;
+      });
+  }, [search, selectedBrands, minPrice, maxPrice, sortBy, products]);
+
+  // 👉 Phân trang
   const paginated = useMemo(() => {
-    const start = (page - 1) * perPage
-    return filtered.slice(start, start + perPage)
-  }, [filtered, page])
+    const start = (page - 1) * perPage;
+    return filtered.slice(start, start + perPage);
+  }, [filtered, page]);
 
-  const totalPages = Math.max(1, Math.ceil(filtered.length / perPage))
+  const totalPages = Math.max(1, Math.ceil(filtered.length / perPage));
 
-  // chips
+  // 👉 Chips lọc hiển thị trên giao diện
   const chips = useMemo(() => {
-    const out: { key: string; label: string; onRemove: () => void }[] = []
-    selectedTypes.forEach((t) =>
-      out.push({
-        key: `type-${t}`,
-        label: t,
-        onRemove: () => setSelectedTypes(new Set([...selectedTypes].filter((x) => x !== t))),
-      })
-    )
+    const out: { key: string; label: string; onRemove: () => void }[] = [];
+
     selectedBrands.forEach((b) =>
       out.push({
         key: `brand-${b}`,
         label: b,
-        onRemove: () => setSelectedBrands(new Set([...selectedBrands].filter((x) => x !== b))),
+        onRemove: () =>
+          setSelectedBrands(new Set([...selectedBrands].filter((x) => x !== b))),
       })
-    )
-    selectedCPUs.forEach((c) =>
-      out.push({
-        key: `cpu-${c}`,
-        label: c,
-        onRemove: () => setSelectedCPUs(new Set([...selectedCPUs].filter((x) => x !== c))),
-      })
-    )
-    selectedGPUs.forEach((g) =>
-      out.push({
-        key: `gpu-${g}`,
-        label: g,
-        onRemove: () => setSelectedGPUs(new Set([...selectedGPUs].filter((x) => x !== g))),
-      })
-    )
-    if (search) out.unshift({ key: "q", label: `"${search}"`, onRemove: () => setSearch("") })
-    return out
-  }, [selectedTypes, selectedBrands, selectedCPUs, selectedGPUs, search])
+    );
 
-  // Apply filters to URL (simple)
+    if (search)
+      out.unshift({
+        key: "q",
+        label: `"${search}"`,
+        onRemove: () => setSearch(""),
+      });
+
+    return out;
+  }, [selectedBrands, search]);
+
+  // 👉 Áp dụng filter lên URL (SEO-friendly)
   const applyToUrl = () => {
-    const params = new URLSearchParams()
-    if (search) params.set("q", search)
-    if (selectedBrands.size) params.set("brands", Array.from(selectedBrands).join(","))
-    if (selectedTypes.size) params.set("types", Array.from(selectedTypes).join(","))
-    if (selectedCPUs.size) params.set("cpus", Array.from(selectedCPUs).join(","))
-    if (selectedGPUs.size) params.set("gpus", Array.from(selectedGPUs).join(","))
-    if (minPrice !== null) params.set("minPrice", String(minPrice))
-    if (maxPrice !== null) params.set("maxPrice", String(maxPrice))
-    if (ramMin !== null) params.set("ramMin", String(ramMin))
-    if (ramMax !== null) params.set("ramMax", String(ramMax))
-    if (sortBy) params.set("sort", sortBy)
-    params.set("page", String(page))
-    const url = `${pathname}?${params.toString()}`
-    router.replace(url)
-  }
+    const params = new URLSearchParams();
+    if (search) params.set("q", search);
+    if (selectedBrands.size)
+      params.set("brands", Array.from(selectedBrands).join(","));
+    if (minPrice !== null) params.set("minPrice", String(minPrice));
+    if (maxPrice !== null) params.set("maxPrice", String(maxPrice));
+    params.set("sort", sortBy);
+    params.set("page", String(page));
+    router.replace(`${pathname}?${params.toString()}`);
+  };
+
+  if (loading)
+    return (
+      <div className="min-h-screen flex items-center justify-center">
+        <p>Đang tải sản phẩm...</p>
+      </div>
+    );
 
   return (
     <div className="max-w-7xl mx-auto px-4 pt-24 pb-16 flex gap-6">
+      {/* Bộ lọc bên trái */}
       <FilterPanel
-        showFilter={showFilter}
-        setShowFilter={setShowFilter}
-        products={products}
-        brands={brands}
-        types={types}
-        cpus={cpus}
-        gpus={gpus}
-        ramValues={ramValues}
-        selectedTypes={selectedTypes}
-        setSelectedTypes={setSelectedTypes}
-        selectedBrands={selectedBrands}
-        setSelectedBrands={setSelectedBrands}
-        selectedCPUs={selectedCPUs}
-        setSelectedCPUs={setSelectedCPUs}
-        selectedGPUs={selectedGPUs}
-        setSelectedGPUs={setSelectedGPUs}
-        minPrice={minPrice}
-        setMinPrice={setMinPrice}
-        maxPrice={maxPrice}
-        setMaxPrice={setMaxPrice}
-        ramMin={ramMin}
-        setRamMin={setRamMin}
-        ramMax={ramMax}
-        setRamMax={setRamMax}
-        priceRange={priceRange}
-        resetFilters={resetFilters}
-        applyToUrl={applyToUrl}
-      />
+  showFilter={showFilter}
+  setShowFilter={setShowFilter}
+  products={products}                 // ✅ thêm
+  brands={brands}
+  types={["gaming", "office", "workstation", "mini"]}  // ✅ tạm hardcode loại PC
+  cpus={Array.from(new Set(products.map(p => p.cpu || ""))).filter(Boolean)}  // ✅
+  gpus={Array.from(new Set(products.map(p => p.gpu || ""))).filter(Boolean)}  // ✅
+  ramValues={[4, 8, 16, 32, 64]}     // ✅ có thể lấy từ dữ liệu thật sau
+  selectedTypes={new Set()}          // ✅ nếu chưa làm loại thì để tạm trống
+  setSelectedTypes={() => {}}        // ✅ placeholder
+  selectedBrands={selectedBrands}
+  setSelectedBrands={setSelectedBrands}
+  selectedCPUs={new Set()}           // ✅ placeholder
+  setSelectedCPUs={() => {}}         // ✅ placeholder
+  selectedGPUs={new Set()}           // ✅ placeholder
+  setSelectedGPUs={() => {}}         // ✅ placeholder
+  minPrice={minPrice}
+  setMinPrice={setMinPrice}
+  maxPrice={maxPrice}
+  setMaxPrice={setMaxPrice}
+  ramMin={null}                      // ✅ placeholder
+  setRamMin={() => {}}               // ✅ placeholder
+  ramMax={null}
+  setRamMax={() => {}}               // ✅ placeholder
+  priceRange={{ min: 0, max: 200000000 }} // ✅ ví dụ
+  resetFilters={() => {
+    setSearch("");
+    setSelectedBrands(new Set());
+    setMinPrice(null);
+    setMaxPrice(null);
+    setSortBy("relevance");
+    setPage(1);
+  }}
+  applyToUrl={applyToUrl}
+/>
 
+
+      {/* Nội dung chính */}
       <main className="flex-1">
-        {/* Thêm tiêu đề + icon */}
         <div className="flex items-center gap-2 mb-6">
           <Monitor className="w-6 h-6 text-[#9b4de0]" />
-          <h1 className="text-xl font-semibold">Danh sách PC</h1>
+          <h1 className="text-xl font-semibold">Máy tính PC đầy đủ</h1>
         </div>
 
+        {/* Thanh tìm kiếm + sắp xếp */}
         <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4 mb-4">
           <input
             type="text"
             placeholder="Tìm kiếm PC..."
             value={search}
             onChange={(e) => {
-              setSearch(e.target.value)
-              setPage(1)
+              setSearch(e.target.value);
+              setPage(1);
             }}
             className="w-full sm:w-1/2 border rounded px-3 py-2"
           />
@@ -228,14 +207,16 @@ export default function PCPage() {
           </select>
         </div>
 
+        {/* Chips lọc */}
         <FilterChips chips={chips} />
 
-        {/* Chuyển trang chi tiết sản phẩm */}
+        {/* Danh sách sản phẩm */}
         <ProductList
           paginated={paginated}
           onSelectProduct={(id) => router.push(`/may-tinh-PC-day-du/${id}`)}
         />
 
+        {/* Phân trang */}
         <div className="mt-6 flex justify-center gap-2">
           {Array.from({ length: totalPages }, (_, i) => i + 1).map((n) => (
             <button
@@ -251,5 +232,5 @@ export default function PCPage() {
         </div>
       </main>
     </div>
-  )
+  );
 }

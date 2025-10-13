@@ -2,8 +2,8 @@
 
 import React, { createContext, useContext, useState, ReactNode } from "react";
 
-export type CartItem = {   // ✅ thêm export ở đây
-  id: number;
+export type CartItem = {
+  id: string;           // ✅ đổi sang string để khớp với Product thật
   name: string;
   price: number;
   image: string;
@@ -13,7 +13,7 @@ export type CartItem = {   // ✅ thêm export ở đây
 type CartContextType = {
   cart: CartItem[];
   addToCart: (item: CartItem) => void;
-  removeFromCart: (id: number) => void;
+  removeFromCart: (id: string) => void; // ✅ đồng bộ luôn
   clearCart: () => void;
 };
 
@@ -36,7 +36,7 @@ export function CartProvider({ children }: { children: ReactNode }) {
     });
   };
 
-  const removeFromCart = (id: number) => {
+  const removeFromCart = (id: string) => {
     setCart((prev) => prev.filter((p) => p.id !== id));
   };
 

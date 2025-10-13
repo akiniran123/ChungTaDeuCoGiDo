@@ -2,19 +2,20 @@ import { createServerClient } from '@supabase/ssr'
 import { cookies } from 'next/headers'
 import type { Database } from '@/types/supabase'
 
-// ✅ Phải dùng async vì cookies() là Promise
 export async function getServerClient() {
-  const cookieStore = await cookies() // ⬅️ Thêm await ở đây
+  const cookieStore = await cookies()
 
-  return createServerClient<Database>(
+  const supabase = createServerClient<Database>(
     process.env.NEXT_PUBLIC_SUPABASE_URL!,
-    process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!,
+    process.env.SUPABASE_SERVICE_ROLE_KEY!, // 🔑 dùng key riêng cho server
     {
       cookies: {
-        get(name) {
+        get(name: string) {
           return cookieStore.get(name)?.value
         },
       },
     }
   )
+
+  return supabase
 }

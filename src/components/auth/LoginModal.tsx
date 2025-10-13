@@ -20,8 +20,12 @@ type LoginFormSchema = z.infer<typeof loginSchema>;
 
 export default function LoginModal({
   onLoginSuccess,
+  redirectTo,
+  onClose,
 }: {
   onLoginSuccess?: () => void;
+  redirectTo?: string;
+  onClose: () => void;
 }) {
   const router = useRouter();
   const [errorMsg, setErrorMsg] = useState("");
@@ -95,7 +99,12 @@ export default function LoginModal({
       console.log("✅ Đăng nhập thành công:", res);
       router.refresh();
       onLoginSuccess?.();
-      window.location.href = "/";
+
+      // ✅ Nếu có redirectTo thì chuyển hướng đến đó, ngược lại về trang chủ
+      if (redirectTo) router.push(redirectTo);
+      else window.location.href = "/";
+
+      onClose(); // ✅ đóng modal sau khi đăng nhập
     } catch (err: any) {
       setErrorMsg(err.message || "Login failed");
     } finally {
@@ -113,7 +122,7 @@ export default function LoginModal({
         provider: "google",
         options: {
           redirectTo: `${window.location.origin}/auth/callback`,
-          queryParams: { prompt: "select_account" }, // 🔥 hiện danh sách tài khoản Google
+          queryParams: { prompt: "select_account" },
         },
       });
 
@@ -184,7 +193,7 @@ export default function LoginModal({
             </span>
           </div>
 
-          {/* Google button (sáng rõ + hover đẹp) */}
+          {/* Google button */}
           <button
             type="button"
             onClick={handleGoogleLogin}

@@ -68,7 +68,7 @@ const DealCardSmall: React.FC<DealCardProps> = ({
   const handleSave = () => {
     setSaved(!saved);
     addToCart({
-      id: deal.id,
+      id: String(deal.id), // ✅ ép kiểu sang string
       name: deal.title,
       price: 0,
       image: deal.image || "",
@@ -97,7 +97,7 @@ const DealCardSmall: React.FC<DealCardProps> = ({
         />
 
         <div className="flex-1 flex flex-col justify-between">
-          <Link href={`/deal/${deal.id}`} className="no-underline hover:text-pink-600">
+          <Link href={`/deal/${String(deal.id)}`} className="no-underline hover:text-pink-600">
             <div>
               <h3 className="font-semibold text-base md:text-lg">{deal.title}</h3>
               <p className="text-sm text-gray-600 line-clamp-2">{deal.content}</p>
@@ -141,7 +141,7 @@ const DealCardSmall: React.FC<DealCardProps> = ({
               <div className="flex items-center bg-gray-100 rounded-full px-2 py-1 shadow-sm">
                 <button
                   onClick={() => {
-                    const url = `${window.location.href}#deal-${deal.id}`;
+                    const url = `${window.location.href}#deal-${String(deal.id)}`;
                     if (navigator.share) navigator.share({ title: deal.title, url });
                     else {
                       navigator.clipboard.writeText(url);
@@ -155,7 +155,6 @@ const DealCardSmall: React.FC<DealCardProps> = ({
               </div>
             </div>
 
-            {/* ✅ Save (Thêm vào giỏ) */}
             <div className="flex items-center bg-gray-100 rounded-full px-2 py-1 shadow-sm">
               <button
                 onClick={handleSave}
@@ -168,7 +167,6 @@ const DealCardSmall: React.FC<DealCardProps> = ({
         </div>
       </motion.div>
 
-      {/* 🌟 Lightbox */}
       {showLightbox && mediaList.length > 0 && (
         <div
           className="fixed inset-0 bg-black/90 backdrop-blur-sm flex items-center justify-center z-[9999]"
@@ -180,7 +178,6 @@ const DealCardSmall: React.FC<DealCardProps> = ({
             className="max-h-[90vh] max-w-[90vw] object-contain rounded-lg"
           />
 
-          {/* Prev */}
           <button
             onClick={(e) => {
               e.stopPropagation();
@@ -194,7 +191,6 @@ const DealCardSmall: React.FC<DealCardProps> = ({
             <ChevronLeft size={36} className="drop-shadow-md" />
           </button>
 
-          {/* Next */}
           <button
             onClick={(e) => {
               e.stopPropagation();
@@ -208,7 +204,6 @@ const DealCardSmall: React.FC<DealCardProps> = ({
             <ChevronRight size={36} className="drop-shadow-md" />
           </button>
 
-          {/* Close */}
           <button
             onClick={(e) => {
               e.stopPropagation();
@@ -265,7 +260,7 @@ const DealCard: React.FC<DealCardProps> = ({
   const handleSave = () => {
     setSaved(!saved);
     addToCart({
-      id: deal.id,
+      id: String(deal.id), // ✅ ép kiểu sang string
       name: deal.title,
       price: 0,
       image: deal.image || "",
@@ -282,7 +277,7 @@ const DealCard: React.FC<DealCardProps> = ({
           className={`flex flex-col transition-all mx-auto rounded-lg shadow ${
             bigger ? "max-w-3xl" : "max-w-xl"
           } ${isAd ? "bg-yellow-50 border-l-4 border-yellow-400" : "bg-white"}`}
-          id={`deal-${deal.id}`}
+          id={`deal-${String(deal.id)}`} // ✅ ép id thành string
         >
           {isAd && (
             <span className="text-sm font-bold text-yellow-700 m-3 inline-block">
@@ -305,7 +300,7 @@ const DealCard: React.FC<DealCardProps> = ({
             </div>
 
             <Link
-              href={`/deal/${deal.id}`}
+              href={`/deal/${String(deal.id)}`} // ✅ ép id thành string
               className="block mt-2 no-underline hover:text-pink-600 transition-colors"
             >
               <h3 className="font-semibold text-base md:text-lg">{deal.title}</h3>
@@ -349,7 +344,6 @@ const DealCard: React.FC<DealCardProps> = ({
                   )}
                 </div>
 
-                {/* 🌫️ Nút Prev */}
                 <button
                   onClick={prevMedia}
                   className="absolute left-4 top-1/2 -translate-y-1/2 z-10
@@ -360,7 +354,6 @@ const DealCard: React.FC<DealCardProps> = ({
                   <ChevronLeft size={30} className="drop-shadow-sm" />
                 </button>
 
-                {/* 🌫️ Nút Next */}
                 <button
                   onClick={nextMedia}
                   className="absolute right-4 top-1/2 -translate-y-1/2 z-10
@@ -386,7 +379,6 @@ const DealCard: React.FC<DealCardProps> = ({
                 className="max-h-[90vh] max-w-[90vw] object-contain rounded-lg"
               />
 
-              {/* Prev */}
               <button
                 onClick={(e) => {
                   e.stopPropagation();
@@ -400,7 +392,6 @@ const DealCard: React.FC<DealCardProps> = ({
                 <ChevronLeft size={36} className="drop-shadow-md" />
               </button>
 
-              {/* Next */}
               <button
                 onClick={(e) => {
                   e.stopPropagation();
@@ -414,7 +405,6 @@ const DealCard: React.FC<DealCardProps> = ({
                 <ChevronRight size={36} className="drop-shadow-md" />
               </button>
 
-              {/* Close */}
               <button
                 onClick={(e) => {
                   e.stopPropagation();
@@ -428,7 +418,6 @@ const DealCard: React.FC<DealCardProps> = ({
             </div>
           )}
 
-          {/* Icon hàng cuối */}
           {!isAd && (
             <div className="flex items-center justify-between gap-2 mt-3 text-sm text-gray-700 pl-3 mb-3">
               <div className="flex items-center gap-2">
@@ -459,7 +448,7 @@ const DealCard: React.FC<DealCardProps> = ({
                 <div className="flex items-center bg-gray-100 rounded-full px-2 py-1 shadow-sm">
                   <button
                     onClick={() => {
-                      const url = `${window.location.href}#deal-${deal.id}`;
+                      const url = `${window.location.href}#deal-${String(deal.id)}`;
                       if (navigator.share) navigator.share({ title: deal.title, url });
                       else {
                         navigator.clipboard.writeText(url);
@@ -473,7 +462,6 @@ const DealCard: React.FC<DealCardProps> = ({
                 </div>
               </div>
 
-              {/* ✅ Save → Thêm vào giỏ */}
               <div className="flex items-center bg-gray-100 rounded-full px-2 py-1 shadow-sm mr-3">
                 <button
                   onClick={handleSave}

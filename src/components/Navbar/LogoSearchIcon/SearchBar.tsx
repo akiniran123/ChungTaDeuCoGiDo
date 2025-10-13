@@ -36,8 +36,9 @@ export default function SearchBar() {
       setLoading(true)
       setError(null)
 
+      // 🔥 Sửa duy nhất chỗ này: đổi 'listings' -> 'products'
       const { data, error } = await supabase
-        .from('listings')
+        .from('products')
         .select('id, title')
         .ilike('title', `%${query}%`)
         .limit(5)

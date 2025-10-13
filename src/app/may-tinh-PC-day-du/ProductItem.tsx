@@ -1,7 +1,7 @@
 "use client"
 
 import Link from "next/link"
-import { Product } from "./types"
+import { Product } from "./types.local.bak"
 import ProductActions from "./ProductActions"
 import { useState } from "react"
 import { Bookmark } from "lucide-react"

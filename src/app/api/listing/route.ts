@@ -1,15 +1,15 @@
 // src/app/api/listing/route.ts
 import { NextRequest } from 'next/server';
-import { createServerClient } from '@/lib/supabase/serverClient';
+import { getServerClient } from '@/lib/supabase/serverClient';
 
 export async function POST(req: NextRequest) {
   const body = await req.json();
-  const supabase = createServerClient();
+  const supabase = await getServerClient();
 
   const { error } = await supabase.from('products').insert([
     {
       ...body,
-      created_at: new Date().toISOString() // ✅ đã bỏ dấu phẩy dư
+      created_at: new Date().toISOString()
     },
   ]);
 

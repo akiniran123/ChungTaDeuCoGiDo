@@ -22,20 +22,17 @@ export default function PCPage() {
   const [selectedBrands, setSelectedBrands] = useState<Set<string>>(new Set());
   const [minPrice, setMinPrice] = useState<number | null>(null);
   const [maxPrice, setMaxPrice] = useState<number | null>(null);
-  const [sortBy, setSortBy] = useState<
-    "relevance" | "price-asc" | "price-desc" | "name-asc"
-  >("relevance");
+  const [sortBy, setSortBy] = useState<"relevance" | "price-asc" | "price-desc" | "name-asc">("relevance");
   const [page, setPage] = useState(1);
   const perPage = 9;
 
-  // 🧠 Fetch từ Supabase
+  // 🧠 Fetch tất cả sản phẩm từ Supabase
   useEffect(() => {
     const fetchProducts = async () => {
       setLoading(true);
       const { data, error } = await supabase
         .from("products")
         .select("*")
-        .eq("category", "may-tinh-PC-day-du")
         .order("created_at", { ascending: false });
 
       if (error) {
@@ -51,24 +48,18 @@ export default function PCPage() {
     fetchProducts();
   }, []);
 
-  // 👉 Tạo danh sách brand
+  // 👉 Danh sách brand
   const brands = useMemo(
-    () =>
-      Array.from(
-        new Set(products.map((p: any) => p.brand || ""))
-      ).filter(Boolean),
+    () => Array.from(new Set(products.map((p: any) => p.brand || ""))).filter(Boolean),
     [products]
   );
 
   // 👉 Lọc + tìm kiếm
   const filtered = useMemo(() => {
     const s = search.trim().toLowerCase();
-
     return products
       .filter((p: any) => {
-        if (s && !`${p.title} ${p.description}`.toLowerCase().includes(s))
-          return false;
-
+        if (s && !`${p.title} ${p.description}`.toLowerCase().includes(s)) return false;
         if (selectedBrands.size > 0 && !selectedBrands.has(p.brand)) return false;
         if (minPrice !== null && (p.price || 0) < minPrice) return false;
         if (maxPrice !== null && (p.price || 0) > maxPrice) return false;
@@ -77,8 +68,7 @@ export default function PCPage() {
       .sort((a: any, b: any) => {
         if (sortBy === "price-asc") return (a.price || 0) - (b.price || 0);
         if (sortBy === "price-desc") return (b.price || 0) - (a.price || 0);
-        if (sortBy === "name-asc")
-          return (a.title || "").localeCompare(b.title || "");
+        if (sortBy === "name-asc") return (a.title || "").localeCompare(b.title || "");
         return 0;
       });
   }, [search, selectedBrands, minPrice, maxPrice, sortBy, products]);
@@ -118,8 +108,7 @@ export default function PCPage() {
   const applyToUrl = () => {
     const params = new URLSearchParams();
     if (search) params.set("q", search);
-    if (selectedBrands.size)
-      params.set("brands", Array.from(selectedBrands).join(","));
+    if (selectedBrands.size) params.set("brands", Array.from(selectedBrands).join(","));
     if (minPrice !== null) params.set("minPrice", String(minPrice));
     if (maxPrice !== null) params.set("maxPrice", String(maxPrice));
     params.set("sort", sortBy);
@@ -205,8 +194,10 @@ export default function PCPage() {
           </select>
         </div>
 
+        {/* Chips lọc */}
         <FilterChips chips={chips} />
 
+        {/* Danh sách sản phẩm */}
         <ProductList
           paginated={paginated}
           onSelectProduct={(id) => router.push(`/may-tinh-PC-day-du/${id}`)}

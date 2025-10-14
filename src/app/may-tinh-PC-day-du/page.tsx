@@ -15,7 +15,6 @@ export default function PCPage() {
   const router = useRouter();
   const pathname = usePathname();
 
-  // STATE
   const [loading, setLoading] = useState(true);
   const [products, setProducts] = useState<Product[]>([]);
   const [showFilter, setShowFilter] = useState(false);
@@ -29,7 +28,7 @@ export default function PCPage() {
   const [page, setPage] = useState(1);
   const perPage = 9;
 
-  // 🧠 LOAD DATA FROM SUPABASE
+  // 🧠 Fetch từ Supabase
   useEffect(() => {
     const fetchProducts = async () => {
       setLoading(true);
@@ -43,7 +42,6 @@ export default function PCPage() {
         console.error("Lỗi khi load sản phẩm:", error.message);
         setProducts([]);
       } else {
-        // ✅ Chuẩn hóa dữ liệu thật để dễ lọc/sắp xếp
         const normalized = normalizeProducts(data || []);
         setProducts(normalized);
       }
@@ -53,7 +51,7 @@ export default function PCPage() {
     fetchProducts();
   }, []);
 
-  // 👉 Lấy danh sách thương hiệu (brand)
+  // 👉 Tạo danh sách brand
   const brands = useMemo(
     () =>
       Array.from(
@@ -79,7 +77,8 @@ export default function PCPage() {
       .sort((a: any, b: any) => {
         if (sortBy === "price-asc") return (a.price || 0) - (b.price || 0);
         if (sortBy === "price-desc") return (b.price || 0) - (a.price || 0);
-        if (sortBy === "name-asc") return (a.title || "").localeCompare(b.title || "");
+        if (sortBy === "name-asc")
+          return (a.title || "").localeCompare(b.title || "");
         return 0;
       });
   }, [search, selectedBrands, minPrice, maxPrice, sortBy, products]);
@@ -92,7 +91,7 @@ export default function PCPage() {
 
   const totalPages = Math.max(1, Math.ceil(filtered.length / perPage));
 
-  // 👉 Chips lọc hiển thị trên giao diện
+  // 👉 Filter chips
   const chips = useMemo(() => {
     const out: { key: string; label: string; onRemove: () => void }[] = [];
 
@@ -115,7 +114,7 @@ export default function PCPage() {
     return out;
   }, [selectedBrands, search]);
 
-  // 👉 Áp dụng filter lên URL (SEO-friendly)
+  // 👉 Áp dụng filter lên URL
   const applyToUrl = () => {
     const params = new URLSearchParams();
     if (search) params.set("q", search);
@@ -139,42 +138,41 @@ export default function PCPage() {
     <div className="max-w-7xl mx-auto px-4 pt-24 pb-16 flex gap-6">
       {/* Bộ lọc bên trái */}
       <FilterPanel
-  showFilter={showFilter}
-  setShowFilter={setShowFilter}
-  products={products}                 // ✅ thêm
-  brands={brands}
-  types={["gaming", "office", "workstation", "mini"]}  // ✅ tạm hardcode loại PC
-  cpus={Array.from(new Set(products.map(p => p.cpu || ""))).filter(Boolean)}  // ✅
-  gpus={Array.from(new Set(products.map(p => p.gpu || ""))).filter(Boolean)}  // ✅
-  ramValues={[4, 8, 16, 32, 64]}     // ✅ có thể lấy từ dữ liệu thật sau
-  selectedTypes={new Set()}          // ✅ nếu chưa làm loại thì để tạm trống
-  setSelectedTypes={() => {}}        // ✅ placeholder
-  selectedBrands={selectedBrands}
-  setSelectedBrands={setSelectedBrands}
-  selectedCPUs={new Set()}           // ✅ placeholder
-  setSelectedCPUs={() => {}}         // ✅ placeholder
-  selectedGPUs={new Set()}           // ✅ placeholder
-  setSelectedGPUs={() => {}}         // ✅ placeholder
-  minPrice={minPrice}
-  setMinPrice={setMinPrice}
-  maxPrice={maxPrice}
-  setMaxPrice={setMaxPrice}
-  ramMin={null}                      // ✅ placeholder
-  setRamMin={() => {}}               // ✅ placeholder
-  ramMax={null}
-  setRamMax={() => {}}               // ✅ placeholder
-  priceRange={{ min: 0, max: 200000000 }} // ✅ ví dụ
-  resetFilters={() => {
-    setSearch("");
-    setSelectedBrands(new Set());
-    setMinPrice(null);
-    setMaxPrice(null);
-    setSortBy("relevance");
-    setPage(1);
-  }}
-  applyToUrl={applyToUrl}
-/>
-
+        showFilter={showFilter}
+        setShowFilter={setShowFilter}
+        products={products}
+        brands={brands}
+        types={["gaming", "office", "workstation", "mini"]}
+        cpus={Array.from(new Set(products.map((p) => p.cpu || ""))).filter(Boolean)}
+        gpus={Array.from(new Set(products.map((p) => p.gpu || ""))).filter(Boolean)}
+        ramValues={[4, 8, 16, 32, 64]}
+        selectedTypes={new Set()}
+        setSelectedTypes={() => {}}
+        selectedBrands={selectedBrands}
+        setSelectedBrands={setSelectedBrands}
+        selectedCPUs={new Set()}
+        setSelectedCPUs={() => {}}
+        selectedGPUs={new Set()}
+        setSelectedGPUs={() => {}}
+        minPrice={minPrice}
+        setMinPrice={setMinPrice}
+        maxPrice={maxPrice}
+        setMaxPrice={setMaxPrice}
+        ramMin={null}
+        setRamMin={() => {}}
+        ramMax={null}
+        setRamMax={() => {}}
+        priceRange={{ min: 0, max: 200000000 }}
+        resetFilters={() => {
+          setSearch("");
+          setSelectedBrands(new Set());
+          setMinPrice(null);
+          setMaxPrice(null);
+          setSortBy("relevance");
+          setPage(1);
+        }}
+        applyToUrl={applyToUrl}
+      />
 
       {/* Nội dung chính */}
       <main className="flex-1">
@@ -207,10 +205,8 @@ export default function PCPage() {
           </select>
         </div>
 
-        {/* Chips lọc */}
         <FilterChips chips={chips} />
 
-        {/* Danh sách sản phẩm */}
         <ProductList
           paginated={paginated}
           onSelectProduct={(id) => router.push(`/may-tinh-PC-day-du/${id}`)}

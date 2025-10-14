@@ -13,15 +13,20 @@ const nextConfig: NextConfig = {
       },
       {
         protocol: "https",
-        hostname: "lh3.googleusercontent.com", // Cho phép ảnh avatar Google
+        hostname: "lh3.googleusercontent.com",
       },
       {
         protocol: "https",
-        hostname: "avatars.githubusercontent.com", // Nếu dùng GitHub login
+        hostname: "avatars.githubusercontent.com",
       },
       {
         protocol: "https",
-        hostname: "cdn.discordapp.com", // Nếu dùng Discord login
+        hostname: "cdn.discordapp.com",
+      },
+      {
+        protocol: "https",
+        hostname: "kzfmunxbdfdfxumerulj.supabase.co", // 👈 Thêm dòng này
+        pathname: "/storage/v1/object/public/**",
       },
     ],
   },

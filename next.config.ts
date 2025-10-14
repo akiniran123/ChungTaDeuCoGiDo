@@ -1,5 +1,6 @@
-/** @type {import('next').NextConfig} */
-const nextConfig = {
+import type { NextConfig } from "next";
+
+const nextConfig: NextConfig = {
   images: {
     remotePatterns: [
       {
@@ -12,18 +13,18 @@ const nextConfig = {
       },
       {
         protocol: "https",
-        hostname: "lh3.googleusercontent.com", // ✅ Cho phép ảnh avatar Google
+        hostname: "lh3.googleusercontent.com", // Cho phép ảnh avatar Google
       },
       {
         protocol: "https",
-        hostname: "avatars.githubusercontent.com", // (Tuỳ chọn) nếu dùng GitHub login
+        hostname: "avatars.githubusercontent.com", // Nếu dùng GitHub login
       },
       {
         protocol: "https",
-        hostname: "cdn.discordapp.com", // (Tuỳ chọn) nếu dùng Discord login
+        hostname: "cdn.discordapp.com", // Nếu dùng Discord login
       },
     ],
   },
 };
 
-module.exports = nextConfig;
+export default nextConfig;

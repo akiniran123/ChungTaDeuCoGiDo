@@ -1,7 +1,9 @@
 "use client";
-import React, { useState } from "react";
+
+import React, { useState, useEffect } from "react";
 import Link from "next/link";
 import { Home, Info, HelpCircle, Users, Link2, Folder } from "lucide-react";
+import { supabase } from "@/lib/supabase/client";
 
 type Category = {
   label: string;
@@ -15,6 +17,7 @@ type SidebarLeftProps = {
 
 export default function SidebarLeft({ categories }: SidebarLeftProps) {
   const [openMenu, setOpenMenu] = useState<string | null>(null);
+  const [communities, setCommunities] = useState<{ id: string; title: string | null }[]>([]);
 
   const handleToggle = (label: string) => {
     setOpenMenu(openMenu === label ? null : label);
@@ -38,6 +41,41 @@ export default function SidebarLeft({ categories }: SidebarLeftProps) {
   const isSpecialCategory = (label: string) =>
     ["Về chúng tôi", "Hỗ trợ", "Cộng đồng", "Kết nối"].includes(label);
 
+  // 🧠 Lấy danh sách cộng đồng từ Supabase
+  useEffect(() => {
+    async function fetchCommunities() {
+      const { data, error } = await supabase
+        .from("communities")
+        .select("id, title")
+        .order("created_at", { ascending: false });
+
+      if (error) {
+        console.error("Lỗi tải communities:", error);
+      } else {
+        setCommunities(data || []);
+      }
+    }
+
+    fetchCommunities();
+  }, []);
+
+  // ✅ Chèn communities vào danh mục "Cộng đồng"
+  const categoriesWithCommunities = categories.map((cat) =>
+    cat.label === "Cộng đồng"
+      ? {
+          ...cat,
+          children: [
+            ...(cat.children || []),
+            ...communities.map((c) => ({
+              label: c.title || "Không tên",
+              href: `/communities/${c.id}`,
+            })),
+            { label: "+ Tạo cộng đồng", href: "/create-community" }, // nút tạo mới
+          ],
+        }
+      : cat
+  );
+
   return (
     <div className="h-[calc(100vh-5rem)] overflow-y-auto px-2">
       <div className="flex flex-col mb-3">
@@ -52,7 +90,7 @@ export default function SidebarLeft({ categories }: SidebarLeftProps) {
       </div>
 
       <ul className="space-y-2">
-        {categories.map((cat) => (
+        {categoriesWithCommunities.map((cat) => (
           <li key={cat.label}>
             {cat.label === "Về chúng tôi" && (
               <hr className="my-2 border-t border-gray-300 border-[1.5px]" />

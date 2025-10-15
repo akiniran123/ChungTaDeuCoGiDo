@@ -4,6 +4,7 @@ import { useState, useEffect } from "react";
 import { supabase } from "@/lib/supabase/client";
 import { Loader2, Users } from "lucide-react";
 import { useRouter } from "next/navigation";
+import { v4 as uuidv4 } from "uuid"; // ✅ thêm dòng này
 
 export default function CreateCommunityPage() {
   const router = useRouter();
@@ -19,9 +20,9 @@ export default function CreateCommunityPage() {
 
   const [loading, setLoading] = useState(false);
   const [message, setMessage] = useState("");
-  const [communities, setCommunities] = useState<any[]>([]); // 🆕 Danh sách cộng đồng
+  const [communities, setCommunities] = useState<any[]>([]);
 
-  // 🆕 Lấy danh sách cộng đồng hiện có từ Supabase
+  // ✅ Lấy danh sách cộng đồng từ Supabase
   useEffect(() => {
     const fetchCommunities = async () => {
       const { data, error } = await supabase
@@ -46,20 +47,24 @@ export default function CreateCommunityPage() {
     setFormData((prev) => ({ ...prev, [name]: value }));
   };
 
+  // ✅ Sửa phần này
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setLoading(true);
     setMessage("");
 
+    const newId = uuidv4(); // ✅ tạo id thủ công
+
     const { data, error } = await supabase
       .from("communities")
       .insert([
         {
+          id: newId, // ✅ thêm id này vào
           ...formData,
           created_at: new Date().toISOString(),
         },
       ])
-      .select(); // 🆕 Trả về dữ liệu mới tạo
+      .select();
 
     if (error) {
       console.error(error);
@@ -75,14 +80,12 @@ export default function CreateCommunityPage() {
         online: 0,
       });
 
-      // 🆕 Cập nhật danh sách cộng đồng hiển thị ngay
       setCommunities((prev) => [data[0], ...prev]);
     }
 
     setLoading(false);
   };
 
-  // 🆕 Xử lý khi người dùng bấm vào một cộng đồng
   const handleOpenCommunity = (id: string) => {
     router.push(`/community/${id}`);
   };
@@ -212,7 +215,7 @@ export default function CreateCommunityPage() {
         )}
       </div>
 
-      {/* 🆕 DANH MỤC CỘNG ĐỒNG ĐÃ TẠO */}
+      {/* DANH MỤC CỘNG ĐỒNG ĐÃ TẠO */}
       <div className="w-full max-w-3xl bg-white rounded-2xl shadow-md border border-gray-100 p-6">
         <h2 className="text-2xl font-bold text-gray-800 mb-5 flex items-center">
           <Users className="w-6 h-6 text-blue-600 mr-2" />

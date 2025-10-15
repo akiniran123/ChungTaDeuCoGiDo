@@ -1,10 +1,13 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { supabase } from "@/lib/supabase/client";
 import { Loader2, Users } from "lucide-react";
+import { useRouter } from "next/navigation";
 
 export default function CreateCommunityPage() {
+  const router = useRouter();
+
   const [formData, setFormData] = useState({
     title: "",
     members: 0,
@@ -16,6 +19,25 @@ export default function CreateCommunityPage() {
 
   const [loading, setLoading] = useState(false);
   const [message, setMessage] = useState("");
+  const [communities, setCommunities] = useState<any[]>([]); // 🆕 Danh sách cộng đồng
+
+  // 🆕 Lấy danh sách cộng đồng hiện có từ Supabase
+  useEffect(() => {
+    const fetchCommunities = async () => {
+      const { data, error } = await supabase
+        .from("communities")
+        .select("*")
+        .order("created_at", { ascending: false });
+
+      if (error) {
+        console.error("Lỗi tải danh sách cộng đồng:", error);
+      } else {
+        setCommunities(data || []);
+      }
+    };
+
+    fetchCommunities();
+  }, []);
 
   const handleChange = (
     e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>
@@ -29,12 +51,15 @@ export default function CreateCommunityPage() {
     setLoading(true);
     setMessage("");
 
-    const { error } = await supabase.from("communities").insert([
-      {
-        ...formData,
-        created_at: new Date().toISOString(),
-      },
-    ]);
+    const { data, error } = await supabase
+      .from("communities")
+      .insert([
+        {
+          ...formData,
+          created_at: new Date().toISOString(),
+        },
+      ])
+      .select(); // 🆕 Trả về dữ liệu mới tạo
 
     if (error) {
       console.error(error);
@@ -49,14 +74,23 @@ export default function CreateCommunityPage() {
         topics: "",
         online: 0,
       });
+
+      // 🆕 Cập nhật danh sách cộng đồng hiển thị ngay
+      setCommunities((prev) => [data[0], ...prev]);
     }
 
     setLoading(false);
   };
 
+  // 🆕 Xử lý khi người dùng bấm vào một cộng đồng
+  const handleOpenCommunity = (id: string) => {
+    router.push(`/community/${id}`);
+  };
+
   return (
-    <div className="min-h-screen bg-gradient-to-br from-blue-50 via-white to-indigo-50 flex items-center justify-center px-4">
-      <div className="w-full max-w-2xl bg-white rounded-2xl shadow-lg border border-gray-100 p-8">
+    <div className="min-h-screen bg-gradient-to-br from-blue-50 via-white to-indigo-50 flex flex-col items-center justify-start px-4 py-10">
+      {/* FORM TẠO CỘNG ĐỒNG */}
+      <div className="w-full max-w-2xl bg-white rounded-2xl shadow-lg border border-gray-100 p-8 mb-10">
         <div className="flex items-center justify-center mb-6">
           <Users className="w-8 h-8 text-blue-600 mr-2" />
           <h1 className="text-3xl font-bold text-gray-800 text-center">
@@ -175,6 +209,39 @@ export default function CreateCommunityPage() {
           >
             {message}
           </p>
+        )}
+      </div>
+
+      {/* 🆕 DANH MỤC CỘNG ĐỒNG ĐÃ TẠO */}
+      <div className="w-full max-w-3xl bg-white rounded-2xl shadow-md border border-gray-100 p-6">
+        <h2 className="text-2xl font-bold text-gray-800 mb-5 flex items-center">
+          <Users className="w-6 h-6 text-blue-600 mr-2" />
+          Cộng đồng đã tạo
+        </h2>
+
+        {communities.length === 0 ? (
+          <p className="text-gray-500 text-center">Chưa có cộng đồng nào.</p>
+        ) : (
+          <div className="grid sm:grid-cols-2 gap-4">
+            {communities.map((c) => (
+              <div
+                key={c.id}
+                onClick={() => handleOpenCommunity(c.id)}
+                className="border border-gray-200 rounded-xl p-4 hover:shadow-lg transition cursor-pointer"
+              >
+                <h3 className="text-lg font-semibold text-gray-800">
+                  {c.title}
+                </h3>
+                <p className="text-sm text-gray-500 mt-1">{c.category}</p>
+                <p className="text-sm text-gray-600 line-clamp-2 mt-2">
+                  {c.description || "Chưa có mô tả."}
+                </p>
+                <p className="text-xs text-gray-400 mt-2">
+                  👥 {c.members} thành viên • 🟢 {c.online} online
+                </p>
+              </div>
+            ))}
+          </div>
         )}
       </div>
     </div>

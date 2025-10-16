@@ -70,14 +70,14 @@ export default function SidebarLeft({ categories }: SidebarLeftProps) {
               label: c.title || "Không tên",
               href: `/communities/${c.id}`,
             })),
-            { label: "+ Tạo cộng đồng", href: "/create-community" }, // nút tạo mới
+            { label: "+ Tạo cộng đồng", href: "/create-community" },
           ],
         }
       : cat
   );
 
   return (
-    <div className="h-[calc(100vh-5rem)] overflow-y-auto px-2">
+    <div className="h-[calc(100vh-5rem)] overflow-y-auto px-2 pb-20">
       <div className="flex flex-col mb-3">
         <Link
           href="/"
@@ -89,7 +89,7 @@ export default function SidebarLeft({ categories }: SidebarLeftProps) {
         <h3 className="font-bold text-lg text-pink-600 px-2">Danh mục</h3>
       </div>
 
-      <ul className="space-y-2">
+      <ul className="space-y-2 pb-20">
         {categoriesWithCommunities.map((cat) => (
           <li key={cat.label}>
             {cat.label === "Về chúng tôi" && (

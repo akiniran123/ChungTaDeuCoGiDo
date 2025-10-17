@@ -5,7 +5,7 @@ import { supabase } from "@/lib/supabase/client";
 import DealCard, { DealType } from "@/components/Trang_chu/DealCard";
 import { motion, AnimatePresence } from "framer-motion";
 import { LayoutGrid, Grid } from "lucide-react";
-import type { Database } from "@/types/supabase"; // ⚠️ dùng đúng type bạn đã định nghĩa
+import type { Database } from "@/types/supabase";
 
 // ✅ Dùng type thật từ Supabase + join user
 type ProductWithUser = Database["public"]["Tables"]["products"]["Row"] & {
@@ -36,7 +36,6 @@ export default function ProductsPage() {
       if (error) {
         console.error("Lỗi tải sản phẩm:", error);
       } else {
-        // ⚙️ ép kiểu rõ ràng cho TypeScript
         setProducts(data as ProductWithUser[]);
       }
       setLoading(false);
@@ -101,6 +100,7 @@ export default function ProductsPage() {
           >
             {products.map((p) =>
               biggerGrid ? (
+                // ========== DẠNG GRID LỚN ==========
                 <DealCard
                   key={p.id}
                   deal={{
@@ -114,12 +114,22 @@ export default function ProductsPage() {
                     author: p.users?.username || "Người dùng",
                     avatar: p.users?.avatar_url || "/default-avatar.png",
                     content: p.description || "",
+                    createdAt: p.created_at
+                      ? new Date(p.created_at).toLocaleString("vi-VN", {
+                          day: "2-digit",
+                          month: "2-digit",
+                          year: "numeric",
+                          hour: "2-digit",
+                          minute: "2-digit",
+                        })
+                      : undefined,
                   } as DealType}
                   vote={() => {}}
                   setSelectedDeal={() => {}}
                   bigger
                 />
               ) : (
+                // ========== DẠNG THẺ NHỎ ==========
                 <motion.div
                   key={p.id}
                   initial={{ opacity: 0, y: 15 }}
@@ -138,6 +148,7 @@ export default function ProductsPage() {
                       Không có ảnh
                     </div>
                   )}
+
                   <div className="p-4">
                     <h3 className="font-semibold text-lg">{p.title}</h3>
                     <p className="text-sm text-gray-600">{p.category}</p>
@@ -151,7 +162,7 @@ export default function ProductsPage() {
                       {p.description}
                     </p>
 
-                    {/* 👇 Thông tin user thật từ Supabase */}
+                    {/* 👇 User + thời gian đăng bài từ Supabase */}
                     {p.users && (
                       <div className="flex items-center mt-3">
                         <img
@@ -159,9 +170,22 @@ export default function ProductsPage() {
                           alt={p.users.username || "User"}
                           className="w-8 h-8 rounded-full object-cover"
                         />
-                        <span className="ml-2 text-sm font-medium text-gray-700">
-                          {p.users.username || "Người dùng"}
-                        </span>
+                        <div className="ml-2">
+                          <p className="text-sm font-medium text-gray-700">
+                            {p.users.username || "Người dùng"}
+                          </p>
+                          <p className="text-xs text-gray-400">
+                            {p.created_at
+                              ? new Date(p.created_at).toLocaleString("vi-VN", {
+                                  day: "2-digit",
+                                  month: "2-digit",
+                                  year: "numeric",
+                                  hour: "2-digit",
+                                  minute: "2-digit",
+                                })
+                              : "Không rõ thời gian"}
+                          </p>
+                        </div>
                       </div>
                     )}
 

@@ -35,6 +35,7 @@ export type DealType = {
   comments: number;
   category: string;
   author: string;
+  avatar?: string; // 👈 thêm avatar user
   content: string;
   createdAt?: string;
 };
@@ -109,13 +110,18 @@ const DealCard: React.FC<DealCardProps> = ({
           </span>
         )}
 
+        {/* 👤 Hiển thị avatar + tên người đăng thật */}
         <div className="flex flex-col px-3 py-2 border-b">
           <div className="flex items-center gap-2 text-sm">
             <Link
               href={`/user/${deal.author}`}
               className="flex items-center gap-2 !text-gray-700 !no-underline hover:!text-gray-900"
             >
-              <span className="text-xl">👤</span>
+              <img
+                src={deal.avatar || "/default-avatar.png"}
+                alt={deal.author}
+                className="w-8 h-8 rounded-full object-cover border border-gray-200"
+              />
               <span className="font-semibold">{deal.author}</span>
             </Link>
             <span className="text-gray-500 font-normal">

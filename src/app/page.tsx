@@ -5,21 +5,18 @@ import { supabase } from "@/lib/supabase/client";
 import DealCard, { DealType } from "@/components/Trang_chu/DealCard";
 import { motion, AnimatePresence } from "framer-motion";
 import { LayoutGrid, Grid } from "lucide-react";
+import type { Database } from "@/types/supabase"; // ⚠️ dùng đúng type bạn đã định nghĩa
 
-type Product = {
-  id: string;
-  title: string;
-  price: number | null;
-  image_url: string | null;
-  category: string | null;
-  condition: string | null;
-  description: string | null;
-  views: number | null;
-  upvotes: number | null;
+// ✅ Dùng type thật từ Supabase + join user
+type ProductWithUser = Database["public"]["Tables"]["products"]["Row"] & {
+  users?: {
+    username: string | null;
+    avatar_url: string | null;
+  } | null;
 };
 
 export default function ProductsPage() {
-  const [products, setProducts] = useState<Product[]>([]);
+  const [products, setProducts] = useState<ProductWithUser[]>([]);
   const [loading, setLoading] = useState(true);
   const [biggerGrid, setBiggerGrid] = useState(false);
 
@@ -27,13 +24,21 @@ export default function ProductsPage() {
     const fetchProducts = async () => {
       const { data, error } = await supabase
         .from("products")
-        .select(
-          "id, title, price, image_url, category, condition, description, views, upvotes"
-        )
+        .select(`
+          *,
+          users:user_id (
+            username,
+            avatar_url
+          )
+        `)
         .order("created_at", { ascending: false });
 
-      if (error) console.error("Lỗi tải sản phẩm:", error);
-      else setProducts(data || []);
+      if (error) {
+        console.error("Lỗi tải sản phẩm:", error);
+      } else {
+        // ⚙️ ép kiểu rõ ràng cho TypeScript
+        setProducts(data as ProductWithUser[]);
+      }
       setLoading(false);
     };
 
@@ -49,26 +54,22 @@ export default function ProductsPage() {
 
   return (
     <div className="p-6">
-      {/* 🔘 Nút chuyển đổi */}
+      {/* 🔘 Nút chuyển đổi grid */}
       <div className="flex justify-end mb-4">
         <button
           onClick={() => setBiggerGrid(!biggerGrid)}
           className={`p-2 rounded-lg transition cursor-pointer 
             ${
               biggerGrid
-                ? "bg-pink-100 text-pink-500" // khi bật grid lớn → hồng nhạt
+                ? "bg-pink-100 text-pink-500"
                 : "hover:bg-pink-50 text-gray-700 hover:text-pink-400"
             }`}
         >
-          {biggerGrid ? (
-            <Grid size={20} />
-          ) : (
-            <LayoutGrid size={20} />
-          )}
+          {biggerGrid ? <Grid size={20} /> : <LayoutGrid size={20} />}
         </button>
       </div>
 
-      {/* 🔥 Phần hiệu ứng trượt giữ nguyên */}
+      {/* 🔥 Danh sách sản phẩm */}
       <div className="overflow-hidden">
         <AnimatePresence mode="wait">
           <motion.div
@@ -110,7 +111,8 @@ export default function ProductsPage() {
                     votes: p.upvotes ?? 0,
                     comments: 0,
                     category: p.category || "",
-                    author: "Admin",
+                    author: p.users?.username || "Người dùng",
+                    avatar: p.users?.avatar_url || "/default-avatar.png",
                     content: p.description || "",
                   } as DealType}
                   vote={() => {}}
@@ -148,6 +150,21 @@ export default function ProductsPage() {
                     <p className="text-sm text-gray-700 line-clamp-2 mt-2">
                       {p.description}
                     </p>
+
+                    {/* 👇 Thông tin user thật từ Supabase */}
+                    {p.users && (
+                      <div className="flex items-center mt-3">
+                        <img
+                          src={p.users.avatar_url || "/default-avatar.png"}
+                          alt={p.users.username || "User"}
+                          className="w-8 h-8 rounded-full object-cover"
+                        />
+                        <span className="ml-2 text-sm font-medium text-gray-700">
+                          {p.users.username || "Người dùng"}
+                        </span>
+                      </div>
+                    )}
+
                     <div className="flex justify-between text-xs text-gray-400 mt-3">
                       <span>{p.views ?? 0} lượt xem</span>
                       <span>❤️ {p.upvotes ?? 0}</span>

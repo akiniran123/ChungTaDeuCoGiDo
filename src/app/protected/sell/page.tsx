@@ -19,7 +19,7 @@ import ProductVideoInput from '@/components/sell/ProductVideoInput';
 import { PriceAndOffers } from '@/components/sell/PriceAndOffers';
 import ReturnPolicies from '@/components/sell/ReturnPolicies';
 import ActionButtons from '@/components/sell/ActionButtons';
-import ImageUploader from '@/components/sell/ImageUploader'; // mới thêm
+import ImageUploader from '@/components/sell/ImageUploader'; // ✅ dùng để upload ảnh
 
 export default function SellPage() {
   const router = useRouter();
@@ -62,6 +62,7 @@ export default function SellPage() {
     }
 
     try {
+      // ✅ Lấy user hiện tại
       const {
         data: { user },
         error: userError,
@@ -72,24 +73,32 @@ export default function SellPage() {
         return;
       }
 
+      // ✅ Tạo payload khớp 100% với bảng products
       const payload = {
         user_id: user.id,
         title: data.title,
-        category: data.category,
+        category: data.category || null,
         is_private: data.isPrivate,
         condition: data.condition,
-        description: data.description,
+        description: data.description || null,
         specs: data.specs,
+        images: imageUrl || null, // ✅ CHUẨN tên cột Supabase
         video_url: data.videoUrl || null,
-        image_url: imageUrl, // thêm ảnh vào payload
         price: data.price,
         enable_offers: data.enableOffers,
         min_offer: data.minOffer,
         quantity: data.quantity,
         sku: data.sku || null,
         return_policy: data.returnPolicy || null,
+
+        // ✅ Các cột còn thiếu trong bảng
+        community_id: null,
+        upvotes: 0,
+        views: 0,
+        image_url: null, // vẫn có trong schema, gán null để tránh lỗi
       };
 
+      // ✅ Thực hiện insert
       const { error: insertError } = await supabase
         .from('products')
         .insert([payload]);
@@ -99,6 +108,7 @@ export default function SellPage() {
         return;
       }
 
+      alert('Product added successfully!');
       router.push('/');
     } catch (err) {
       console.error(err);
@@ -123,13 +133,18 @@ export default function SellPage() {
           {/* Upload ảnh */}
           <ImageUploader onUploadComplete={(url) => setImageUrl(url)} />
           {imageUrl && (
-            <p className="text-sm text-green-600">Image uploaded successfully!</p>
+            <p className="text-sm text-green-600">
+              Image uploaded successfully!
+            </p>
           )}
         </div>
 
         <TechSpecsEditor control={control} />
         <ConditionSelectorSection register={register} />
-        <DescriptionEditorSection control={control} error={errors.description} />
+        <DescriptionEditorSection
+          control={control}
+          error={errors.description}
+        />
         <ProductVideoInput register={register} error={errors.videoUrl} />
         <PriceAndOffers register={register} errors={errors} />
         <ReturnPolicies register={register} error={errors.returnPolicy} />

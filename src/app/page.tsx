@@ -4,7 +4,7 @@ import { useEffect, useState } from "react";
 import { supabase } from "@/lib/supabase/client";
 import DealCard, { DealType } from "@/components/Trang_chu/DealCard";
 import { motion, AnimatePresence } from "framer-motion";
-import { LayoutGrid, Grid } from "lucide-react";
+import { LayoutGrid, Grid, Bookmark, BookmarkCheck } from "lucide-react";
 import type { Database } from "@/types/supabase";
 
 // ✅ Dùng type thật từ Supabase + join user
@@ -19,6 +19,13 @@ export default function ProductsPage() {
   const [products, setProducts] = useState<ProductWithUser[]>([]);
   const [loading, setLoading] = useState(true);
   const [biggerGrid, setBiggerGrid] = useState(false);
+  const [saved, setSaved] = useState<string[]>([]); // ✅ danh sách ID đã lưu
+
+  const toggleSave = (id: string) => {
+    setSaved((prev) =>
+      prev.includes(id) ? prev.filter((x) => x !== id) : [...prev, id]
+    );
+  };
 
   useEffect(() => {
     const fetchProducts = async () => {
@@ -135,8 +142,20 @@ export default function ProductsPage() {
                   initial={{ opacity: 0, y: 15 }}
                   animate={{ opacity: 1, y: 0 }}
                   transition={{ duration: 0.35 }}
-                  className="rounded-2xl shadow hover:shadow-lg transition bg-white overflow-hidden"
+                  className="relative rounded-2xl shadow hover:shadow-lg transition bg-white overflow-hidden"
                 >
+                  {/* 🔖 Nút lưu */}
+                  <button
+                    onClick={() => toggleSave(p.id)}
+                    className="absolute top-3 right-3 bg-white/80 hover:bg-white rounded-full p-2 shadow transition z-10"
+                  >
+                    {saved.includes(p.id) ? (
+                      <BookmarkCheck size={18} className="text-pink-500" />
+                    ) : (
+                      <Bookmark size={18} className="text-gray-600 hover:text-pink-500" />
+                    )}
+                  </button>
+
                   {p.image_url ? (
                     <img
                       src={p.image_url}
@@ -203,3 +222,4 @@ export default function ProductsPage() {
     </div>
   );
 }
+

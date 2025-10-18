@@ -1,6 +1,7 @@
 "use client";
 
 import { useEffect, useState } from "react";
+import Link from "next/link";
 import { supabase } from "@/lib/supabase/client";
 import DealCard, { DealType } from "@/components/Trang_chu/DealCard";
 import { motion, AnimatePresence } from "framer-motion";
@@ -118,7 +119,7 @@ export default function ProductsPage() {
                 <DealCard
                   key={p.id}
                   deal={{
-                    id: Number(p.id),
+                    id: p.id,
                     title: p.title,
                     image: p.image_url || undefined,
                     media: p.image_url ? [p.image_url] : [],
@@ -166,22 +167,30 @@ export default function ProductsPage() {
                     )}
                   </button>
 
-                  {/* Ảnh sản phẩm */}
-                  {p.image_url ? (
-                    <img
-                      src={p.image_url}
-                      alt={p.title}
-                      className="w-full h-48 object-cover"
-                    />
-                  ) : (
-                    <div className="w-full h-48 bg-gray-200 flex items-center justify-center text-gray-500">
-                      Không có ảnh
-                    </div>
-                  )}
+                  {/* Ảnh sản phẩm + link đến /deal/[id] */}
+                  <Link href={`/deal/${p.id}`}>
+                    {p.image_url ? (
+                      <img
+                        src={p.image_url}
+                        alt={p.title}
+                        className="w-full h-48 object-cover cursor-pointer"
+                      />
+                    ) : (
+                      <div className="w-full h-48 bg-gray-200 flex items-center justify-center text-gray-500 cursor-pointer">
+                        Không có ảnh
+                      </div>
+                    )}
+                  </Link>
 
                   {/* Thông tin sản phẩm */}
                   <div className="p-4">
-                    <h3 className="font-semibold text-lg">{p.title}</h3>
+                    {/* Tiêu đề + link */}
+                    <Link href={`/deal/${p.id}`}>
+                      <h3 className="font-semibold text-lg cursor-pointer hover:text-pink-500">
+                        {p.title}
+                      </h3>
+                    </Link>
+
                     <p className="text-sm text-gray-600">{p.category}</p>
                     <p className="mt-2 text-indigo-600 font-bold">
                       {p.price ? `${p.price.toLocaleString()}₫` : "Liên hệ"}

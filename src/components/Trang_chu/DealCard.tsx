@@ -1,5 +1,5 @@
 "use client";
-import React, { useState, useEffect } from "react";
+import React, { useState } from "react";
 import { motion } from "framer-motion";
 import {
   ArrowUp,
@@ -14,18 +14,6 @@ import {
 import Link from "next/link";
 import { useCart } from "@/app/context/CartContext";
 
-// ======================
-// Hàm random thời gian
-// ======================
-function getRandomTimeAgo() {
-  const minutes = Math.floor(Math.random() * 60) + 1;
-  if (minutes < 60) return `${minutes} phút trước`;
-  const hours = Math.floor(minutes / 60);
-  if (hours < 24) return `${hours} giờ trước`;
-  const days = Math.floor(hours / 24);
-  return `${days} ngày trước`;
-}
-
 export type DealType = {
   id: number;
   title: string;
@@ -35,7 +23,7 @@ export type DealType = {
   comments: number;
   category: string;
   author: string;
-  avatar?: string; // 👈 thêm avatar user
+  avatar?: string;
   content: string;
   createdAt?: string;
 };
@@ -50,9 +38,6 @@ export interface DealCardProps {
   gridView?: boolean;
 }
 
-// ======================
-// DealCard chính (chỉ grid lớn)
-// ======================
 const DealCard: React.FC<DealCardProps> = ({
   deal,
   vote,
@@ -60,16 +45,11 @@ const DealCard: React.FC<DealCardProps> = ({
   bigger = false,
   isAd = false,
 }) => {
-  const [timeAgoState, setTimeAgoState] = useState<string>("");
   const [currentIndex, setCurrentIndex] = useState(0);
   const [startX, setStartX] = useState<number | null>(null);
   const [saved, setSaved] = useState(false);
   const [showLightbox, setShowLightbox] = useState(false);
   const { addToCart } = useCart();
-
-  useEffect(() => {
-    if (!deal.createdAt) setTimeAgoState(getRandomTimeAgo());
-  }, [deal.createdAt]);
 
   const mediaList =
     deal.media && deal.media.length > 0 ? deal.media : deal.image ? [deal.image] : [];
@@ -110,7 +90,7 @@ const DealCard: React.FC<DealCardProps> = ({
           </span>
         )}
 
-        {/* 👤 Hiển thị avatar + tên người đăng thật */}
+        {/* 👤 Hiển thị avatar + tên người đăng */}
         <div className="flex flex-col px-3 py-2 border-b">
           <div className="flex items-center gap-2 text-sm">
             <Link
@@ -124,18 +104,18 @@ const DealCard: React.FC<DealCardProps> = ({
               />
               <span className="font-semibold">{deal.author}</span>
             </Link>
-            <span className="text-gray-500 font-normal">
-              · {deal.createdAt ? deal.createdAt : timeAgoState}
-            </span>
+            <span className="text-gray-500 font-normal">· {deal.createdAt}</span>
           </div>
 
+          {/* ✅ Bọc Link cho phần tiêu đề sản phẩm */}
           <Link
-            href={`/deal/${String(deal.id)}`}
+            href={`/deal/${deal.id}`}
             className="block mt-2 no-underline hover:text-pink-600 transition-colors"
           >
             <h3 className="font-semibold text-base md:text-lg">{deal.title}</h3>
-            <p className="text-sm text-gray-600 line-clamp-2">{deal.content}</p>
           </Link>
+
+          <p className="text-sm text-gray-600 line-clamp-2">{deal.content}</p>
         </div>
 
         {/* Media lớn với next / prev */}

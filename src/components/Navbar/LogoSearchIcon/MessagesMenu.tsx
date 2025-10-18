@@ -1,176 +1,325 @@
-'use client'
+"use client";
+import React, { useState, useEffect, useRef } from "react";
+import { motion } from "framer-motion";
+import {
+  MessageSquare,
+  Share2,
+  Bookmark,
+  ChevronLeft,
+  ChevronRight,
+  X,
+  Heart as HeartIcon,
+  Send,
+} from "lucide-react";
+import Link from "next/link";
+import { useCart } from "@/app/context/CartContext";
+import { supabase } from "@/lib/supabase/client";
 
-import { useEffect, useRef, useState } from 'react'
-import { MessageSquare, CheckCheck, Trash2 } from 'lucide-react'
-import { useRouter } from 'next/navigation'
-import { motion, AnimatePresence } from 'framer-motion'
+export type DealType = {
+  id: string;
+  title: string;
+  image?: string;
+  media?: string[];
+  votes?: number; // sửa optional để tránh crash
+  comments?: number;
+  category: string;
+  author: string;
+  avatar?: string;
+  content: string;
+  createdAt?: string;
+};
 
-export default function MessagesMenu() {
-  interface MessagePreview {
-    id: string
-    sellerName: string
-    lastMessage: string
-    time: string
-    unread: number
-    avatar?: string
-  }
+export interface DealCardProps {
+  deal?: DealType; // optional để tránh crash khi chưa load
+  vote: (id: string, delta: number) => void;
+  setSelectedDeal: (id: string) => void;
+  bigger?: boolean;
+  isAd?: boolean;
+}
 
-  const [messageList, setMessageList] = useState<MessagePreview[]>([])
-  const [openMessages, setOpenMessages] = useState(false)
-  const [unreadMessages, setUnreadMessages] = useState(0)
-  const messagesRef = useRef<HTMLDivElement>(null)
-  const router = useRouter()
+const DealCard: React.FC<DealCardProps> = ({
+  deal,
+  vote,
+  setSelectedDeal,
+  bigger = false,
+  isAd = false,
+}) => {
+  // Nếu deal chưa load, render null
+  if (!deal) return null;
 
-  useEffect(() => {
-    setMessageList([
-      { id: 'c1', sellerName: 'Shop ABC', lastMessage: 'Chào bạn...', time: '2 phút', unread: 2 },
-      { id: 'c2', sellerName: 'LaptopPro', lastMessage: 'Đã gửi báo giá...', time: '1 giờ', unread: 0 },
-      { id: 'c3', sellerName: 'Điện Máy XYZ', lastMessage: 'Bạn ơi, hàng về rồi nhé!', time: 'Hôm qua', unread: 1 },
-    ])
-  }, [])
+  const [currentIndex, setCurrentIndex] = useState(0);
+  const [startX, setStartX] = useState<number | null>(null);
+  const [saved, setSaved] = useState(false);
+  const [showLightbox, setShowLightbox] = useState(false);
+  const { addToCart } = useCart();
+  const [liked, setLiked] = useState(false);
+  const [likesCount, setLikesCount] = useState(deal.votes ?? 0);
 
-  useEffect(() => {
-    setUnreadMessages(messageList.filter((m) => m.unread > 0).length)
-  }, [messageList])
+  const [chatOpen, setChatOpen] = useState(false);
+  const [messages, setMessages] = useState<{ id?: string; content: string }[]>([]);
+  const [newMessage, setNewMessage] = useState("");
 
-  useEffect(() => {
-    const handler = (e: MouseEvent) => {
-      if (messagesRef.current && !messagesRef.current.contains(e.target as Node)) {
-        setOpenMessages(false)
-      }
+  const messagesEndRef = useRef<HTMLDivElement>(null);
+
+  const mediaList =
+    deal.media && deal.media.length > 0 ? deal.media : deal.image ? [deal.image] : [];
+
+  const nextMedia = () => setCurrentIndex((prev) => (prev + 1) % mediaList.length);
+  const prevMedia = () => setCurrentIndex((prev) => (prev - 1 + mediaList.length) % mediaList.length);
+
+  const handleTouchStart = (e: React.TouchEvent) => setStartX(e.touches[0].clientX);
+  const handleTouchEnd = (e: React.TouchEvent) => {
+    if (startX === null) return;
+    const deltaX = e.changedTouches[0].clientX - startX;
+    if (Math.abs(deltaX) > 50) deltaX > 0 ? prevMedia() : nextMedia();
+    setStartX(null);
+  };
+
+  const handleSave = () => {
+    setSaved(!saved);
+    addToCart({
+      id: deal.id,
+      name: deal.title,
+      price: 0,
+      image: deal.image || "",
+      quantity: 1,
+    });
+  };
+
+  const handleLike = () => {
+    if (!liked) {
+      vote(deal.id, 1);
+      setLikesCount((prev) => prev + 1);
+    } else {
+      vote(deal.id, -1);
+      setLikesCount((prev) => (prev > 0 ? prev - 1 : 0));
     }
-    document.addEventListener('mousedown', handler)
-    return () => document.removeEventListener('mousedown', handler)
-  }, [])
+    setLiked(!liked);
+  };
 
-  const markAllRead = () => {
-    setMessageList((prev) => prev.map((m) => ({ ...m, unread: 0 })))
-  }
+  // Fetch bình luận từ Supabase
+  useEffect(() => {
+    if (chatOpen) {
+      const fetchComments = async () => {
+        const { data, error } = await supabase
+          .from("comments")
+          .select("id, content")
+          .eq("product_id", deal.id)
+          .order("created_at", { ascending: true });
 
-  const clearAll = () => {
-    setMessageList([])
-  }
+        if (!error && data) {
+          const cleanData = data.map((msg) => ({
+            id: msg.id,
+            content: msg.content || "",
+          }));
+          setMessages(cleanData);
+        }
+      };
+      fetchComments();
+    }
+  }, [chatOpen, deal.id]);
+
+  // Scroll xuống dưới mỗi khi có tin nhắn mới
+  useEffect(() => {
+    messagesEndRef.current?.scrollIntoView({ behavior: "smooth" });
+  }, [messages]);
+
+  const handleSendMessage = async () => {
+    if (!newMessage.trim()) return;
+    const content = newMessage.trim();
+    setMessages((prev) => [...prev, { content }]);
+    setNewMessage("");
+
+    const { data, error } = await supabase.from("comments").insert({
+      product_id: deal.id,
+      user_id: "current_user_id_here",
+      content,
+    });
+    if (error) console.error(error);
+  };
 
   return (
-    <div className="relative" ref={messagesRef}>
-      {/* Nút icon tin nhắn */}
-      <button
-        type="button"
-        className="relative cursor-pointer focus:outline-none"
-        onClick={() => setOpenMessages((v) => !v)}
-        aria-label="Tin nhắn"
-        aria-haspopup="true"
-        aria-expanded={openMessages}
+    <>
+      {/* Card chính */}
+      <article
+        className={`flex flex-col transition-all mx-auto rounded-lg shadow ${
+          bigger ? "max-w-3xl" : "max-w-xl"
+        } ${isAd ? "bg-yellow-50 border-l-4 border-yellow-400" : "bg-white"}`}
+        id={`deal-${deal.id}`}
       >
-        <MessageSquare className="w-6 h-6 text-gray-600 hover:text-[#9b4de0] transition-colors" />
-        {unreadMessages > 0 && (
-          <span className="absolute -top-1 -right-1 flex h-4 w-4 items-center justify-center rounded-full bg-red-500 text-[10px] font-semibold text-white">
-            {unreadMessages}
-          </span>
-        )}
-      </button>
-
-      {/* Menu tin nhắn */}
-      <AnimatePresence>
-        {openMessages && (
-          <motion.div
-            initial={{ opacity: 0, y: -8 }}
-            animate={{ opacity: 1, y: 0 }}
-            exit={{ opacity: 0, y: -8 }}
-            transition={{ duration: 0.2 }}
-            className="absolute right-0 mt-2 w-80 max-w-[90vw] rounded-xl border border-gray-200 bg-white shadow-xl z-50"
-            role="dialog"
+        {/* header */}
+        <div className="flex flex-col px-3 py-2 border-b">
+          <div className="flex items-center gap-2 text-sm">
+            <Link
+              href={`/user/${deal.author}`}
+              className="flex items-center gap-2 !text-gray-700 !no-underline hover:!text-gray-900"
+            >
+              <img
+                src={deal.avatar || "/default-avatar.png"}
+                alt={deal.author}
+                className="w-8 h-8 rounded-full object-cover border border-gray-200"
+              />
+              <span className="font-semibold">{deal.author}</span>
+            </Link>
+            <span className="text-gray-500 font-normal">· {deal.createdAt}</span>
+          </div>
+          <Link
+            href={`/deal/${deal.id}`}
+            className="block mt-2 no-underline hover:text-pink-600 transition-colors"
           >
-            {/* Header */}
-            <div className="flex items-center justify-between px-4 py-2 border-b">
-              <span className="text-sm font-semibold">Tin nhắn</span>
-              <div className="flex items-center gap-3">
-                {messageList.length > 0 && (
-                  <>
-                    <button
-                      onClick={markAllRead}
-                      className="flex items-center gap-1 text-xs text-gray-500 hover:text-[#9b4de0] cursor-pointer"
-                    >
-                      <CheckCheck size={14} />
-                      Đã đọc hết
-                    </button>
-                    <button
-                      onClick={clearAll}
-                      className="flex items-center gap-1 text-xs text-gray-500 hover:text-red-500 cursor-pointer"
-                    >
-                      <Trash2 size={14} />
-                      Xóa hết
-                    </button>
-                  </>
+            <h3 className="font-semibold text-base md:text-lg">{deal.title}</h3>
+          </Link>
+          <p className="text-sm text-gray-600 line-clamp-2">{deal.content}</p>
+        </div>
+
+        {/* media */}
+        <div
+          className="relative w-full overflow-hidden group"
+          onTouchStart={handleTouchStart}
+          onTouchEnd={handleTouchEnd}
+        >
+          {mediaList.length > 0 && (
+            <>
+              <div
+                className="flex transition-transform duration-500 ease-in-out"
+                style={{ transform: `translateX(-${currentIndex * 100}%)` }}
+              >
+                {mediaList.map((item, idx) =>
+                  item.endsWith(".mp4") ? (
+                    <video
+                      key={idx}
+                      src={item}
+                      controls={!isAd}
+                      className={`object-cover w-full flex-shrink-0 rounded-md ${
+                        bigger ? "h-[600px]" : "h-96"
+                      }`}
+                    />
+                  ) : (
+                    <img
+                      key={idx}
+                      src={item}
+                      alt={deal.title}
+                      className={`object-cover w-full flex-shrink-0 rounded-md ${
+                        bigger ? "h-[600px]" : "h-96"
+                      }`}
+                      onClick={() => setShowLightbox(true)}
+                    />
+                  )
                 )}
+              </div>
+              <button
+                onClick={prevMedia}
+                className="absolute left-4 top-1/2 -translate-y-1/2 z-10 text-white/90 bg-black/10 backdrop-blur-sm border border-white/5 rounded-full p-3 shadow-sm hover:bg-black/25"
+              >
+                <ChevronLeft size={30} />
+              </button>
+              <button
+                onClick={nextMedia}
+                className="absolute right-4 top-1/2 -translate-y-1/2 z-10 text-white/90 bg-black/10 backdrop-blur-sm border border-white/5 rounded-full p-3 shadow-sm hover:bg-black/25"
+              >
+                <ChevronRight size={30} />
+              </button>
+            </>
+          )}
+        </div>
+
+        {/* actions */}
+        {!isAd && (
+          <div className="flex items-center justify-between gap-2 mt-3 text-sm text-gray-700 pl-3 mb-3">
+            <div className="flex items-center gap-2">
+              <div className="flex items-center bg-gray-100 rounded-full px-2 py-1 shadow-sm">
                 <button
-                  className="text-xs text-[#9b4de0] hover:underline cursor-pointer focus:outline-none"
-                  onClick={() => router.push('/messages')}
+                  onClick={handleLike}
+                  className={`p-1 cursor-pointer transition-colors ${
+                    liked ? "text-pink-600" : "text-gray-600 hover:text-pink-600"
+                  }`}
                 >
-                  Xem tất cả
+                  <HeartIcon size={16} fill={liked ? "currentColor" : "none"} />
+                </button>
+                <span className="font-semibold text-xs text-center min-w-[20px]">
+                  {likesCount}
+                </span>
+              </div>
+
+              <div className="flex items-center bg-gray-100 rounded-full px-2 py-1 shadow-sm">
+                <button
+                  onClick={() => setChatOpen(!chatOpen)}
+                  className="hover:text-pink-600 p-1 cursor-pointer"
+                >
+                  <MessageSquare size={16} />
+                </button>
+                <span className="font-semibold text-xs text-center min-w-[20px]">
+                  {messages.length} {/* Hiển thị số bình luận thật */}
+                </span>
+              </div>
+
+              <div className="flex items-center bg-gray-100 rounded-full px-2 py-1 shadow-sm">
+                <button
+                  onClick={() => {
+                    const url = `${window.location.href}#deal-${deal.id}`;
+                    if (navigator.share) navigator.share({ title: deal.title, url });
+                    else {
+                      navigator.clipboard.writeText(url);
+                      alert("Đã copy link: " + url);
+                    }
+                  }}
+                  className="hover:text-pink-600 p-1 cursor-pointer"
+                >
+                  <Share2 size={16} />
                 </button>
               </div>
             </div>
 
-            {/* Danh sách tin nhắn */}
-            <ul className="max-h-80 overflow-auto divide-y">
-              {messageList.length === 0 ? (
-                <li className="p-4 text-sm text-gray-500">Chưa có tin nhắn.</li>
-              ) : (
-                messageList.map((m) => (
-                  <li key={m.id}>
-                    <button
-                      onClick={() => router.push(`/messages/${m.id}`)}
-                      className={`w-full px-4 py-3 flex items-start gap-3 text-left hover:bg-gray-50 cursor-pointer focus:outline-none transition-colors ${
-                        m.unread > 0 ? 'bg-purple-50' : ''
-                      }`}
-                    >
-                      {/* Avatar */}
-                      {m.avatar ? (
-                        <img
-                          src={m.avatar}
-                          alt={m.sellerName}
-                          className="h-9 w-9 rounded-full object-cover"
-                        />
-                      ) : (
-                        <div className="h-9 w-9 rounded-full bg-gray-200 flex items-center justify-center text-sm font-medium text-gray-700">
-                          {m.sellerName.charAt(0)}
-                        </div>
-                      )}
-
-                      {/* Nội dung */}
-                      <div className="min-w-0 flex-1">
-                        <div className="flex items-center justify-between">
-                          <span
-                            className={`text-sm truncate ${
-                              m.unread > 0 ? 'font-semibold text-gray-900' : 'font-medium text-gray-800'
-                            }`}
-                          >
-                            {m.sellerName}
-                          </span>
-                          <span className="text-[11px] text-gray-400 whitespace-nowrap">{m.time}</span>
-                        </div>
-                        <p
-                          className={`text-xs truncate ${
-                            m.unread > 0 ? 'text-gray-800 font-medium' : 'text-gray-600'
-                          }`}
-                        >
-                          {m.lastMessage}
-                        </p>
-                        {m.unread > 0 && (
-                          <span className="mt-1 inline-block text-[10px] bg-red-500 text-white rounded-full px-2 py-0.5">
-                            Mới
-                          </span>
-                        )}
-                      </div>
-                    </button>
-                  </li>
-                ))
-              )}
-            </ul>
-          </motion.div>
+            <div className="flex items-center bg-gray-100 rounded-full px-2 py-1 shadow-sm mr-3">
+              <button
+                onClick={() => setSaved(!saved)}
+                className={`hover:text-pink-600 p-1 cursor-pointer ${saved ? "text-pink-600" : ""}`}
+              >
+                <Bookmark size={16} fill={saved ? "currentColor" : "none"} />
+              </button>
+            </div>
+          </div>
         )}
-      </AnimatePresence>
-    </div>
-  )
-}
+      </article>
+
+      {/* Chat box */}
+      {chatOpen && (
+        <div className="fixed right-0 top-0 h-full w-[320px] bg-white shadow-lg border-l z-[9999] flex flex-col">
+          <div className="flex justify-between items-center p-3 border-b">
+            <span className="font-semibold text-gray-700">Bình luận</span>
+            <button onClick={() => setChatOpen(false)} className="text-gray-500 hover:text-gray-700">
+              <X size={20} />
+            </button>
+          </div>
+          <div className="flex-1 p-3 overflow-y-auto space-y-2">
+            {messages.length === 0 && <p className="text-gray-400 text-sm">Chưa có bình luận</p>}
+            {messages.map((msg, idx) => (
+              <div key={idx} className="bg-gray-100 p-2 rounded-md text-sm">
+                {msg.content}
+              </div>
+            ))}
+            <div ref={messagesEndRef} />
+          </div>
+          <div className="p-3 border-t flex gap-2">
+            <input
+              type="text"
+              value={newMessage}
+              onChange={(e) => setNewMessage(e.target.value)}
+              onKeyDown={(e) => e.key === "Enter" && handleSendMessage()}
+              placeholder="Nhập bình luận..."
+              className="flex-1 px-3 py-2 border rounded-md focus:outline-none focus:ring focus:ring-pink-300"
+            />
+            <button
+              onClick={handleSendMessage}
+              className="bg-pink-500 text-white p-2 rounded-md hover:bg-pink-600"
+            >
+              <Send size={18} />
+            </button>
+          </div>
+        </div>
+      )}
+    </>
+  );
+};
+
+export default DealCard;

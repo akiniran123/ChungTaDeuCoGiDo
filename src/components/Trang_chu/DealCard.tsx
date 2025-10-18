@@ -1,26 +1,27 @@
 "use client";
-import React, { useState } from "react";
+import React, { useState, useEffect, useRef } from "react";
 import { motion } from "framer-motion";
 import {
-  ArrowUp,
-  ArrowDown,
   MessageSquare,
   Share2,
   Bookmark,
   ChevronLeft,
   ChevronRight,
   X,
+  Heart as HeartIcon,
+  Send,
 } from "lucide-react";
 import Link from "next/link";
 import { useCart } from "@/app/context/CartContext";
+import { supabase } from "@/lib/supabase/client";
 
 export type DealType = {
-  id: number;
+  id: string;
   title: string;
   image?: string;
   media?: string[];
   votes: number;
-  comments: number;
+  comments?: number; // số bình luận ban đầu, sẽ fetch thực tế
   category: string;
   author: string;
   avatar?: string;
@@ -30,12 +31,10 @@ export type DealType = {
 
 export interface DealCardProps {
   deal: DealType;
-  vote: (id: number, delta: number) => void;
-  setSelectedDeal: (id: number) => void;
-  onImageClick?: () => void;
+  vote: (id: string, delta: number) => void;
+  setSelectedDeal: (id: string) => void;
   bigger?: boolean;
   isAd?: boolean;
-  gridView?: boolean;
 }
 
 const DealCard: React.FC<DealCardProps> = ({
@@ -50,6 +49,15 @@ const DealCard: React.FC<DealCardProps> = ({
   const [saved, setSaved] = useState(false);
   const [showLightbox, setShowLightbox] = useState(false);
   const { addToCart } = useCart();
+  const [liked, setLiked] = useState(false);
+  const [likesCount, setLikesCount] = useState(deal.votes || 0);
+
+  const [chatOpen, setChatOpen] = useState(false);
+  const [messages, setMessages] = useState<{ id?: string; content: string }[]>([]);
+  const [newMessage, setNewMessage] = useState("");
+  const [commentCount, setCommentCount] = useState(deal.comments || 0);
+
+  const messagesEndRef = useRef<HTMLDivElement>(null);
 
   const mediaList =
     deal.media && deal.media.length > 0 ? deal.media : deal.image ? [deal.image] : [];
@@ -68,7 +76,7 @@ const DealCard: React.FC<DealCardProps> = ({
   const handleSave = () => {
     setSaved(!saved);
     addToCart({
-      id: String(deal.id),
+      id: deal.id,
       name: deal.title,
       price: 0,
       image: deal.image || "",
@@ -76,21 +84,83 @@ const DealCard: React.FC<DealCardProps> = ({
     });
   };
 
+  const handleLike = () => {
+    if (!liked) {
+      vote(deal.id, 1);
+      setLikesCount((prev) => prev + 1);
+    } else {
+      vote(deal.id, -1);
+      setLikesCount((prev) => (prev > 0 ? prev - 1 : 0));
+    }
+    setLiked(!liked);
+  };
+
+  // ✅ Fetch bình luận từ Supabase
+  useEffect(() => {
+    if (chatOpen) {
+      const fetchComments = async () => {
+        const { data, error } = await supabase
+          .from("comments")
+          .select("id, content")
+          .eq("product_id", deal.id)
+          .order("created_at", { ascending: true });
+
+        if (!error && data) {
+          const cleanData = data.map((msg) => ({
+            id: msg.id,
+            content: msg.content || "",
+          }));
+          setMessages(cleanData);
+          setCommentCount(cleanData.length);
+        }
+      };
+      fetchComments();
+    }
+  }, [chatOpen, deal.id]);
+
+  // Scroll xuống dưới mỗi khi có tin nhắn mới
+  useEffect(() => {
+    messagesEndRef.current?.scrollIntoView({ behavior: "smooth" });
+  }, [messages]);
+
+  const handleSendMessage = async () => {
+    if (!newMessage.trim()) return;
+    const content = newMessage.trim();
+
+    // Lấy user hiện tại
+    const {
+      data: { user },
+      error: userError,
+    } = await supabase.auth.getUser();
+    if (userError || !user) {
+      console.error("Chưa đăng nhập!");
+      return;
+    }
+
+    // Push message tạm thời lên UI
+    setMessages((prev) => [...prev, { content }]);
+    setNewMessage("");
+    setCommentCount((prev) => prev + 1);
+
+    // Gửi lên Supabase
+    const { error } = await supabase.from("comments").insert({
+      product_id: deal.id,
+      user_id: user.id,
+      content,
+    });
+    if (error) console.error(error);
+  };
+
   return (
     <>
+      {/* Card chính */}
       <article
         className={`flex flex-col transition-all mx-auto rounded-lg shadow ${
           bigger ? "max-w-3xl" : "max-w-xl"
         } ${isAd ? "bg-yellow-50 border-l-4 border-yellow-400" : "bg-white"}`}
-        id={`deal-${String(deal.id)}`}
+        id={`deal-${deal.id}`}
       >
-        {isAd && (
-          <span className="text-sm font-bold text-yellow-700 m-3 inline-block">
-            Quảng cáo
-          </span>
-        )}
-
-        {/* 👤 Hiển thị avatar + tên người đăng */}
+        {/* header */}
         <div className="flex flex-col px-3 py-2 border-b">
           <div className="flex items-center gap-2 text-sm">
             <Link
@@ -106,19 +176,16 @@ const DealCard: React.FC<DealCardProps> = ({
             </Link>
             <span className="text-gray-500 font-normal">· {deal.createdAt}</span>
           </div>
-
-          {/* ✅ Bọc Link cho phần tiêu đề sản phẩm */}
           <Link
             href={`/deal/${deal.id}`}
             className="block mt-2 no-underline hover:text-pink-600 transition-colors"
           >
             <h3 className="font-semibold text-base md:text-lg">{deal.title}</h3>
           </Link>
-
           <p className="text-sm text-gray-600 line-clamp-2">{deal.content}</p>
         </div>
 
-        {/* Media lớn với next / prev */}
+        {/* media */}
         <div
           className="relative w-full overflow-hidden group"
           onTouchStart={handleTouchStart}
@@ -153,112 +220,56 @@ const DealCard: React.FC<DealCardProps> = ({
                   )
                 )}
               </div>
-
               <button
                 onClick={prevMedia}
-                className="absolute left-4 top-1/2 -translate-y-1/2 z-10
-                           text-white/90 bg-black/10 backdrop-blur-sm border border-white/5
-                           rounded-full p-3 shadow-sm transition-all duration-300
-                           hover:bg-black/25 hover:shadow-lg hover:scale-105 active:scale-95"
+                className="absolute left-4 top-1/2 -translate-y-1/2 z-10 text-white/90 bg-black/10 backdrop-blur-sm border border-white/5 rounded-full p-3 shadow-sm hover:bg-black/25"
               >
-                <ChevronLeft size={30} className="drop-shadow-sm" />
+                <ChevronLeft size={30} />
               </button>
-
               <button
                 onClick={nextMedia}
-                className="absolute right-4 top-1/2 -translate-y-1/2 z-10
-                           text-white/90 bg-black/10 backdrop-blur-sm border border-white/5
-                           rounded-full p-3 shadow-sm transition-all duration-300
-                           hover:bg-black/25 hover:shadow-lg hover:scale-105 active:scale-95"
+                className="absolute right-4 top-1/2 -translate-y-1/2 z-10 text-white/90 bg-black/10 backdrop-blur-sm border border-white/5 rounded-full p-3 shadow-sm hover:bg-black/25"
               >
-                <ChevronRight size={30} className="drop-shadow-sm" />
+                <ChevronRight size={30} />
               </button>
             </>
           )}
         </div>
 
-        {/* Lightbox */}
-        {showLightbox && (
-          <div
-            className="fixed inset-0 bg-black/90 backdrop-blur-sm flex items-center justify-center z-[9999]"
-            onClick={() => setShowLightbox(false)}
-          >
-            <img
-              src={mediaList[currentIndex]}
-              alt="Zoomed"
-              className="max-h-[90vh] max-w-[90vw] object-contain rounded-lg"
-            />
-
-            <button
-              onClick={(e) => {
-                e.stopPropagation();
-                prevMedia();
-              }}
-              className="absolute left-6 top-1/2 -translate-y-1/2 text-white/90
-                         bg-black/20 backdrop-blur-sm border border-white/10 rounded-full p-3
-                         transition-all duration-300 hover:bg-black/40 hover:scale-110 active:scale-95
-                         z-[10000]"
-            >
-              <ChevronLeft size={36} className="drop-shadow-md" />
-            </button>
-
-            <button
-              onClick={(e) => {
-                e.stopPropagation();
-                nextMedia();
-              }}
-              className="absolute right-6 top-1/2 -translate-y-1/2 text-white/90
-                         bg-black/20 backdrop-blur-sm border border-white/10 rounded-full p-3
-                         transition-all duration-300 hover:bg-black/40 hover:scale-110 active:scale-95
-                         z-[10000]"
-            >
-              <ChevronRight size={36} className="drop-shadow-md" />
-            </button>
-
-            <button
-              onClick={(e) => {
-                e.stopPropagation();
-                setShowLightbox(false);
-              }}
-              className="absolute top-6 right-6 text-white/80 bg-black/20 backdrop-blur-sm
-                         rounded-full p-2 hover:bg-black/40 transition-all z-[10000]"
-            >
-              <X size={24} />
-            </button>
-          </div>
-        )}
-
+        {/* actions */}
         {!isAd && (
           <div className="flex items-center justify-between gap-2 mt-3 text-sm text-gray-700 pl-3 mb-3">
             <div className="flex items-center gap-2">
               <div className="flex items-center bg-gray-100 rounded-full px-2 py-1 shadow-sm">
-                <button onClick={() => vote(deal.id, 1)} className="hover:text-pink-600 p-1 cursor-pointer">
-                  <ArrowUp size={16} />
+                <button
+                  onClick={handleLike}
+                  className={`p-1 cursor-pointer transition-colors ${
+                    liked ? "text-pink-600" : "text-gray-600 hover:text-pink-600"
+                  }`}
+                >
+                  <HeartIcon size={16} fill={liked ? "currentColor" : "none"} />
                 </button>
                 <span className="font-semibold text-xs text-center min-w-[20px]">
-                  {deal.votes || "0"}
+                  {likesCount}
                 </span>
-                <button onClick={() => vote(deal.id, -1)} className="hover:text-pink-600 p-1 cursor-pointer">
-                  <ArrowDown size={16} />
-                </button>
               </div>
 
               <div className="flex items-center bg-gray-100 rounded-full px-2 py-1 shadow-sm">
                 <button
-                  onClick={() => setSelectedDeal(deal.id)}
+                  onClick={() => setChatOpen(!chatOpen)}
                   className="hover:text-pink-600 p-1 cursor-pointer"
                 >
                   <MessageSquare size={16} />
                 </button>
                 <span className="font-semibold text-xs text-center min-w-[20px]">
-                  {deal.comments || "0"}
+                  {commentCount}
                 </span>
               </div>
 
               <div className="flex items-center bg-gray-100 rounded-full px-2 py-1 shadow-sm">
                 <button
                   onClick={() => {
-                    const url = `${window.location.href}#deal-${String(deal.id)}`;
+                    const url = `${window.location.href}#deal-${deal.id}`;
                     if (navigator.share) navigator.share({ title: deal.title, url });
                     else {
                       navigator.clipboard.writeText(url);
@@ -274,7 +285,7 @@ const DealCard: React.FC<DealCardProps> = ({
 
             <div className="flex items-center bg-gray-100 rounded-full px-2 py-1 shadow-sm mr-3">
               <button
-                onClick={handleSave}
+                onClick={() => setSaved(!saved)}
                 className={`hover:text-pink-600 p-1 cursor-pointer ${saved ? "text-pink-600" : ""}`}
               >
                 <Bookmark size={16} fill={saved ? "currentColor" : "none"} />
@@ -283,6 +294,43 @@ const DealCard: React.FC<DealCardProps> = ({
           </div>
         )}
       </article>
+
+      {/* Chat box */}
+      {chatOpen && (
+        <div className="fixed right-0 top-0 h-full w-[320px] bg-white shadow-lg border-l z-[9999] flex flex-col">
+          <div className="flex justify-between items-center p-3 border-b">
+            <span className="font-semibold text-gray-700">Bình luận</span>
+            <button onClick={() => setChatOpen(false)} className="text-gray-500 hover:text-gray-700">
+              <X size={20} />
+            </button>
+          </div>
+          <div className="flex-1 p-3 overflow-y-auto space-y-2">
+            {messages.length === 0 && <p className="text-gray-400 text-sm">Chưa có bình luận</p>}
+            {messages.map((msg, idx) => (
+              <div key={idx} className="bg-gray-100 p-2 rounded-md text-sm">
+                {msg.content}
+              </div>
+            ))}
+            <div ref={messagesEndRef} />
+          </div>
+          <div className="p-3 border-t flex gap-2">
+            <input
+              type="text"
+              value={newMessage}
+              onChange={(e) => setNewMessage(e.target.value)}
+              onKeyDown={(e) => e.key === "Enter" && handleSendMessage()}
+              placeholder="Nhập bình luận..."
+              className="flex-1 px-3 py-2 border rounded-md focus:outline-none focus:ring focus:ring-pink-300"
+            />
+            <button
+              onClick={handleSendMessage}
+              className="bg-pink-500 text-white p-2 rounded-md hover:bg-pink-600"
+            >
+              <Send size={18} />
+            </button>
+          </div>
+        </div>
+      )}
     </>
   );
 };

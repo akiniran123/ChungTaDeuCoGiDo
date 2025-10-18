@@ -5,7 +5,7 @@ import Link from "next/link";
 import { supabase } from "@/lib/supabase/client";
 import DealCard, { DealType } from "@/components/Trang_chu/DealCard";
 import { motion, AnimatePresence } from "framer-motion";
-import { LayoutGrid, Grid, Bookmark, BookmarkCheck, Heart as HeartIcon } from "lucide-react";
+import { LayoutGrid, Grid, Bookmark, BookmarkCheck, Heart as HeartIcon, Share2 } from "lucide-react";
 import type { Database } from "@/types/supabase";
 
 // ======================
@@ -44,7 +44,6 @@ export default function ProductsPage() {
     const liked = likedIds.includes(productId);
 
     if (liked) {
-      // Bỏ like
       await supabase
         .from("products")
         .update({ upvotes: currentUpvotes > 0 ? currentUpvotes - 1 : 0 })
@@ -58,7 +57,6 @@ export default function ProductsPage() {
         )
       );
     } else {
-      // Thêm like
       await supabase
         .from("products")
         .update({ upvotes: currentUpvotes + 1 })
@@ -71,6 +69,19 @@ export default function ProductsPage() {
             : p
         )
       );
+    }
+  };
+
+  // Hàm chia sẻ sản phẩm
+  const shareProduct = (product: ProductWithUser) => {
+    const url = `${window.location.origin}/deal/${product.id}`;
+    const title = product.title || "Sản phẩm";
+    if (navigator.share) {
+      navigator
+        .share({ title, url })
+        .catch((err) => console.error("Lỗi chia sẻ:", err));
+    } else {
+      alert(`Copy link để chia sẻ: ${url}`);
     }
   };
 
@@ -176,7 +187,7 @@ export default function ProductsPage() {
                       ? new Date(p.created_at).toLocaleString("vi-VN", {
                           day: "2-digit",
                           month: "2-digit",
-                          year: "numeric",
+                          year: "2-digit",
                           hour: "2-digit",
                           minute: "2-digit",
                         })
@@ -271,21 +282,32 @@ export default function ProductsPage() {
                       </div>
                     )}
 
-                    {/* 🔥 Nút thả tim */}
+                    {/* 🔥 Nút thả tim + chia sẻ */}
                     <div className="flex justify-between items-center mt-3">
                       <span className="text-xs text-gray-400">{p.views ?? 0} lượt xem</span>
 
-                      <button
-                        onClick={() => toggleLike(p.id, p.upvotes ?? 0)}
-                        className={`flex items-center gap-1 px-2 py-1 rounded-full transition ${
-                          likedIds.includes(p.id)
-                            ? "bg-pink-100 text-pink-500"
-                            : "bg-gray-100 text-gray-600 hover:bg-pink-50 hover:text-pink-500"
-                        }`}
-                      >
-                        <HeartIcon size={14} fill={likedIds.includes(p.id) ? "currentColor" : "none"} />
-                        <span className="text-xs font-semibold">{p.upvotes ?? 0}</span>
-                      </button>
+                      <div className="flex items-center gap-2">
+                        {/* Nút thả tim */}
+                        <button
+                          onClick={() => toggleLike(p.id, p.upvotes ?? 0)}
+                          className={`flex items-center gap-1 px-2 py-1 rounded-full transition ${
+                            likedIds.includes(p.id)
+                              ? "bg-pink-100 text-pink-500"
+                              : "bg-gray-100 text-gray-600 hover:bg-pink-50 hover:text-pink-500"
+                          }`}
+                        >
+                          <HeartIcon size={14} fill={likedIds.includes(p.id) ? "currentColor" : "none"} />
+                          <span className="text-xs font-semibold">{p.upvotes ?? 0}</span>
+                        </button>
+
+                        {/* Nút chia sẻ */}
+                        <button
+                          onClick={() => shareProduct(p)}
+                          className="flex items-center gap-1 px-2 py-1 rounded-full bg-gray-100 text-gray-600 hover:bg-gray-200 hover:text-gray-700 transition"
+                        >
+                          <Share2 size={14} />
+                        </button>
+                      </div>
                     </div>
                   </div>
                 </motion.div>

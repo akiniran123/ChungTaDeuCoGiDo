@@ -195,21 +195,6 @@ export default function ProductsPage() {
                   transition={{ duration: 0.35 }}
                   className="relative rounded-2xl shadow hover:shadow-lg transition bg-white overflow-hidden"
                 >
-                  {/* 🔖 Nút lưu */}
-                  <button
-                    onClick={() => toggleSave(p.id)}
-                    className="absolute top-3 right-3 bg-white/80 hover:bg-white rounded-full p-2 shadow transition z-10"
-                  >
-                    {saved.includes(p.id) ? (
-                      <BookmarkCheck size={18} className="text-pink-500" />
-                    ) : (
-                      <Bookmark
-                        size={18}
-                        className="text-gray-600 hover:text-pink-500"
-                      />
-                    )}
-                  </button>
-
                   {/* Ảnh sản phẩm + link đến /deal/[id] */}
                   <Link href={`/deal/${p.id}`}>
                     {p.image_url ? (
@@ -227,12 +212,26 @@ export default function ProductsPage() {
 
                   {/* Thông tin sản phẩm */}
                   <div className="p-4">
-                    {/* Tiêu đề + link */}
-                    <Link href={`/deal/${p.id}`}>
-                      <h3 className="font-semibold text-lg cursor-pointer hover:text-pink-500">
-                        {p.title}
-                      </h3>
-                    </Link>
+                    {/* Tiêu đề + nút lưu */}
+                    <div className="flex justify-between items-start">
+                      <Link href={`/deal/${p.id}`}>
+                        <h3 className="font-semibold text-lg cursor-pointer hover:text-pink-500">
+                          {p.title}
+                        </h3>
+                      </Link>
+
+                      {/* 🔖 Nút lưu */}
+                      <button
+                        onClick={() => toggleSave(p.id)}
+                        className={`flex items-center gap-1 px-2 py-1 rounded-full transition ${
+                          saved.includes(p.id)
+                            ? "bg-pink-100 text-pink-500"
+                            : "bg-gray-100 text-gray-600 hover:bg-pink-50 hover:text-pink-500"
+                        }`}
+                      >
+                        {saved.includes(p.id) ? <BookmarkCheck size={16} /> : <Bookmark size={16} />}
+                      </button>
+                    </div>
 
                     <p className="text-sm text-gray-600">{p.category}</p>
                     <p className="mt-2 text-indigo-600 font-bold">
@@ -262,7 +261,7 @@ export default function ProductsPage() {
                               ? new Date(p.created_at).toLocaleString("vi-VN", {
                                   day: "2-digit",
                                   month: "2-digit",
-                                  year: "numeric",
+                                  year: "2-digit",
                                   hour: "2-digit",
                                   minute: "2-digit",
                                 })
@@ -272,10 +271,10 @@ export default function ProductsPage() {
                       </div>
                     )}
 
+                    {/* 🔥 Nút thả tim */}
                     <div className="flex justify-between items-center mt-3">
                       <span className="text-xs text-gray-400">{p.views ?? 0} lượt xem</span>
 
-                      {/* 🔥 Nút thả tim */}
                       <button
                         onClick={() => toggleLike(p.id, p.upvotes ?? 0)}
                         className={`flex items-center gap-1 px-2 py-1 rounded-full transition ${

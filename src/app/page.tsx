@@ -5,7 +5,7 @@ import Link from "next/link";
 import { supabase } from "@/lib/supabase/client";
 import DealCard, { DealType } from "@/components/Trang_chu/DealCard";
 import { motion, AnimatePresence } from "framer-motion";
-import { LayoutGrid, Grid, Bookmark, BookmarkCheck } from "lucide-react";
+import { LayoutGrid, Grid, Bookmark, BookmarkCheck, Heart as HeartIcon } from "lucide-react";
 import type { Database } from "@/types/supabase";
 
 // ======================
@@ -23,12 +23,55 @@ export default function ProductsPage() {
   const [loading, setLoading] = useState(true);
   const [biggerGrid, setBiggerGrid] = useState(false);
   const [saved, setSaved] = useState<string[]>([]); // Danh sách ID đã lưu
+  const [likedIds, setLikedIds] = useState<string[]>([]); // ID sản phẩm đã thả tim
 
   // Toggle trạng thái lưu bài
   const toggleSave = (id: string) => {
     setSaved((prev) =>
       prev.includes(id) ? prev.filter((x) => x !== id) : [...prev, id]
     );
+  };
+
+  // Toggle nút thả tim cho sản phẩm
+  const toggleLike = async (productId: string, currentUpvotes: number) => {
+    const { data: authData } = await supabase.auth.getUser();
+    const userId = authData.user?.id;
+    if (!userId) {
+      alert("Bạn cần đăng nhập để thả tim.");
+      return;
+    }
+
+    const liked = likedIds.includes(productId);
+
+    if (liked) {
+      // Bỏ like
+      await supabase
+        .from("products")
+        .update({ upvotes: currentUpvotes > 0 ? currentUpvotes - 1 : 0 })
+        .eq("id", productId);
+      setLikedIds((prev) => prev.filter((id) => id !== productId));
+      setProducts((prev) =>
+        prev.map((p) =>
+          p.id === productId
+            ? { ...p, upvotes: p.upvotes ? p.upvotes - 1 : 0 }
+            : p
+        )
+      );
+    } else {
+      // Thêm like
+      await supabase
+        .from("products")
+        .update({ upvotes: currentUpvotes + 1 })
+        .eq("id", productId);
+      setLikedIds((prev) => [...prev, productId]);
+      setProducts((prev) =>
+        prev.map((p) =>
+          p.id === productId
+            ? { ...p, upvotes: p.upvotes ? p.upvotes + 1 : 1 }
+            : p
+        )
+      );
+    }
   };
 
   // Lấy dữ liệu sản phẩm từ Supabase
@@ -229,9 +272,21 @@ export default function ProductsPage() {
                       </div>
                     )}
 
-                    <div className="flex justify-between text-xs text-gray-400 mt-3">
-                      <span>{p.views ?? 0} lượt xem</span>
-                      <span>❤️ {p.upvotes ?? 0}</span>
+                    <div className="flex justify-between items-center mt-3">
+                      <span className="text-xs text-gray-400">{p.views ?? 0} lượt xem</span>
+
+                      {/* 🔥 Nút thả tim */}
+                      <button
+                        onClick={() => toggleLike(p.id, p.upvotes ?? 0)}
+                        className={`flex items-center gap-1 px-2 py-1 rounded-full transition ${
+                          likedIds.includes(p.id)
+                            ? "bg-pink-100 text-pink-500"
+                            : "bg-gray-100 text-gray-600 hover:bg-pink-50 hover:text-pink-500"
+                        }`}
+                      >
+                        <HeartIcon size={14} fill={likedIds.includes(p.id) ? "currentColor" : "none"} />
+                        <span className="text-xs font-semibold">{p.upvotes ?? 0}</span>
+                      </button>
                     </div>
                   </div>
                 </motion.div>

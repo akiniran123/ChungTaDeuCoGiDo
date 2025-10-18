@@ -21,7 +21,7 @@ export type DealType = {
   image?: string;
   media?: string[];
   votes: number;
-  comments?: number; // số bình luận ban đầu, sẽ fetch thực tế
+  comments?: number;
   category: string;
   author: string;
   avatar?: string;
@@ -35,6 +35,13 @@ export interface DealCardProps {
   setSelectedDeal: (id: string) => void;
   bigger?: boolean;
   isAd?: boolean;
+}
+
+interface MessageType {
+  id?: string;
+  content: string;
+  username?: string;
+  avatar?: string;
 }
 
 const DealCard: React.FC<DealCardProps> = ({
@@ -53,7 +60,7 @@ const DealCard: React.FC<DealCardProps> = ({
   const [likesCount, setLikesCount] = useState(deal.votes || 0);
 
   const [chatOpen, setChatOpen] = useState(false);
-  const [messages, setMessages] = useState<{ id?: string; content: string }[]>([]);
+  const [messages, setMessages] = useState<MessageType[]>([]);
   const [newMessage, setNewMessage] = useState("");
   const [commentCount, setCommentCount] = useState(deal.comments || 0);
 
@@ -95,20 +102,30 @@ const DealCard: React.FC<DealCardProps> = ({
     setLiked(!liked);
   };
 
-  // ✅ Fetch bình luận từ Supabase
+  // ✅ Fetch bình luận kèm user info
   useEffect(() => {
     if (chatOpen) {
       const fetchComments = async () => {
         const { data, error } = await supabase
           .from("comments")
-          .select("id, content")
+          .select(`
+            id,
+            content,
+            created_at,
+            users (
+              username,
+              avatar_url
+            )
+          `)
           .eq("product_id", deal.id)
           .order("created_at", { ascending: true });
 
         if (!error && data) {
-          const cleanData = data.map((msg) => ({
+          const cleanData: MessageType[] = data.map((msg: any) => ({
             id: msg.id,
             content: msg.content || "",
+            username: msg.users?.username || "Người dùng",
+            avatar: msg.users?.avatar_url || "/default-avatar.png",
           }));
           setMessages(cleanData);
           setCommentCount(cleanData.length);
@@ -118,7 +135,6 @@ const DealCard: React.FC<DealCardProps> = ({
     }
   }, [chatOpen, deal.id]);
 
-  // Scroll xuống dưới mỗi khi có tin nhắn mới
   useEffect(() => {
     messagesEndRef.current?.scrollIntoView({ behavior: "smooth" });
   }, [messages]);
@@ -138,7 +154,7 @@ const DealCard: React.FC<DealCardProps> = ({
     }
 
     // Push message tạm thời lên UI
-    setMessages((prev) => [...prev, { content }]);
+    setMessages((prev) => [...prev, { content, username: user.email, avatar: "/default-avatar.png" }]);
     setNewMessage("");
     setCommentCount((prev) => prev + 1);
 
@@ -249,9 +265,7 @@ const DealCard: React.FC<DealCardProps> = ({
                 >
                   <HeartIcon size={16} fill={liked ? "currentColor" : "none"} />
                 </button>
-                <span className="font-semibold text-xs text-center min-w-[20px]">
-                  {likesCount}
-                </span>
+                <span className="font-semibold text-xs text-center min-w-[20px]">{likesCount}</span>
               </div>
 
               <div className="flex items-center bg-gray-100 rounded-full px-2 py-1 shadow-sm">
@@ -261,9 +275,7 @@ const DealCard: React.FC<DealCardProps> = ({
                 >
                   <MessageSquare size={16} />
                 </button>
-                <span className="font-semibold text-xs text-center min-w-[20px]">
-                  {commentCount}
-                </span>
+                <span className="font-semibold text-xs text-center min-w-[20px]">{commentCount}</span>
               </div>
 
               <div className="flex items-center bg-gray-100 rounded-full px-2 py-1 shadow-sm">
@@ -307,8 +319,16 @@ const DealCard: React.FC<DealCardProps> = ({
           <div className="flex-1 p-3 overflow-y-auto space-y-2">
             {messages.length === 0 && <p className="text-gray-400 text-sm">Chưa có bình luận</p>}
             {messages.map((msg, idx) => (
-              <div key={idx} className="bg-gray-100 p-2 rounded-md text-sm">
-                {msg.content}
+              <div key={idx} className="flex gap-2 items-start">
+                <img
+                  src={msg.avatar || "/default-avatar.png"}
+                  alt={msg.username || "Người dùng"}
+                  className="w-8 h-8 rounded-full object-cover border border-gray-200"
+                />
+                <div className="bg-gray-100 p-2 rounded-md text-sm flex-1">
+                  <span className="font-semibold text-gray-700 block">{msg.username || "Người dùng"}</span>
+                  <span>{msg.content}</span>
+                </div>
               </div>
             ))}
             <div ref={messagesEndRef} />

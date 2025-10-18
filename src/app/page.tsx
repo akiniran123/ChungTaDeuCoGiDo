@@ -24,6 +24,7 @@ export default function ProductsPage() {
   const [biggerGrid, setBiggerGrid] = useState(false);
   const [saved, setSaved] = useState<string[]>([]); // Danh sách ID đã lưu
   const [likedIds, setLikedIds] = useState<string[]>([]); // ID sản phẩm đã thả tim
+  const [commentsCount, setCommentsCount] = useState<Record<string, number>>({}); // số lượng comment theo product_id
 
   // Toggle trạng thái lưu bài
   const toggleSave = (id: string) => {
@@ -85,7 +86,7 @@ export default function ProductsPage() {
     }
   };
 
-  // Lấy dữ liệu sản phẩm từ Supabase
+  // Lấy dữ liệu sản phẩm và số lượng comment
   useEffect(() => {
     const fetchProducts = async () => {
       const { data, error } = await supabase
@@ -104,7 +105,21 @@ export default function ProductsPage() {
       if (error) {
         console.error("Lỗi tải sản phẩm:", error);
       } else {
-        setProducts(data as ProductWithUser[]);
+        const productsData = data as ProductWithUser[];
+        setProducts(productsData);
+
+        // Lấy số lượng comment cho mỗi product
+        const commentCounts: Record<string, number> = {};
+        await Promise.all(
+          productsData.map(async (p) => {
+            const { count } = await supabase
+              .from("comments")
+              .select("*", { count: "exact" })
+              .eq("product_id", p.id);
+            commentCounts[p.id] = count || 0;
+          })
+        );
+        setCommentsCount(commentCounts);
       }
       setLoading(false);
     };
@@ -255,35 +270,42 @@ export default function ProductsPage() {
                       {p.description}
                     </p>
 
-                    {/* 👤 User + thời gian */}
+                    {/* 👤 User + thời gian + số comment (comment chỉ hiện ở bên phải) */}
                     {p.users && (
-                      <div className="flex items-center mt-3">
-                        <img
-                          src={p.users.avatar_url || "/default-avatar.png"}
-                          alt={p.users.username || "User"}
-                          className="w-8 h-8 rounded-full object-cover"
-                        />
-                        <div className="ml-2">
-                          <p className="text-sm font-medium text-gray-700">
-                            {p.users.username || "Người dùng"}
-                          </p>
-                          <p className="text-xs text-gray-400">
-                            {p.created_at
-                              ? new Date(p.created_at).toLocaleString("vi-VN", {
-                                  day: "2-digit",
-                                  month: "2-digit",
-                                  year: "2-digit",
-                                  hour: "2-digit",
-                                  minute: "2-digit",
-                                })
-                              : "Không rõ thời gian"}
-                          </p>
+                      <div className="flex justify-between items-center mt-3">
+                        <div className="flex items-center">
+                          <img
+                            src={p.users.avatar_url || "/default-avatar.png"}
+                            alt={p.users.username || "User"}
+                            className="w-8 h-8 rounded-full object-cover"
+                          />
+                          <div className="ml-2">
+                            <p className="text-sm font-medium text-gray-700">
+                              {p.users.username || "Người dùng"}
+                            </p>
+                            <p className="text-xs text-gray-400">
+                              {p.created_at
+                                ? new Date(p.created_at).toLocaleString("vi-VN", {
+                                    day: "2-digit",
+                                    month: "2-digit",
+                                    year: "2-digit",
+                                    hour: "2-digit",
+                                    minute: "2-digit",
+                                  })
+                                : "Không rõ thời gian"}
+                            </p>
+                          </div>
                         </div>
+
+                        {/* Số comment ở bên phải cùng hàng với avatar */}
+                        <p className="text-xs text-gray-500">
+                          {commentsCount[p.id] ?? 0} bình luận
+                        </p>
                       </div>
                     )}
 
                     {/* 🔥 Nút thả tim + chia sẻ */}
-                    <div className="flex justify-between items-center mt-3">
+                    <div className="flex justify-between items-center mt-2">
                       <span className="text-xs text-gray-400">{p.views ?? 0} lượt xem</span>
 
                       <div className="flex items-center gap-2">

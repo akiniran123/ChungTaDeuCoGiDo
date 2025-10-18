@@ -7,7 +7,9 @@ import { motion, AnimatePresence } from "framer-motion";
 import { LayoutGrid, Grid, Bookmark, BookmarkCheck } from "lucide-react";
 import type { Database } from "@/types/supabase";
 
-// ✅ Dùng type thật từ Supabase + join user
+// ======================
+// Type dữ liệu sản phẩm có thông tin user
+// ======================
 type ProductWithUser = Database["public"]["Tables"]["products"]["Row"] & {
   users?: {
     username: string | null;
@@ -19,25 +21,29 @@ export default function ProductsPage() {
   const [products, setProducts] = useState<ProductWithUser[]>([]);
   const [loading, setLoading] = useState(true);
   const [biggerGrid, setBiggerGrid] = useState(false);
-  const [saved, setSaved] = useState<string[]>([]); // ✅ danh sách ID đã lưu
+  const [saved, setSaved] = useState<string[]>([]); // Danh sách ID đã lưu
 
+  // Toggle trạng thái lưu bài
   const toggleSave = (id: string) => {
     setSaved((prev) =>
       prev.includes(id) ? prev.filter((x) => x !== id) : [...prev, id]
     );
   };
 
+  // Lấy dữ liệu sản phẩm từ Supabase
   useEffect(() => {
     const fetchProducts = async () => {
       const { data, error } = await supabase
         .from("products")
-        .select(`
+        .select(
+          `
           *,
           users:user_id (
             username,
             avatar_url
           )
-        `)
+        `
+        )
         .order("created_at", { ascending: false });
 
       if (error) {
@@ -51,6 +57,7 @@ export default function ProductsPage() {
     fetchProducts();
   }, []);
 
+  // ========== Hiển thị khi đang tải ==========
   if (loading)
     return (
       <div className="flex items-center justify-center min-h-screen text-gray-500">
@@ -58,18 +65,18 @@ export default function ProductsPage() {
       </div>
     );
 
+  // ========== Giao diện chính ==========
   return (
     <div className="p-6">
-      {/* 🔘 Nút chuyển đổi grid */}
+      {/* 🔘 Nút chuyển đổi dạng hiển thị */}
       <div className="flex justify-end mb-4">
         <button
           onClick={() => setBiggerGrid(!biggerGrid)}
-          className={`p-2 rounded-lg transition cursor-pointer 
-            ${
-              biggerGrid
-                ? "bg-pink-100 text-pink-500"
-                : "hover:bg-pink-50 text-gray-700 hover:text-pink-400"
-            }`}
+          className={`p-2 rounded-lg transition cursor-pointer ${
+            biggerGrid
+              ? "bg-pink-100 text-pink-500"
+              : "hover:bg-pink-50 text-gray-700 hover:text-pink-400"
+          }`}
         >
           {biggerGrid ? <Grid size={20} /> : <LayoutGrid size={20} />}
         </button>
@@ -107,7 +114,7 @@ export default function ProductsPage() {
           >
             {products.map((p) =>
               biggerGrid ? (
-                // ========== DẠNG GRID LỚN ==========
+                // ========== DẠNG LỚN ==========
                 <DealCard
                   key={p.id}
                   deal={{
@@ -136,7 +143,7 @@ export default function ProductsPage() {
                   bigger
                 />
               ) : (
-                // ========== DẠNG THẺ NHỎ ==========
+                // ========== DẠNG NHỎ ==========
                 <motion.div
                   key={p.id}
                   initial={{ opacity: 0, y: 15 }}
@@ -152,10 +159,14 @@ export default function ProductsPage() {
                     {saved.includes(p.id) ? (
                       <BookmarkCheck size={18} className="text-pink-500" />
                     ) : (
-                      <Bookmark size={18} className="text-gray-600 hover:text-pink-500" />
+                      <Bookmark
+                        size={18}
+                        className="text-gray-600 hover:text-pink-500"
+                      />
                     )}
                   </button>
 
+                  {/* Ảnh sản phẩm */}
                   {p.image_url ? (
                     <img
                       src={p.image_url}
@@ -168,11 +179,12 @@ export default function ProductsPage() {
                     </div>
                   )}
 
+                  {/* Thông tin sản phẩm */}
                   <div className="p-4">
                     <h3 className="font-semibold text-lg">{p.title}</h3>
                     <p className="text-sm text-gray-600">{p.category}</p>
                     <p className="mt-2 text-indigo-600 font-bold">
-                      {p.price ? p.price.toLocaleString() + "₫" : "Liên hệ"}
+                      {p.price ? `${p.price.toLocaleString()}₫` : "Liên hệ"}
                     </p>
                     <p className="text-xs text-gray-500 mt-1">
                       Tình trạng: {p.condition}
@@ -181,7 +193,7 @@ export default function ProductsPage() {
                       {p.description}
                     </p>
 
-                    {/* 👇 User + thời gian đăng bài từ Supabase */}
+                    {/* 👤 User + thời gian */}
                     {p.users && (
                       <div className="flex items-center mt-3">
                         <img
@@ -222,4 +234,3 @@ export default function ProductsPage() {
     </div>
   );
 }
-

@@ -6,18 +6,14 @@ export type NormalizedProduct = Product & {
   cpu?: string | null;
   gpu?: string | null;
   ram?: number | string | null;
+  users?: {
+    username?: string | null;
+    avatar_url?: string | null;
+  } | null;
 };
 
-/**
- * ✅ Hàm chuẩn hóa dữ liệu sản phẩm từ Supabase
- * - Tự động parse specs nếu là JSON string
- * - Đảm bảo images là mảng
- * - Thêm giá trị mặc định cho các field còn thiếu
- * - Chuẩn hóa các field cho UI lọc/sắp xếp
- */
 export function normalizeProducts(products: any[]): NormalizedProduct[] {
   return products.map((p) => {
-    // ✅ Chuẩn hóa specs
     let specs: Record<string, any> = {};
     if (typeof p.specs === "string") {
       try {
@@ -29,7 +25,6 @@ export function normalizeProducts(products: any[]): NormalizedProduct[] {
       specs = p.specs;
     }
 
-    // ✅ Chuẩn hóa images
     const images =
       typeof p.images === "string"
         ? (() => {
@@ -43,14 +38,12 @@ export function normalizeProducts(products: any[]): NormalizedProduct[] {
         ? p.images
         : [];
 
-    // ✅ Lấy thông tin từ specs
     const brand = specs.brand || specs.hang || specs["hãng"] || null;
     const type = specs.type || specs.loai || specs["loại"] || null;
     const cpu = specs.cpu || specs["CPU"] || null;
     const gpu = specs.gpu || specs["GPU"] || null;
     const ram = specs.ram || specs["RAM"] || null;
 
-    // ✅ Trả về object đầy đủ các field mà Product yêu cầu
     return {
       id: p.id,
       title: p.title || "",
@@ -74,7 +67,10 @@ export function normalizeProducts(products: any[]): NormalizedProduct[] {
       upvotes: p.upvotes ?? 0,
       views: p.views ?? 0,
 
-      // 🧩 Thêm cho UI lọc
+      // 👇 giữ lại users
+      users: p.users || null,
+
+      // 🧩 cho UI lọc
       brand,
       type,
       cpu,

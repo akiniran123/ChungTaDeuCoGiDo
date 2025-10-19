@@ -31,17 +31,29 @@ export default function PCPage() {
     const fetchProducts = async () => {
       setLoading(true);
       const { data, error } = await supabase
-        .from("products")
-        .select("*")
-        .order("created_at", { ascending: false });
+  .from("products")
+  .select(`
+    *,
+    users:user_id (
+      username,
+      avatar_url
+    )
+  `)
+  .order("created_at", { ascending: false });
 
-      if (error) {
-        console.error("Lỗi khi load sản phẩm:", error.message);
-        setProducts([]);
-      } else {
-        const normalized = normalizeProducts(data || []);
-        setProducts(normalized);
-      }
+if (error) {
+  console.error("Lỗi khi tải sản phẩm:", error);
+  return;
+}
+
+// ✅ Giữ cả thông tin users và specs
+const normalized = normalizeProducts(data || []).map((p, i) => ({
+  ...p,
+  users: data?.[i]?.users || null,
+}));
+
+setProducts(normalized);
+
       setLoading(false);
     };
 

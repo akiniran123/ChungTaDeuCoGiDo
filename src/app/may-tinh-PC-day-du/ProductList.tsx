@@ -3,8 +3,10 @@
 import React, { useState } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import type { Product } from "@/types";
-import { Eye, ArrowUp, MessageSquare } from "lucide-react";
+import { Eye } from "lucide-react";
 import Image from "next/image";
+import Link from "next/link";
+import ProductActions from "./ProductActions";
 
 // ------------------
 // Kiểu mở rộng Product (có users)
@@ -67,25 +69,32 @@ export default function ProductList({ paginated, onSelectProduct }: Props) {
           {paginatedProducts.map((p) => (
             <div
               key={p.id}
-              onClick={() => onSelectProduct?.(String(p.id))}
-              className="cursor-pointer border rounded-xl p-3 hover:shadow-md transition bg-white flex flex-col sm:flex-row gap-4"
+              className="relative border rounded-xl p-3 hover:shadow-md transition bg-white flex flex-col sm:flex-row gap-4 select-none"
             >
-              {/* Ảnh bên trái */}
+              {/* Ảnh bên trái (bọc Link, có cursor-pointer) */}
               {p.image_url && (
-                <div className="relative w-full sm:w-48 h-40 flex-shrink-0">
+                <Link
+                  href={`/deal/${p.id}`}
+                  className="relative w-full sm:w-48 h-40 flex-shrink-0 block cursor-pointer"
+                >
                   <Image
                     src={p.image_url}
                     alt={p.title}
                     fill
                     className="object-cover rounded-lg"
                   />
-                </div>
+                </Link>
               )}
 
               {/* Thông tin bên phải */}
               <div className="flex flex-col justify-between flex-1">
                 <div>
-                  <h3 className="font-semibold text-lg line-clamp-2">{p.title}</h3>
+                  {/* Tiêu đề (bọc Link, có cursor-pointer) */}
+                  <Link href={`/deal/${p.id}`} className="cursor-pointer">
+                    <h3 className="font-semibold text-lg line-clamp-2 hover:text-pink-600">
+                      {p.title}
+                    </h3>
+                  </Link>
 
                   {p.price && (
                     <p className="text-red-600 font-bold mt-1">
@@ -93,16 +102,10 @@ export default function ProductList({ paginated, onSelectProduct }: Props) {
                     </p>
                   )}
 
-                  {/* ✅ Lượt xem / upvote / bình luận */}
+                  {/* ✅ Lượt xem */}
                   <div className="flex items-center gap-4 text-sm text-gray-500 mt-2">
                     <span className="flex items-center gap-1">
-                      <Eye size={16} /> {p.views ?? 0}
-                    </span>
-                    <span className="flex items-center gap-1">
-                      <ArrowUp size={16} /> {p.upvotes ?? 0}
-                    </span>
-                    <span className="flex items-center gap-1">
-                      <MessageSquare size={16} /> Bình luận
+                      <Eye size={16} /> {p.views ?? 0} lượt xem
                     </span>
                   </div>
                 </div>
@@ -127,11 +130,17 @@ export default function ProductList({ paginated, onSelectProduct }: Props) {
                   </div>
                 )}
               </div>
+
+              {/* ✅ Các nút hành động (like, comment, share) */}
+              <div className="absolute bottom-3 right-3 translate-x-[-6px]">
+                <ProductActions productId={p.id} />
+              </div>
             </div>
           ))}
         </motion.div>
       </AnimatePresence>
 
+      {/* Phân trang */}
       {!isExternal && (
         <div className="flex justify-center gap-2 mt-2">
           <button

@@ -7,7 +7,6 @@ import type { Database } from "@/types/supabase";
 
 type CommentRow = Database["public"]["Tables"]["comments"]["Row"];
 
-// Kiểu comment kèm thông tin user
 interface CommentWithUser extends CommentRow {
   user: {
     username: string;
@@ -27,23 +26,20 @@ export default function ProductActions({ productId }: Props) {
   const [showCommentSidebar, setShowCommentSidebar] = useState(false);
   const commentsEndRef = useRef<HTMLDivElement>(null);
 
-  // Fetch dữ liệu khi component load
   useEffect(() => {
     async function fetchData() {
-      // Lấy sản phẩm để xem upvotes
-      const { data: productData, error: productError } = await supabase
+      const { data: productData } = await supabase
         .from("products")
         .select("upvotes")
         .eq("id", productId)
         .single();
 
-      if (!productError && productData) setLikesCount(productData.upvotes ?? 0);
+      if (productData) setLikesCount(productData.upvotes ?? 0);
 
       const { data: authData } = await supabase.auth.getUser();
       const currentUserId = authData.user?.id;
 
-      // Lấy comment kèm user
-      const { data: commentsData, error: commentsError } = await supabase
+      const { data: commentsData } = await supabase
         .from("comments")
         .select(`
           id,
@@ -59,7 +55,7 @@ export default function ProductActions({ productId }: Props) {
         .eq("product_id", productId)
         .order("created_at", { ascending: true });
 
-      if (!commentsError && commentsData) {
+      if (commentsData) {
         const mapped: CommentWithUser[] = commentsData.map((c: any) => ({
           id: c.id,
           product_id: c.product_id,
@@ -73,9 +69,10 @@ export default function ProductActions({ productId }: Props) {
         }));
         setComments(mapped);
 
-        // Kiểm tra user đã like chưa
         if (currentUserId) {
-          const userLiked = mapped.some((c) => c.user_id === currentUserId && c.content === "like");
+          const userLiked = mapped.some(
+            (c) => c.user_id === currentUserId && c.content === "like"
+          );
           setLiked(userLiked);
         }
       }
@@ -93,19 +90,24 @@ export default function ProductActions({ productId }: Props) {
     }
 
     if (liked) {
-      // Giảm upvotes
-      await supabase.from("products").update({ upvotes: likesCount - 1 }).eq("id", productId);
-      setLikesCount((prev) => (prev > 0 ? prev - 1 : 0));
+      await supabase
+        .from("products")
+        .update({ upvotes: likesCount - 1 })
+        .eq("id", productId);
+      setLikesCount((prev) => Math.max(prev - 1, 0));
       setLiked(false);
     } else {
-      // Tăng upvotes
-      await supabase.from("products").update({ upvotes: likesCount + 1 }).eq("id", productId);
+      await supabase
+        .from("products")
+        .update({ upvotes: likesCount + 1 })
+        .eq("id", productId);
       setLikesCount((prev) => prev + 1);
       setLiked(true);
     }
   };
 
-  const handleToggleCommentSidebar = () => setShowCommentSidebar((prev) => !prev);
+  const handleToggleCommentSidebar = () =>
+    setShowCommentSidebar((prev) => !prev);
 
   const handleSendComment = async () => {
     const content = newComment.trim();
@@ -118,10 +120,11 @@ export default function ProductActions({ productId }: Props) {
       return;
     }
 
-    const { data: inserted, error } = await supabase
+    const { data: inserted } = await supabase
       .from("comments")
       .insert({ product_id: productId, user_id: currentUserId, content })
-      .select(`
+      .select(
+        `
         id,
         product_id,
         content,
@@ -131,10 +134,11 @@ export default function ProductActions({ productId }: Props) {
           username,
           avatar_url
         )
-      `)
+      `
+      )
       .single();
 
-    if (inserted && !error) {
+    if (inserted) {
       const newC: CommentWithUser = {
         id: inserted.id,
         product_id: inserted.product_id,
@@ -143,7 +147,8 @@ export default function ProductActions({ productId }: Props) {
         created_at: inserted.created_at,
         user: {
           username: inserted.users?.username || "Người dùng",
-          avatar_url: inserted.users?.avatar_url || "/default-avatar.png",
+          avatar_url:
+            inserted.users?.avatar_url || "/default-avatar.png",
         },
       };
       setComments((prev) => [...prev, newC]);
@@ -164,50 +169,54 @@ export default function ProductActions({ productId }: Props) {
 
   return (
     <>
-      <div className="flex gap-2 items-center mt-3 text-gray-700 text-sm">
-        {/* Thả tim */}
-        <div className="flex items-center bg-gray-100 rounded-full px-2 py-1 shadow-sm">
-          <button
-            onClick={handleToggleLike}
-            className={`p-1 cursor-pointer transition-colors ${
-              liked ? "text-pink-600" : "text-gray-600 hover:text-pink-600"
-            }`}
-          >
-            <HeartIcon size={16} fill={liked ? "currentColor" : "none"} />
-          </button>
-          <span className="font-semibold text-xs min-w-[20px] text-center">{likesCount}</span>
-        </div>
+      {/* ✅ Gói 3 nút trong khung riêng, căn giữa, tránh tràn */}
+      <div className="flex items-center justify-center gap-2 mt-auto w-full text-gray-700 text-sm relative">
+        <button
+          onClick={handleToggleLike}
+          className={`flex items-center justify-center gap-1 px-3 py-1 rounded-full shadow-sm transition-colors min-w-[60px] ${
+            liked
+              ? "bg-pink-100 text-pink-600"
+              : "bg-gray-100 text-gray-600 hover:bg-pink-100 hover:text-pink-600"
+          }`}
+        >
+          <HeartIcon size={16} fill={liked ? "currentColor" : "none"} />
+          <span className="text-xs font-semibold">{likesCount}</span>
+        </button>
 
-        {/* Comment */}
-        <div
-          className="flex items-center bg-gray-100 rounded-full px-2 py-1 shadow-sm cursor-pointer hover:text-pink-600"
+        <button
           onClick={handleToggleCommentSidebar}
+          className="flex items-center justify-center gap-1 px-3 py-1 rounded-full bg-gray-100 shadow-sm text-gray-600 hover:bg-pink-100 hover:text-pink-600 min-w-[60px]"
         >
           <MessageSquare size={16} />
-          <span className="font-semibold text-xs min-w-[20px] text-center">{comments.length}</span>
-        </div>
+          <span className="text-xs font-semibold">{comments.length}</span>
+        </button>
 
-        {/* Share */}
-        <div
-          className="flex items-center bg-gray-100 rounded-full px-2 py-1 shadow-sm cursor-pointer hover:text-pink-600"
+        <button
           onClick={handleShare}
+          className="flex items-center justify-center gap-1 px-3 py-1 rounded-full bg-gray-100 shadow-sm text-gray-600 hover:bg-pink-100 hover:text-pink-600 min-w-[60px]"
         >
           <Share2 size={16} />
-        </div>
+        </button>
       </div>
 
-      {/* Sidebar bình luận */}
       {showCommentSidebar && (
-        <div className="fixed top-0 right-0 h-full w-96 bg-white border-l shadow-lg z-50 flex flex-col">
+        <div className="fixed top-0 right-0 h-full w-96 bg-white border-l shadow-lg z-[9999] flex flex-col">
           <div className="flex justify-between items-center p-4 border-b">
             <h2 className="font-semibold text-lg">Bình luận</h2>
-            <button onClick={handleToggleCommentSidebar} className="p-2 rounded-full hover:bg-gray-200">
+            <button
+              onClick={handleToggleCommentSidebar}
+              className="p-2 rounded-full hover:bg-gray-200"
+            >
               <X size={18} />
             </button>
           </div>
 
           <div className="flex-1 overflow-y-auto p-4 flex flex-col gap-2">
-            {comments.length === 0 && <p className="text-gray-500 text-sm">Chưa có bình luận nào.</p>}
+            {comments.length === 0 && (
+              <p className="text-gray-500 text-sm">
+                Chưa có bình luận nào.
+              </p>
+            )}
             {comments.map((c) => (
               <div key={c.id} className="flex gap-2 items-start">
                 <img
@@ -216,7 +225,9 @@ export default function ProductActions({ productId }: Props) {
                   className="w-8 h-8 rounded-full object-cover border border-gray-200"
                 />
                 <div className="bg-gray-100 p-2 rounded text-sm flex-1">
-                  <span className="font-semibold text-gray-700 block">{c.user.username}</span>
+                  <span className="font-semibold text-gray-700 block">
+                    {c.user.username}
+                  </span>
                   <span>{c.content}</span>
                 </div>
               </div>

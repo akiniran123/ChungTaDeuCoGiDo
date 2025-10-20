@@ -1,29 +1,57 @@
-"use client"
+"use client";
 
-import Link from "next/link"
-import { Product } from "./types.local.bak"
-import ProductActions from "./ProductActions"
-import { useState } from "react"
-import { Bookmark } from "lucide-react"
-import { useCart } from "@/app/context/CartContext"; // ✅ Thêm dòng này
+import Link from "next/link";
+import { Product } from "@/types";
+import ProductActions from "./ProductActions";
+import { useState } from "react";
+import { Bookmark } from "lucide-react";
+import { useCart } from "@/app/context/CartContext";
 
-export default function ProductItem({ product }: { product: Product }) {
-  const [added, setAdded] = useState(false)
-  const { addToCart } = useCart() // ✅ Lấy hàm addToCart từ context
+type UIProduct = Product & {
+  name?: string | null;
+  shortDesc?: string | null;
+  images?: string[] | string | null;
+  seller?: { id?: string; name?: string; avatar?: string } | null;
+};
+
+export default function ProductItem({ product }: { product: UIProduct }) {
+  const [added, setAdded] = useState(false);
+  const { addToCart } = useCart();
+
+  const images: string[] = (() => {
+    const imgs = product.images ?? product.image_url ?? null;
+    if (!imgs) return [];
+    if (Array.isArray(imgs)) return imgs as string[];
+    if (typeof imgs === "string") {
+      try {
+        const parsed = JSON.parse(imgs);
+        return Array.isArray(parsed) ? parsed : [imgs];
+      } catch {
+        return [imgs];
+      }
+    }
+    return [];
+  })();
+
+  const displayName = (product as any).name ?? product.title ?? "Sản phẩm không tên";
+  const displayShort = (product as any).shortDesc ?? product.description ?? "";
+  const firstImage = images[0] ?? product.image_url ?? "/placeholder.png";
 
   const handleSaveToCart = () => {
     addToCart({
-      ...product,
-      image: product.images?.[0] || "", // ✅ lấy ảnh đầu tiên của sản phẩm
-      quantity: 1, // ✅ thêm số lượng mặc định
-    })
-    setAdded(true)
-    setTimeout(() => setAdded(false), 600)
-  }
+      id: String(product.id),
+      name: displayName,
+      price: Number(product.price ?? 0),
+      image: firstImage,
+      quantity: 1,
+    });
+    setAdded(true);
+    setTimeout(() => setAdded(false), 600);
+  };
 
   return (
-    <div className="relative flex items-stretch border p-4 rounded-lg shadow-sm bg-white w-full min-h-[180px]">
-      {/* ===== ICON LƯU (Bookmark chuẩn style 3 icon) ===== */}
+    <div className="relative flex flex-col border p-4 rounded-lg shadow-sm bg-white w-full min-h-[220px]">
+      {/* ===== ICON LƯU ===== */}
       <button
         onClick={handleSaveToCart}
         className={`absolute top-3 right-3 flex items-center justify-center rounded-full px-2.5 py-2 shadow-sm border transition-all cursor-pointer
@@ -31,65 +59,63 @@ export default function ProductItem({ product }: { product: Product }) {
             added
               ? "bg-pink-100 border-pink-200 text-pink-600"
               : "bg-gray-100 border-gray-300 text-gray-700 hover:text-pink-600 hover:bg-gray-200"
-          }
-        `}
+          }`}
         title="Lưu vào giỏ hàng"
       >
         <Bookmark size={16} strokeWidth={2} />
       </button>
 
-      <div className="flex-1 flex flex-col gap-3">
-        {/* Người bán */}
-        {product.seller && (
-          <div className="flex items-center gap-2 mb-2 ml-27">
+      {/* Khối nội dung chính */}
+      <div className="flex flex-1 items-start gap-4">
+        {/* Ảnh sản phẩm */}
+        <Link href={`/may-tinh-PC-day-du/${product.id}`}>
+          <div className="w-24 h-24 flex items-center justify-center rounded bg-white cursor-pointer">
             <img
-              src={product.seller.avatar}
-              alt={product.seller.name}
-              className="w-6 h-6 rounded-full"
+              src={firstImage}
+              alt={displayName}
+              className="max-w-full max-h-full object-contain"
             />
-            <span className="text-sm font-medium text-gray-800">
-              {product.seller.name}
-            </span>
           </div>
-        )}
+        </Link>
 
-        <div className="flex gap-4">
-          {/* Ảnh */}
-          <Link href={`/may-tinh-PC-day-du/${product.id}`}>
-            <div className="w-24 h-24 flex items-center justify-center rounded bg-white cursor-pointer">
-              <img
-                src={product.images[0]}
-                alt={product.name}
-                className="max-w-full max-h-full object-contain"
-              />
-            </div>
-          </Link>
+        {/* Thông tin + người bán */}
+        <div className="flex flex-col justify-between flex-1">
+          <div>
+            {product.seller?.name && (
+              <div className="flex items-center gap-2 mb-2">
+                <img
+                  src={product.seller.avatar ?? "/avatar-placeholder.png"}
+                  alt={product.seller.name}
+                  className="w-6 h-6 rounded-full"
+                />
+                <span className="text-sm font-medium text-gray-800">
+                  {product.seller.name}
+                </span>
+              </div>
+            )}
 
-          {/* Thông tin */}
-          <div className="flex flex-col">
             <h3 className="font-semibold text-lg">
               <Link
                 href={`/may-tinh-PC-day-du/${product.id}`}
-                className="text-gray-900 hover:text-gray-700 hover:underline transition-colors duration-200 !no-underline"
-                style={{ color: "#1f2937" }}
+                className="text-gray-900 hover:text-gray-700 hover:underline transition-colors duration-200"
               >
-                {product.name}
+                {displayName}
               </Link>
             </h3>
 
-            <p className="text-gray-600 text-sm">{product.shortDesc}</p>
-
-            <p className="text-red-600 font-bold mt-2">
-              {product.price.toLocaleString()} ₫
-            </p>
+            <p className="text-gray-600 text-sm line-clamp-2">{displayShort}</p>
           </div>
+
+          <p className="text-red-600 font-bold mt-2">
+            {(product.price ?? 0).toLocaleString()} ₫
+          </p>
         </div>
       </div>
 
-      {/* Vote, bình luận, chia sẻ */}
-      <div className="ml-4 flex flex-col justify-end">
-        <ProductActions productId={product.id} />
+      {/* ✅ 3 nút ở góc dưới phải (nằm trong khung) */}
+      <div className="absolute bottom-3 right-3 translate-x-[-8px]">
+        <ProductActions productId={String(product.id)} />
       </div>
     </div>
-  )
+  );
 }

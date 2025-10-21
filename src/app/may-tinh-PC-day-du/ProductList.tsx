@@ -131,8 +131,8 @@ export default function ProductList({ paginated, onSelectProduct }: Props) {
                 )}
               </div>
 
-              {/* ✅ Các nút hành động (like, comment, share) */}
-              <div className="absolute bottom-3 right-3 translate-x-[-6px]">
+              {/* ✅ Các nút hành động (like, comment, share) — BỎ absolute */}
+              <div className="mt-3">
                 <ProductActions productId={p.id} />
               </div>
             </div>

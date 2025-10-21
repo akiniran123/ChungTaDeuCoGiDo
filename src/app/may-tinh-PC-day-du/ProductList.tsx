@@ -71,7 +71,7 @@ export default function ProductList({ paginated, onSelectProduct }: Props) {
               key={p.id}
               className="relative border rounded-xl p-3 hover:shadow-md transition bg-white flex flex-col sm:flex-row gap-4 select-none"
             >
-              {/* Ảnh bên trái (bọc Link, có cursor-pointer) */}
+              {/* Ảnh bên trái */}
               {p.image_url && (
                 <Link
                   href={`/deal/${p.id}`}
@@ -89,7 +89,7 @@ export default function ProductList({ paginated, onSelectProduct }: Props) {
               {/* Thông tin bên phải */}
               <div className="flex flex-col justify-between flex-1">
                 <div>
-                  {/* Tiêu đề (bọc Link, có cursor-pointer) */}
+                  {/* Tiêu đề */}
                   <Link href={`/deal/${p.id}`} className="cursor-pointer">
                     <h3 className="font-semibold text-lg line-clamp-2 hover:text-pink-600">
                       {p.title}
@@ -131,8 +131,8 @@ export default function ProductList({ paginated, onSelectProduct }: Props) {
                 )}
               </div>
 
-              {/* ✅ Các nút hành động (like, comment, share) — BỎ absolute */}
-              <div className="mt-3">
+              {/* ✅ Các nút hành động (like, comment, share) — CHỈNH LẠI PHẦN NÀY */}
+              <div className="absolute bottom-3 right-3">
                 <ProductActions productId={p.id} />
               </div>
             </div>

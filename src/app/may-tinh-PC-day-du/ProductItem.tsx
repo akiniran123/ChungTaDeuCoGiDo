@@ -38,6 +38,19 @@ export default function ProductItem({ product }: { product: ProductWithUser }) {
     setTimeout(() => setSaved(false), 1000);
   };
 
+  // ✅ Hàm định dạng thời gian đăng bài
+  const formatTime = (isoString: string | null | undefined) => {
+    if (!isoString) return "";
+    const date = new Date(isoString);
+    return date.toLocaleString("vi-VN", {
+      day: "2-digit",
+      month: "2-digit",
+      year: "numeric",
+      hour: "2-digit",
+      minute: "2-digit",
+    });
+  };
+
   return (
     <div
       key={p.id}
@@ -47,9 +60,10 @@ export default function ProductItem({ product }: { product: ProductWithUser }) {
       <button
         onClick={handleSave}
         className={`absolute top-2 right-2 z-[50] flex items-center justify-center rounded-full p-2 border shadow-sm cursor-pointer transition-all duration-200
-          ${saved
-            ? "bg-pink-100 border-pink-200 text-pink-600"
-            : "bg-gray-100 border-gray-300 text-gray-700 hover:text-pink-600 hover:bg-gray-200"
+          ${
+            saved
+              ? "bg-pink-100 border-pink-200 text-pink-600"
+              : "bg-gray-100 border-gray-300 text-gray-700 hover:text-pink-600 hover:bg-gray-200"
           }`}
         title="Lưu sản phẩm"
       >
@@ -87,15 +101,15 @@ export default function ProductItem({ product }: { product: ProductWithUser }) {
             </p>
           )}
 
-          {/* ✅ Lượt xem */}
-          <div className="flex items-center gap-4 text-sm text-gray-500 mt-2">
+          {/* ✅ Lượt xem và thời gian đăng bài */}
+          <div className="flex flex-wrap items-center gap-4 text-sm text-gray-500 mt-2">
             <span className="flex items-center gap-1">
               <Eye size={16} /> {p.views ?? 0} lượt xem
             </span>
           </div>
         </div>
 
-        {/* ✅ Thông tin người đăng */}
+        {/* ✅ Thông tin người đăng + thời gian */}
         {p.users && (
           <div className="flex items-center gap-2 mt-3">
             {p.users.avatar_url ? (
@@ -109,9 +123,19 @@ export default function ProductItem({ product }: { product: ProductWithUser }) {
             ) : (
               <div className="w-7 h-7 rounded-full bg-gray-300" />
             )}
-            <span className="text-sm text-gray-700">
-              {p.users.username ?? "Ẩn danh"}
-            </span>
+
+            <div className="flex flex-col leading-tight">
+              <span className="text-sm text-gray-700">
+                {p.users.username ?? "Ẩn danh"}
+              </span>
+
+              {/* 🕓 Thời gian hiển thị ngay dưới tên user */}
+              {p.created_at && (
+                <span className="text-xs text-gray-500">
+                  {formatTime(p.created_at)}
+                </span>
+              )}
+            </div>
           </div>
         )}
       </div>

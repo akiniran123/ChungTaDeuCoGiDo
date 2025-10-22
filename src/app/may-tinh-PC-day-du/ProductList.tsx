@@ -1,10 +1,13 @@
 "use client";
 
-import React, { useState, useEffect } from "react";
+import React, { useState } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import type { Product } from "@/types";
-import ProductItem from "./ProductItem";
-import { supabase } from "@/lib/supabase/client";
+import ProductItem from "./ProductItem"; // ✅ Giữ nguyên import
+import ProductActions from "./ProductActions"; // ✅ Giữ nguyên (nếu ProductItem vẫn dùng)
+import { Eye } from "lucide-react";
+import Image from "next/image";
+import Link from "next/link";
 
 // ------------------
 // Kiểu mở rộng Product (có users)
@@ -22,65 +25,16 @@ type Props = {
 };
 
 export default function ProductList({ paginated, onSelectProduct }: Props) {
-  const [products, setProducts] = useState<ProductWithUser[]>([]);
   const [currentPage, setCurrentPage] = useState(1);
   const [direction, setDirection] = useState(0);
   const itemsPerPage = 9;
 
-  // ✅ Lấy dữ liệu ban đầu từ Supabase
-  useEffect(() => {
-    const fetchInitial = async () => {
-      const { data, error } = await supabase
-        .from("products")
-        .select("*, users(username, avatar_url)")
-        .order("created_at", { ascending: false });
-      if (!error && data) setProducts(data as ProductWithUser[]);
-    };
-    fetchInitial();
-
-    // ✅ Đăng ký realtime
-    const channel = supabase
-      .channel("products-changes")
-      .on(
-        "postgres_changes",
-        { event: "*", schema: "public", table: "products" },
-        (payload) => {
-          console.log("Realtime update:", payload);
-
-          setProducts((prev) => {
-            if (payload.eventType === "INSERT") {
-              // Thêm sản phẩm mới lên đầu
-              const newProduct = payload.new as ProductWithUser;
-              return [newProduct, ...prev];
-            }
-            if (payload.eventType === "UPDATE") {
-              // Cập nhật sản phẩm
-              const updated = payload.new as ProductWithUser;
-              return prev.map((p) => (p.id === updated.id ? updated : p));
-            }
-            if (payload.eventType === "DELETE") {
-              // Xóa sản phẩm
-              const deleted = payload.old as ProductWithUser;
-              return prev.filter((p) => p.id !== deleted.id);
-            }
-            return prev;
-          });
-        }
-      )
-      .subscribe();
-
-    // ✅ Cleanup khi rời trang
-    return () => {
-      supabase.removeChannel(channel);
-    };
-  }, []);
-
-  // ✅ Nếu prop `paginated` được truyền thì ưu tiên nó
-  const displayProducts = paginated ?? products;
+  const isExternal = Array.isArray(paginated);
+  const paginatedProducts = isExternal ? paginated : [];
 
   const totalPages = Math.max(
     1,
-    Math.ceil(displayProducts.length / itemsPerPage)
+    Math.ceil(paginatedProducts.length / itemsPerPage)
   );
 
   const variants = {
@@ -95,9 +49,11 @@ export default function ProductList({ paginated, onSelectProduct }: Props) {
     }),
   };
 
-  const animateKey = `page-${currentPage}-${displayProducts.length}`;
+  const animateKey = isExternal
+    ? `external-${paginatedProducts.length}-${paginatedProducts[0]?.id ?? 0}`
+    : `internal-${currentPage}`;
 
-  if (!displayProducts || displayProducts.length === 0) {
+  if (!paginatedProducts || paginatedProducts.length === 0) {
     return <p className="text-gray-500">Không có sản phẩm nào.</p>;
   }
 
@@ -114,14 +70,19 @@ export default function ProductList({ paginated, onSelectProduct }: Props) {
           transition={{ duration: 0.35 }}
           className="flex flex-col gap-4"
         >
-          {displayProducts.map((p) => (
-            <ProductItem key={p.id} product={p} />
+          {paginatedProducts.map((p) => (
+            <React.Fragment key={p.id}>
+              {/* ✅ Giữ nguyên ProductItem */}
+              <div className="flex flex-col">
+                <ProductItem product={p} />
+              </div>
+            </React.Fragment>
           ))}
         </motion.div>
       </AnimatePresence>
 
-      {/* Phân trang (nếu cần) */}
-      {!paginated && (
+      {/* Phân trang */}
+      {!isExternal && (
         <div className="flex justify-center gap-2 mt-2">
           <button
             disabled={currentPage === 1}

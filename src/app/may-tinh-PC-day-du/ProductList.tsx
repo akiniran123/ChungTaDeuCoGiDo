@@ -1,13 +1,10 @@
 "use client";
 
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import type { Product } from "@/types";
-import { Eye } from "lucide-react";
-import Image from "next/image";
-import Link from "next/link";
-import ProductActions from "./ProductActions";
-import ProductItem from "./ProductItem"; // ✅ THÊM DÒNG NÀY
+import ProductItem from "./ProductItem";
+import { supabase } from "@/lib/supabase/client";
 
 // ------------------
 // Kiểu mở rộng Product (có users)
@@ -25,14 +22,66 @@ type Props = {
 };
 
 export default function ProductList({ paginated, onSelectProduct }: Props) {
+  const [products, setProducts] = useState<ProductWithUser[]>([]);
   const [currentPage, setCurrentPage] = useState(1);
   const [direction, setDirection] = useState(0);
   const itemsPerPage = 9;
 
-  const isExternal = Array.isArray(paginated);
-  const paginatedProducts = isExternal ? paginated : [];
+  // ✅ Lấy dữ liệu ban đầu từ Supabase
+  useEffect(() => {
+    const fetchInitial = async () => {
+      const { data, error } = await supabase
+        .from("products")
+        .select("*, users(username, avatar_url)")
+        .order("created_at", { ascending: false });
+      if (!error && data) setProducts(data as ProductWithUser[]);
+    };
+    fetchInitial();
 
-  const totalPages = Math.max(1, Math.ceil(paginatedProducts.length / itemsPerPage));
+    // ✅ Đăng ký realtime
+    const channel = supabase
+      .channel("products-changes")
+      .on(
+        "postgres_changes",
+        { event: "*", schema: "public", table: "products" },
+        (payload) => {
+          console.log("Realtime update:", payload);
+
+          setProducts((prev) => {
+            if (payload.eventType === "INSERT") {
+              // Thêm sản phẩm mới lên đầu
+              const newProduct = payload.new as ProductWithUser;
+              return [newProduct, ...prev];
+            }
+            if (payload.eventType === "UPDATE") {
+              // Cập nhật sản phẩm
+              const updated = payload.new as ProductWithUser;
+              return prev.map((p) => (p.id === updated.id ? updated : p));
+            }
+            if (payload.eventType === "DELETE") {
+              // Xóa sản phẩm
+              const deleted = payload.old as ProductWithUser;
+              return prev.filter((p) => p.id !== deleted.id);
+            }
+            return prev;
+          });
+        }
+      )
+      .subscribe();
+
+    // ✅ Cleanup khi rời trang
+    return () => {
+      supabase.removeChannel(channel);
+    };
+  }, []);
+
+  // ✅ Nếu prop `paginated` được truyền thì ưu tiên nó
+  const displayProducts = paginated ?? products;
+
+  const totalPages = Math.max(
+    1,
+    Math.ceil(displayProducts.length / itemsPerPage)
+  );
 
   const variants = {
     enter: (dir: number) => ({
@@ -46,11 +95,9 @@ export default function ProductList({ paginated, onSelectProduct }: Props) {
     }),
   };
 
-  const animateKey = isExternal
-    ? `external-${paginatedProducts.length}-${paginatedProducts[0]?.id ?? 0}`
-    : `internal-${currentPage}`;
+  const animateKey = `page-${currentPage}-${displayProducts.length}`;
 
-  if (!paginatedProducts || paginatedProducts.length === 0) {
+  if (!displayProducts || displayProducts.length === 0) {
     return <p className="text-gray-500">Không có sản phẩm nào.</p>;
   }
 
@@ -67,87 +114,14 @@ export default function ProductList({ paginated, onSelectProduct }: Props) {
           transition={{ duration: 0.35 }}
           className="flex flex-col gap-4"
         >
-          {paginatedProducts.map((p) => (
-            <React.Fragment key={p.id}>
-              {/* ✅ GỌI COMPONENT ProductItem */}
-              <ProductItem product={p} />
-
-              {/* ⚙️ Giữ nguyên phần code hiển thị cũ để bạn test song song */}
-              <div
-                className="relative border rounded-xl p-3 hover:shadow-md transition bg-white flex flex-col sm:flex-row gap-4 select-none"
-              >
-                {/* Ảnh bên trái */}
-                {p.image_url && (
-                  <Link
-                    href={`/deal/${p.id}`}
-                    className="relative w-full sm:w-48 h-40 flex-shrink-0 block cursor-pointer"
-                  >
-                    <Image
-                      src={p.image_url}
-                      alt={p.title}
-                      fill
-                      className="object-cover rounded-lg"
-                    />
-                  </Link>
-                )}
-
-                {/* Thông tin bên phải */}
-                <div className="flex flex-col justify-between flex-1">
-                  <div>
-                    {/* Tiêu đề */}
-                    <Link href={`/deal/${p.id}`} className="cursor-pointer">
-                      <h3 className="font-semibold text-lg line-clamp-2 hover:text-pink-600">
-                        {p.title}
-                      </h3>
-                    </Link>
-
-                    {p.price && (
-                      <p className="text-red-600 font-bold mt-1">
-                        {p.price.toLocaleString("vi-VN")}₫
-                      </p>
-                    )}
-
-                    {/* ✅ Lượt xem */}
-                    <div className="flex items-center gap-4 text-sm text-gray-500 mt-2">
-                      <span className="flex items-center gap-1">
-                        <Eye size={16} /> {p.views ?? 0} lượt xem
-                      </span>
-                    </div>
-                  </div>
-
-                  {/* ✅ Thông tin người đăng */}
-                  {p.users && (
-                    <div className="flex items-center gap-2 mt-3">
-                      {p.users.avatar_url ? (
-                        <Image
-                          src={p.users.avatar_url}
-                          alt={p.users.username ?? "user"}
-                          width={28}
-                          height={28}
-                          className="rounded-full object-cover"
-                        />
-                      ) : (
-                        <div className="w-7 h-7 rounded-full bg-gray-300" />
-                      )}
-                      <span className="text-sm text-gray-700">
-                        {p.users.username ?? "Ẩn danh"}
-                      </span>
-                    </div>
-                  )}
-                </div>
-
-                {/* ✅ Các nút hành động */}
-                <div className="absolute bottom-3 right-3">
-                  <ProductActions productId={p.id} />
-                </div>
-              </div>
-            </React.Fragment>
+          {displayProducts.map((p) => (
+            <ProductItem key={p.id} product={p} />
           ))}
         </motion.div>
       </AnimatePresence>
 
-      {/* Phân trang */}
-      {!isExternal && (
+      {/* Phân trang (nếu cần) */}
+      {!paginated && (
         <div className="flex justify-center gap-2 mt-2">
           <button
             disabled={currentPage === 1}

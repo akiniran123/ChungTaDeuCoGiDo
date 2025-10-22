@@ -26,19 +26,32 @@ export default function ProductActions({ productId }: Props) {
   const [showCommentSidebar, setShowCommentSidebar] = useState(false);
   const commentsEndRef = useRef<HTMLDivElement>(null);
 
+  // ✅ Lấy dữ liệu ban đầu (like + bình luận)
   useEffect(() => {
     async function fetchData() {
-      const { data: productData } = await supabase
-        .from("products")
-        .select("upvotes")
-        .eq("id", productId)
-        .single();
-
-      if (productData) setLikesCount(productData.upvotes ?? 0);
-
       const { data: authData } = await supabase.auth.getUser();
       const currentUserId = authData.user?.id;
 
+      // --- Lấy tổng số lượt like ---
+      const { count } = await supabase
+        .from("product_likes")
+        .select("*", { count: "exact", head: true })
+        .eq("product_id", productId);
+      setLikesCount(count ?? 0);
+
+      // --- Kiểm tra user đã like chưa ---
+      if (currentUserId) {
+        const { data: likeData } = await supabase
+          .from("product_likes")
+          .select("id")
+          .eq("product_id", productId)
+          .eq("user_id", currentUserId)
+          .maybeSingle();
+
+        setLiked(!!likeData);
+      }
+
+      // --- Lấy bình luận ---
       const { data: commentsData } = await supabase
         .from("comments")
         .select(`
@@ -68,19 +81,13 @@ export default function ProductActions({ productId }: Props) {
           },
         }));
         setComments(mapped);
-
-        if (currentUserId) {
-          const userLiked = mapped.some(
-            (c) => c.user_id === currentUserId && c.content === "like"
-          );
-          setLiked(userLiked);
-        }
       }
     }
 
     fetchData();
   }, [productId]);
 
+  // ✅ Xử lý thả tim (thêm/xóa trong bảng product_likes)
   const handleToggleLike = async () => {
     const { data: authData } = await supabase.auth.getUser();
     const currentUserId = authData.user?.id;
@@ -90,25 +97,35 @@ export default function ProductActions({ productId }: Props) {
     }
 
     if (liked) {
-      await supabase
-        .from("products")
-        .update({ upvotes: likesCount - 1 })
-        .eq("id", productId);
-      setLikesCount((prev) => Math.max(prev - 1, 0));
-      setLiked(false);
+      // Bỏ like
+      const { error } = await supabase
+        .from("product_likes")
+        .delete()
+        .eq("product_id", productId)
+        .eq("user_id", currentUserId);
+
+      if (!error) {
+        setLiked(false);
+        setLikesCount((prev) => Math.max(prev - 1, 0));
+      }
     } else {
-      await supabase
-        .from("products")
-        .update({ upvotes: likesCount + 1 })
-        .eq("id", productId);
-      setLikesCount((prev) => prev + 1);
-      setLiked(true);
+      // Thả tim
+      const { error } = await supabase
+        .from("product_likes")
+        .insert({ product_id: productId, user_id: currentUserId });
+
+      if (!error) {
+        setLiked(true);
+        setLikesCount((prev) => prev + 1);
+      }
     }
   };
 
+  // ✅ Hiện/ẩn sidebar bình luận
   const handleToggleCommentSidebar = () =>
     setShowCommentSidebar((prev) => !prev);
 
+  // ✅ Gửi bình luận
   const handleSendComment = async () => {
     const content = newComment.trim();
     if (!content) return;
@@ -157,6 +174,7 @@ export default function ProductActions({ productId }: Props) {
     }
   };
 
+  // ✅ Chia sẻ link sản phẩm
   const handleShare = () => {
     const url = `${window.location.origin}/may-tinh-PC-day-du/${productId}`;
     if (navigator.share) {
@@ -202,7 +220,7 @@ export default function ProductActions({ productId }: Props) {
         </button>
       </div>
 
-      {/* 🧩 Sidebar bình luận (hiện/ẩn) */}
+      {/* 🧩 Sidebar bình luận */}
       {showCommentSidebar && (
         <div className="fixed top-0 right-0 h-screen w-[400px] bg-white border-l border-gray-200 shadow-lg z-[9999] flex flex-col">
           {/* Header */}

@@ -106,11 +106,8 @@ const DealCard: React.FC<DealCardProps> = ({
         .eq("product_id", deal.id)
         .maybeSingle();
 
-      if (data && !error) {
-        setLiked(true);
-      } else {
-        setLiked(false);
-      }
+      if (data && !error) setLiked(true);
+      else setLiked(false);
     };
 
     fetchLikeStatus();
@@ -148,7 +145,7 @@ const DealCard: React.FC<DealCardProps> = ({
     }
   };
 
-  // ✅ Fetch bình luận kèm user info
+  // ✅ Fetch bình luận
   useEffect(() => {
     if (chatOpen) {
       const fetchComments = async () => {
@@ -212,7 +209,6 @@ const DealCard: React.FC<DealCardProps> = ({
 
   return (
     <>
-      {/* Card chính */}
       <article
         className={`flex flex-col transition-all mx-auto rounded-lg shadow ${
           bigger ? "max-w-3xl" : "max-w-xl"
@@ -299,17 +295,44 @@ const DealCard: React.FC<DealCardProps> = ({
         {!isAd && (
           <div className="flex items-center justify-between gap-2 mt-3 text-sm text-gray-700 pl-3 mb-3">
             <div className="flex items-center gap-2">
-              <div className="flex items-center bg-gray-100 rounded-full px-2 py-1 shadow-sm">
-                <button
-                  onClick={handleLike}
-                  className={`p-1 cursor-pointer transition-colors ${
-                    liked ? "text-pink-600" : "text-gray-600 hover:text-pink-600"
-                  }`}
-                >
-                  <HeartIcon size={16} fill={liked ? "currentColor" : "none"} />
-                </button>
-                <span className="font-semibold text-xs text-center min-w-[20px]">{likesCount}</span>
-              </div>
+              {/* ❤️ Nút tim đỏ với lớp hồng nhạt bao phủ */}
+             {/* ❤️ Nút tim đỏ với lớp hồng nhạt bao quanh cả icon + số */}
+<motion.div
+  className={`flex items-center rounded-full px-2 py-1 shadow-sm transition-all relative ${
+    liked ? "bg-pink-50" : "bg-gray-100"
+  }`}
+>
+  {/* 🌸 Lớp hồng mờ phủ toàn bộ khối */}
+  {liked && (
+    <span
+      className="absolute inset-0 rounded-full"
+      style={{
+        background: "rgba(255,192,203,0.4)", // hồng nhạt phủ đều
+        filter: "blur(6px)", // làm mờ nhẹ lan ra
+        zIndex: 0,
+      }}
+    />
+  )}
+
+  <motion.button
+    onClick={handleLike}
+    whileTap={{ scale: 0.9 }}
+    className={`relative p-1 transition-transform duration-200 z-10 ${
+      liked ? "text-pink-600 scale-110" : "text-gray-600 hover:text-pink-600"
+    }`}
+  >
+    <HeartIcon
+      size={16}
+      fill={liked ? "currentColor" : "none"}
+      className="relative"
+    />
+  </motion.button>
+
+  <span className="font-semibold text-xs text-center min-w-[20px] relative z-10">
+    {likesCount}
+  </span>
+</motion.div>
+
 
               <div className="flex items-center bg-gray-100 rounded-full px-2 py-1 shadow-sm">
                 <button
@@ -318,7 +341,9 @@ const DealCard: React.FC<DealCardProps> = ({
                 >
                   <MessageSquare size={16} />
                 </button>
-                <span className="font-semibold text-xs text-center min-w-[20px]">{commentCount}</span>
+                <span className="font-semibold text-xs text-center min-w-[20px]">
+                  {commentCount}
+                </span>
               </div>
 
               <div className="flex items-center bg-gray-100 rounded-full px-2 py-1 shadow-sm">
@@ -341,7 +366,9 @@ const DealCard: React.FC<DealCardProps> = ({
             <div className="flex items-center bg-gray-100 rounded-full px-2 py-1 shadow-sm mr-3">
               <button
                 onClick={() => setSaved(!saved)}
-                className={`hover:text-pink-600 p-1 cursor-pointer ${saved ? "text-pink-600" : ""}`}
+                className={`hover:text-pink-600 p-1 cursor-pointer ${
+                  saved ? "text-pink-600" : ""
+                }`}
               >
                 <Bookmark size={16} fill={saved ? "currentColor" : "none"} />
               </button>
@@ -360,7 +387,9 @@ const DealCard: React.FC<DealCardProps> = ({
             </button>
           </div>
           <div className="flex-1 p-3 overflow-y-auto space-y-2">
-            {messages.length === 0 && <p className="text-gray-400 text-sm">Chưa có bình luận</p>}
+            {messages.length === 0 && (
+              <p className="text-gray-400 text-sm">Chưa có bình luận</p>
+            )}
             {messages.map((msg, idx) => (
               <div key={idx} className="flex gap-2 items-start">
                 <img
@@ -369,7 +398,9 @@ const DealCard: React.FC<DealCardProps> = ({
                   className="w-8 h-8 rounded-full object-cover border border-gray-200"
                 />
                 <div className="bg-gray-100 p-2 rounded-md text-sm flex-1">
-                  <span className="font-semibold text-gray-700 block">{msg.username || "Người dùng"}</span>
+                  <span className="font-semibold text-gray-700 block">
+                    {msg.username || "Người dùng"}
+                  </span>
                   <span>{msg.content}</span>
                 </div>
               </div>

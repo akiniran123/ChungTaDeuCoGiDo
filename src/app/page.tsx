@@ -5,7 +5,14 @@ import Link from "next/link";
 import { supabase } from "@/lib/supabase/client";
 import DealCard, { DealType } from "@/components/Trang_chu/DealCard";
 import { motion, AnimatePresence } from "framer-motion";
-import { LayoutGrid, Grid, Bookmark, BookmarkCheck, Heart as HeartIcon, Share2 } from "lucide-react";
+import {
+  LayoutGrid,
+  Grid,
+  Bookmark,
+  BookmarkCheck,
+  Heart as HeartIcon,
+  Share2,
+} from "lucide-react";
 import type { Database } from "@/types/supabase";
 
 // ======================
@@ -24,6 +31,7 @@ export default function ProductsPage() {
   const [biggerGrid, setBiggerGrid] = useState(false);
   const [saved, setSaved] = useState<string[]>([]); // Danh sách ID đã lưu
   const [likedIds, setLikedIds] = useState<string[]>([]); // ID sản phẩm đã thả tim
+  const [likesCount, setLikesCount] = useState<Record<string, number>>({}); // số lượng like theo product_id
   const [commentsCount, setCommentsCount] = useState<Record<string, number>>({}); // số lượng comment theo product_id
 
   // Toggle trạng thái lưu bài
@@ -33,8 +41,8 @@ export default function ProductsPage() {
     );
   };
 
-  // Toggle nút thả tim cho sản phẩm
-  const toggleLike = async (productId: string, currentUpvotes: number) => {
+  // Toggle nút thả tim cho sản phẩm (dùng bảng product_likes)
+  const toggleLike = async (productId: string) => {
     const { data: authData } = await supabase.auth.getUser();
     const userId = authData.user?.id;
     if (!userId) {
@@ -42,34 +50,33 @@ export default function ProductsPage() {
       return;
     }
 
-    const liked = likedIds.includes(productId);
+    const alreadyLiked = likedIds.includes(productId);
 
-    if (liked) {
+    if (alreadyLiked) {
+      // Xóa like
       await supabase
-        .from("products")
-        .update({ upvotes: currentUpvotes > 0 ? currentUpvotes - 1 : 0 })
-        .eq("id", productId);
+        .from("product_likes")
+        .delete()
+        .eq("product_id", productId)
+        .eq("user_id", userId);
+
       setLikedIds((prev) => prev.filter((id) => id !== productId));
-      setProducts((prev) =>
-        prev.map((p) =>
-          p.id === productId
-            ? { ...p, upvotes: p.upvotes ? p.upvotes - 1 : 0 }
-            : p
-        )
-      );
+      setLikesCount((prev) => ({
+        ...prev,
+        [productId]: Math.max(0, (prev[productId] || 1) - 1),
+      }));
     } else {
-      await supabase
-        .from("products")
-        .update({ upvotes: currentUpvotes + 1 })
-        .eq("id", productId);
+      // Thêm like
+      await supabase.from("product_likes").insert({
+        product_id: productId,
+        user_id: userId,
+      });
+
       setLikedIds((prev) => [...prev, productId]);
-      setProducts((prev) =>
-        prev.map((p) =>
-          p.id === productId
-            ? { ...p, upvotes: p.upvotes ? p.upvotes + 1 : 1 }
-            : p
-        )
-      );
+      setLikesCount((prev) => ({
+        ...prev,
+        [productId]: (prev[productId] || 0) + 1,
+      }));
     }
   };
 
@@ -86,7 +93,7 @@ export default function ProductsPage() {
     }
   };
 
-  // Lấy dữ liệu sản phẩm và số lượng comment
+  // Lấy dữ liệu sản phẩm, comment và like
   useEffect(() => {
     const fetchProducts = async () => {
       const { data, error } = await supabase
@@ -104,23 +111,53 @@ export default function ProductsPage() {
 
       if (error) {
         console.error("Lỗi tải sản phẩm:", error);
-      } else {
-        const productsData = data as ProductWithUser[];
-        setProducts(productsData);
-
-        // Lấy số lượng comment cho mỗi product
-        const commentCounts: Record<string, number> = {};
-        await Promise.all(
-          productsData.map(async (p) => {
-            const { count } = await supabase
-              .from("comments")
-              .select("*", { count: "exact" })
-              .eq("product_id", p.id);
-            commentCounts[p.id] = count || 0;
-          })
-        );
-        setCommentsCount(commentCounts);
+        setLoading(false);
+        return;
       }
+
+      const productsData = data as ProductWithUser[];
+      setProducts(productsData);
+
+      // Lấy số lượng comment cho mỗi product
+      const commentCounts: Record<string, number> = {};
+      await Promise.all(
+        productsData.map(async (p) => {
+          const { count } = await supabase
+            .from("comments")
+            .select("*", { count: "exact" })
+            .eq("product_id", p.id);
+          commentCounts[p.id] = count || 0;
+        })
+      );
+      setCommentsCount(commentCounts);
+
+      // Lấy danh sách likes
+      const { data: likesData } = await supabase
+        .from("product_likes")
+        .select("product_id, user_id");
+
+      const likeCounts: Record<string, number> = {};
+      const userLikes: string[] = [];
+
+      // ✅ fix lỗi "likesData is possibly null"
+      likesData?.forEach((like) => {
+        likeCounts[like.product_id] =
+          (likeCounts[like.product_id] || 0) + 1;
+      });
+
+      const { data: userData } = await supabase.auth.getUser();
+      const user = userData.user;
+
+      if (user && likesData) {
+        userLikes.push(
+          ...likesData
+            .filter((like) => like.user_id === user.id)
+            .map((like) => like.product_id)
+        );
+      }
+
+      setLikesCount(likeCounts);
+      setLikedIds(userLikes);
       setLoading(false);
     };
 
@@ -192,8 +229,8 @@ export default function ProductsPage() {
                     title: p.title,
                     image: p.image_url || undefined,
                     media: p.image_url ? [p.image_url] : [],
-                    votes: p.upvotes ?? 0,
-                    comments: 0,
+                    votes: likesCount[p.id] ?? 0,
+                    comments: commentsCount[p.id] ?? 0,
                     category: p.category || "",
                     author: p.users?.username || "Người dùng",
                     avatar: p.users?.avatar_url || "/default-avatar.png",
@@ -255,7 +292,11 @@ export default function ProductsPage() {
                             : "bg-gray-100 text-gray-600 hover:bg-pink-50 hover:text-pink-500"
                         }`}
                       >
-                        {saved.includes(p.id) ? <BookmarkCheck size={16} /> : <Bookmark size={16} />}
+                        {saved.includes(p.id) ? (
+                          <BookmarkCheck size={16} />
+                        ) : (
+                          <Bookmark size={16} />
+                        )}
                       </button>
                     </div>
 
@@ -270,7 +311,7 @@ export default function ProductsPage() {
                       {p.description}
                     </p>
 
-                    {/* 👤 User + thời gian + số comment (comment chỉ hiện ở bên phải) */}
+                    {/* 👤 User + thời gian + số comment */}
                     {p.users && (
                       <div className="flex justify-between items-center mt-3">
                         <div className="flex items-center">
@@ -285,19 +326,21 @@ export default function ProductsPage() {
                             </p>
                             <p className="text-xs text-gray-400">
                               {p.created_at
-                                ? new Date(p.created_at).toLocaleString("vi-VN", {
-                                    day: "2-digit",
-                                    month: "2-digit",
-                                    year: "2-digit",
-                                    hour: "2-digit",
-                                    minute: "2-digit",
-                                  })
+                                ? new Date(p.created_at).toLocaleString(
+                                    "vi-VN",
+                                    {
+                                      day: "2-digit",
+                                      month: "2-digit",
+                                      year: "2-digit",
+                                      hour: "2-digit",
+                                      minute: "2-digit",
+                                    }
+                                  )
                                 : "Không rõ thời gian"}
                             </p>
                           </div>
                         </div>
 
-                        {/* Số comment ở bên phải cùng hàng với avatar */}
                         <p className="text-xs text-gray-500">
                           {commentsCount[p.id] ?? 0} bình luận
                         </p>
@@ -306,23 +349,30 @@ export default function ProductsPage() {
 
                     {/* 🔥 Nút thả tim + chia sẻ */}
                     <div className="flex justify-between items-center mt-2">
-                      <span className="text-xs text-gray-400">{p.views ?? 0} lượt xem</span>
+                      <span className="text-xs text-gray-400">
+                        {p.views ?? 0} lượt xem
+                      </span>
 
                       <div className="flex items-center gap-2">
-                        {/* Nút thả tim */}
                         <button
-                          onClick={() => toggleLike(p.id, p.upvotes ?? 0)}
+                          onClick={() => toggleLike(p.id)}
                           className={`flex items-center gap-1 px-2 py-1 rounded-full transition ${
                             likedIds.includes(p.id)
                               ? "bg-pink-100 text-pink-500"
                               : "bg-gray-100 text-gray-600 hover:bg-pink-50 hover:text-pink-500"
                           }`}
                         >
-                          <HeartIcon size={14} fill={likedIds.includes(p.id) ? "currentColor" : "none"} />
-                          <span className="text-xs font-semibold">{p.upvotes ?? 0}</span>
+                          <HeartIcon
+                            size={14}
+                            fill={
+                              likedIds.includes(p.id) ? "currentColor" : "none"
+                            }
+                          />
+                          <span className="text-xs font-semibold">
+                            {likesCount[p.id] ?? 0}
+                          </span>
                         </button>
 
-                        {/* Nút chia sẻ */}
                         <button
                           onClick={() => shareProduct(p)}
                           className="flex items-center gap-1 px-2 py-1 rounded-full bg-gray-100 text-gray-600 hover:bg-gray-200 hover:text-gray-700 transition"

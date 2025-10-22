@@ -91,15 +91,61 @@ const DealCard: React.FC<DealCardProps> = ({
     });
   };
 
-  const handleLike = () => {
-    if (!liked) {
-      vote(deal.id, 1);
-      setLikesCount((prev) => prev + 1);
-    } else {
-      vote(deal.id, -1);
-      setLikesCount((prev) => (prev > 0 ? prev - 1 : 0));
+  // ✅ Đồng bộ trạng thái like từ Supabase
+  useEffect(() => {
+    const fetchLikeStatus = async () => {
+      const {
+        data: { user },
+      } = await supabase.auth.getUser();
+      if (!user) return;
+
+      const { data, error } = await supabase
+        .from("product_likes")
+        .select("id")
+        .eq("user_id", user.id)
+        .eq("product_id", deal.id)
+        .maybeSingle();
+
+      if (data && !error) {
+        setLiked(true);
+      } else {
+        setLiked(false);
+      }
+    };
+
+    fetchLikeStatus();
+  }, [deal.id]);
+
+  // ✅ Xử lý Like / Unlike (đồng bộ Supabase)
+  const handleLike = async () => {
+    const {
+      data: { user },
+    } = await supabase.auth.getUser();
+    if (!user) {
+      alert("Bạn cần đăng nhập để like!");
+      return;
     }
-    setLiked(!liked);
+
+    if (!liked) {
+      const { error } = await supabase.from("product_likes").insert({
+        user_id: user.id,
+        product_id: deal.id,
+      });
+      if (!error) {
+        setLiked(true);
+        setLikesCount((prev) => prev + 1);
+      }
+    } else {
+      const { error } = await supabase
+        .from("product_likes")
+        .delete()
+        .eq("user_id", user.id)
+        .eq("product_id", deal.id);
+      if (!error) {
+        setLiked(false);
+        setLikesCount((prev) => (prev > 0 ? prev - 1 : 0));
+      }
+    }
   };
 
   // ✅ Fetch bình luận kèm user info
@@ -143,7 +189,6 @@ const DealCard: React.FC<DealCardProps> = ({
     if (!newMessage.trim()) return;
     const content = newMessage.trim();
 
-    // Lấy user hiện tại
     const {
       data: { user },
       error: userError,
@@ -153,12 +198,10 @@ const DealCard: React.FC<DealCardProps> = ({
       return;
     }
 
-    // Push message tạm thời lên UI
     setMessages((prev) => [...prev, { content, username: user.email, avatar: "/default-avatar.png" }]);
     setNewMessage("");
     setCommentCount((prev) => prev + 1);
 
-    // Gửi lên Supabase
     const { error } = await supabase.from("comments").insert({
       product_id: deal.id,
       user_id: user.id,

@@ -2,7 +2,7 @@
 
 import React, { useState, useEffect } from "react";
 import Link from "next/link";
-import { Home, Info, HelpCircle, Users, Link2, Folder } from "lucide-react";
+import { Home, Info, HelpCircle, Users, Link2, Folder, Settings } from "lucide-react";
 import { supabase } from "@/lib/supabase/client";
 
 type Category = {
@@ -33,13 +33,15 @@ export default function SidebarLeft({ categories }: SidebarLeftProps) {
         return <Users className="w-4 h-4 inline-block mr-2 text-black" />;
       case "Kết nối":
         return <Link2 className="w-4 h-4 inline-block mr-2 text-black" />;
+      case "Cài đặt":
+        return <Settings className="w-4 h-4 inline-block mr-2 text-black" />;
       default:
         return <Folder className="w-4 h-4 inline-block mr-2 text-black" />;
     }
   };
 
   const isSpecialCategory = (label: string) =>
-    ["Về chúng tôi", "Hỗ trợ", "Cộng đồng", "Kết nối"].includes(label);
+    ["Về chúng tôi", "Hỗ trợ", "Cộng đồng", "Kết nối", "Cài đặt"].includes(label);
 
   // 🧠 Lấy danh sách cộng đồng từ Supabase
   useEffect(() => {
@@ -76,6 +78,15 @@ export default function SidebarLeft({ categories }: SidebarLeftProps) {
       : cat
   );
 
+  // ✅ Thêm mục “Cài đặt” ngay dưới “Kết nối”
+  const finalCategories = [
+    ...categoriesWithCommunities,
+    {
+      label: "Cài đặt",
+      href: "/settings",
+    },
+  ];
+
   return (
     <div className="h-[calc(100vh-5rem)] overflow-y-auto px-2 pb-20">
       <div className="flex flex-col mb-3">
@@ -90,7 +101,7 @@ export default function SidebarLeft({ categories }: SidebarLeftProps) {
       </div>
 
       <ul className="space-y-2 pb-20">
-        {categoriesWithCommunities.map((cat) => (
+        {finalCategories.map((cat) => (
           <li key={cat.label}>
             {cat.label === "Về chúng tôi" && (
               <hr className="my-2 border-t border-gray-300 border-[1.5px]" />

@@ -1,49 +1,60 @@
-import { notFound } from "next/navigation";
-import Image from "next/image";
-import Link from "next/link";
-import { newsData } from "../data";
+"use client";
 
-export default function NewsDetailPage({
-  params,
-}: {
-  params: { slug: string };
-}) {
-  const article = newsData.find((n) => n.slug === params.slug);
-  if (!article) return notFound();
+import React, { useEffect, useState } from "react";
+import { supabase } from "@/lib/supabase/client";
+import type { Database } from "@/types/supabase";
+import { useParams } from "next/navigation";
+
+type NotificationRow = Database["public"]["Tables"]["notifications"]["Row"];
+
+export default function NotificationDetail() {
+  const params = useParams();
+  const slugParam = params.slug;
+
+  // Kiểm tra slug tồn tại và là string
+  if (!slugParam || Array.isArray(slugParam)) {
+    return <div className="p-4 text-red-500">Slug không hợp lệ</div>;
+  }
+
+  const slug: string = slugParam;
+
+  const [notification, setNotification] = useState<NotificationRow | null>(null);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
+
+  useEffect(() => {
+    async function fetchNotification() {
+      setLoading(true);
+      setError(null);
+
+      const { data, error } = await supabase
+        .from("notifications")
+        .select("*")
+        .eq("id", slug)
+        .single();
+
+      if (error) {
+        console.error("Lỗi khi lấy chi tiết:", error.message);
+        setError(error.message);
+      } else {
+        setNotification(data);
+      }
+      setLoading(false);
+    }
+
+    fetchNotification();
+  }, [slug]);
+
+  if (loading) return <div className="p-4">Đang tải...</div>;
+  if (error) return <div className="p-4 text-red-500">{error}</div>;
+  if (!notification) return <div className="p-4">Không tìm thấy thông báo.</div>;
 
   return (
-    <div className="p-6 pt-[64px] min-h-screen bg-gray-50">
-      <div className="max-w-3xl mx-auto bg-white p-6 rounded-2xl shadow-md border border-gray-100">
-        <Link
-          href="/tin-tuc"
-          className="text-[#9b4de0] text-sm font-medium hover:underline"
-        >
-          ← Quay lại danh sách tin tức
-        </Link>
-
-        <h1 className="text-3xl font-bold text-gray-800 mt-4 mb-2">
-          {article.title}
-        </h1>
-        <p className="text-gray-500 mb-6">{article.description}</p>
-
-        <div className="relative w-full h-64 rounded-lg overflow-hidden mb-6">
-          <Image
-            src={article.image}
-            alt={article.title}
-            fill
-            className="object-cover"
-          />
-        </div>
-
-        <div
-          className="prose prose-lg max-w-none text-gray-700"
-          dangerouslySetInnerHTML={{ __html: article.content }}
-        />
-
-        <div className="mt-10 border-t pt-4 text-sm text-gray-500">
-          © 2026 Công ty của bạn — Mọi quyền được bảo lưu.
-        </div>
-      </div>
+    <div className="p-4">
+      <h1 className="text-xl font-bold mb-2">{notification.title}</h1>
+      <p className="mb-4">{notification.body}</p>
+      <div className="text-sm text-gray-400">Ngày: {notification.created_at}</div>
+      <div className="text-sm text-gray-400">Đã đọc: {notification.read ? "✅" : "❌"}</div>
     </div>
   );
 }

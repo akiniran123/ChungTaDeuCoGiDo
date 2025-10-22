@@ -333,7 +333,6 @@ const DealCard: React.FC<DealCardProps> = ({
   </span>
 </motion.div>
 
-
               <div className="flex items-center bg-gray-100 rounded-full px-2 py-1 shadow-sm">
                 <button
                   onClick={() => setChatOpen(!chatOpen)}

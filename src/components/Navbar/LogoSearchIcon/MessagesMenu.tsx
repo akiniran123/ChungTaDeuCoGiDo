@@ -1,4 +1,3 @@
-// src/components/LogoSearchIcon/MessagesMenu.tsx
 'use client'
 
 import React, { useState, useEffect } from 'react'
@@ -12,8 +11,12 @@ type MessageItem = {
   receiver_id: string
   content: string
   created_at: string | null
-  type: string | null
+  type?: string | null
   is_read: boolean | null
+  sender?: {
+    username?: string | null
+    avatar_url?: string | null
+  } | null
 }
 
 export default function MessagesMenu() {
@@ -22,7 +25,6 @@ export default function MessagesMenu() {
   const [loading, setLoading] = useState(false)
   const [userId, setUserId] = useState<string | null>(null)
 
-  // Lấy ID user hiện tại từ Supabase Auth
   useEffect(() => {
     const getUser = async () => {
       const { data } = await supabase.auth.getUser()
@@ -31,7 +33,6 @@ export default function MessagesMenu() {
     getUser()
   }, [])
 
-  // Fetch tin nhắn mới nhất cho user hiện tại
   useEffect(() => {
     if (!open || !userId) return
 
@@ -39,10 +40,17 @@ export default function MessagesMenu() {
       setLoading(true)
       const { data, error } = await supabase
         .from('messages')
-        .select('*')
+        .select(`
+          id,
+          sender_id,
+          receiver_id,
+          content,
+          created_at,
+          is_read,
+          sender:sender_id(username, avatar_url)
+        `)
         .eq('receiver_id', userId)
         .order('created_at', { ascending: false })
-        .limit(5)
 
       if (error) {
         console.error('Lỗi fetch messages:', error)
@@ -50,25 +58,27 @@ export default function MessagesMenu() {
         return
       }
 
-      if (data) {
-        const cleanData: MessageItem[] = (data as any[]).map((msg) => ({
-          id: msg.id,
-          sender_id: msg.sender_id,
-          receiver_id: msg.receiver_id,
-          content: msg.content,
-          created_at: msg.created_at,
-          type: msg.type ?? null,
-          is_read: msg.is_read ?? null,
-        }))
-        setMessages(cleanData)
-      }
+      // Thêm type mặc định
+      const formatted = (data as any[]).map((msg) => ({
+        ...msg,
+        type: msg.type ?? 'text',
+      })) as MessageItem[]
+
+      // ✅ Giữ lại mỗi sender_id chỉ 1 dòng (tin mới nhất)
+      const uniqueMessages = Object.values(
+        formatted.reduce((acc, msg) => {
+          if (!acc[msg.sender_id]) acc[msg.sender_id] = msg
+          return acc
+        }, {} as Record<string, MessageItem>)
+      )
+
+      setMessages(uniqueMessages)
       setLoading(false)
     }
 
     fetchMessages()
   }, [open, userId])
 
-  // Số tin nhắn chưa đọc
   const unreadCount = messages.filter((m) => !m.is_read).length
 
   return (
@@ -103,8 +113,23 @@ export default function MessagesMenu() {
                 <li className="p-2 text-sm text-gray-400">Chưa có tin nhắn</li>
               )}
               {messages.map((msg) => (
-                <li key={msg.id} className="p-2 border-b hover:bg-gray-100 text-sm">
-                  <Link href={`/messages/${msg.id}`}>{msg.content}</Link>
+                <li
+                  key={msg.id}
+                  className="p-2 border-b hover:bg-gray-100 text-sm flex items-center gap-2"
+                >
+                  <img
+                    src={msg.sender?.avatar_url || '/default-avatar.png'}
+                    alt="avatar"
+                    className="w-8 h-8 rounded-full"
+                  />
+                  <div className="flex-1">
+                    <div className="font-medium">
+                      {msg.sender?.username || 'Người dùng'}
+                    </div>
+                    <Link href={`/messages/${msg.sender_id}`} className="block text-gray-500 truncate">
+                      {msg.content}
+                    </Link>
+                  </div>
                 </li>
               ))}
             </ul>

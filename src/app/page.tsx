@@ -24,6 +24,8 @@ type ProductWithUser = Database["public"]["Tables"]["products"]["Row"] & {
     avatar_url: string | null;
     id?: string;
   } | null;
+  tags?: string[];
+  communityNames?: string[]; // ✅ thêm: tên cộng đồng
 };
 
 type Badge = Database["public"]["Tables"]["badges"]["Row"];
@@ -97,7 +99,7 @@ export default function ProductsPage() {
   // Lấy dữ liệu
   useEffect(() => {
     const fetchProducts = async () => {
-      // ✅ Lấy sản phẩm + user
+      // ✅ Lấy sản phẩm + user + tag + cộng đồng
       const { data, error } = await supabase
         .from("products")
         .select(
@@ -107,6 +109,16 @@ export default function ProductsPage() {
             id,
             username,
             avatar_url
+          ),
+          product_tags (
+            tag_id,
+            community_tags:tag_id (
+              id,
+              name,
+              communities:community_id (
+                title
+              )
+            )
           )
         `
         )
@@ -118,13 +130,25 @@ export default function ProductsPage() {
         return;
       }
 
-      const productsData = data as ProductWithUser[];
-      setProducts(productsData);
+      const productsData = data as any[];
+
+      // ✅ Gắn tag sản phẩm & tên cộng đồng
+      const productsWithTags = productsData.map((p) => ({
+        ...p,
+        tags: (p.product_tags || []).map(
+          (pt: any) => pt.community_tags?.name || "Không rõ"
+        ),
+        communityNames: (p.product_tags || [])
+          .map((pt: any) => pt.community_tags?.communities?.title)
+          .filter(Boolean),
+      }));
+
+      setProducts(productsWithTags);
 
       // ✅ Lấy số lượng comment
       const commentCounts: Record<string, number> = {};
       await Promise.all(
-        productsData.map(async (p) => {
+        productsWithTags.map(async (p) => {
           const { count } = await supabase
             .from("comments")
             .select("*", { count: "exact" })
@@ -160,9 +184,9 @@ export default function ProductsPage() {
       setLikesCount(likeCounts);
       setLikedIds(userLikes);
 
-      // ✅ Lấy huy hiệu cho từng user (user_badges + badges)
+      // ✅ Lấy huy hiệu cho từng user
       const uniqueUserIds = [
-        ...new Set(productsData.map((p) => p.users?.id).filter(Boolean)),
+        ...new Set(productsWithTags.map((p) => p.users?.id).filter(Boolean)),
       ] as string[];
 
       const badgesMap: Record<string, Badge[]> = {};
@@ -318,6 +342,29 @@ export default function ProductsPage() {
                     <p className="mt-2 text-indigo-600 font-bold">
                       {p.price ? `${p.price.toLocaleString()}₫` : "Liên hệ"}
                     </p>
+
+                    {/* 🏷️ Tag loại hàng + cộng đồng */}
+                    {(p.tags?.length || p.communityNames?.length) && (
+                      <div className="flex flex-wrap gap-2 mt-2">
+                        {p.tags?.map((tag, i) => (
+                          <span
+                            key={i}
+                            className="text-xs bg-pink-50 text-pink-600 px-2 py-1 rounded-full"
+                          >
+                            {tag}
+                          </span>
+                        ))}
+                        {p.communityNames?.map((cName, i) => (
+                          <span
+                            key={`c-${i}`}
+                            className="text-xs bg-blue-50 text-blue-600 px-2 py-1 rounded-full"
+                          >
+                            {cName}
+                          </span>
+                        ))}
+                      </div>
+                    )}
+
                     <p className="text-xs text-gray-500 mt-1">
                       Tình trạng: {p.condition}
                     </p>

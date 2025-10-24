@@ -16,23 +16,27 @@ import {
 import type { Database } from "@/types/supabase";
 
 // ======================
-// Type dữ liệu sản phẩm có thông tin user
+// Type dữ liệu sản phẩm có thông tin user + badge
 // ======================
 type ProductWithUser = Database["public"]["Tables"]["products"]["Row"] & {
   users?: {
     username: string | null;
     avatar_url: string | null;
+    id?: string;
   } | null;
 };
+
+type Badge = Database["public"]["Tables"]["badges"]["Row"];
 
 export default function ProductsPage() {
   const [products, setProducts] = useState<ProductWithUser[]>([]);
   const [loading, setLoading] = useState(true);
   const [biggerGrid, setBiggerGrid] = useState(false);
-  const [saved, setSaved] = useState<string[]>([]); // Danh sách ID đã lưu
-  const [likedIds, setLikedIds] = useState<string[]>([]); // ID sản phẩm đã thả tim
-  const [likesCount, setLikesCount] = useState<Record<string, number>>({}); // số lượng like theo product_id
-  const [commentsCount, setCommentsCount] = useState<Record<string, number>>({}); // số lượng comment theo product_id
+  const [saved, setSaved] = useState<string[]>([]);
+  const [likedIds, setLikedIds] = useState<string[]>([]);
+  const [likesCount, setLikesCount] = useState<Record<string, number>>({});
+  const [commentsCount, setCommentsCount] = useState<Record<string, number>>({});
+  const [userBadges, setUserBadges] = useState<Record<string, Badge[]>>({});
 
   // Toggle trạng thái lưu bài
   const toggleSave = (id: string) => {
@@ -41,7 +45,7 @@ export default function ProductsPage() {
     );
   };
 
-  // Toggle nút thả tim cho sản phẩm (dùng bảng product_likes)
+  // Toggle nút thả tim
   const toggleLike = async (productId: string) => {
     const { data: authData } = await supabase.auth.getUser();
     const userId = authData.user?.id;
@@ -53,7 +57,6 @@ export default function ProductsPage() {
     const alreadyLiked = likedIds.includes(productId);
 
     if (alreadyLiked) {
-      // Xóa like
       await supabase
         .from("product_likes")
         .delete()
@@ -66,7 +69,6 @@ export default function ProductsPage() {
         [productId]: Math.max(0, (prev[productId] || 1) - 1),
       }));
     } else {
-      // Thêm like
       await supabase.from("product_likes").insert({
         product_id: productId,
         user_id: userId,
@@ -80,7 +82,6 @@ export default function ProductsPage() {
     }
   };
 
-  // Hàm chia sẻ sản phẩm
   const shareProduct = (product: ProductWithUser) => {
     const url = `${window.location.origin}/deal/${product.id}`;
     const title = product.title || "Sản phẩm";
@@ -93,15 +94,17 @@ export default function ProductsPage() {
     }
   };
 
-  // Lấy dữ liệu sản phẩm, comment và like
+  // Lấy dữ liệu
   useEffect(() => {
     const fetchProducts = async () => {
+      // ✅ Lấy sản phẩm + user
       const { data, error } = await supabase
         .from("products")
         .select(
           `
           *,
           users:user_id (
+            id,
             username,
             avatar_url
           )
@@ -118,7 +121,7 @@ export default function ProductsPage() {
       const productsData = data as ProductWithUser[];
       setProducts(productsData);
 
-      // Lấy số lượng comment cho mỗi product
+      // ✅ Lấy số lượng comment
       const commentCounts: Record<string, number> = {};
       await Promise.all(
         productsData.map(async (p) => {
@@ -131,15 +134,13 @@ export default function ProductsPage() {
       );
       setCommentsCount(commentCounts);
 
-      // Lấy danh sách likes
+      // ✅ Lấy likes
       const { data: likesData } = await supabase
         .from("product_likes")
         .select("product_id, user_id");
 
       const likeCounts: Record<string, number> = {};
       const userLikes: string[] = [];
-
-      // ✅ fix lỗi "likesData is possibly null"
       likesData?.forEach((like) => {
         likeCounts[like.product_id] =
           (likeCounts[like.product_id] || 0) + 1;
@@ -158,6 +159,40 @@ export default function ProductsPage() {
 
       setLikesCount(likeCounts);
       setLikedIds(userLikes);
+
+      // ✅ Lấy huy hiệu cho từng user (user_badges + badges)
+      const uniqueUserIds = [
+        ...new Set(productsData.map((p) => p.users?.id).filter(Boolean)),
+      ] as string[];
+
+      const badgesMap: Record<string, Badge[]> = {};
+      await Promise.all(
+        uniqueUserIds.map(async (uid) => {
+          const { data: badgeData, error: badgeErr } = await supabase
+            .from("user_badges")
+            .select(
+              `
+              badge_id,
+              badges:badge_id (
+                id,
+                name,
+                icon,
+                milestone_type,
+                milestone_value
+              )
+            `
+            )
+            .eq("user_id", uid);
+
+          if (!badgeErr && badgeData) {
+            badgesMap[uid] = badgeData
+              .map((b) => b.badges)
+              .filter((b): b is Badge => !!b);
+          }
+        })
+      );
+
+      setUserBadges(badgesMap);
       setLoading(false);
     };
 
@@ -172,10 +207,10 @@ export default function ProductsPage() {
       </div>
     );
 
-  // ========== Giao diện chính ==========
+  // ========== Giao diện ==========
   return (
     <div className="p-6">
-      {/* 🔘 Nút chuyển đổi dạng hiển thị */}
+      {/* 🔘 Nút chuyển grid */}
       <div className="flex justify-end mb-4">
         <button
           onClick={() => setBiggerGrid(!biggerGrid)}
@@ -189,30 +224,15 @@ export default function ProductsPage() {
         </button>
       </div>
 
-      {/* 🔥 Danh sách sản phẩm */}
+      {/* 🔥 Danh sách */}
       <div className="overflow-hidden">
         <AnimatePresence mode="wait">
           <motion.div
             key={biggerGrid ? "large" : "small"}
-            initial={{
-              opacity: 0,
-              x: biggerGrid ? 100 : -100,
-              scale: 0.98,
-            }}
-            animate={{
-              opacity: 1,
-              x: 0,
-              scale: 1,
-            }}
-            exit={{
-              opacity: 0,
-              x: biggerGrid ? -100 : 100,
-              scale: 0.98,
-            }}
-            transition={{
-              duration: 0.45,
-              ease: "easeInOut",
-            }}
+            initial={{ opacity: 0, x: biggerGrid ? 100 : -100, scale: 0.98 }}
+            animate={{ opacity: 1, x: 0, scale: 1 }}
+            exit={{ opacity: 0, x: biggerGrid ? -100 : 100, scale: 0.98 }}
+            transition={{ duration: 0.45, ease: "easeInOut" }}
             className={`grid gap-6 ${
               biggerGrid
                 ? "grid-cols-1"
@@ -221,7 +241,6 @@ export default function ProductsPage() {
           >
             {products.map((p) =>
               biggerGrid ? (
-                // ========== DẠNG LỚN ==========
                 <DealCard
                   key={p.id}
                   deal={{
@@ -250,7 +269,6 @@ export default function ProductsPage() {
                   bigger
                 />
               ) : (
-                // ========== DẠNG NHỎ ==========
                 <motion.div
                   key={p.id}
                   initial={{ opacity: 0, y: 15 }}
@@ -258,7 +276,6 @@ export default function ProductsPage() {
                   transition={{ duration: 0.35 }}
                   className="relative rounded-2xl shadow hover:shadow-lg transition bg-white overflow-hidden"
                 >
-                  {/* Ảnh sản phẩm + link đến /deal/[id] */}
                   <Link href={`/deal/${p.id}`}>
                     {p.image_url ? (
                       <img
@@ -273,9 +290,7 @@ export default function ProductsPage() {
                     )}
                   </Link>
 
-                  {/* Thông tin sản phẩm */}
                   <div className="p-4">
-                    {/* Tiêu đề + nút lưu */}
                     <div className="flex justify-between items-start">
                       <Link href={`/deal/${p.id}`}>
                         <h3 className="font-semibold text-lg cursor-pointer hover:text-pink-500">
@@ -283,7 +298,6 @@ export default function ProductsPage() {
                         </h3>
                       </Link>
 
-                      {/* 🔖 Nút lưu */}
                       <button
                         onClick={() => toggleSave(p.id)}
                         className={`flex items-center gap-1 px-2 py-1 rounded-full transition ${
@@ -311,7 +325,6 @@ export default function ProductsPage() {
                       {p.description}
                     </p>
 
-                    {/* 👤 User + thời gian + số comment */}
                     {p.users && (
                       <div className="flex justify-between items-center mt-3">
                         <div className="flex items-center">
@@ -320,10 +333,29 @@ export default function ProductsPage() {
                             alt={p.users.username || "User"}
                             className="w-8 h-8 rounded-full object-cover"
                           />
-                          <div className="ml-2">
-                            <p className="text-sm font-medium text-gray-700">
-                              {p.users.username || "Người dùng"}
-                            </p>
+                          <div className="ml-2 flex flex-col">
+                            <div className="flex items-center gap-1">
+                              <p className="text-sm font-medium text-gray-700">
+                                {p.users.username || "Người dùng"}
+                              </p>
+                              {/* 🏅 Huy hiệu */}
+                              {userBadges[p.users.id || ""]?.length ? (
+                                <div className="flex items-center gap-1">
+                                  {userBadges[p.users.id || ""]
+                                    .slice(0, 2)
+                                    .map((badge) => (
+                                      <img
+                                        key={badge.id}
+                                        src={badge.icon}
+                                        alt={badge.name}
+                                        title={badge.name}
+                                        className="w-4 h-4 object-contain"
+                                      />
+                                    ))}
+                                </div>
+                              ) : null}
+                            </div>
+
                             <p className="text-xs text-gray-400">
                               {p.created_at
                                 ? new Date(p.created_at).toLocaleString(
@@ -347,7 +379,6 @@ export default function ProductsPage() {
                       </div>
                     )}
 
-                    {/* 🔥 Nút thả tim + chia sẻ */}
                     <div className="flex justify-between items-center mt-2">
                       <span className="text-xs text-gray-400">
                         {p.views ?? 0} lượt xem

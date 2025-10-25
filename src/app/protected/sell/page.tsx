@@ -19,7 +19,7 @@ import ProductVideoInput from '@/components/sell/ProductVideoInput';
 import { PriceAndOffers } from '@/components/sell/PriceAndOffers';
 import ReturnPolicies from '@/components/sell/ReturnPolicies';
 import ActionButtons from '@/components/sell/ActionButtons';
-import ImageUploader from '@/components/sell/ImageUploader'; // ✅ dùng để upload ảnh
+import ImageUploader from '@/components/sell/ImageUploader';
 
 export default function SellPage() {
   const router = useRouter();
@@ -30,6 +30,7 @@ export default function SellPage() {
     register,
     handleSubmit,
     control,
+    reset,
     formState: { errors },
   } = useForm<ProductFormData>({
     resolver: zodResolver(productSchema),
@@ -53,27 +54,28 @@ export default function SellPage() {
   const onSubmit: SubmitHandler<ProductFormData> = async (data) => {
     setLoading(true);
 
+    // ✅ Kiểm tra hợp lệ
     const safe = productSchema.safeParse(data);
     if (!safe.success) {
-      alert('Validation failed — check console for details.');
       console.error(safe.error.format());
+      alert('Vui lòng kiểm tra lại thông tin nhập!');
       setLoading(false);
       return;
     }
 
     try {
-      // ✅ Lấy user hiện tại
+      // ✅ Lấy thông tin user hiện tại
       const {
         data: { user },
         error: userError,
       } = await supabase.auth.getUser();
 
       if (userError || !user) {
-        alert('You must be logged in to post.');
+        alert('Bạn cần đăng nhập để đăng bài.');
         return;
       }
 
-      // ✅ Tạo payload khớp 100% với bảng products
+      // ✅ Chuẩn bị dữ liệu để lưu
       const payload = {
         user_id: user.id,
         title: data.title,
@@ -82,7 +84,7 @@ export default function SellPage() {
         condition: data.condition,
         description: data.description || null,
         specs: data.specs,
-        images: imageUrl || null, // ✅ CHUẨN tên cột Supabase
+        images: imageUrl || null,
         video_url: data.videoUrl || null,
         price: data.price,
         enable_offers: data.enableOffers,
@@ -90,29 +92,29 @@ export default function SellPage() {
         quantity: data.quantity,
         sku: data.sku || null,
         return_policy: data.returnPolicy || null,
-
-        // ✅ Các cột còn thiếu trong bảng
         community_id: null,
         upvotes: 0,
         views: 0,
-        image_url: null, // vẫn có trong schema, gán null để tránh lỗi
+        image_url: imageUrl || null, // 🔥 dùng cùng đường dẫn ảnh
       };
 
-      // ✅ Thực hiện insert
+      // ✅ Gửi lên Supabase
       const { error: insertError } = await supabase
         .from('products')
         .insert([payload]);
 
       if (insertError) {
-        alert(`Insert error: ${insertError.message}`);
+        console.error('Insert error:', insertError);
+        alert(`Lỗi khi lưu sản phẩm: ${insertError.message}`);
         return;
       }
 
-      alert('Product added successfully!');
-      router.push('/');
+      alert('Đăng sản phẩm thành công 🎉');
+      reset(); // Xóa form
+      router.push('/'); // Quay về trang chủ
     } catch (err) {
       console.error(err);
-      alert('Unexpected error, check console.');
+      alert('Đã xảy ra lỗi, vui lòng thử lại.');
     } finally {
       setLoading(false);
     }
@@ -120,12 +122,16 @@ export default function SellPage() {
 
   return (
     <div className="max-w-4xl mx-auto px-4 py-8">
-      <h1 className="text-2xl font-bold mb-6">Add a New Listing</h1>
+      <h1 className="text-2xl font-bold mb-6 text-center text-purple-600">
+        🛍️ Đăng bán sản phẩm mới
+      </h1>
+
       <BankAccountBanner />
 
       <form onSubmit={handleSubmit(onSubmit)} className="space-y-6">
-        <div className="border rounded-lg p-5 space-y-6">
-          <h2 className="font-semibold text-lg">Listing Information</h2>
+        {/* --- Thông tin cơ bản --- */}
+        <div className="border rounded-lg p-5 space-y-6 shadow-sm">
+          <h2 className="font-semibold text-lg">Thông tin sản phẩm</h2>
           <CategorySelect register={register} error={errors.category} />
           <ListingTitleInput register={register} error={errors.title} />
           <PrivateToggle register={register} />
@@ -134,11 +140,12 @@ export default function SellPage() {
           <ImageUploader onUploadComplete={(url) => setImageUrl(url)} />
           {imageUrl && (
             <p className="text-sm text-green-600">
-              Image uploaded successfully!
+              ✅ Ảnh đã tải lên thành công
             </p>
           )}
         </div>
 
+        {/* --- Thông tin chi tiết --- */}
         <TechSpecsEditor control={control} />
         <ConditionSelectorSection register={register} />
         <DescriptionEditorSection
@@ -148,6 +155,7 @@ export default function SellPage() {
         <ProductVideoInput register={register} error={errors.videoUrl} />
         <PriceAndOffers register={register} errors={errors} />
         <ReturnPolicies register={register} error={errors.returnPolicy} />
+
         <ActionButtons loading={loading} />
       </form>
     </div>

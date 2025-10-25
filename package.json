@@ -16,6 +16,7 @@
     "@supabase/ssr": "^0.7.0",
     "@supabase/supabase-js": "^2.74.0",
     "easymde": "^2.20.0",
+    "firebase": "^12.4.0",
     "formidable": "^3.5.4",
     "framer-motion": "^12.23.21",
     "lucide-react": "^0.533.0",

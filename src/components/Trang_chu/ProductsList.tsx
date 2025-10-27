@@ -1,47 +1,5 @@
 "use client";
 
-import { useState } from "react";
-import Link from "next/link";
-import { supabase } from "@/lib/supabase/client";
-import DealCard, { DealType } from "@/components/Trang_chu/DealCard";
-import { motion, AnimatePresence } from "framer-motion";
-import {
-  LayoutGrid,
-  Grid,
-  Bookmark,
-  BookmarkCheck,
-  Heart as HeartIcon,
-  Share2,
-} from "lucide-react";
-import type { Database } from "@/types/supabase";
-
-// ======================
-// Type dữ liệu
-// ======================
-type ProductWithUser = Database["public"]["Tables"]["products"]["Row"] & {
-  users?: {
-    username: string | null;
-    avatar_url: string | null;
-    id?: string;
-  } | null;
-  tags?: string[];
-  communityNames?: string[];
-};
-
-type Badge = Database["public"]["Tables"]["badges"]["Row"];
-
-interface ProductsListProps {
-  products: ProductWithUser[];
-  likesCount: Record<string, number>;
-  commentsCount: Record<string, number>;
-  likedIds: string[];
-  setLikedIds: React.Dispatch<React.SetStateAction<string[]>>;
-  userBadges: Record<string, Badge[]>;
-}
-
-// ======================
-// Component chính
-// ======================
 export default function ProductsList({
   products,
   likesCount,
@@ -214,7 +172,6 @@ export default function ProductsList({
                       {p.price ? `${p.price.toLocaleString()}₫` : "Liên hệ"}
                     </p>
 
-                    {/* 🏷️ Tag + cộng đồng */}
                     {(p.tags?.length || p.communityNames?.length) && (
                       <div className="flex flex-wrap gap-2 mt-2">
                         {p.tags?.map((tag, i) => (
@@ -338,4 +295,43 @@ export default function ProductsList({
       </div>
     </div>
   );
+}
+
+import { useState } from "react";
+import Link from "next/link";
+import { supabase } from "@/lib/supabase/client";
+import DealCard, { DealType } from "@/components/Trang_chu/DealCard/DealCard";
+import { motion, AnimatePresence } from "framer-motion";
+import {
+  LayoutGrid,
+  Grid,
+  Bookmark,
+  BookmarkCheck,
+  Heart as HeartIcon,
+  Share2,
+} from "lucide-react";
+import type { Database } from "@/types/supabase";
+
+// ======================
+// Type dữ liệu
+// ======================
+type ProductWithUser = Database["public"]["Tables"]["products"]["Row"] & {
+  users?: {
+    username: string | null;
+    avatar_url: string | null;
+    id?: string;
+  } | null;
+  tags?: string[];
+  communityNames?: string[];
+};
+
+type Badge = Database["public"]["Tables"]["badges"]["Row"];
+
+interface ProductsListProps {
+  products: ProductWithUser[];
+  likesCount: Record<string, number>;
+  commentsCount: Record<string, number>;
+  likedIds: string[];
+  setLikedIds: React.Dispatch<React.SetStateAction<string[]>>;
+  userBadges: Record<string, Badge[]>;
 }

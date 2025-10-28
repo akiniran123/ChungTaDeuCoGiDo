@@ -4,7 +4,8 @@ import React, { useState, useEffect, useRef } from "react";
 import { supabase } from "@/lib/supabase/client";
 import { useCart } from "@/app/context/CartContext";
 import Image from "next/image";
-import { ArrowLeft, ArrowRight, Heart, MessageSquare, Bookmark, X } from "lucide-react";
+import { ArrowLeft, ArrowRight, X } from "lucide-react";
+import DealActions from "@/components/Trang_chu/DealCard/DealActions"; // ✅ import ngoài
 
 // =======================================================
 // ========== KIỂU DỮ LIỆU DEAL ==========================
@@ -52,7 +53,7 @@ const DealCard: React.FC<DealCardProps> = ({
   const messagesEndRef = useRef<HTMLDivElement>(null);
   const { addToCart } = useCart();
 
-  // ------------------- MEDIA LOGIC -------------------
+  // ------------------- MEDIA -------------------
   const mediaList =
     deal.media && deal.media.length > 0
       ? deal.media
@@ -187,10 +188,7 @@ const DealCard: React.FC<DealCardProps> = ({
     messagesEndRef.current?.scrollIntoView({ behavior: "smooth" });
   }, [messages]);
 
-  // =======================================================
-  // ========== COMPONENT PHỤ (NHÉT VÀO TRONG) =============
-  // =======================================================
-
+  // ------------------- DEAL HEADER -------------------
   const DealHeader = () => (
     <header className="flex items-center gap-2 p-3 border-b">
       <Image
@@ -209,6 +207,7 @@ const DealCard: React.FC<DealCardProps> = ({
     </header>
   );
 
+  // ------------------- DEAL MEDIA -------------------
   const DealMedia = () => (
     <div
       className="relative w-full overflow-hidden bg-gray-100"
@@ -243,37 +242,7 @@ const DealCard: React.FC<DealCardProps> = ({
     </div>
   );
 
-  const DealActions = () => (
-    <footer className="flex justify-between items-center p-3 border-t">
-      <div className="flex gap-4 items-center">
-        <button
-          onClick={handleLike}
-          className={`flex items-center gap-1 ${
-            liked ? "text-red-500" : "text-gray-600"
-          }`}
-        >
-          <Heart size={18} />
-          <span>{likesCount}</span>
-        </button>
-        <button
-          onClick={() => setChatOpen(!chatOpen)}
-          className="flex items-center gap-1 text-gray-600"
-        >
-          <MessageSquare size={18} />
-          <span>{commentCount}</span>
-        </button>
-      </div>
-      <button
-        onClick={handleSave}
-        className={`flex items-center gap-1 ${
-          saved ? "text-blue-500" : "text-gray-600"
-        }`}
-      >
-        <Bookmark size={18} />
-      </button>
-    </footer>
-  );
-
+  // ------------------- DEAL CHAT -------------------
   const DealChat = () => (
     <div className="fixed top-0 right-0 w-80 h-full bg-white shadow-lg border-l flex flex-col z-50">
       <div className="flex justify-between items-center p-3 border-b">
@@ -331,7 +300,18 @@ const DealCard: React.FC<DealCardProps> = ({
       >
         <DealHeader />
         <DealMedia />
-        {!isAd && <DealActions />}
+        {!isAd && (
+          <DealActions
+            liked={liked}
+            likesCount={likesCount}
+            commentCount={commentCount}
+            saved={saved}
+            handleLike={handleLike}
+            handleSave={handleSave}
+            toggleChat={() => setChatOpen(!chatOpen)}
+            deal={deal}
+          />
+        )}
       </article>
 
       {chatOpen && <DealChat />}

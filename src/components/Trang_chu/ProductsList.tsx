@@ -1,5 +1,44 @@
 "use client";
 
+import { useState, useEffect, useRef } from "react";
+import Link from "next/link";
+import { supabase } from "@/lib/supabase/client";
+import DealCard, { DealType } from "@/components/Trang_chu/DealCard/DealCard";
+import { motion, AnimatePresence } from "framer-motion";
+import {
+  LayoutGrid,
+  Grid,
+  Bookmark,
+  BookmarkCheck,
+  Heart as HeartIcon,
+  Share2,
+} from "lucide-react";
+import type { Database } from "@/types/supabase";
+
+// ======================
+// Type dữ liệu
+// ======================
+type ProductWithUser = Database["public"]["Tables"]["products"]["Row"] & {
+  users?: {
+    username: string | null;
+    avatar_url: string | null;
+    id?: string;
+  } | null;
+  tags?: string[];
+  communityNames?: string[];
+};
+
+type Badge = Database["public"]["Tables"]["badges"]["Row"];
+
+interface ProductsListProps {
+  products: ProductWithUser[];
+  likesCount: Record<string, number>;
+  commentsCount: Record<string, number>;
+  likedIds: string[];
+  setLikedIds: React.Dispatch<React.SetStateAction<string[]>>;
+  userBadges: Record<string, Badge[]>;
+}
+
 export default function ProductsList({
   products,
   likesCount,
@@ -10,15 +49,31 @@ export default function ProductsList({
 }: ProductsListProps) {
   const [biggerGrid, setBiggerGrid] = useState(false);
   const [saved, setSaved] = useState<string[]>([]);
+  const scrollPosition = useRef(0);
 
-  // Toggle lưu bài
+  useEffect(() => {
+    const handleScroll = () => {
+      scrollPosition.current = window.scrollY;
+    };
+    window.addEventListener("scroll", handleScroll);
+    return () => window.removeEventListener("scroll", handleScroll);
+  }, []);
+
+  const toggleGrid = () => {
+    scrollPosition.current = window.scrollY;
+    setBiggerGrid((prev) => !prev);
+  };
+
+  useEffect(() => {
+    window.scrollTo({ top: scrollPosition.current, behavior: "instant" });
+  }, [biggerGrid]);
+
   const toggleSave = (id: string) => {
     setSaved((prev) =>
       prev.includes(id) ? prev.filter((x) => x !== id) : [...prev, id]
     );
   };
 
-  // Toggle like
   const toggleLike = async (productId: string) => {
     const { data: authData } = await supabase.auth.getUser();
     const userId = authData.user?.id;
@@ -35,19 +90,16 @@ export default function ProductsList({
         .delete()
         .eq("product_id", productId)
         .eq("user_id", userId);
-
       setLikedIds((prev) => prev.filter((id) => id !== productId));
     } else {
       await supabase.from("product_likes").insert({
         product_id: productId,
         user_id: userId,
       });
-
       setLikedIds((prev) => [...prev, productId]);
     }
   };
 
-  // Chia sẻ sản phẩm
   const shareProduct = (product: ProductWithUser) => {
     const url = `${window.location.origin}/deal/${product.id}`;
     const title = product.title || "Sản phẩm";
@@ -60,13 +112,14 @@ export default function ProductsList({
     }
   };
 
-  // ========== Giao diện ==========
+  // ==========================================================
+  // ===================== Giao diện ===========================
+  // ==========================================================
   return (
     <div className="p-6">
-      {/* 🔘 Nút chuyển grid */}
       <div className="flex justify-end mb-4">
         <button
-          onClick={() => setBiggerGrid(!biggerGrid)}
+          onClick={toggleGrid}
           className={`p-2 rounded-lg transition cursor-pointer ${
             biggerGrid
               ? "bg-pink-100 text-pink-500"
@@ -77,8 +130,7 @@ export default function ProductsList({
         </button>
       </div>
 
-      {/* 🔥 Danh sách */}
-      <div className="overflow-hidden">
+      <div className="overflow-visible">
         <AnimatePresence mode="wait">
           <motion.div
             key={biggerGrid ? "large" : "small"}
@@ -202,7 +254,12 @@ export default function ProductsList({
 
                     {p.users && (
                       <div className="flex justify-between items-center mt-3">
-                        <div className="flex items-center">
+                        {/* ✅ Link sang trang chi tiết user */}
+                        <Link
+                          href={`/user/${p.users.username}`}
+                          onClick={(e) => e.stopPropagation()}
+                          className="flex items-center hover:opacity-80 transition"
+                        >
                           <img
                             src={p.users.avatar_url || "/default-avatar.png"}
                             alt={p.users.username || "User"}
@@ -245,7 +302,7 @@ export default function ProductsList({
                                 : "Không rõ thời gian"}
                             </p>
                           </div>
-                        </div>
+                        </Link>
 
                         <p className="text-xs text-gray-500">
                           {commentsCount[p.id] ?? 0} bình luận
@@ -295,43 +352,4 @@ export default function ProductsList({
       </div>
     </div>
   );
-}
-
-import { useState } from "react";
-import Link from "next/link";
-import { supabase } from "@/lib/supabase/client";
-import DealCard, { DealType } from "@/components/Trang_chu/DealCard/DealCard";
-import { motion, AnimatePresence } from "framer-motion";
-import {
-  LayoutGrid,
-  Grid,
-  Bookmark,
-  BookmarkCheck,
-  Heart as HeartIcon,
-  Share2,
-} from "lucide-react";
-import type { Database } from "@/types/supabase";
-
-// ======================
-// Type dữ liệu
-// ======================
-type ProductWithUser = Database["public"]["Tables"]["products"]["Row"] & {
-  users?: {
-    username: string | null;
-    avatar_url: string | null;
-    id?: string;
-  } | null;
-  tags?: string[];
-  communityNames?: string[];
-};
-
-type Badge = Database["public"]["Tables"]["badges"]["Row"];
-
-interface ProductsListProps {
-  products: ProductWithUser[];
-  likesCount: Record<string, number>;
-  commentsCount: Record<string, number>;
-  likedIds: string[];
-  setLikedIds: React.Dispatch<React.SetStateAction<string[]>>;
-  userBadges: Record<string, Badge[]>;
 }

@@ -5,7 +5,8 @@ import { supabase } from "@/lib/supabase/client";
 import { useCart } from "@/app/context/CartContext";
 import Image from "next/image";
 import { ArrowLeft, ArrowRight, X } from "lucide-react";
-import DealActions from "@/components/Trang_chu/DealCard/DealActions"; // ✅ import ngoài
+import DealActions from "@/components/Trang_chu/DealCard/DealActions";
+import DealHeader from "@/components/Trang_chu/DealCard/DealHeader"; // ✅ có link tới user detail
 
 // =======================================================
 // ========== KIỂU DỮ LIỆU DEAL ==========================
@@ -13,13 +14,14 @@ import DealActions from "@/components/Trang_chu/DealCard/DealActions"; // ✅ im
 export type DealType = {
   id: string;
   title: string;
+  content?: string;
   image?: string;
   media?: string[];
-  votes?: number;
+  votes?: number; // ✅ có thể undefined
   comments?: number;
   category?: string;
-  author?: string;
-  avatar?: string;
+  author?: string; // ✅ username của người đăng
+  avatar?: string; // ✅ avatar của người đăng
   createdAt?: string;
 };
 
@@ -45,11 +47,11 @@ const DealCard: React.FC<DealCardProps> = ({
   const [startX, setStartX] = useState<number | null>(null);
   const [saved, setSaved] = useState(false);
   const [liked, setLiked] = useState(false);
-  const [likesCount, setLikesCount] = useState(deal.votes || 0);
+  const [likesCount, setLikesCount] = useState<number>(deal.votes ?? 0);
   const [chatOpen, setChatOpen] = useState(false);
   const [messages, setMessages] = useState<any[]>([]);
   const [newMessage, setNewMessage] = useState("");
-  const [commentCount, setCommentCount] = useState(deal.comments || 0);
+  const [commentCount, setCommentCount] = useState<number>(deal.comments ?? 0);
   const messagesEndRef = useRef<HTMLDivElement>(null);
   const { addToCart } = useCart();
 
@@ -188,25 +190,6 @@ const DealCard: React.FC<DealCardProps> = ({
     messagesEndRef.current?.scrollIntoView({ behavior: "smooth" });
   }, [messages]);
 
-  // ------------------- DEAL HEADER -------------------
-  const DealHeader = () => (
-    <header className="flex items-center gap-2 p-3 border-b">
-      <Image
-        src={deal.avatar || "/default-avatar.png"}
-        alt="avatar"
-        width={36}
-        height={36}
-        className="rounded-full object-cover"
-      />
-      <div className="flex flex-col">
-        <h2 className="font-semibold text-sm">{deal.author || "Người đăng"}</h2>
-        <p className="text-xs text-gray-500">
-          {new Date(deal.createdAt || "").toLocaleDateString("vi-VN")}
-        </p>
-      </div>
-    </header>
-  );
-
   // ------------------- DEAL MEDIA -------------------
   const DealMedia = () => (
     <div
@@ -298,8 +281,11 @@ const DealCard: React.FC<DealCardProps> = ({
         } ${isAd ? "bg-yellow-50 border-l-4 border-yellow-400" : "bg-white"}`}
         id={`deal-${deal.id}`}
       >
-        <DealHeader />
+        {/* ✅ Dùng DealHeader riêng (có Link đến trang user) */}
+        <DealHeader deal={deal} />
+
         <DealMedia />
+
         {!isAd && (
           <DealActions
             liked={liked}

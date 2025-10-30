@@ -1,45 +1,60 @@
-// src/lib/firebase-config.js
 import { initializeApp } from "firebase/app";
-import { getMessaging, getToken, onMessage } from "firebase/messaging";
+import { getMessaging, getToken, onMessage, isSupported } from "firebase/messaging";
 
-// ⚙️ Config Firebase — lấy trong Firebase Console > Project Settings > General
-const firebaseConfig = {
-  apiKey: "YOUR_API_KEY",
-  authDomain: "YOUR_PROJECT.firebaseapp.com",
-  projectId: "YOUR_PROJECT_ID",
-  storageBucket: "YOUR_PROJECT.appspot.com",
-  messagingSenderId: "YOUR_SENDER_ID",
-  appId: "YOUR_APP_ID",
+// ⚙️ Cấu hình Firebase — copy từ Firebase Console
+const firebaseConfig = { 
+  apiKey : "AIzaSyBYI3nSnHVQHKSIY3NkDCjXSVdCZ_6Z50A" , 
+  authDomain : "nexlot-2ceb3.firebaseapp.com" , 
+  projectId : "nexlot-2ceb3" , 
+  storageBucket : "nexlot-2ceb3.firebasestorage.app" , 
+  messagingSenderId : "141108856035" , 
+  appId : "1:141108856035:web:9fa7dae596d45beeb8b1d6" , 
+  measurementId : "G-0719VE9XQF"
 };
 
-// Khởi tạo Firebase
+// ✅ Khởi tạo app
 const app = initializeApp(firebaseConfig);
-const messaging = getMessaging(app);
 
-// ✅ Hàm xin quyền và lấy token FCM
+// ✅ Khởi tạo messaging (chỉ nếu trình duyệt hỗ trợ)
+let messaging = null;
+(async () => {
+  const supported = await isSupported();
+  if (supported) {
+    messaging = getMessaging(app);
+    console.log("✅ Firebase Messaging supported");
+  } else {
+    console.warn("⚠️ Firebase Messaging is not supported on this browser");
+  }
+})();
+
+// ✅ Hàm lấy FCM token (kèm VAPID key mới của bạn)
 export const requestForToken = async () => {
+  if (!messaging) return null;
   try {
     const currentToken = await getToken(messaging, {
-      vapidKey: "YOUR_VAPID_KEY", // 🔑 Lấy từ Firebase Cloud Messaging > Web Push certificates
+      vapidKey:
+        "BIgunHcVieLZbSj-R5g9M3mrY5ATVFOEyN8sEUuVoK9Ot_hJS0gd6wD7jfWHmrU4XAsRBgXomy4noNo_b7l35iY",
     });
+
     if (currentToken) {
-      console.log("✅ FCM token:", currentToken);
+      console.log("✅ FCM Token:", currentToken);
       return currentToken;
     } else {
-      console.log("⚠️ Không có token (chưa được cấp quyền).");
+      console.warn("⚠️ No FCM token available. Request permission to generate one.");
       return null;
     }
-  } catch (err) {
-    console.error("❌ Lỗi khi lấy FCM token:", err);
+  } catch (error) {
+    console.error("❌ Error getting token:", error);
     return null;
   }
 };
 
-// ✅ Lắng nghe thông báo khi app đang mở
+// ✅ Lắng nghe tin nhắn foreground
 export const onMessageListener = () =>
   new Promise((resolve) => {
+    if (!messaging) return;
     onMessage(messaging, (payload) => {
-      console.log("📩 Thông báo nhận được:", payload);
+      console.log("📩 Foreground notification:", payload);
       resolve(payload);
     });
   });

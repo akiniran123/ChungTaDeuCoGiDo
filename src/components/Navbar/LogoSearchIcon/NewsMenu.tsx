@@ -1,150 +1,131 @@
-"use client"
+"use client";
 
-import { useEffect, useRef, useState } from 'react'
-import { Bell, CheckCheck, X } from 'lucide-react'
-import { useRouter } from 'next/navigation'
+import { useEffect, useState } from "react";
+import { Bell } from "lucide-react";
+import { supabase } from "@/lib/supabase/client";
+import type { Database } from "@/types/supabase";
 
-interface NewsItem {
-  id: string
-  title: string
-  time: string
-  href?: string
-  read?: boolean
-}
+type Notification = Database["public"]["Tables"]["notifications"]["Row"];
 
 export default function NewsMenu() {
-  const [newsList, setNewsList] = useState<NewsItem[]>([])
-  const [openNews, setOpenNews] = useState(false)
-  const [unreadNews, setUnreadNews] = useState(0)
-  const newsRef = useRef<HTMLDivElement>(null)
-  const router = useRouter()
+  const [notifications, setNotifications] = useState<Notification[]>([]);
+  const [open, setOpen] = useState(false);
+  const [userId, setUserId] = useState<string>("");
 
+  // 🔹 Lấy user hiện tại
   useEffect(() => {
-    // Demo data – thay bằng API thực tế của bạn
-    setNewsList([
-      { id: 'n1', title: 'Flash sale laptop cuối tuần', time: '5 phút', href: '/tin-tuc/n1', read: false },
-      { id: 'n2', title: 'Ra mắt RTX 5090', time: '1 giờ', href: '/tin-tuc/n2', read: false },
-      { id: 'n3', title: 'Cập nhật chính sách đổi trả', time: 'Hôm qua', href: '/tin-tuc/n3', read: true },
-    ])
-  }, [])
+    (async () => {
+      const {
+        data: { user },
+      } = await supabase.auth.getUser();
+      if (user) setUserId(user.id);
+    })();
+  }, []);
 
+  // 🔹 Lấy danh sách thông báo từ Supabase
   useEffect(() => {
-    const unread = newsList.filter((n) => !n.read).length
-    setUnreadNews(unread > 0 ? Math.min(unread, 9) : 0)
-  }, [newsList])
+    if (!userId) return;
 
-  useEffect(() => {
-    const handler = (e: MouseEvent) => {
-      if (newsRef.current && !newsRef.current.contains(e.target as Node)) {
-        setOpenNews(false)
-      }
-    }
-    document.addEventListener('mousedown', handler)
-    return () => document.removeEventListener('mousedown', handler)
-  }, [])
+    const fetchNotifications = async () => {
+      const { data, error } = await supabase
+        .from("notifications")
+        .select("*")
+        .eq("user_id", userId)
+        .order("created_at", { ascending: false });
 
-  const markAllRead = () => {
-    setNewsList((prev) => prev.map((n) => ({ ...n, read: true })))
-  }
+      if (!error && data) setNotifications(data);
+    };
 
-  const clearAll = () => {
-    setNewsList([])
-  }
+    fetchNotifications();
+
+    // 🔹 Lắng nghe realtime khi có thông báo mới
+    const channel = supabase
+      .channel("realtime:notifications")
+      .on(
+        "postgres_changes",
+        { event: "*", schema: "public", table: "notifications" },
+        (payload) => {
+          // Ép kiểu rõ ràng để tránh lỗi TS
+          const newNotification = payload.new as Notification | null;
+
+          if (
+            newNotification &&
+            newNotification.user_id === userId &&
+            !notifications.find((n) => n.id === newNotification.id)
+          ) {
+            setNotifications((prev) => [newNotification, ...prev]);
+          }
+        }
+      )
+      .subscribe();
+
+    return () => {
+      supabase.removeChannel(channel);
+    };
+  }, [userId, notifications]);
+
+  // 🔹 Đánh dấu đã đọc khi mở menu
+  const markAllAsRead = async () => {
+    if (!userId) return;
+    await supabase
+      .from("notifications")
+      .update({ read: true })
+      .eq("user_id", userId);
+    setNotifications((prev) => prev.map((n) => ({ ...n, read: true })));
+  };
+
+  const unreadCount = notifications.filter((n) => !n.read).length;
 
   return (
-    <div className="relative" ref={newsRef}>
+    <div className="relative">
+      {/* Nút chuông thông báo */}
       <button
-        type="button"
-        onClick={() => setOpenNews((v) => !v)}
-        aria-label="Tin tức"
-        aria-expanded={openNews}
-        className="relative cursor-pointer p-1 rounded"
+        onClick={() => {
+          setOpen(!open);
+          if (!open) markAllAsRead();
+        }}
+        className="relative p-2 rounded-full hover:bg-gray-100 transition"
       >
-        <Bell className="w-5 h-5 text-gray-600 hover:text-[#9b4de0]" />
-        {unreadNews > 0 && (
-          <span className="absolute -top-1 -right-1 bg-red-500 text-white text-[10px] rounded-full px-1">
-            {unreadNews}
+        <Bell className="w-6 h-6 text-gray-700" />
+        {unreadCount > 0 && (
+          <span className="absolute -top-0.5 -right-0.5 bg-red-500 text-white text-[10px] font-semibold rounded-full px-[5px]">
+            {unreadCount}
           </span>
         )}
       </button>
 
-      {openNews && (
-        <div
-          className="absolute right-0 mt-2 w-96 bg-white border border-gray-200 rounded-xl shadow-xl z-50"
-          role="dialog"
-          aria-label="Thông báo"
-        >
-          <div className="flex items-center justify-between px-4 py-3 border-b">
-            <h3 className="text-sm font-semibold flex items-center gap-2">
-              Thông báo
-              <span className="text-xs text-gray-500 font-normal">({newsList.length})</span>
-            </h3>
-
-            <div className="flex items-center gap-2">
-              <button
-                onClick={markAllRead}
-                disabled={newsList.length === 0}
-                className="text-xs text-gray-500 hover:text-green-600 disabled:opacity-50 cursor-pointer flex items-center gap-1"
-              >
-                <CheckCheck className="w-4 h-4" /> Đã đọc hết
-              </button>
-              <button
-                onClick={clearAll}
-                disabled={newsList.length === 0}
-                className="text-xs text-gray-500 hover:text-red-600 disabled:opacity-50 cursor-pointer flex items-center gap-1"
-              >
-                <X className="w-4 h-4" /> Xóa hết
-              </button>
-            </div>
-          </div>
-
-          <ul className="max-h-80 overflow-auto divide-y" role="list">
-            {newsList.length === 0 ? (
-              <li className="p-6 text-sm text-gray-500 text-center">Chưa có thông báo nào.</li>
+      {/* Danh sách thông báo (dropdown) */}
+      {open && (
+        <div className="absolute right-0 mt-2 w-80 bg-white border border-gray-200 rounded-2xl shadow-lg z-50">
+          <div className="p-3 font-semibold border-b">Thông báo</div>
+          <div className="max-h-80 overflow-y-auto">
+            {notifications.length === 0 ? (
+              <p className="p-3 text-sm text-gray-500 text-center">
+                Không có thông báo nào.
+              </p>
             ) : (
-              newsList.map((n) => (
-                <li key={n.id}>
-                  <button
-                    onClick={() => {
-                      setNewsList((prev) =>
-                        prev.map((it) => (it.id === n.id ? { ...it, read: true } : it))
-                      )
-                      router.push(n.href || `/tin-tuc/${n.id}`)
-                    }}
-                    className={`w-full text-left px-4 py-3 hover:bg-gray-50 cursor-pointer ${
-                      !n.read ? 'bg-[#f9f5ff]' : ''
-                    }`}
-                  >
-                    <div className="flex items-start justify-between gap-3">
-                      <div className="min-w-0">
-                        <p
-                          className={`text-sm font-medium truncate ${
-                            !n.read ? 'text-[#9b4de0]' : ''
-                          }`}
-                        >
-                          {n.title}
-                        </p>
-                        <p className="text-xs text-gray-500">{n.time}</p>
-                      </div>
-                    </div>
-                  </button>
-                </li>
+              notifications.map((n) => (
+                <div
+                  key={n.id}
+                  className={`p-3 text-sm border-b last:border-0 ${
+                    n.read ? "bg-white" : "bg-blue-50"
+                  }`}
+                >
+                  <div className="font-medium text-gray-800">{n.title}</div>
+                  {n.body && (
+                    <div className="text-gray-600 text-xs mt-1">{n.body}</div>
+                  )}
+                  <div className="text-gray-400 text-[11px] mt-1">
+                    {n.created_at
+                      ? new Date(n.created_at).toLocaleString("vi-VN")
+                      : ""}
+                  </div>
+                </div>
               ))
             )}
-          </ul>
-
-          {newsList.length > 0 && (
-            <div className="px-4 py-3 border-t text-right">
-              <button
-                onClick={() => router.push('/tin-tuc')}
-                className="text-sm text-[#9b4de0] hover:underline cursor-pointer"
-              >
-                Xem tất cả tin tức
-              </button>
-            </div>
-          )}
+          </div>
         </div>
       )}
     </div>
-  )
+  );
 }

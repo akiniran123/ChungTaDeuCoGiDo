@@ -11,13 +11,11 @@ export default function NotificationDetail() {
   const params = useParams();
   const slugParam = params.slug;
 
-  // Kiểm tra slug tồn tại và là string
   if (!slugParam || Array.isArray(slugParam)) {
     return <div className="p-4 text-red-500">Slug không hợp lệ</div>;
   }
 
   const slug: string = slugParam;
-
   const [notification, setNotification] = useState<NotificationRow | null>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
@@ -38,6 +36,11 @@ export default function NotificationDetail() {
         setError(error.message);
       } else {
         setNotification(data);
+
+        // 🔹 Cập nhật trạng thái đã đọc
+        if (!data.read) {
+          await supabase.from("notifications").update({ read: true }).eq("id", slug);
+        }
       }
       setLoading(false);
     }
@@ -50,11 +53,20 @@ export default function NotificationDetail() {
   if (!notification) return <div className="p-4">Không tìm thấy thông báo.</div>;
 
   return (
-    <div className="p-4">
-      <h1 className="text-xl font-bold mb-2">{notification.title}</h1>
-      <p className="mb-4">{notification.body}</p>
-      <div className="text-sm text-gray-400">Ngày: {notification.created_at}</div>
-      <div className="text-sm text-gray-400">Đã đọc: {notification.read ? "✅" : "❌"}</div>
+    <div className="p-6">
+      <h1 className="text-2xl font-bold mb-3">{notification.title || "Không có tiêu đề"}</h1>
+      <p className="text-gray-700 mb-4 whitespace-pre-line">
+        {notification.body || "Không có nội dung"}
+      </p>
+      <div className="text-sm text-gray-500">
+        Ngày:{" "}
+        {notification.created_at
+          ? new Date(notification.created_at).toLocaleString("vi-VN")
+          : "Không rõ ngày"}
+      </div>
+      <div className="text-sm text-gray-500 mt-1">
+        Trạng thái: {notification.read ? "✅ Đã đọc" : "❌ Chưa đọc"}
+      </div>
     </div>
   );
 }

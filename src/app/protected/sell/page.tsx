@@ -1,141 +1,129 @@
-'use client'
+"use client";
 
-import { useState } from 'react'
-import { useRouter } from 'next/navigation'
-import { useForm, SubmitHandler } from 'react-hook-form'
-import { zodResolver } from '@hookform/resolvers/zod'
+import { useState } from "react";
+import { useForm, SubmitHandler } from "react-hook-form";
+import { supabase } from "@/lib/supabase/client";
+import ActionButtons from "@/components/sell/ActionButtons";
 
-import { supabase } from '@/lib/supabase/client'
-import { productSchema, ProductFormData } from '@/types/form'
-
-// ✅ Tất cả imports theo default export
-import BankAccountBanner from '@/components/sell/BankAccountBanner'
-import CategorySelect from '@/components/sell/CategorySelect'
-import ListingTitleInput from '@/components/sell/ListingTitleInput'
-import PrivateToggle from '@/components/sell/PrivateToggle'
-import TechSpecsEditor from '@/components/sell/TechSpecsEditor'
-import ConditionSelectorSection from '@/components/sell/ConditionSelector'
-import DescriptionEditorSection from '@/components/sell/DescriptionEditor'
-import ProductVideoInput from '@/components/sell/ProductVideoInput'
-import PriceAndOffers from '@/components/sell/PriceAndOffers'
-import ReturnPolicies from '@/components/sell/ReturnPolicies'
-import ActionButtons from '@/components/sell/ActionButtons'
-import ImageUploader from '@/components/sell/ImageUploader'
-
+type ProductFormData = {
+  title: string;
+  description: string;
+  price: number;
+};
 
 export default function SellPage() {
-  const router = useRouter()
-  const [loading, setLoading] = useState(false)
-  const [imageUrl, setImageUrl] = useState<string | null>(null)
-  const [price, setPrice] = useState<number>(0)
-  const [enableOffers, setEnableOffers] = useState<boolean>(false)
-  const [minOffer, setMinOffer] = useState<number>(0)
-
   const {
     register,
     handleSubmit,
-    control,
-    reset,
     formState: { errors },
-  } = useForm<ProductFormData>({
-    resolver: zodResolver(productSchema),
-    defaultValues: {
-      title: '',
-      category: '',
-      isPrivate: false,
-      condition: 'brand_new',
-      description: '',
-      specs: [{ key: '', value: '' }],
-      videoUrl: '',
-      quantity: 1,
-      sku: '',
-      returnPolicy: undefined,
-    },
-  })
+    reset
+  } = useForm<ProductFormData>();
 
+  const [loading, setLoading] = useState(false);
+  const [message, setMessage] = useState<string | null>(null);
+
+  // ✅ Submit
   const onSubmit: SubmitHandler<ProductFormData> = async (data) => {
-    setLoading(true)
-    try {
-      const { data: { user } } = await supabase.auth.getUser()
-      if (!user) {
-        alert('Bạn cần đăng nhập để đăng bài.')
-        setLoading(false)
-        return
-      }
+    console.log("➡️ Bắt đầu đăng sản phẩm");
 
-      const payload = {
-        user_id: user.id,
-        title: data.title,
-        category: data.category || null,
-        is_private: data.isPrivate,
-        condition: data.condition,
-        description: data.description || null,
-        specs: data.specs,
-        images: imageUrl || null,
-        video_url: data.videoUrl || null,
-        price,
-        enable_offers: enableOffers,
-        min_offer: minOffer,
-        quantity: data.quantity,
-        sku: data.sku || null,
-        return_policy: data.returnPolicy || null,
-        community_id: null,
-        upvotes: 0,
-        views: 0,
-        image_url: imageUrl || null,
-      }
+    setLoading(true);
+    setMessage(null);
 
-      const { error } = await supabase.from('products').insert([payload])
-      if (error) throw error
+    // ✅ Lấy user
+    const {
+      data: { user },
+    } = await supabase.auth.getUser();
 
-      alert('Đăng sản phẩm thành công 🎉')
-      reset()
-      setImageUrl(null)
-      router.push('/')
-    } catch (err) {
-      console.error(err)
-      alert('Đã xảy ra lỗi, vui lòng thử lại.')
-    } finally {
-      setLoading(false)
+    if (!user) {
+      setMessage("⚠️ Bạn cần đăng nhập để đăng sản phẩm.");
+      setLoading(false);
+      return;
     }
-  }
+
+    const productData = {
+      user_id: user.id,
+      title: data.title,
+      description: data.description,
+      price: data.price,
+
+      // ✅ Các field còn lại set mặc định
+      category: null,
+      is_private: false,
+      condition: "used",
+      specs: {},
+      images: null,
+      video_url: null,
+      enable_offers: true,
+      min_offer: null,
+      quantity: 1,
+      sku: null,
+      return_policy: null,
+      image_url: null,
+      community_id: null,
+      upvotes: 0,
+      views: 0,
+      is_completed: false,
+    };
+
+    const { error } = await supabase.from("products").insert(productData);
+
+    if (error) {
+      console.error("❌ Lỗi khi đăng sản phẩm:", error);
+      setMessage("🚨 Đăng sản phẩm thất bại!");
+    } else {
+      setMessage("✅ Đăng sản phẩm thành công!");
+      reset(); // Clear form
+    }
+
+    setLoading(false);
+  };
 
   return (
-    <div className="max-w-4xl mx-auto px-4 py-8 space-y-6">
-      <h1 className="text-2xl font-bold text-center text-purple-600">
-        🛍️ Đăng bán sản phẩm mới
-      </h1>
+    <div className="max-w-2xl mx-auto mt-10">
+      <h1 className="text-2xl font-bold mb-4">Đăng sản phẩm mới</h1>
 
-      <BankAccountBanner />
+      <form
+        onSubmit={handleSubmit(onSubmit)}
+        className="space-y-6 border rounded-lg p-5 shadow-sm"
+      >
+        <div>
+          <label className="block font-medium mb-1">Tên sản phẩm</label>
+          <input
+            {...register("title", { required: true })}
+            className="w-full border rounded p-2"
+            placeholder="Nhập tên sản phẩm..."
+          />
+          {errors.title && (
+            <p className="text-red-500 text-sm">Vui lòng nhập tên sản phẩm.</p>
+          )}
+        </div>
 
-      <div className="space-y-6 border rounded-lg p-5 shadow-sm">
-        <h2 className="font-semibold text-lg">Thông tin sản phẩm</h2>
+        <div>
+          <label className="block font-medium mb-1">Mô tả</label>
+          <textarea
+            {...register("description", { required: true })}
+            className="w-full border rounded p-2"
+            placeholder="Nhập mô tả..."
+            rows={4}
+          />
+        </div>
 
-        <CategorySelect register={register} error={errors.category} />
-        <ListingTitleInput register={register} error={errors.title} />
-        <PrivateToggle register={register} />
+        <div>
+          <label className="block font-medium mb-1">Giá (VNĐ)</label>
+          <input
+            type="number"
+            {...register("price", { required: true, min: 1000 })}
+            className="w-full border rounded p-2"
+            placeholder="Nhập giá..."
+          />
+          {errors.price && (
+            <p className="text-red-500 text-sm">Giá phải lớn hơn 1,000đ.</p>
+          )}
+        </div>
 
-        <ImageUploader value={imageUrl} onChange={setImageUrl} />
-        {imageUrl && (
-          <p className="text-sm text-green-600">✅ Ảnh đã tải lên thành công</p>
-        )}
-
-        <TechSpecsEditor control={control} />
-        <ConditionSelectorSection register={register} />
-        <DescriptionEditorSection control={control} error={errors.description} />
-        <ProductVideoInput register={register} error={errors.videoUrl} />
-        <PriceAndOffers
-          price={price}
-          enableOffers={enableOffers}
-          minOffer={minOffer}
-          onChangePrice={setPrice}
-          onChangeEnableOffers={setEnableOffers}
-          onChangeMinOffer={setMinOffer}
-        />
-        <ReturnPolicies register={register} error={errors.returnPolicy} />
-
-        <ActionButtons loading={loading} onPublish={handleSubmit(onSubmit)} />
-      </div>
+        {/* ✅ Button submit trong form */}
+        <ActionButtons loading={loading} message={message} />
+      </form>
     </div>
-  )
+  );
 }

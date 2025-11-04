@@ -1,79 +1,87 @@
 'use client'
 
-import { useState, ChangeEvent } from 'react'
-import Image from 'next/image'
+import { useState } from 'react'
 import { supabase } from '@/lib/supabase/client'
 
-interface ImageUploaderProps {
-  bucket?: string
-  onUploadComplete?: (url: string) => void
+interface Props {
+  value: string | null
+  onChange: (url: string | null) => void
 }
 
-export default function ImageUploader({
-  bucket = 'product-images',
-  onUploadComplete,
-}: ImageUploaderProps) {
+export default function ImageUploader({ value, onChange }: Props) {
   const [uploading, setUploading] = useState(false)
-  const [imageUrl, setImageUrl] = useState<string | null>(null)
+  const [error, setError] = useState<string | null>(null)
 
-  const handleFileChange = async (e: ChangeEvent<HTMLInputElement>) => {
+  const handleFileChange = async (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0]
+    if (!file) return
+
+    setUploading(true)
+    setError(null)
+
+    // Tạo tên file duy nhất
+    const filePath = `products/${Date.now()}-${Math.random().toString(36).substring(2)}-${file.name}`
+
     try {
-      const file = e.target.files?.[0]
-      if (!file) return
+      // Upload file vào bucket 'images'
+      const { error: uploadError } = await supabase.storage
+        .from('images')
+        .upload(filePath, file)
 
-      setUploading(true)
+      if (uploadError) throw uploadError
 
-      // Tạo tên file duy nhất
-      const fileExt = file.name.split('.').pop()
-      const fileName = `${Date.now()}.${fileExt}`
+      // Lấy URL public
+      const { data } = supabase.storage.from('images').getPublicUrl(filePath)
+      if (!data?.publicUrl) throw new Error('Không lấy được URL public')
 
-      // Upload file
-      const { error } = await supabase.storage
-        .from(bucket)
-        .upload(fileName, file)
-
-      if (error) {
-        throw error
-      }
-
-      // Lấy public URL
-      const { data } = supabase.storage.from(bucket).getPublicUrl(fileName)
-      if (data?.publicUrl) {
-        setImageUrl(data.publicUrl)
-        if (onUploadComplete) onUploadComplete(data.publicUrl)
-      }
-    } catch (err) {
+      onChange(data.publicUrl)
+    } catch (err: any) {
       console.error('Upload error:', err)
+      setError(err.message || 'Upload lỗi, vui lòng thử lại hoặc dán link trực tiếp')
     } finally {
       setUploading(false)
     }
   }
 
+  const handleManualUrl = (e: React.ChangeEvent<HTMLInputElement>) => {
+    setError(null)
+    onChange(e.target.value)
+  }
+
   return (
-    <div className="space-y-3">
+    <div className="space-y-2">
+      <label className="font-medium">Ảnh sản phẩm</label>
+
+      {/* Upload file */}
       <input
         type="file"
         accept="image/*"
         onChange={handleFileChange}
         disabled={uploading}
-        className="block text-sm text-gray-500
-          file:mr-4 file:py-2 file:px-4
-          file:rounded-full file:border-0
-          file:text-sm file:font-semibold
-          file:bg-indigo-50 file:text-indigo-700
-          hover:file:bg-indigo-100
-        "
+        className="block"
       />
-      {uploading && <p className="text-sm text-gray-500">Uploading...</p>}
-      {imageUrl && (
-        <Image
-          src={imageUrl}
-          alt="Uploaded preview"
-          width={200}
-          height={200}
-          className="rounded-lg border"
+
+      {/* Dán URL trực tiếp */}
+      <input
+        type="text"
+        placeholder="Dán URL ảnh"
+        className="w-full border rounded px-3 py-2"
+        value={value ?? ''}
+        onChange={handleManualUrl}
+      />
+
+      {/* Preview */}
+      {value && (
+        <img
+          src={value}
+          alt="Preview"
+          className="w-32 h-32 object-cover border rounded mt-2"
         />
       )}
+
+      {/* Trạng thái */}
+      {uploading && <p className="text-blue-600 text-sm">Đang tải ảnh...</p>}
+      {error && <p className="text-red-500 text-sm">{error}</p>}
     </div>
   )
 }

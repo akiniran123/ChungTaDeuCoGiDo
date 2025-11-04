@@ -1,47 +1,31 @@
-'use client';
+import { UseFormRegister, FieldErrors } from 'react-hook-form'
+import { ProductFormData } from '@/types/form'
 
-import { UseFormRegister, FieldError } from 'react-hook-form';
-import { ProductFormData } from '@/types/form';
+export default function ReturnPolicies({
+  register,
+  error,
+}: {
+  register: UseFormRegister<ProductFormData>
+  error?: FieldErrors['returnPolicy']
+}) {
+  const returnOptions = [
+    { label: 'Không trả hàng', value: 'no_returns' },
+    { label: 'Trả trong 7 ngày', value: '7_days' },
+    { label: 'Trả trong 14 ngày', value: '14_days' },
+  ]
 
-interface ReturnPoliciesProps {
-  register: UseFormRegister<ProductFormData>;
-  error?: FieldError;
-}
-
-export default function ReturnPolicies({ register, error }: ReturnPoliciesProps) {
   return (
-    <section className="space-y-6 border rounded p-5">
-      <h2 className="font-semibold text-lg">Return Policies</h2>
-
-      <div className="grid grid-cols-2 gap-6">
-        {/* Return Address Info */}
-        <div>
-          <p className="font-medium">Return Address</p>
-          <p className="text-sm text-gray-600">
-            Return address must be the same as shipping address.
-            Update your shipping address to change.
-          </p>
-        </div>
-        <div className="text-gray-600">Please select address first</div>
-
-        {/* Return Policy Select */}
-        <div>
-          <label htmlFor="returnPolicy" className="font-medium block mb-1">
-            Return Policy
-          </label>
-          <select
-            id="returnPolicy"
-            {...register('returnPolicy')}
-            className="w-full border rounded px-3 py-2"
-          >
-            <option value="">Select return policy</option>
-            <option value="no_returns">Returns not accepted</option>
-            <option value="7_days">7-day returns</option>
-            <option value="14_days">14-day returns</option>
-          </select>
-          {error && <p className="text-red-500 text-sm mt-1">{error.message}</p>}
-        </div>
-      </div>
-    </section>
-  );
+    <div className="space-y-1">
+      <label className="font-medium">Chính sách trả hàng</label>
+      <select {...register('returnPolicy')} className="w-full border rounded px-3 py-2">
+        <option value="">Không chọn</option>
+        {returnOptions.map((opt) => (
+          <option key={opt.value} value={opt.value}>
+            {opt.label}
+          </option>
+        ))}
+      </select>
+      {error && <p className="text-sm text-red-500">{error.message as string}</p>}
+    </div>
+  )
 }

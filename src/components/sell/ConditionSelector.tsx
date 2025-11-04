@@ -1,37 +1,24 @@
-'use client';
+import { UseFormRegister, FieldErrors } from 'react-hook-form'
+import { ProductFormData } from '@/types/form'
 
-import { UseFormRegister } from 'react-hook-form';
-import { ProductFormData } from '@/types/form';
-
-type Props = {
-  register: UseFormRegister<ProductFormData>;
-};
-
-export default function ConditionSelectorSection({ register }: Props) {
-  const options = [
-    { value: 'brand_new', label: 'Brand New in Box' },
-    { value: 'new_open_box', label: 'New Open Box' },
-    { value: 'used_like_new', label: 'Used, Like New' },
-    { value: 'used_good', label: 'Used, Good' },
-    { value: 'as_is', label: 'As-Is / For Parts' },
-  ];
-
+export default function ConditionSelectorSection({
+  register,
+  error,
+}: {
+  register: UseFormRegister<ProductFormData>
+  error?: FieldErrors['condition']
+}) {
   return (
-    <div className="space-y-4">
-      <p className="font-medium">Condition <span className="text-red-500">*</span></p>
-      <div className="grid grid-cols-2 gap-4">
-        {options.map((option) => (
-          <label key={option.value} className="flex items-center gap-2">
-            <input
-              type="radio"
-              value={option.value}
-              {...register('condition')}
-              className="accent-indigo-600"
-            />
-            {option.label}
-          </label>
-        ))}
-      </div>
+    <div className="space-y-1">
+      <label className="font-medium">Tình trạng sản phẩm</label>
+      <select {...register('condition')} className="w-full border rounded px-3 py-2">
+        <option value="brand_new">Mới nguyên seal</option>
+        <option value="new_open_box">Mới mở hộp</option>
+        <option value="used_like_new">Cũ gần như mới</option>
+        <option value="used_good">Cũ tốt</option>
+        <option value="as_is">Cũ</option>
+      </select>
+      {error && <p className="text-sm text-red-500">{error.message as string}</p>}
     </div>
-  );
+  )
 }

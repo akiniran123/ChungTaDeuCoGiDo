@@ -1,31 +1,23 @@
-import { UseFormRegister } from 'react-hook-form';
-import { ProductFormData } from '@/types/form';
+import { UseFormRegister, FieldErrors } from 'react-hook-form'
+import { ProductFormData } from '@/types/form'
 
-type Props = {
-  register: UseFormRegister<ProductFormData>;
-  error?: { message?: string };
-};
+// ✅ Export Props để dùng ngoài
+export interface CategorySelectProps {
+  register: UseFormRegister<ProductFormData>
+  error?: FieldErrors['category']
+}
 
-export default function CategorySelect({ register, error }: Props) {
+export default function CategorySelect({ register, error }: CategorySelectProps) {
   return (
-    <div>
-      <label className="block font-medium mb-1">
-        Category <span className="text-red-500">*</span>
-      </label>
-      <select
-        {...register('category')}
-        className="w-full border rounded px-3 py-2"
-      >
-        <option value="">Select category</option>
-        <option value="gaming_pc">Gaming PC</option>
-        <option value="gpu">GPU</option>
-        <option value="cpu">CPU</option>
-        <option value="peripheral">Peripheral</option>
-        <option value="other">Other</option>
+    <div className="space-y-1">
+      <label className="font-medium">Danh mục</label>
+      <select {...register('category')} className="w-full border rounded px-3 py-2">
+        <option value="">Chọn danh mục</option>
+        <option value="pc">PC</option>
+        <option value="phone">Điện thoại</option>
+        <option value="laptop">Laptop</option>
       </select>
-      {error?.message && (
-        <p className="text-red-500 text-sm mt-1">{error.message}</p>
-      )}
+      {error && <p className="text-sm text-red-500">{error.message as string}</p>}
     </div>
-  );
+  )
 }

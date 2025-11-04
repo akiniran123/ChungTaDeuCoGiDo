@@ -1,88 +1,64 @@
-'use client';
+'use client'
 
-import { UseFormRegister, FieldErrors } from 'react-hook-form';
-import { ProductFormData } from '@/types/form';
-
-export function PriceAndOffers({
-  register,
-  errors,
+export default function PriceAndOffers({
+  price,
+  enableOffers,
+  minOffer,
+  onChangePrice,
+  onChangeEnableOffers,
+  onChangeMinOffer,
 }: {
-  register: UseFormRegister<ProductFormData>;
-  errors: FieldErrors<ProductFormData>;
+  price: number | null
+  enableOffers: boolean | null
+  minOffer: number | null
+  onChangePrice: (v: number) => void
+  onChangeEnableOffers: (v: boolean) => void
+  onChangeMinOffer: (v: number) => void
 }) {
   return (
-    <div className="space-y-6">
-      {/* Price */}
-      <div>
+    <div className="border rounded-lg p-5 space-y-6 shadow-sm">
+      <h2 className="font-semibold text-lg">Giá & Thương lượng</h2>
+
+      {/* Giá bán */}
+      <div className="space-y-1">
         <label className="font-medium">
-          Price <span className="text-red-500">*</span>
+          Giá bán <span className="text-red-500">*</span>
         </label>
         <input
           type="number"
-          {...register('price', { valueAsNumber: true })}
-          className="w-full border rounded px-3 py-2"
+          value={price ?? ''}
+          onChange={(e) => onChangePrice(Number(e.target.value))}
           min={0}
+          className="w-full border rounded px-3 py-2"
+          placeholder="Nhập giá sản phẩm"
         />
-        {errors.price && (
-          <p className="text-red-500 text-sm">{errors.price.message}</p>
-        )}
-        <p className="text-sm text-gray-500">
-          Do not include shipping. Fees: 3% processing, 9% platform.
-        </p>
       </div>
 
-      {/* Enable Offers */}
+      {/* Cho phép thương lượng */}
       <div className="flex items-center gap-3">
-        <label className="font-medium">Enable Offers</label>
         <input
           type="checkbox"
-          {...register('enableOffers')}
+          checked={!!enableOffers}
+          onChange={(e) => onChangeEnableOffers(e.target.checked)}
           className="scale-125"
         />
+        <label className="font-medium">Cho phép người mua trả giá</label>
       </div>
 
-      {/* Minimum Offer */}
-      <div>
-        <label className="font-medium">Minimum Offer</label>
-        <input
-          type="number"
-          {...register('minOffer', { valueAsNumber: true })}
-          className="w-full border rounded px-3 py-2"
-          min={0}
-        />
-        {errors.minOffer && (
-          <p className="text-red-500 text-sm">{errors.minOffer.message}</p>
-        )}
-      </div>
-
-      {/* Quantity */}
-      <div>
-        <label className="font-medium">
-          Quantity <span className="text-red-500">*</span>
-        </label>
-        <input
-          type="number"
-          {...register('quantity', { valueAsNumber: true })}
-          className="w-full border rounded px-3 py-2"
-          min={1}
-        />
-        {errors.quantity && (
-          <p className="text-red-500 text-sm">{errors.quantity.message}</p>
-        )}
-      </div>
-
-      {/* SKU */}
-      <div>
-        <label className="font-medium">SKU</label>
-        <input
-          type="text"
-          {...register('sku')}
-          className="w-full border rounded px-3 py-2"
-        />
-        {errors.sku && (
-          <p className="text-red-500 text-sm">{errors.sku.message}</p>
-        )}
-      </div>
+      {/* Giá thấp nhất chấp nhận */}
+      {enableOffers && (
+        <div className="space-y-1">
+          <label className="font-medium">Giá thấp nhất chấp nhận</label>
+          <input
+            type="number"
+            value={minOffer ?? ''}
+            onChange={(e) => onChangeMinOffer(Number(e.target.value))}
+            min={0}
+            className="w-full border rounded px-3 py-2"
+            placeholder="Ví dụ: 500,000"
+          />
+        </div>
+      )}
     </div>
-  );
+  )
 }

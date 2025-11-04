@@ -1,28 +1,23 @@
-import type { UseFormRegister } from 'react-hook-form';
-import type { ProductFormData } from '@/types/form';
+import { UseFormRegister, FieldErrors } from 'react-hook-form'
+import { ProductFormData } from '@/types/form'
 
-type Props = {
-  register: UseFormRegister<ProductFormData>;
-  error?: {
-    message?: string;
-  };
-};
-
-export default function ListingTitleInput({ register, error }: Props) {
+export default function ListingTitleInput({
+  register,
+  error,
+}: {
+  register: UseFormRegister<ProductFormData>
+  error?: FieldErrors['title']
+}) {
   return (
-    <div>
-      <label className="block font-medium mb-1">
-        Listing name <span className="text-red-500">*</span>
-      </label>
+    <div className="space-y-1">
+      <label className="font-medium">Tiêu đề</label>
       <input
         {...register('title')}
-        placeholder="Example: On Sale! BNIB Intel Core i9-9900k LGA1151 8 Core Processor!"
+        type="text"
+        placeholder="Nhập tiêu đề sản phẩm"
         className="w-full border rounded px-3 py-2"
-        maxLength={100}
       />
-      {error?.message && (
-        <p className="text-red-500 text-sm mt-1">{error.message}</p>
-      )}
+      {error && <p className="text-sm text-red-500">{error.message as string}</p>}
     </div>
-  );
+  )
 }

@@ -1,14 +1,16 @@
 "use client";
 
+import { useState } from "react";
 import { useCart, CartItem } from "../context/CartContext";
 import ProductCard from "@/components/ProductCard/ProductCard";
-import { useState } from "react";
 
-// Giả lập thông tin người bán
-const sellersInfo: Record<string, { name: string; phone: string; email: string }> = {
+// Giả lập thông tin người bán (demo)
+const sellersInfo: Record<
+  string,
+  { name: string; phone: string; email: string }
+> = {
   "product-1": { name: "Nguyễn Văn A", phone: "0123456789", email: "a@example.com" },
   "product-2": { name: "Trần Thị B", phone: "0987654321", email: "b@example.com" },
-  // Thêm các sản phẩm khác nếu cần
 };
 
 export default function GioHangPage() {
@@ -20,8 +22,6 @@ export default function GioHangPage() {
     if (!info) return;
 
     setShowSeller(id);
-
-    // Giả lập thông báo cho người bán
     alert(
       `✅ Thông báo: Người mua quan tâm sản phẩm "${productName}".\nNgười bán: ${info.name} sẽ liên hệ!`
     );
@@ -33,20 +33,31 @@ export default function GioHangPage() {
       <p className="mt-2 text-gray-600">Các sản phẩm bạn đã thêm vào giỏ.</p>
 
       {cart.length === 0 ? (
-        <p className="mt-6 text-gray-500">Chưa có sản phẩm nào trong giỏ hàng.</p>
+        <p className="mt-6 text-gray-500">
+          Chưa có sản phẩm nào trong giỏ hàng.
+        </p>
       ) : (
         <>
+          {/* Danh sách sản phẩm */}
           <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-6 mt-6">
             {cart.map((p: CartItem) => (
               <div key={p.id} className="relative">
+                {/* ✅ Sửa lại cách truyền prop cho ProductCard */}
                 <ProductCard
-                  title={p.name}
-                  description={`${p.quantity} x ${p.price.toLocaleString()} VND`}
-                  image={p.image}
+                  product={{
+                    id: p.id.toString(),
+                    title: p.name,
+                    price: p.price,
+                    images: [p.image],
+                    description: `${p.quantity} x ${p.price.toLocaleString()} VND`,
+                    category: null,
+                  }}
                 />
+
+                {/* Nút xem thông tin người bán */}
                 <button
                   onClick={() => handleContactSeller(p.id.toString(), p.name)}
-                  className="absolute bottom-2 right-2 bg-blue-600 text-white px-3 py-1 rounded"
+                  className="absolute bottom-2 right-2 bg-blue-600 text-white px-3 py-1 rounded hover:bg-blue-700"
                 >
                   Thông tin liên hệ
                 </button>
@@ -62,16 +73,21 @@ export default function GioHangPage() {
             ))}
           </div>
 
+          {/* Tổng tiền & nút xóa */}
           <div className="mt-6 flex justify-between items-center">
             <button
               onClick={clearCart}
-              className="px-4 py-2 bg-gray-500 text-white rounded"
+              className="px-4 py-2 bg-gray-500 text-white rounded hover:bg-gray-600"
             >
               Xóa tất cả
             </button>
 
             <p className="text-xl font-semibold">
-              Tổng: {cart.reduce((sum, item) => sum + item.price * item.quantity, 0).toLocaleString()} VND
+              Tổng:{" "}
+              {cart
+                .reduce((sum, item) => sum + item.price * item.quantity, 0)
+                .toLocaleString()}{" "}
+              VND
             </p>
           </div>
         </>

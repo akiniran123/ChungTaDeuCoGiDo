@@ -14,6 +14,7 @@ export default function UserProfilePage() {
   const [user, setUser] = useState<any>(null);
   const [products, setProducts] = useState<any[]>([]);
   const [loading, setLoading] = useState(true);
+  const [deleting, setDeleting] = useState<string | null>(null);
 
   useEffect(() => {
     const fetchData = async () => {
@@ -55,6 +56,44 @@ export default function UserProfilePage() {
 
     if (username) fetchData();
   }, [username]);
+
+  // ✅ Hàm xóa bài đăng
+  const handleDelete = async (productId: string, imageUrl?: string) => {
+    const confirmDelete = confirm("Bạn có chắc muốn xóa bài đăng này?");
+    if (!confirmDelete) return;
+
+    try {
+      setDeleting(productId);
+
+      // 🧹 Nếu có ảnh, xóa luôn khỏi storage Supabase
+      if (imageUrl) {
+        const filePath = imageUrl.split("/").pop(); // chỉ lấy tên file
+        if (filePath) {
+          const { error: storageError } = await supabase.storage
+            .from("images")
+            .remove([`uploads/${filePath}`]);
+          if (storageError) console.warn("⚠️ Không xóa được ảnh:", storageError);
+        }
+      }
+
+      // 🗑️ Xóa bài đăng trong bảng products
+      const { error } = await supabase
+        .from("products")
+        .delete()
+        .eq("id", productId);
+
+      if (error) throw error;
+
+      // ✅ Cập nhật lại danh sách sau khi xóa
+      setProducts((prev) => prev.filter((p) => p.id !== productId));
+      alert("Đã xóa bài đăng thành công!");
+    } catch (err) {
+      console.error("❌ Lỗi khi xóa bài:", err);
+      alert("Xóa thất bại, vui lòng thử lại!");
+    } finally {
+      setDeleting(null);
+    }
+  };
 
   if (loading) {
     return (
@@ -110,7 +149,10 @@ export default function UserProfilePage() {
         {products.length > 0 ? (
           <div className="grid grid-cols-1 sm:grid-cols-2 gap-6">
             {products.map((p) => (
-              <div key={p.id} className="bg-white p-4 rounded-lg shadow">
+              <div
+                key={p.id}
+                className="bg-white p-4 rounded-lg shadow relative"
+              >
                 <img
                   src={p.image_url || "/placeholder.png"}
                   alt={p.title}
@@ -123,6 +165,19 @@ export default function UserProfilePage() {
                 <p className="text-indigo-600 font-bold">
                   {p.price?.toLocaleString("vi-VN")}₫
                 </p>
+
+                {/* 🗑️ Nút xóa */}
+                <button
+                  onClick={() => handleDelete(p.id, p.image_url)}
+                  disabled={deleting === p.id}
+                  className={`absolute top-3 right-3 px-3 py-1 rounded-md text-white text-sm transition ${
+                    deleting === p.id
+                      ? "bg-gray-400 cursor-not-allowed"
+                      : "bg-red-500 hover:bg-red-600"
+                  }`}
+                >
+                  {deleting === p.id ? "Đang xóa..." : "🗑️ Xóa"}
+                </button>
               </div>
             ))}
           </div>

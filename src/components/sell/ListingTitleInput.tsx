@@ -1,23 +1,23 @@
-import { UseFormRegister, FieldErrors } from 'react-hook-form'
-import { ProductFormData } from '@/types/form'
+// components/sell/ListingTitleInput.tsx
+"use client";
+import { useFormContext } from "react-hook-form";
 
-export default function ListingTitleInput({
-  register,
-  error,
-}: {
-  register: UseFormRegister<ProductFormData>
-  error?: FieldErrors['title']
-}) {
+export default function ListingTitleInput({ error }: any) {
+  const { register } = useFormContext();
+
   return (
-    <div className="space-y-1">
-      <label className="font-medium">Tiêu đề</label>
+    <div>
+      <label className="block mb-1 font-medium">Tiêu đề sản phẩm</label>
+
       <input
-        {...register('title')}
-        type="text"
-        placeholder="Nhập tiêu đề sản phẩm"
-        className="w-full border rounded px-3 py-2"
+        {...register("title", { required: true })}
+        className="w-full border rounded p-2"
+        placeholder="VD: Laptop gaming RTX 4060"
       />
-      {error && <p className="text-sm text-red-500">{error.message as string}</p>}
+
+      {error && (
+        <p className="text-red-500 text-sm">Vui lòng nhập tiêu đề</p>
+      )}
     </div>
-  )
+  );
 }

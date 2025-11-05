@@ -1,24 +1,34 @@
-import { UseFormRegister, FieldErrors } from 'react-hook-form'
-import { ProductFormData } from '@/types/form'
+import { useFormContext, Controller } from "react-hook-form";
 
-export default function ConditionSelectorSection({
-  register,
-  error,
-}: {
-  register: UseFormRegister<ProductFormData>
-  error?: FieldErrors['condition']
-}) {
+export default function ConditionSelector({ error }: any) {
+  const { control } = useFormContext(); // ✅ Lấy control từ context
+
+  const conditions = [
+    { value: "brand_new", label: "Mới 100%" },
+    { value: "new_open_box", label: "Mở hộp như mới" },
+    { value: "used_good", label: "Đã dùng - Tốt" },
+    { value: "as_is", label: "Thanh lý - Không bảo hành" },
+  ];
+
   return (
-    <div className="space-y-1">
-      <label className="font-medium">Tình trạng sản phẩm</label>
-      <select {...register('condition')} className="w-full border rounded px-3 py-2">
-        <option value="brand_new">Mới nguyên seal</option>
-        <option value="new_open_box">Mới mở hộp</option>
-        <option value="used_like_new">Cũ gần như mới</option>
-        <option value="used_good">Cũ tốt</option>
-        <option value="as_is">Cũ</option>
-      </select>
-      {error && <p className="text-sm text-red-500">{error.message as string}</p>}
+    <div>
+      <label className="block mb-1 font-medium">Tình trạng</label>
+
+      <Controller
+        name="condition"
+        control={control}
+        render={({ field }) => (
+          <select {...field} className="w-full border rounded p-2">
+            {conditions.map((c) => (
+              <option key={c.value} value={c.value}>
+                {c.label}
+              </option>
+            ))}
+          </select>
+        )}
+      />
+
+      {error && <p className="text-red-500 text-sm">Chọn tình trạng</p>}
     </div>
-  )
+  );
 }

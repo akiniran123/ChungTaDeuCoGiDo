@@ -6,7 +6,10 @@ import { supabase } from "@/lib/supabase/client";
 
 export default function UserProfilePage() {
   const params = useParams();
-  const username = params?.username as string;
+
+  // ✅ Giải mã username từ URL (fix lỗi ngh%C4%A9a)
+  const rawUsername = params?.username as string;
+  const username = decodeURIComponent(rawUsername.trim());
 
   const [user, setUser] = useState<any>(null);
   const [products, setProducts] = useState<any[]>([]);
@@ -15,6 +18,8 @@ export default function UserProfilePage() {
   useEffect(() => {
     const fetchData = async () => {
       try {
+        console.log("🔍 Username từ URL:", username);
+
         // 1️⃣ Lấy thông tin người dùng theo username
         const { data: userData, error: userError } = await supabase
           .from("users")
@@ -23,12 +28,13 @@ export default function UserProfilePage() {
           .single();
 
         if (userError || !userData) {
-          console.error("Không tìm thấy người dùng:", userError);
+          console.error("❌ Không tìm thấy người dùng:", userError || {});
           setUser(null);
           setLoading(false);
           return;
         }
 
+        console.log("✅ Tìm thấy user:", userData);
         setUser(userData);
 
         // 2️⃣ Lấy danh sách sản phẩm theo user_id
@@ -41,7 +47,7 @@ export default function UserProfilePage() {
 
         setProducts(productsData || []);
       } catch (err) {
-        console.error("Lỗi khi tải dữ liệu:", err);
+        console.error("⚠️ Lỗi khi tải dữ liệu:", err);
       } finally {
         setLoading(false);
       }
@@ -61,7 +67,7 @@ export default function UserProfilePage() {
   if (!user) {
     return (
       <div className="min-h-screen flex items-center justify-center text-gray-600">
-        ❌ Người dùng không tồn tại
+        ❌ Người dùng không tồn tại hoặc username sai ({username})
       </div>
     );
   }
@@ -115,7 +121,7 @@ export default function UserProfilePage() {
                   {p.category} - {p.condition}
                 </p>
                 <p className="text-indigo-600 font-bold">
-                  {p.price.toLocaleString("vi-VN")}₫
+                  {p.price?.toLocaleString("vi-VN")}₫
                 </p>
               </div>
             ))}

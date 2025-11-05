@@ -1,129 +1,121 @@
 "use client";
 
 import { useState } from "react";
-import { useForm, SubmitHandler } from "react-hook-form";
+import { useForm, FormProvider } from "react-hook-form";
 import { supabase } from "@/lib/supabase/client";
+
+import ListingTitleInput from "@/components/sell/ListingTitleInput";
+import DescriptionEditor from "@/components/sell/DescriptionEditor";
+import CategorySelect from "@/components/sell/CategorySelect";
+import ConditionSelector from "@/components/sell/ConditionSelector";
+import ImageUploader from "@/components/sell/ImageUploader";
+import PriceAndOffers from "@/components/sell/PriceAndOffers";
+import TechSpecsEditor from "@/components/sell/TechSpecsEditor";
+import PrivateToggle from "@/components/sell/PrivateToggle";
+import ReturnPolicies from "@/components/sell/ReturnPolicies";
 import ActionButtons from "@/components/sell/ActionButtons";
 
-type ProductFormData = {
-  title: string;
-  description: string;
-  price: number;
-};
-
 export default function SellPage() {
+  const methods = useForm({
+    defaultValues: {
+      title: "",
+      description: "",
+      price: "",
+      category: "",
+      condition: "used",
+      images: [],
+      video_url: "",
+      enable_offers: true,
+      min_offer: "",
+      quantity: 1,
+      specs: [],
+      is_private: false,
+      return_policy: ""
+    }
+  });
+
   const {
-    register,
     handleSubmit,
-    formState: { errors },
-    reset
-  } = useForm<ProductFormData>();
+    watch,
+    reset,
+    formState: { errors }
+  } = methods;
 
   const [loading, setLoading] = useState(false);
   const [message, setMessage] = useState<string | null>(null);
 
-  // ✅ Submit
-  const onSubmit: SubmitHandler<ProductFormData> = async (data) => {
-    console.log("➡️ Bắt đầu đăng sản phẩm");
-
+  const onSubmit = async (data: any) => {
     setLoading(true);
     setMessage(null);
 
-    // ✅ Lấy user
-    const {
-      data: { user },
-    } = await supabase.auth.getUser();
-
-    if (!user) {
+    const { data: auth } = await supabase.auth.getUser();
+    if (!auth?.user) {
       setMessage("⚠️ Bạn cần đăng nhập để đăng sản phẩm.");
       setLoading(false);
       return;
     }
 
-    const productData = {
-      user_id: user.id,
+    const payload = {
+      user_id: auth.user.id,
       title: data.title,
       description: data.description,
-      price: data.price,
-
-      // ✅ Các field còn lại set mặc định
-      category: null,
-      is_private: false,
-      condition: "used",
-      specs: {},
-      images: null,
-      video_url: null,
-      enable_offers: true,
-      min_offer: null,
-      quantity: 1,
+      price: Number(data.price),
+      category: data.category || null,
+      is_private: data.is_private,
+      condition: data.condition,
+      specs: data.specs,
+      images: data.images,
+      video_url: data.video_url || null,
+      enable_offers: data.enable_offers,
+      min_offer: data.min_offer || null,
+      quantity: Number(data.quantity),
+      return_policy: data.return_policy || null,
+      image_url: data.images?.[0] ?? null,
       sku: null,
-      return_policy: null,
-      image_url: null,
       community_id: null,
       upvotes: 0,
       views: 0,
-      is_completed: false,
+      is_completed: false
     };
 
-    const { error } = await supabase.from("products").insert(productData);
+    const { error } = await supabase.from("products").insert(payload);
 
     if (error) {
-      console.error("❌ Lỗi khi đăng sản phẩm:", error);
       setMessage("🚨 Đăng sản phẩm thất bại!");
+      console.error(error);
     } else {
       setMessage("✅ Đăng sản phẩm thành công!");
-      reset(); // Clear form
+      reset();
     }
 
     setLoading(false);
   };
 
   return (
-    <div className="max-w-2xl mx-auto mt-10">
-      <h1 className="text-2xl font-bold mb-4">Đăng sản phẩm mới</h1>
+    <FormProvider {...methods}>
+      <form onSubmit={handleSubmit(onSubmit)} className="space-y-6 p-5 max-w-2xl mx-auto">
 
-      <form
-        onSubmit={handleSubmit(onSubmit)}
-        className="space-y-6 border rounded-lg p-5 shadow-sm"
-      >
-        <div>
-          <label className="block font-medium mb-1">Tên sản phẩm</label>
-          <input
-            {...register("title", { required: true })}
-            className="w-full border rounded p-2"
-            placeholder="Nhập tên sản phẩm..."
-          />
-          {errors.title && (
-            <p className="text-red-500 text-sm">Vui lòng nhập tên sản phẩm.</p>
-          )}
-        </div>
+        <ListingTitleInput error={errors.title} />
 
-        <div>
-          <label className="block font-medium mb-1">Mô tả</label>
-          <textarea
-            {...register("description", { required: true })}
-            className="w-full border rounded p-2"
-            placeholder="Nhập mô tả..."
-            rows={4}
-          />
-        </div>
+        <DescriptionEditor error={errors.description} />
 
-        <div>
-          <label className="block font-medium mb-1">Giá (VNĐ)</label>
-          <input
-            type="number"
-            {...register("price", { required: true, min: 1000 })}
-            className="w-full border rounded p-2"
-            placeholder="Nhập giá..."
-          />
-          {errors.price && (
-            <p className="text-red-500 text-sm">Giá phải lớn hơn 1,000đ.</p>
-          )}
-        </div>
+        <CategorySelect error={errors.category} />
 
-        {/* ✅ Button submit trong form */}
+        <ConditionSelector error={errors.condition} />
+
+        <ImageUploader error={errors.images} />
+
+        <PriceAndOffers watch={watch} error={errors.price} />
+
+        <TechSpecsEditor error={errors.specs} />
+
+        <PrivateToggle />
+
+        <ReturnPolicies />
+
         <ActionButtons loading={loading} message={message} />
+
       </form>
-    </div>
+    </FormProvider>
   );
 }

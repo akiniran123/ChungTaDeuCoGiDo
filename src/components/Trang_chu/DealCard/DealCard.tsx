@@ -3,7 +3,6 @@
 import React, { useState, useEffect, useRef } from "react";
 import { supabase } from "@/lib/supabase/client";
 import { useCart } from "@/app/context/CartContext";
-import Image from "next/image";
 import { ArrowLeft, ArrowRight, X } from "lucide-react";
 import DealActions from "@/components/Trang_chu/DealCard/DealActions";
 import DealHeader from "@/components/Trang_chu/DealCard/DealHeader"; // ✅ có link tới user detail
@@ -17,12 +16,14 @@ export type DealType = {
   content?: string;
   image?: string;
   media?: string[];
-  votes?: number; // ✅ có thể undefined
+  votes?: number;
   comments?: number;
   category?: string;
-  author?: string; // ✅ username của người đăng
-  avatar?: string; // ✅ avatar của người đăng
-  createdAt?: string;
+
+  // ✅ Giữ cho DealHeader hoạt động
+  author?: string; // tên người đăng
+  avatar?: string; // ảnh đại diện
+  createdAt?: string; // ngày tạo (camelCase cho TS)
 };
 
 // =======================================================
@@ -198,13 +199,12 @@ const DealCard: React.FC<DealCardProps> = ({
       onTouchEnd={handleTouchEnd}
     >
       {mediaList.length > 0 && (
-        <Image
-          src={mediaList[currentIndex]}
-          alt={deal.title}
-          width={800}
-          height={600}
-          className="object-cover w-full h-auto"
-        />
+        <img
+  src={(mediaList[currentIndex] || "/default.png").replace(/"/g, "")}
+  alt={deal.title}
+  className="object-cover w-full h-auto"
+/>
+
       )}
       {mediaList.length > 1 && (
         <>
@@ -237,12 +237,10 @@ const DealCard: React.FC<DealCardProps> = ({
       <div className="flex-1 overflow-y-auto p-3 space-y-3">
         {messages.map((msg, idx) => (
           <div key={idx} className="flex gap-2">
-            <Image
+            <img
               src={msg.avatar}
               alt={msg.username}
-              width={32}
-              height={32}
-              className="rounded-full"
+              className="w-8 h-8 rounded-full object-cover"
             />
             <div>
               <p className="text-sm font-semibold">{msg.username}</p>
@@ -281,7 +279,6 @@ const DealCard: React.FC<DealCardProps> = ({
         } ${isAd ? "bg-yellow-50 border-l-4 border-yellow-400" : "bg-white"}`}
         id={`deal-${deal.id}`}
       >
-        {/* ✅ Dùng DealHeader riêng (có Link đến trang user) */}
         <DealHeader deal={deal} />
 
         <DealMedia />

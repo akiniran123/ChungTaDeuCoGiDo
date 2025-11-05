@@ -1,87 +1,107 @@
-'use client'
+"use client";
 
-import { useState } from 'react'
-import { supabase } from '@/lib/supabase/client'
+import { useFormContext, Controller } from "react-hook-form";
+import { supabase } from "@/lib/supabase/client";
+import { uploadImageFromUrl } from "@/lib/supabase/uploadImageFromUrl";
+import { useState } from "react";
 
-interface Props {
-  value: string | null
-  onChange: (url: string | null) => void
-}
+export default function ImageUploader({ error }: any) {
+  const { control } = useFormContext();
+  const [preview, setPreview] = useState<string | null>(null);
 
-export default function ImageUploader({ value, onChange }: Props) {
-  const [uploading, setUploading] = useState(false)
-  const [error, setError] = useState<string | null>(null)
+  // ✅ Upload ảnh từ máy lên Supabase
+  const handleFileSelect = async (
+    e: React.ChangeEvent<HTMLInputElement>,
+    onChange: (val: any) => void
+  ) => {
+    const file = e.target.files?.[0];
+    if (!file) return;
 
-  const handleFileChange = async (e: React.ChangeEvent<HTMLInputElement>) => {
-    const file = e.target.files?.[0]
-    if (!file) return
+    const previewUrl = URL.createObjectURL(file);
+    setPreview(previewUrl);
 
-    setUploading(true)
-    setError(null)
+    const fileName = `product-${Date.now()}-${file.name}`;
+    const { data, error } = await supabase.storage
+      .from("images")
+      .upload(fileName, file);
 
-    // Tạo tên file duy nhất
-    const filePath = `products/${Date.now()}-${Math.random().toString(36).substring(2)}-${file.name}`
-
-    try {
-      // Upload file vào bucket 'images'
-      const { error: uploadError } = await supabase.storage
-        .from('images')
-        .upload(filePath, file)
-
-      if (uploadError) throw uploadError
-
-      // Lấy URL public
-      const { data } = supabase.storage.from('images').getPublicUrl(filePath)
-      if (!data?.publicUrl) throw new Error('Không lấy được URL public')
-
-      onChange(data.publicUrl)
-    } catch (err: any) {
-      console.error('Upload error:', err)
-      setError(err.message || 'Upload lỗi, vui lòng thử lại hoặc dán link trực tiếp')
-    } finally {
-      setUploading(false)
+    if (error) {
+      console.error("❌ Lỗi upload ảnh:", error.message);
+      alert("Tải ảnh thất bại!");
+      return;
     }
-  }
 
-  const handleManualUrl = (e: React.ChangeEvent<HTMLInputElement>) => {
-    setError(null)
-    onChange(e.target.value)
-  }
+    const { data: publicUrlData } = supabase.storage
+      .from("images")
+      .getPublicUrl(data.path);
+
+    const publicUrl = publicUrlData.publicUrl;
+    setPreview(publicUrl);
+    onChange([publicUrl]);
+  };
+
+  // ✅ Khi người dùng dán link ảnh
+  const handleLinkPaste = async (
+    e: React.ChangeEvent<HTMLInputElement>,
+    onChange: (val: any) => void
+  ) => {
+    const rawValue = e.target.value.trim();
+    const cleanValue = rawValue.replace(/"/g, "");
+    onChange([cleanValue]);
+    setPreview(cleanValue);
+
+    if (cleanValue.startsWith("http")) {
+      const uploaded = await uploadImageFromUrl(cleanValue);
+      if (uploaded) {
+        setPreview(uploaded);
+        onChange([uploaded]);
+      }
+    }
+  };
 
   return (
     <div className="space-y-2">
-      <label className="font-medium">Ảnh sản phẩm</label>
+      <label className="block font-medium">Ảnh sản phẩm</label>
 
-      {/* Upload file */}
-      <input
-        type="file"
-        accept="image/*"
-        onChange={handleFileChange}
-        disabled={uploading}
-        className="block"
+      <Controller
+        name="images"
+        control={control}
+        render={({ field }) => (
+          <div className="flex flex-col gap-3">
+            <div className="flex items-center gap-2">
+              <input
+                className="flex-1 border rounded p-2"
+                placeholder="Dán link ảnh hoặc chọn ảnh..."
+                value={field.value?.[0] || ""}
+                onChange={(e) => handleLinkPaste(e, field.onChange)}
+              />
+
+              <label className="px-3 py-2 bg-blue-500 text-white rounded cursor-pointer hover:bg-blue-600">
+                Chọn ảnh
+                <input
+                  type="file"
+                  accept="image/*"
+                  className="hidden"
+                  onChange={(e) => handleFileSelect(e, field.onChange)}
+                />
+              </label>
+            </div>
+
+            {(preview || field.value?.[0]) && (
+              <img
+                src={(preview || field.value[0]).replace(/"/g, "")}
+                alt="Preview"
+                className="w-32 h-32 object-cover rounded border"
+                onError={(e) =>
+                  ((e.target as HTMLImageElement).src = "/placeholder.png")
+                }
+              />
+            )}
+          </div>
+        )}
       />
 
-      {/* Dán URL trực tiếp */}
-      <input
-        type="text"
-        placeholder="Dán URL ảnh"
-        className="w-full border rounded px-3 py-2"
-        value={value ?? ''}
-        onChange={handleManualUrl}
-      />
-
-      {/* Preview */}
-      {value && (
-        <img
-          src={value}
-          alt="Preview"
-          className="w-32 h-32 object-cover border rounded mt-2"
-        />
-      )}
-
-      {/* Trạng thái */}
-      {uploading && <p className="text-blue-600 text-sm">Đang tải ảnh...</p>}
-      {error && <p className="text-red-500 text-sm">{error}</p>}
+      {error && <p className="text-red-500 text-sm mt-1">Ảnh là bắt buộc</p>}
     </div>
-  )
+  );
 }

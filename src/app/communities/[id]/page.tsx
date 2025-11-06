@@ -1,7 +1,8 @@
 "use client";
 
-import { useEffect, useState } from "react";
-import { useParams, useRouter } from "next/navigation";
+import React, { useEffect, useState, use } from "react";
+import { useRouter } from "next/navigation";
+import Link from "next/link";
 import { supabase } from "@/lib/supabase/client";
 import {
   Loader2,
@@ -17,10 +18,13 @@ import type { Database } from "@/types/supabase";
 type Community = Database["public"]["Tables"]["communities"]["Row"];
 type Product = Database["public"]["Tables"]["products"]["Row"];
 
-export default function CommunityDetailPage() {
-  const params = useParams();
+export default function CommunityDetailPage({
+  params,
+}: {
+  params: Promise<{ id: string }>;
+}) {
+  const { id } = use(params);
   const router = useRouter();
-  const id = Array.isArray(params?.id) ? params.id[0] : params?.id;
 
   const [community, setCommunity] = useState<Community | null>(null);
   const [products, setProducts] = useState<Product[]>([]);
@@ -35,7 +39,6 @@ export default function CommunityDetailPage() {
       try {
         setLoading(true);
 
-        // Lấy thông tin community
         const { data: communityData, error: communityError } = await supabase
           .from("communities")
           .select("*")
@@ -45,7 +48,6 @@ export default function CommunityDetailPage() {
         if (communityError) throw communityError;
         setCommunity(communityData);
 
-        // Lấy danh sách sản phẩm trong community
         const { data: productData, error: productError } = await supabase
           .from("products")
           .select("*")
@@ -64,7 +66,6 @@ export default function CommunityDetailPage() {
     fetchData();
   }, [id]);
 
-  // ⏳ Loading
   if (loading)
     return (
       <div className="flex min-h-screen items-center justify-center text-gray-500">
@@ -73,7 +74,6 @@ export default function CommunityDetailPage() {
       </div>
     );
 
-  // ❌ Error
   if (error)
     return (
       <div className="flex min-h-screen items-center justify-center text-gray-600">
@@ -83,11 +83,9 @@ export default function CommunityDetailPage() {
 
   if (!community) return null;
 
-  // 🌎 Giao diện chính
   return (
     <div className="min-h-screen bg-gray-50 py-10 px-4">
       <div className="max-w-5xl mx-auto bg-white p-8 rounded-2xl shadow-sm border border-gray-100">
-        {/* 🏡 Tiêu đề cộng đồng */}
         <div className="mb-8 border-b pb-6">
           <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
             <div>
@@ -113,7 +111,6 @@ export default function CommunityDetailPage() {
               </div>
             </div>
 
-            {/* 🧩 Nút tạo bài đăng */}
             <button
               onClick={() =>
                 router.push(`/create-product?community_id=${community.id}`)
@@ -126,7 +123,6 @@ export default function CommunityDetailPage() {
           </div>
         </div>
 
-        {/* 🗂️ Danh sách bài đăng */}
         <div>
           <h2 className="text-xl font-semibold text-gray-900 mb-4">
             Bài đăng trong cộng đồng
@@ -139,10 +135,10 @@ export default function CommunityDetailPage() {
           ) : (
             <div className="grid gap-6 sm:grid-cols-2 lg:grid-cols-3">
               {products.map((p) => (
-                <div
+                <Link
                   key={p.id}
-                  onClick={() => router.push(`/products/${p.id}`)}
-                  className="group cursor-pointer border rounded-xl bg-white hover:shadow-md transition overflow-hidden flex flex-col"
+                  href={`/deal/${p.id}`} // ✅ chuyển sang trang chi tiết sản phẩm
+                  className="group border rounded-xl bg-white hover:shadow-md transition overflow-hidden flex flex-col"
                 >
                   <div className="relative w-full h-48 overflow-hidden">
                     <img
@@ -177,7 +173,7 @@ export default function CommunityDetailPage() {
                       </div>
                     </div>
                   </div>
-                </div>
+                </Link>
               ))}
             </div>
           )}

@@ -56,7 +56,8 @@ export default function CommunitiesPage() {
   useEffect(() => {
     const q = query.trim().toLowerCase();
     const arr = communities.filter((c) => {
-      const matchCategory = selectedCategory === "All" || c.category === selectedCategory;
+      const matchCategory =
+        selectedCategory === "All" || c.category === selectedCategory;
       const matchQuery =
         q === "" ||
         (c.title && c.title.toLowerCase().includes(q)) ||
@@ -71,8 +72,12 @@ export default function CommunitiesPage() {
     <div className="min-h-screen bg-gray-50 py-10 px-4">
       <div className="max-w-6xl mx-auto">
         <header className="mb-8">
-          <h1 className="text-3xl font-extrabold text-gray-900 mb-2">Cộng đồng</h1>
-          <p className="text-gray-600">Khám phá các cộng đồng, tham gia hoặc tạo mới.</p>
+          <h1 className="text-3xl font-extrabold text-gray-900 mb-2">
+            Cộng đồng
+          </h1>
+          <p className="text-gray-600">
+            Khám phá các cộng đồng, tham gia hoặc tạo mới.
+          </p>
         </header>
 
         <section className="bg-white rounded-2xl p-6 shadow-sm border border-gray-100 mb-6">
@@ -128,29 +133,32 @@ export default function CommunitiesPage() {
           ) : (
             <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
               {filtered.map((c) => (
-                <article
+                <Link
                   key={c.id}
-                  className="bg-white rounded-xl p-5 border border-gray-100 shadow-sm hover:shadow-md transition cursor-pointer"
+                  href={`/communities/${c.id}`}
+                  className="bg-white rounded-xl p-5 border border-gray-100 shadow-sm hover:shadow-md transition block"
                 >
-                  <Link href={`/community/${c.id}`} className="block">
-                    <div className="flex items-start gap-4">
-                      <div className="w-12 h-12 rounded-lg bg-blue-50 flex items-center justify-center text-blue-600 font-bold">
-                        {c.title ? c.title.charAt(0).toUpperCase() : "C"}
-                      </div>
-                      <div className="flex-1">
-                        <h3 className="text-lg font-semibold text-gray-800">{c.title || "Không tên"}</h3>
-                        <p className="text-sm text-gray-500 mt-1 line-clamp-2">{c.description || "Chưa có mô tả."}</p>
-                        <div className="flex items-center gap-3 mt-3 text-xs text-gray-400">
-                          <span>{c.category || "Khác"}</span>
-                          <span>·</span>
-                          <span>👥 {c.members ?? 0}</span>
-                          <span>·</span>
-                          <span>🟢 {c.online ?? 0} online</span>
-                        </div>
+                  <div className="flex items-start gap-4">
+                    <div className="w-12 h-12 rounded-lg bg-blue-50 flex items-center justify-center text-blue-600 font-bold">
+                      {c.title ? c.title.charAt(0).toUpperCase() : "C"}
+                    </div>
+                    <div className="flex-1">
+                      <h3 className="text-lg font-semibold text-gray-800">
+                        {c.title || "Không tên"}
+                      </h3>
+                      <p className="text-sm text-gray-500 mt-1 line-clamp-2">
+                        {c.description || "Chưa có mô tả."}
+                      </p>
+                      <div className="flex items-center gap-3 mt-3 text-xs text-gray-400">
+                        <span>{c.category || "Khác"}</span>
+                        <span>·</span>
+                        <span>👥 {c.members ?? 0}</span>
+                        <span>·</span>
+                        <span>🟢 {c.online ?? 0} online</span>
                       </div>
                     </div>
-                  </Link>
-                </article>
+                  </div>
+                </Link>
               ))}
             </div>
           )}

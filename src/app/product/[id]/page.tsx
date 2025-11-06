@@ -1,116 +1,151 @@
-import React from "react";
-import Link from "next/link";
+"use client";
 
-const exchangeRate = 30000;
+import React, { use, useEffect, useState } from "react";
+import { supabase } from "@/lib/supabase/client";
+import { useRouter } from "next/navigation";
+import { Loader2, ArrowLeft } from "lucide-react";
+import type { Database } from "@/types/supabase";
 
-const productNames = [
-  "Điện thoại thông minh",
-  "Máy tính xách tay",
-  "Tai nghe không dây",
-  "Máy ảnh kỹ thuật số",
-  "Bàn phím cơ",
-  "Chuột chơi game",
-  "Tivi 4K",
-  "Loa Bluetooth",
-  "Đồng hồ thông minh",
-  "Máy lọc không khí",
-  "Nồi chiên không dầu",
-  "Máy pha cà phê",
-];
-
-const sellers = [
-  "Người bán Demo 1",
-  "Người bán Demo 2",
-  "Người bán Demo 3",
-  "Người bán Demo 4",
-  "Người bán Demo 5",
-  "Người bán Demo 6",
-  "Người bán Demo 7",
-  "Người bán Demo 8",
-  "Người bán Demo 9",
-  "Người bán Demo 10",
-  "Người bán Demo 11",
-  "Người bán Demo 12",
-];
-
-const categories = [
-  "Tất cả",
-  "Công nghệ",
-  "Nhà cửa",
-  "Thời trang",
-  "Thực phẩm",
-  "Du lịch",
-  "Mã giảm giá",
-];
-
-function formatVND(amount: number) {
-  return amount.toString().replace(/\B(?=(\d{3})+(?!\d))/g, ",") + "₫";
-}
-
-const sampleDeals = Array.from({ length: 12 }).map((_, i) => ({
-  id: i + 1,
-  title: `🔥 Ưu đãi #${i + 1} — Giảm giá ${productNames[i]}`,
-  price: formatVND((10 + i * 2) * exchangeRate),
-  store: ["Amazon", "Currys", "Argos"][i % 3],
-  image: `https://picsum.photos/seed/hukd${i}/500/300`,
-  votes: 0,
-  comments: 0,
-  hotness: 0,
-  category: categories[1 + (i % (categories.length - 1))],
-  seller: sellers[i],
-}));
+type Product = Database["public"]["Tables"]["products"]["Row"];
+type User = Database["public"]["Tables"]["users"]["Row"];
 
 export default function ProductDetailPage({
   params,
 }: {
-  params: { id: string };
+  params: Promise<{ id: string }>;
 }) {
-  const id = Number(params.id);
-  const product = sampleDeals.find((d) => d.id === id);
+  // ✅ unwrap params theo chuẩn mới Next.js 15
+  const { id } = use(params);
+  const router = useRouter();
 
-  if (!product) {
+  const [product, setProduct] = useState<Product | null>(null);
+  const [seller, setSeller] = useState<User | null>(null);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
+
+  useEffect(() => {
+    if (!id) return;
+
+    const fetchProduct = async () => {
+      try {
+        setLoading(true);
+
+        // 🔹 Lấy dữ liệu sản phẩm
+        const { data: prod, error: prodErr } = await supabase
+          .from("products")
+          .select("*")
+          .eq("id", id)
+          .single();
+
+        if (prodErr) throw prodErr;
+        setProduct(prod);
+
+        // 🔹 Lấy thông tin người đăng (đầy đủ field để khớp kiểu User)
+        if (prod?.user_id) {
+          const { data: usr, error: usrErr } = await supabase
+            .from("users")
+            .select(
+              "id, username, email, created_at, updated_at, avatar_url, karma, is_online, address, identity, phone, birth"
+            )
+            .eq("id", prod.user_id)
+            .single();
+
+          if (usrErr) console.warn("User fetch error:", usrErr.message);
+          else setSeller(usr);
+        }
+      } catch (err: any) {
+        console.error("Fetch error:", err);
+        setError(err.message || "Không thể tải dữ liệu bài đăng");
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    fetchProduct();
+  }, [id]);
+
+  if (loading)
     return (
-      <div className="p-4 max-w-3xl mx-auto mt-10 text-center text-red-600 font-semibold">
-        Sản phẩm không tồn tại.
-        <div className="mt-4">
-          <Link
-            href="/"
-            className="inline-block px-4 py-2 bg-pink-600 text-white rounded hover:bg-pink-700"
-          >
-            Quay lại trang chủ
-          </Link>
-        </div>
+      <div className="flex min-h-screen items-center justify-center text-gray-500">
+        <Loader2 className="animate-spin w-6 h-6 text-indigo-500 mr-2" />
+        Đang tải bài đăng...
       </div>
     );
-  }
+
+  if (error)
+    return (
+      <div className="min-h-screen flex flex-col items-center justify-center text-gray-600">
+        <p className="mb-3">❌ {error}</p>
+        <button
+          onClick={() => router.back()}
+          className="px-4 py-2 rounded-lg bg-indigo-600 text-white hover:bg-indigo-700 transition"
+        >
+          Quay lại
+        </button>
+      </div>
+    );
+
+  if (!product)
+    return (
+      <div className="min-h-screen flex flex-col items-center justify-center text-gray-600">
+        <p className="mb-3">Bài đăng không tồn tại hoặc đã bị xoá.</p>
+        <button
+          onClick={() => router.back()}
+          className="px-4 py-2 rounded-lg bg-indigo-600 text-white hover:bg-indigo-700 transition"
+        >
+          Quay lại
+        </button>
+      </div>
+    );
 
   return (
-    <div className="max-w-3xl mx-auto p-4 mt-10">
-      <h1 className="text-3xl font-bold mb-4">{product.title}</h1>
-      <img
-        src={product.image}
-        alt={product.title}
-        className="w-full rounded-lg mb-4"
-      />
-      <div className="text-xl text-pink-600 font-semibold mb-2">{product.price}</div>
-      <div className="mb-2">
-        <strong>Người bán:</strong> {product.seller}
+    <div className="min-h-screen bg-gray-50 py-10 px-4">
+      <div className="max-w-4xl mx-auto bg-white p-8 rounded-2xl shadow-sm border border-gray-100">
+        <button
+          onClick={() => router.back()}
+          className="flex items-center gap-2 text-sm text-gray-500 hover:text-indigo-600 mb-6"
+        >
+          <ArrowLeft className="w-4 h-4" /> Quay lại
+        </button>
+
+        {/* Ảnh sản phẩm */}
+        <div className="w-full h-80 overflow-hidden rounded-xl mb-6">
+          <img
+            src={product.image_url || "/placeholder.png"}
+            alt={product.title}
+            className="w-full h-full object-cover"
+          />
+        </div>
+
+        {/* Thông tin chi tiết */}
+        <h1 className="text-3xl font-bold text-gray-900 mb-2">
+          {product.title}
+        </h1>
+        <p className="text-gray-600 mb-4">
+          {product.description || "Không có mô tả chi tiết."}
+        </p>
+
+        <div className="text-2xl font-semibold text-indigo-600 mb-6">
+          {product.price ? `${product.price.toLocaleString()}₫` : "Liên hệ"}
+        </div>
+
+        {/* Thông tin người đăng */}
+        {seller && (
+          <div className="flex items-center gap-3 mt-8 border-t pt-6">
+            <img
+              src={seller.avatar_url || "/default-avatar.png"}
+              alt={seller.username || "Người đăng"}
+              className="w-12 h-12 rounded-full object-cover"
+            />
+            <div>
+              <p className="font-semibold text-gray-800">
+                {seller.username || "Người dùng"}
+              </p>
+              <p className="text-sm text-gray-500">Người đăng</p>
+            </div>
+          </div>
+        )}
       </div>
-      <div className="mb-2">
-        <strong>Cửa hàng:</strong> {product.store}
-      </div>
-      <div className="mb-2">
-        <strong>Danh mục:</strong> {product.category}
-      </div>
-      <div className="mb-4">
-        <strong>Bình luận:</strong> {product.comments}
-      </div>
-      <Link
-        href="/"
-        className="inline-block mt-4 px-4 py-2 bg-pink-600 text-white rounded hover:bg-pink-700"
-      >
-        Quay lại trang chủ
-      </Link>
     </div>
   );
 }

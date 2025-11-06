@@ -12,6 +12,8 @@ import {
   Globe,
   Eye,
   Heart,
+  LogIn,
+  LogOut,
 } from "lucide-react";
 import type { Database } from "@/types/supabase";
 
@@ -30,6 +32,22 @@ export default function CommunityDetailPage({
   const [products, setProducts] = useState<Product[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
+
+  // 👤 User và trạng thái tham gia cộng đồng
+  const [user, setUser] = useState<any>(null);
+  const [joined, setJoined] = useState(false);
+  const [joinLoading, setJoinLoading] = useState(false);
+
+  // 🧠 Lấy user hiện tại
+  useEffect(() => {
+    const fetchUser = async () => {
+      const { data, error } = await supabase.auth.getUser();
+      if (!error && data?.user) {
+        setUser(data.user);
+      }
+    };
+    fetchUser();
+  }, []);
 
   // 🧠 Lấy dữ liệu từ Supabase
   useEffect(() => {
@@ -65,6 +83,55 @@ export default function CommunityDetailPage({
 
     fetchData();
   }, [id]);
+
+  // 🧩 Kiểm tra xem user đã tham gia cộng đồng chưa
+  useEffect(() => {
+    const checkJoined = async () => {
+      if (!user || !id) return;
+      const { data, error } = await supabase
+        .from("community_members")
+        .select("*")
+        .eq("community_id", id)
+        .eq("user_id", user.id)
+        .maybeSingle();
+
+      if (!error && data) setJoined(true);
+      else setJoined(false);
+    };
+    checkJoined();
+  }, [user, id]);
+
+  // ➕ Tham gia cộng đồng
+  const handleJoin = async () => {
+    if (!user) {
+      alert("Vui lòng đăng nhập để tham gia cộng đồng.");
+      return;
+    }
+    setJoinLoading(true);
+    const { error } = await supabase.from("community_members").insert({
+      user_id: user.id,
+      community_id: id,
+      role: "member",
+      joined_at: new Date().toISOString(),
+    });
+    if (error) alert("Lỗi khi tham gia cộng đồng: " + error.message);
+    else setJoined(true);
+    setJoinLoading(false);
+  };
+
+  // 🚪 Rời khỏi cộng đồng
+  const handleLeave = async () => {
+    if (!user) return;
+    setJoinLoading(true);
+    const { error } = await supabase
+      .from("community_members")
+      .delete()
+      .eq("community_id", id)
+      .eq("user_id", user.id);
+    if (error) alert("Lỗi khi rời cộng đồng: " + error.message);
+    else setJoined(false);
+    setJoinLoading(false);
+  };
 
   if (loading)
     return (
@@ -111,15 +178,47 @@ export default function CommunityDetailPage({
               </div>
             </div>
 
-            <button
-              onClick={() =>
-                router.push(`/create-product?community_id=${community.id}`)
-              }
-              className="flex items-center justify-center gap-2 px-5 py-2.5 bg-indigo-600 text-white font-medium rounded-xl hover:bg-indigo-700 transition shadow-sm"
-            >
-              <PlusCircle className="w-5 h-5" />
-              Tạo bài đăng
-            </button>
+            <div className="flex flex-col sm:flex-row gap-3">
+              {/* ✅ Nút tham gia/rời cộng đồng */}
+              {joined ? (
+                <button
+                  onClick={handleLeave}
+                  disabled={joinLoading}
+                  className="flex items-center justify-center gap-2 px-5 py-2.5 bg-gray-100 text-gray-800 font-medium rounded-xl hover:bg-gray-200 transition shadow-sm"
+                >
+                  {joinLoading ? (
+                    <Loader2 className="animate-spin w-5 h-5" />
+                  ) : (
+                    <LogOut className="w-5 h-5" />
+                  )}
+                  Rời cộng đồng
+                </button>
+              ) : (
+                <button
+                  onClick={handleJoin}
+                  disabled={joinLoading}
+                  className="flex items-center justify-center gap-2 px-5 py-2.5 bg-green-600 text-white font-medium rounded-xl hover:bg-green-700 transition shadow-sm"
+                >
+                  {joinLoading ? (
+                    <Loader2 className="animate-spin w-5 h-5" />
+                  ) : (
+                    <LogIn className="w-5 h-5" />
+                  )}
+                  Tham gia cộng đồng
+                </button>
+              )}
+
+              {/* Nút tạo bài đăng */}
+              <button
+                onClick={() =>
+                  router.push(`/create-product?community_id=${community.id}`)
+                }
+                className="flex items-center justify-center gap-2 px-5 py-2.5 bg-indigo-600 text-white font-medium rounded-xl hover:bg-indigo-700 transition shadow-sm"
+              >
+                <PlusCircle className="w-5 h-5" />
+                Tạo bài đăng
+              </button>
+            </div>
           </div>
         </div>
 
@@ -160,7 +259,9 @@ export default function CommunityDetailPage({
 
                     <div className="mt-auto">
                       <p className="text-indigo-600 font-semibold mb-1">
-                        {p.price ? `${p.price.toLocaleString()}₫` : "Liên hệ"}
+                        {p.price
+                          ? `${p.price.toLocaleString()}₫`
+                          : "Liên hệ"}
                       </p>
                       <div className="flex justify-between text-xs text-gray-400">
                         <span className="flex items-center gap-1">

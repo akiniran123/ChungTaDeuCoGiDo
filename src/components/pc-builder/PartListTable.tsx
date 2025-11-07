@@ -3,49 +3,49 @@
 import { useState } from 'react';
 import { PencilSquareIcon } from '@heroicons/react/24/outline';
 
-type Part = {
+type LinhKien = {
   id: string;
-  category: string;
-  name: string;
-  price: number;
-  store?: string;
+  danhMuc: string;
+  ten: string;
+  gia: number;
+  cuaHang?: string;
   url?: string;
-  status?: 'In Stock' | 'Out of Stock' | 'Unknown';
+  trangThai?: 'Còn hàng' | 'Hết hàng' | 'Không rõ';
 };
 
-const categories = [
+const danhMucList = [
   'CPU',
   'GPU',
-  'Memory',
-  'Storage',
-  'Motherboard',
-  'Power Supply',
-  'Case',
-  'Cooling',
-  'Monitor',
-  'Operating System',
+  'Bộ nhớ',
+  'Ổ lưu trữ',
+  'Bo mạch chủ',
+  'Nguồn điện',
+  'Vỏ máy',
+  'Tản nhiệt',
+  'Màn hình',
+  'Hệ điều hành',
 ];
 
-export default function PartListFlex() {
-  const [parts, setParts] = useState<Part[]>([]);
+export default function DanhSachLinhKien() {
+  const [linhKienList, setLinhKienList] = useState<LinhKien[]>([]);
 
-  const totalPrice = parts.reduce((sum, p) => sum + p.price, 0);
+  const tongGia = linhKienList.reduce((sum, p) => sum + p.gia, 0);
 
-  function handleAddPart(category: string) {
-    const newPart: Part = {
-      id: `${category.toLowerCase()}-${Date.now()}`,
-      category,
-      name: `Example ${category} Part with a somewhat long name to test truncation`,
-      price: Math.floor(Math.random() * 300) + 50,
-      store: 'Example Store',
+  function themLinhKien(danhMuc: string) {
+    const moi: LinhKien = {
+      id: `${danhMuc.toLowerCase()}-${Date.now()}`,
+      danhMuc,
+      ten: `Ví dụ linh kiện ${danhMuc} có tên khá dài để kiểm tra hiển thị`,
+      gia: Math.floor(Math.random() * 300) + 50,
+      cuaHang: 'Cửa hàng ví dụ',
       url: '',
-      status: 'In Stock',
+      trangThai: 'Còn hàng',
     };
-    setParts([...parts, newPart]);
+    setLinhKienList([...linhKienList, moi]);
   }
 
-  function handleRemovePart(id: string) {
-    setParts(parts.filter((p) => p.id !== id));
+  function xoaLinhKien(id: string) {
+    setLinhKienList(linhKienList.filter((p) => p.id !== id));
   }
 
   return (
@@ -64,7 +64,7 @@ export default function PartListFlex() {
           backgroundColor: 'white',
         }}
       >
-        {/* Header */}
+        {/* Tiêu đề bảng */}
         <div
           className="hidden md:flex select-none"
           style={{
@@ -76,9 +76,9 @@ export default function PartListFlex() {
             userSelect: 'none',
           }}
         >
-          <div style={{ width: 190, padding: '14px 20px' }}>Category</div>
-          <div style={{ flex: 1, padding: '14px 20px' }}>Part Name</div>
-          <div style={{ width: 160, padding: '14px 20px' }}>Store</div>
+          <div style={{ width: 190, padding: '14px 20px' }}>Danh mục</div>
+          <div style={{ flex: 1, padding: '14px 20px' }}>Tên linh kiện</div>
+          <div style={{ width: 160, padding: '14px 20px' }}>Cửa hàng</div>
           <div
             style={{
               width: 110,
@@ -87,23 +87,23 @@ export default function PartListFlex() {
               fontVariantNumeric: 'tabular-nums',
             }}
           >
-            Price
+            Giá
           </div>
           <div style={{ width: 110, padding: '14px 20px', textAlign: 'center' }}>
-            Status
+            Trạng thái
           </div>
           <div style={{ width: 130, padding: '14px 20px', textAlign: 'center' }}>
-            Actions
+            Hành động
           </div>
         </div>
 
-        {/* Rows */}
-        {categories.map((category) => {
-          const part = parts.find((p) => p.category === category);
-          if (part) {
+        {/* Các hàng dữ liệu */}
+        {danhMucList.map((danhMuc) => {
+          const linhKien = linhKienList.find((p) => p.danhMuc === danhMuc);
+          if (linhKien) {
             return (
               <div
-                key={part.id}
+                key={linhKien.id}
                 className="flex cursor-pointer"
                 style={{
                   borderTop: '1px solid #dfe3e8',
@@ -122,7 +122,7 @@ export default function PartListFlex() {
                     color: '#222',
                   }}
                 >
-                  {part.category}
+                  {linhKien.danhMuc}
                 </div>
                 <div
                   style={{
@@ -132,21 +132,25 @@ export default function PartListFlex() {
                     textOverflow: 'ellipsis',
                     whiteSpace: 'nowrap',
                   }}
-                  title={part.name}
+                  title={linhKien.ten}
                 >
-                  {part.url ? (
+                  {linhKien.url ? (
                     <a
-                      href={part.url}
+                      href={linhKien.url}
                       target="_blank"
                       rel="noopener noreferrer"
                       style={{ color: '#0071e3', textDecoration: 'none' }}
-                      onMouseEnter={(e) => (e.currentTarget.style.textDecoration = 'underline')}
-                      onMouseLeave={(e) => (e.currentTarget.style.textDecoration = 'none')}
+                      onMouseEnter={(e) =>
+                        (e.currentTarget.style.textDecoration = 'underline')
+                      }
+                      onMouseLeave={(e) =>
+                        (e.currentTarget.style.textDecoration = 'none')
+                      }
                     >
-                      {part.name}
+                      {linhKien.ten}
                     </a>
                   ) : (
-                    part.name
+                    linhKien.ten
                   )}
                 </div>
                 <div
@@ -158,7 +162,7 @@ export default function PartListFlex() {
                     textOverflow: 'ellipsis',
                   }}
                 >
-                  {part.store ?? '-'}
+                  {linhKien.cuaHang ?? '-'}
                 </div>
                 <div
                   style={{
@@ -171,7 +175,7 @@ export default function PartListFlex() {
                     whiteSpace: 'nowrap',
                   }}
                 >
-                  ${part.price.toFixed(2)}
+                  ${linhKien.gia.toFixed(2)}
                 </div>
                 <div
                   style={{
@@ -182,15 +186,15 @@ export default function PartListFlex() {
                   <span
                     style={{
                       backgroundColor:
-                        part.status === 'In Stock'
+                        linhKien.trangThai === 'Còn hàng'
                           ? '#dbf3db'
-                          : part.status === 'Out of Stock'
+                          : linhKien.trangThai === 'Hết hàng'
                           ? '#f7d7d7'
                           : '#e8e8e8',
                       color:
-                        part.status === 'In Stock'
+                        linhKien.trangThai === 'Còn hàng'
                           ? '#2f7f2f'
-                          : part.status === 'Out of Stock'
+                          : linhKien.trangThai === 'Hết hàng'
                           ? '#a33a3a'
                           : '#777777',
                       borderRadius: 12,
@@ -201,7 +205,7 @@ export default function PartListFlex() {
                       userSelect: 'none',
                     }}
                   >
-                    {part.status ?? 'Unknown'}
+                    {linhKien.trangThai ?? 'Không rõ'}
                   </span>
                 </div>
                 <div
@@ -214,8 +218,8 @@ export default function PartListFlex() {
                   }}
                 >
                   <button
-                    onClick={() => alert('Edit feature coming soon!')}
-                    aria-label="Edit Part"
+                    onClick={() => alert('Tính năng chỉnh sửa sắp ra mắt!')}
+                    aria-label="Chỉnh sửa linh kiện"
                     style={{
                       padding: 4,
                       borderRadius: 4,
@@ -224,14 +228,18 @@ export default function PartListFlex() {
                       cursor: 'pointer',
                       color: '#0071e3',
                     }}
-                    onMouseEnter={(e) => (e.currentTarget.style.backgroundColor = '#e6f0ff')}
-                    onMouseLeave={(e) => (e.currentTarget.style.backgroundColor = 'transparent')}
+                    onMouseEnter={(e) =>
+                      (e.currentTarget.style.backgroundColor = '#e6f0ff')
+                    }
+                    onMouseLeave={(e) =>
+                      (e.currentTarget.style.backgroundColor = 'transparent')
+                    }
                   >
                     <PencilSquareIcon className="w-5 h-5" />
                   </button>
                   <button
-                    onClick={() => handleRemovePart(part.id)}
-                    aria-label="Remove Part"
+                    onClick={() => xoaLinhKien(linhKien.id)}
+                    aria-label="Xóa linh kiện"
                     style={{
                       padding: 4,
                       borderRadius: 4,
@@ -240,8 +248,12 @@ export default function PartListFlex() {
                       cursor: 'pointer',
                       color: '#d33',
                     }}
-                    onMouseEnter={(e) => (e.currentTarget.style.backgroundColor = '#ffe6e6')}
-                    onMouseLeave={(e) => (e.currentTarget.style.backgroundColor = 'transparent')}
+                    onMouseEnter={(e) =>
+                      (e.currentTarget.style.backgroundColor = '#ffe6e6')
+                    }
+                    onMouseLeave={(e) =>
+                      (e.currentTarget.style.backgroundColor = 'transparent')
+                    }
                   >
                     <svg
                       xmlns="http://www.w3.org/2000/svg"
@@ -259,10 +271,11 @@ export default function PartListFlex() {
               </div>
             );
           }
-          // Khi chưa chọn part
+
+          // Khi chưa chọn linh kiện
           return (
             <div
-              key={category}
+              key={danhMuc}
               style={{
                 display: 'flex',
                 alignItems: 'center',
@@ -282,7 +295,7 @@ export default function PartListFlex() {
                   textOverflow: 'ellipsis',
                 }}
               >
-                {category}
+                {danhMuc}
               </div>
               <div
                 style={{
@@ -295,7 +308,7 @@ export default function PartListFlex() {
               >
                 <button
                   type="button"
-                  onClick={() => handleAddPart(category)}
+                  onClick={() => themLinhKien(danhMuc)}
                   style={{
                     border: '1px solid #0071e3',
                     color: '#0071e3',
@@ -310,10 +323,14 @@ export default function PartListFlex() {
                     fontSize: 14,
                     transition: 'background-color 0.2s ease',
                   }}
-                  onMouseEnter={(e) => (e.currentTarget.style.backgroundColor = '#e6f0ff')}
-                  onMouseLeave={(e) => (e.currentTarget.style.backgroundColor = 'transparent')}
+                  onMouseEnter={(e) =>
+                    (e.currentTarget.style.backgroundColor = '#e6f0ff')
+                  }
+                  onMouseLeave={(e) =>
+                    (e.currentTarget.style.backgroundColor = 'transparent')
+                  }
                 >
-                  + Add a part
+                  + Thêm linh kiện
                 </button>
               </div>
               <div style={{ width: 160 }}></div>
@@ -324,7 +341,7 @@ export default function PartListFlex() {
           );
         })}
 
-        {/* Total */}
+        {/* Tổng cộng */}
         <div
           style={{
             display: 'flex',
@@ -336,7 +353,7 @@ export default function PartListFlex() {
             userSelect: 'none',
           }}
         >
-          <div style={{ width: 190 }}>Total</div>
+          <div style={{ width: 190 }}>Tổng cộng</div>
           <div style={{ flex: 1 }}></div>
           <div style={{ width: 160 }}></div>
           <div
@@ -347,7 +364,7 @@ export default function PartListFlex() {
               fontVariantNumeric: 'tabular-nums',
             }}
           >
-            ${totalPrice.toFixed(2)}
+            ${tongGia.toFixed(2)}
           </div>
           <div style={{ width: 110 }}></div>
           <div style={{ width: 130 }}></div>

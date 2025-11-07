@@ -57,7 +57,7 @@ export default function UserProfilePage() {
     if (username) fetchData();
   }, [username]);
 
-  // ✅ Hàm xóa bài đăng (và xóa ảnh trong storage)
+  // ✅ Hàm xóa bài đăng
   const handleDelete = async (productId: string, imageUrl?: string) => {
     const confirmDelete = confirm("Bạn có chắc muốn xóa bài đăng này?");
     if (!confirmDelete) return;
@@ -65,16 +65,14 @@ export default function UserProfilePage() {
     try {
       setDeleting(productId);
 
-      // 🧹 Nếu có ảnh (dạng string), xóa luôn khỏi storage Supabase
+      // 🧹 Nếu có ảnh, xóa luôn khỏi storage Supabase
       if (imageUrl) {
-        // Lấy phần đường dẫn sau "public/images/"
-        const filePath = imageUrl.split("/storage/v1/object/public/images/")[1];
+        const filePath = imageUrl.split("/").pop(); // chỉ lấy tên file
         if (filePath) {
           const { error: storageError } = await supabase.storage
             .from("images")
-            .remove([filePath]);
-          if (storageError)
-            console.warn("⚠️ Không xóa được ảnh:", storageError.message);
+            .remove([`uploads/${filePath}`]);
+          if (storageError) console.warn("⚠️ Không xóa được ảnh:", storageError);
         }
       }
 
@@ -88,7 +86,7 @@ export default function UserProfilePage() {
 
       // ✅ Cập nhật lại danh sách sau khi xóa
       setProducts((prev) => prev.filter((p) => p.id !== productId));
-      alert("Đã xóa bài đăng và ảnh thành công!");
+      alert("Đã xóa bài đăng thành công!");
     } catch (err) {
       console.error("❌ Lỗi khi xóa bài:", err);
       alert("Xóa thất bại, vui lòng thử lại!");

@@ -3,27 +3,52 @@
 import { useFormContext, Controller } from "react-hook-form";
 import { supabase } from "@/lib/supabase/client";
 import { uploadImageFromUrl } from "@/lib/supabase/uploadImageFromUrl";
-import { useState } from "react";
+import { useState, useEffect } from "react";
 
 export default function ImageUploader({ error }: any) {
   const { control } = useFormContext();
   const [preview, setPreview] = useState<string | null>(null);
+  const [userId, setUserId] = useState<string | null>(null);
+  const [loading, setLoading] = useState(false);
 
-  // ✅ Upload ảnh từ máy lên Supabase
+  // ✅ Lấy user hiện tại
+  useEffect(() => {
+    const fetchUser = async () => {
+      const { data } = await supabase.auth.getUser();
+      if (data?.user) setUserId(data.user.id);
+    };
+    fetchUser();
+  }, []);
+
+  // ✅ Dọn URL blob khi component unmount
+  useEffect(() => {
+    return () => {
+      if (preview?.startsWith("blob:")) URL.revokeObjectURL(preview);
+    };
+  }, [preview]);
+
+  // ✅ Upload ảnh từ máy
   const handleFileSelect = async (
     e: React.ChangeEvent<HTMLInputElement>,
     onChange: (val: any) => void
   ) => {
     const file = e.target.files?.[0];
     if (!file) return;
+    if (!userId) {
+      alert("⚠️ Vui lòng đợi hệ thống xác định tài khoản trước khi tải ảnh.");
+      return;
+    }
 
     const previewUrl = URL.createObjectURL(file);
     setPreview(previewUrl);
 
+    // 📂 Gom ảnh vào thư mục riêng của user trong bucket images
     const fileName = `product-${Date.now()}-${file.name}`;
-    const { data, error } = await supabase.storage
+    const filePath = `user_${userId}/${fileName}`; // 👉 nằm trong storage/images/
+
+    const { error } = await supabase.storage
       .from("images")
-      .upload(fileName, file);
+      .upload(filePath, file, { upsert: true }); // cho phép ghi đè
 
     if (error) {
       console.error("❌ Lỗi upload ảnh:", error.message);
@@ -31,16 +56,17 @@ export default function ImageUploader({ error }: any) {
       return;
     }
 
+    // ✅ Lấy public URL
     const { data: publicUrlData } = supabase.storage
       .from("images")
-      .getPublicUrl(data.path);
+      .getPublicUrl(filePath);
 
     const publicUrl = publicUrlData.publicUrl;
     setPreview(publicUrl);
     onChange([publicUrl]);
   };
 
-  // ✅ Khi người dùng dán link ảnh
+  // ✅ Upload từ link ảnh
   const handleLinkPaste = async (
     e: React.ChangeEvent<HTMLInputElement>,
     onChange: (val: any) => void
@@ -50,8 +76,10 @@ export default function ImageUploader({ error }: any) {
     onChange([cleanValue]);
     setPreview(cleanValue);
 
-    if (cleanValue.startsWith("http")) {
-      const uploaded = await uploadImageFromUrl(cleanValue);
+    if (cleanValue.startsWith("http") && userId) {
+      setLoading(true);
+      const uploaded = await uploadImageFromUrl(cleanValue, userId);
+      setLoading(false);
       if (uploaded) {
         setPreview(uploaded);
         onChange([uploaded]);
@@ -76,22 +104,34 @@ export default function ImageUploader({ error }: any) {
                 onChange={(e) => handleLinkPaste(e, field.onChange)}
               />
 
-              <label className="px-3 py-2 bg-blue-500 text-white rounded cursor-pointer hover:bg-blue-600">
-                Chọn ảnh
+              <label
+                className={`px-3 py-2 text-white rounded cursor-pointer ${
+                  userId
+                    ? "bg-blue-500 hover:bg-blue-600"
+                    : "bg-gray-400 cursor-not-allowed"
+                }`}
+              >
+                {userId ? "Chọn ảnh" : "Đang tải user..."}
                 <input
                   type="file"
                   accept="image/*"
                   className="hidden"
+                  disabled={!userId}
                   onChange={(e) => handleFileSelect(e, field.onChange)}
                 />
               </label>
             </div>
+
+            {loading && (
+              <p className="text-gray-500 text-sm">Đang tải ảnh từ URL...</p>
+            )}
 
             {(preview || field.value?.[0]) && (
               <img
                 src={(preview || field.value[0]).replace(/"/g, "")}
                 alt="Preview"
                 className="w-32 h-32 object-cover rounded border"
+                loading="lazy"
                 onError={(e) =>
                   ((e.target as HTMLImageElement).src = "/placeholder.png")
                 }

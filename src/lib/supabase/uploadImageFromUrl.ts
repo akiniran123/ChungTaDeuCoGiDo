@@ -1,29 +1,29 @@
-import { supabase } from "./client";
+import { supabase } from "@/lib/supabase/client";
 
-export async function uploadImageFromUrl(imageUrl: string) {
+export async function uploadImageFromUrl(url: string, userId: string) {
   try {
-    // ✅ Bỏ các ký tự " dư thừa, chống lỗi %22
-    const cleanUrl = imageUrl.replace(/"/g, "").trim();
+    const response = await fetch(url);
+    const blob = await response.blob();
 
-    // Lấy dữ liệu ảnh từ URL thật
-    const res = await fetch(cleanUrl);
-    if (!res.ok) throw new Error("Không tải được ảnh từ URL");
+    // 📂 Lưu ảnh trong thư mục riêng của user
+    const fileName = `${userId}/from-link-${Date.now()}.jpg`;
 
-    const blob = await res.blob();
-    const ext = cleanUrl.split(".").pop()?.split("?")[0] || "jpg";
-    const fileName = `url-${Date.now()}.${ext}`;
-    const filePath = `uploads/${fileName}`;
-
-    const { error } = await supabase.storage
+    const { data, error } = await supabase.storage
       .from("images")
-      .upload(filePath, blob, { cacheControl: "3600", upsert: false });
+      .upload(fileName, blob);
 
-    if (error) throw error;
+    if (error) {
+      console.error("❌ Upload from URL failed:", error.message);
+      return null;
+    }
 
-    const { data } = supabase.storage.from("images").getPublicUrl(filePath);
-    return data.publicUrl;
+    const { data: publicUrlData } = supabase.storage
+      .from("images")
+      .getPublicUrl(fileName);
+
+    return publicUrlData.publicUrl;
   } catch (err) {
-    console.error("❌ Upload lỗi:", err);
+    console.error("❌ Error fetching image from URL:", err);
     return null;
   }
 }

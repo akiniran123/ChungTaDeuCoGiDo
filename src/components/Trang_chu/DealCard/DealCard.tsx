@@ -4,12 +4,9 @@ import React, { useState, useEffect, useRef } from "react";
 import { supabase } from "@/lib/supabase/client";
 import { useCart } from "@/app/context/CartContext";
 import { ArrowLeft, ArrowRight, X } from "lucide-react";
-import DealActions from "@/components/Trang_chu/DealCard/DealActions";
-import DealHeader from "@/components/Trang_chu/DealCard/DealHeader"; // ✅ có link tới user detail
+import DealActions from "./DealActions";
+import DealHeader from "./DealHeader";
 
-// =======================================================
-// ========== KIỂU DỮ LIỆU DEAL ==========================
-// =======================================================
 export type DealType = {
   id: string;
   title: string;
@@ -19,16 +16,11 @@ export type DealType = {
   votes?: number;
   comments?: number;
   category?: string;
-
-  // ✅ Giữ cho DealHeader hoạt động
-  author?: string; // tên người đăng
-  avatar?: string; // ảnh đại diện
-  createdAt?: string; // ngày tạo (camelCase cho TS)
+  author?: string;
+  avatar?: string;
+  createdAt?: string; // chỉ raw string từ DB
 };
 
-// =======================================================
-// ========== DEAL CARD COMPONENT ========================
-// =======================================================
 export interface DealCardProps {
   deal: DealType;
   vote: (id: string, delta: number) => void;
@@ -56,7 +48,6 @@ const DealCard: React.FC<DealCardProps> = ({
   const messagesEndRef = useRef<HTMLDivElement>(null);
   const { addToCart } = useCart();
 
-  // ------------------- MEDIA -------------------
   const mediaList =
     deal.media && deal.media.length > 0
       ? deal.media
@@ -78,7 +69,6 @@ const DealCard: React.FC<DealCardProps> = ({
     setStartX(null);
   };
 
-  // ------------------- SAVE -------------------
   const handleSave = () => {
     setSaved(!saved);
     addToCart({
@@ -90,7 +80,6 @@ const DealCard: React.FC<DealCardProps> = ({
     });
   };
 
-  // ------------------- LIKE -------------------
   useEffect(() => {
     const fetchLikeStatus = async () => {
       const {
@@ -136,7 +125,6 @@ const DealCard: React.FC<DealCardProps> = ({
     }
   };
 
-  // ------------------- COMMENTS -------------------
   useEffect(() => {
     if (chatOpen) {
       const fetchComments = async () => {
@@ -191,7 +179,6 @@ const DealCard: React.FC<DealCardProps> = ({
     messagesEndRef.current?.scrollIntoView({ behavior: "smooth" });
   }, [messages]);
 
-  // ------------------- DEAL MEDIA -------------------
   const DealMedia = () => (
     <div
       className="relative w-full overflow-hidden bg-gray-100"
@@ -200,11 +187,10 @@ const DealCard: React.FC<DealCardProps> = ({
     >
       {mediaList.length > 0 && (
         <img
-  src={(mediaList[currentIndex] || "/default.png").replace(/"/g, "")}
-  alt={deal.title}
-  className="object-cover w-full h-auto"
-/>
-
+          src={(mediaList[currentIndex] || "/default.png").replace(/"/g, "")}
+          alt={deal.title}
+          className="object-cover w-full h-auto"
+        />
       )}
       {mediaList.length > 1 && (
         <>
@@ -225,7 +211,6 @@ const DealCard: React.FC<DealCardProps> = ({
     </div>
   );
 
-  // ------------------- DEAL CHAT -------------------
   const DealChat = () => (
     <div className="fixed top-0 right-0 w-80 h-full bg-white shadow-lg border-l flex flex-col z-50">
       <div className="flex justify-between items-center p-3 border-b">
@@ -268,9 +253,6 @@ const DealCard: React.FC<DealCardProps> = ({
     </div>
   );
 
-  // =======================================================
-  // ========== RENDER CHÍNH ================================
-  // =======================================================
   return (
     <>
       <article
@@ -280,7 +262,6 @@ const DealCard: React.FC<DealCardProps> = ({
         id={`deal-${deal.id}`}
       >
         <DealHeader deal={deal} />
-
         <DealMedia />
 
         {!isAd && (

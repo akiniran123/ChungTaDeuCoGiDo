@@ -7,7 +7,7 @@ import { supabase } from "@/lib/supabase/client";
 export default function UserProfilePage() {
   const params = useParams();
 
-  // ✅ Giải mã username từ URL (fix lỗi ngh%C4%A9a)
+  // ✅ Giải mã username từ URL
   const rawUsername = params?.username as string;
   const username = decodeURIComponent(rawUsername.trim());
 
@@ -19,9 +19,7 @@ export default function UserProfilePage() {
   useEffect(() => {
     const fetchData = async () => {
       try {
-        console.log("🔍 Username từ URL:", username);
-
-        // 1️⃣ Lấy thông tin người dùng theo username
+        // 1️⃣ Lấy thông tin người dùng
         const { data: userData, error: userError } = await supabase
           .from("users")
           .select("*")
@@ -29,16 +27,14 @@ export default function UserProfilePage() {
           .single();
 
         if (userError || !userData) {
-          console.error("❌ Không tìm thấy người dùng:", userError || {});
           setUser(null);
           setLoading(false);
           return;
         }
 
-        console.log("✅ Tìm thấy user:", userData);
         setUser(userData);
 
-        // 2️⃣ Lấy danh sách sản phẩm theo user_id
+        // 2️⃣ Lấy sản phẩm của user
         const { data: productsData, error: productError } = await supabase
           .from("products")
           .select("*")
@@ -65,18 +61,27 @@ export default function UserProfilePage() {
     try {
       setDeleting(productId);
 
-      // 🧹 Nếu có ảnh, xóa luôn khỏi storage Supabase
+      // 🧹 Xóa ảnh trong storage nếu có
       if (imageUrl) {
-        const filePath = imageUrl.split("/").pop(); // chỉ lấy tên file
-        if (filePath) {
-          const { error: storageError } = await supabase.storage
+        // Lấy phần đường dẫn sau /images/
+        const parts = imageUrl.split("/images/");
+        if (parts.length === 2) {
+          const storagePath = parts[1]; // ví dụ: user_123/product-xxx.png
+          const { error: removeError } = await supabase.storage
             .from("images")
-            .remove([`uploads/${filePath}`]);
-          if (storageError) console.warn("⚠️ Không xóa được ảnh:", storageError);
+            .remove([storagePath]);
+
+          if (removeError) {
+            console.warn("⚠️ Không xóa được ảnh:", removeError.message);
+          } else {
+            console.log("🧹 Ảnh đã bị xóa khỏi storage:", storagePath);
+          }
+        } else {
+          console.warn("⚠️ Không thể phân tích được đường dẫn ảnh:", imageUrl);
         }
       }
 
-      // 🗑️ Xóa bài đăng trong bảng products
+      // 🗑️ Xóa bài trong bảng products
       const { error } = await supabase
         .from("products")
         .delete()
@@ -84,9 +89,9 @@ export default function UserProfilePage() {
 
       if (error) throw error;
 
-      // ✅ Cập nhật lại danh sách sau khi xóa
+      // ✅ Cập nhật danh sách sau khi xóa
       setProducts((prev) => prev.filter((p) => p.id !== productId));
-      alert("Đã xóa bài đăng thành công!");
+      alert("Đã xóa bài đăng và ảnh thành công!");
     } catch (err) {
       console.error("❌ Lỗi khi xóa bài:", err);
       alert("Xóa thất bại, vui lòng thử lại!");
@@ -140,7 +145,7 @@ export default function UserProfilePage() {
         </div>
       </div>
 
-      {/* Sản phẩm */}
+      {/* Danh sách sản phẩm */}
       <div className="max-w-4xl mx-auto mt-8 space-y-6">
         <h2 className="text-xl font-semibold text-gray-800 border-b pb-2">
           Sản phẩm đã đăng

@@ -100,16 +100,13 @@ export default function SearchBar({ userId }: { userId?: string }) {
   };
 
   return (
-    <div className="relative w-full max-w-lg mx-auto">
+    <div className="relative w-full max-w-md mx-auto">
       <form onSubmit={handleSearch} className="flex w-full">
-        {/* Container input với icon */}
         <div className="relative flex w-full items-center">
-          {/* Icon kính lúp */}
-          <div className="absolute left-3 flex items-center justify-center text-gray-400 pointer-events-none">
-            <Search size={18} />
+          <div className="absolute left-4 flex items-center justify-center text-gray-400 pointer-events-none">
+            <Search size={20} />
           </div>
 
-          {/* Input căn giữa chữ */}
           <input
             type="text"
             placeholder="Tìm kiếm sản phẩm..."
@@ -122,33 +119,32 @@ export default function SearchBar({ userId }: { userId?: string }) {
                 setTimeout(() => setShowDropdown(false), 150);
               }
             }}
-            className="w-full pl-10 pr-4 py-2 rounded-full border border-gray-300 focus:ring-2 focus:ring-blue-500 focus:outline-none text-sm bg-white text-center placeholder:text-gray-400 transition-all"
+            className="w-full pl-12 pr-4 py-2 rounded-full border border-gray-300 focus:ring-2 focus:ring-blue-500 focus:outline-none text-sm bg-white text-center placeholder:text-gray-400 transition-all shadow-sm hover:shadow-md"
           />
         </div>
       </form>
 
-      {/* Dropdown gợi ý */}
       {showDropdown && (
-        <div className="absolute z-10 w-full mt-2 max-h-80 overflow-y-auto border border-gray-200 rounded-md bg-white shadow-lg">
+        <div className="absolute z-50 w-full mt-2 max-h-96 overflow-y-auto border border-gray-200 rounded-xl bg-white shadow-lg">
           {/* Kết quả tìm kiếm */}
           {query && results.length > 0 && (
-            <ul>
+            <ul className="divide-y divide-gray-100">
               {results.map((item) => (
                 <li
                   key={item.id}
                   onClick={() => handleSelectProduct(item.id)}
                   tabIndex={0}
-                  className="search-suggestion flex items-center gap-3 p-2 hover:bg-gray-100 cursor-pointer"
+                  className="search-suggestion flex items-center gap-3 p-3 hover:bg-blue-50 cursor-pointer transition-colors rounded-lg"
                 >
                   {item.image_url && (
                     <img
                       src={item.image_url}
                       alt={item.title}
-                      className="w-12 h-12 object-cover rounded"
+                      className="w-14 h-14 object-cover rounded-lg"
                     />
                   )}
-                  <div>
-                    <p className="text-sm font-medium">{item.title}</p>
+                  <div className="flex-1">
+                    <p className="text-sm font-medium text-gray-800">{item.title}</p>
                     <p className="text-xs text-gray-500">
                       {item.price ? `${item.price.toLocaleString()}₫` : "Liên hệ"}
                     </p>
@@ -160,18 +156,18 @@ export default function SearchBar({ userId }: { userId?: string }) {
 
           {/* Không tìm thấy */}
           {query && results.length === 0 && (
-            <p className="text-sm text-gray-500 p-3">Không tìm thấy sản phẩm nào</p>
+            <p className="text-sm text-gray-500 p-4 text-center">Không tìm thấy sản phẩm nào</p>
           )}
 
           {/* Lịch sử tìm kiếm */}
           {!query && history.length > 0 && (
-            <div className="p-2">
-              <p className="text-xs text-gray-400 mb-2">Tìm kiếm gần đây</p>
+            <div className="p-3">
+              <p className="text-xs text-gray-400 mb-2 uppercase tracking-wider">Tìm kiếm gần đây</p>
               {history.map((h, i) => (
                 <button
                   key={i}
                   onClick={() => handleSelectHistory(h.query)}
-                  className="block w-full text-left text-sm p-2 hover:bg-gray-100 rounded"
+                  className="block w-full text-left text-sm p-2 hover:bg-gray-100 rounded-lg transition-colors"
                 >
                   {h.query}
                 </button>

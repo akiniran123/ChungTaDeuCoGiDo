@@ -19,10 +19,10 @@ export default function SidebarLayout({ children }: { children: React.ReactNode 
       <div className="flex">
         {/* SidebarLeft */}
         <div
-          className="fixed left-0 top-[8rem] bg-white border-r-[1.5px] border-gray-300 transition-transform duration-300 ease-in-out"
+          className="fixed left-0 top-[4.5rem] bg-white border-r-[1.5px] border-gray-300 transition-transform duration-300 ease-in-out"
           style={{
             width: SIDEBAR_WIDTH,
-            height: "calc(100vh - 8rem)",
+            height: "calc(100vh - 4.5rem)",
             transform: showSidebar ? "translateX(0)" : `translateX(-${SIDEBAR_WIDTH}px)`,
           }}
         >

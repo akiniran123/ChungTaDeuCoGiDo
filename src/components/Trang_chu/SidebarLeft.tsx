@@ -87,8 +87,10 @@ export default function SidebarLeft({ categories }: SidebarLeftProps) {
     },
   ];
 
+  // ✅ Chỉ chỉnh padding-top để nội dung không bị che bởi navbar
   return (
-    <div className="h-[calc(100vh-5rem)] overflow-y-auto px-2 pb-20">
+    <div className="h-[calc(100vh-4.5rem)] overflow-y-auto px-2 pb-20 pt-16">
+      {/* pt-16 = khoảng 4rem, bạn có thể chỉnh cho vừa navbar */}
       <div className="flex flex-col mb-3">
         <Link
           href="/"

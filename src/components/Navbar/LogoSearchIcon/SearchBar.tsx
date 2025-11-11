@@ -23,7 +23,6 @@ export default function SearchBar({ userId }: { userId?: string }) {
   const [showDropdown, setShowDropdown] = useState(false);
   const router = useRouter();
 
-  // 🧩 Lấy lịch sử tìm kiếm
   useEffect(() => {
     if (!userId) return;
     const fetchHistory = async () => {
@@ -34,23 +33,18 @@ export default function SearchBar({ userId }: { userId?: string }) {
         .order("searched_at", { ascending: false })
         .limit(5);
       if (!error && data) {
-        const validHistory = data
-          .filter((h) => h.query !== null)
-          .map((h) => ({ query: h.query as string }));
-        setHistory(validHistory);
+        setHistory(data.filter(h => h.query).map(h => ({ query: h.query as string })));
       }
     };
     fetchHistory();
   }, [userId]);
 
-  // 🔍 Gợi ý sản phẩm khi gõ
   useEffect(() => {
     const fetchSuggestions = async () => {
-      if (query.trim().length === 0) {
+      if (!query.trim()) {
         setResults([]);
         return;
       }
-
       const { data, error } = await supabase
         .from("products")
         .select("id, title, image_url, price")
@@ -58,7 +52,6 @@ export default function SearchBar({ userId }: { userId?: string }) {
         .limit(10);
 
       if (!error && data) {
-        // 🔹 Ưu tiên sản phẩm có tên bắt đầu hoặc trùng chính xác
         const sorted = data.sort((a, b) => {
           const qa = a.title.toLowerCase();
           const qb = b.title.toLowerCase();
@@ -73,11 +66,10 @@ export default function SearchBar({ userId }: { userId?: string }) {
       }
     };
 
-    const debounceTimer = setTimeout(fetchSuggestions, 250);
-    return () => clearTimeout(debounceTimer);
+    const debounce = setTimeout(fetchSuggestions, 250);
+    return () => clearTimeout(debounce);
   }, [query]);
 
-  // Khi nhấn Enter
   const handleSearch = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!query.trim()) return;
@@ -102,7 +94,6 @@ export default function SearchBar({ userId }: { userId?: string }) {
     setShowDropdown(true);
   };
 
-  // 🔹 Khi click vào sản phẩm trong gợi ý
   const handleSelectProduct = (id: string) => {
     setShowDropdown(false);
     router.push(`/deal/${id}`);
@@ -110,53 +101,56 @@ export default function SearchBar({ userId }: { userId?: string }) {
 
   return (
     <div className="relative w-full max-w-lg mx-auto">
-      <form
-        onSubmit={handleSearch}
-        className="flex items-center bg-white rounded-full shadow px-3"
-      >
-        <Search className="text-gray-500" size={18} />
-        <input
-          type="text"
-          placeholder="Tìm sản phẩm..."
-          value={query}
-          onChange={(e) => setQuery(e.target.value)}
-          onFocus={() => setShowDropdown(true)}
-          onBlur={(e) => {
-            // ✅ Chỉ ẩn dropdown nếu không click vào gợi ý
-            const related = e.relatedTarget as HTMLElement | null;
-            if (!related || !related.closest(".search-suggestion")) {
-              setTimeout(() => setShowDropdown(false), 150);
-            }
-          }}
-          className="flex-1 px-2 py-2 bg-transparent focus:outline-none text-sm"
-        />
+      <form onSubmit={handleSearch} className="flex w-full">
+        {/* Container input với icon */}
+        <div className="relative flex w-full items-center">
+          {/* Icon kính lúp */}
+          <div className="absolute left-3 flex items-center justify-center text-gray-400 pointer-events-none">
+            <Search size={18} />
+          </div>
+
+          {/* Input căn giữa chữ */}
+          <input
+            type="text"
+            placeholder="Tìm kiếm sản phẩm..."
+            value={query}
+            onChange={(e) => setQuery(e.target.value)}
+            onFocus={() => setShowDropdown(true)}
+            onBlur={(e) => {
+              const related = e.relatedTarget as HTMLElement | null;
+              if (!related || !related.closest(".search-suggestion")) {
+                setTimeout(() => setShowDropdown(false), 150);
+              }
+            }}
+            className="w-full pl-10 pr-4 py-2 rounded-full border border-gray-300 focus:ring-2 focus:ring-blue-500 focus:outline-none text-sm bg-white text-center placeholder:text-gray-400 transition-all"
+          />
+        </div>
       </form>
 
+      {/* Dropdown gợi ý */}
       {showDropdown && (
-        <div className="absolute z-10 bg-white border w-full rounded-md shadow mt-2 max-h-80 overflow-y-auto">
-          {/* Gợi ý sản phẩm */}
-          {query.length > 0 && results.length > 0 && (
+        <div className="absolute z-10 w-full mt-2 max-h-80 overflow-y-auto border border-gray-200 rounded-md bg-white shadow-lg">
+          {/* Kết quả tìm kiếm */}
+          {query && results.length > 0 && (
             <ul>
               {results.map((item) => (
                 <li
                   key={item.id}
                   onClick={() => handleSelectProduct(item.id)}
                   tabIndex={0}
-                  className="search-suggestion flex items-center gap-2 p-2 hover:bg-gray-100 cursor-pointer"
+                  className="search-suggestion flex items-center gap-3 p-2 hover:bg-gray-100 cursor-pointer"
                 >
                   {item.image_url && (
                     <img
                       src={item.image_url}
                       alt={item.title}
-                      className="w-10 h-10 object-cover rounded"
+                      className="w-12 h-12 object-cover rounded"
                     />
                   )}
                   <div>
                     <p className="text-sm font-medium">{item.title}</p>
                     <p className="text-xs text-gray-500">
-                      {item.price
-                        ? `${item.price.toLocaleString()}₫`
-                        : "Liên hệ"}
+                      {item.price ? `${item.price.toLocaleString()}₫` : "Liên hệ"}
                     </p>
                   </div>
                 </li>
@@ -165,14 +159,12 @@ export default function SearchBar({ userId }: { userId?: string }) {
           )}
 
           {/* Không tìm thấy */}
-          {query.length > 0 && results.length === 0 && (
-            <p className="text-sm text-gray-500 p-3">
-              Không tìm thấy sản phẩm nào
-            </p>
+          {query && results.length === 0 && (
+            <p className="text-sm text-gray-500 p-3">Không tìm thấy sản phẩm nào</p>
           )}
 
           {/* Lịch sử tìm kiếm */}
-          {query.length === 0 && history.length > 0 && (
+          {!query && history.length > 0 && (
             <div className="p-2">
               <p className="text-xs text-gray-400 mb-2">Tìm kiếm gần đây</p>
               {history.map((h, i) => (

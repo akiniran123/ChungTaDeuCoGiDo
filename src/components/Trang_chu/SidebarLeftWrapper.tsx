@@ -1,15 +1,14 @@
-"use client";
-import React from "react";
+'use client';
+import React from 'react';
 
 type SidebarLeftWrapperProps = {
-  children?: React.ReactNode; // ✅ children giờ không bắt buộc nữa
+  children?: React.ReactNode;
 };
 
 export default function SidebarLeftWrapper({ children }: SidebarLeftWrapperProps) {
   return (
-    <div className="h-full bg-white border-r shadow-sm">
+    <div className="h-full bg-white border-r-[0.5px] border-gray-300">
       {children}
     </div>
   );
 }
-

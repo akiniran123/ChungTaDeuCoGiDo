@@ -30,7 +30,6 @@ export default function LogoSearchIcons({
   const [pendingRedirect, setPendingRedirect] = useState<string | null>(null)
   const router = useRouter()
 
-  // nếu parent không truyền totalItems thì tính từ context
   const { cart } = useCart()
   const computedTotal = typeof totalItems === 'number'
     ? totalItems
@@ -41,7 +40,6 @@ export default function LogoSearchIcons({
     setShowLogin(true)
   }
 
-  // nếu parent truyền onCartClick dùng nó, nếu không thì mặc định điều hướng
   const handleCartClick = () => {
     if (onCartClick) {
       onCartClick()
@@ -52,22 +50,16 @@ export default function LogoSearchIcons({
 
   return (
     <>
-      {/* Header với border đồng điệu SidebarLeft */}
-      <header className="w-full border-b-[1.5px] border-gray-300 bg-white pb-5">
-        <div className="w-full py-3 pl-4 pr-4 flex items-center justify-between gap-4">
-          {/* Logo và menu toggle */}
+      {/* Header với border dưới màu xám nhạt, độ dày 0.5px như SidebarLeftWrapper */}
+      <header className="w-full border-b-[0.5px] border-gray-300 bg-white pb-2 pt-0">
+        <div className="w-full py-2 pl-4 pr-4 flex items-center justify-between gap-4">
           <Logo onMenuToggle={onMenuToggle} />
-
-          {/* Thanh search desktop */}
           <SearchBar />
-
-          {/* Các nút bên phải */}
           <div className="flex items-center gap-3">
             <StartSellingButtons onRequireLogin={() => openLogin('/sell')} />
             <MessagesMenu />
             <NewsMenu />
 
-            {/* Giỏ hàng: click => handleCartClick, hiển thị badge */}
             <div
               className="relative cursor-pointer"
               onClick={handleCartClick}
@@ -88,7 +80,6 @@ export default function LogoSearchIcons({
           </div>
         </div>
 
-        {/* Thanh search mobile */}
         <div className="sm:hidden px-4 pb-2">
           <form
             onSubmit={(e) => {
@@ -110,7 +101,6 @@ export default function LogoSearchIcons({
         </div>
       </header>
 
-      {/* Modal đăng nhập */}
       {showLogin && (
         <LoginModal
           redirectTo={pendingRedirect ?? undefined}

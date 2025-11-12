@@ -33,7 +33,7 @@ export default function SearchBar({ userId }: { userId?: string }) {
         .order("searched_at", { ascending: false })
         .limit(5);
       if (!error && data) {
-        setHistory(data.filter(h => h.query).map(h => ({ query: h.query as string })));
+        setHistory(data.filter((h) => h.query).map((h) => ({ query: h.query as string })));
       }
     };
     fetchHistory();
@@ -101,27 +101,28 @@ export default function SearchBar({ userId }: { userId?: string }) {
 
   return (
     <div className="relative w-full max-w-md mx-auto">
-      <form onSubmit={handleSearch} className="flex w-full">
-        <div className="relative flex w-full items-center">
-          <div className="absolute left-4 flex items-center justify-center text-gray-400 pointer-events-none">
-            <Search size={20} />
-          </div>
-
-          <input
-            type="text"
-            placeholder="Tìm kiếm sản phẩm..."
-            value={query}
-            onChange={(e) => setQuery(e.target.value)}
-            onFocus={() => setShowDropdown(true)}
-            onBlur={(e) => {
-              const related = e.relatedTarget as HTMLElement | null;
-              if (!related || !related.closest(".search-suggestion")) {
-                setTimeout(() => setShowDropdown(false), 150);
-              }
-            }}
-            className="w-full pl-12 pr-4 py-2 rounded-full border border-gray-300 focus:ring-2 focus:ring-blue-500 focus:outline-none text-sm bg-white text-center placeholder:text-gray-400 transition-all shadow-sm hover:shadow-md"
-          />
-        </div>
+      {/* ✅ Form tròn, bỏ toàn bộ viền xanh kể cả bên trong */}
+      <form
+        onSubmit={handleSearch}
+        className="flex w-full items-center bg-white rounded-full shadow-md border border-gray-200 px-4 py-2 transition-all"
+        style={{ outline: "none", boxShadow: "none" }}
+      >
+        <Search size={20} className="text-gray-400 mr-3" />
+        <input
+          type="text"
+          placeholder="Tìm kiếm sản phẩm..."
+          value={query}
+          onChange={(e) => setQuery(e.target.value)}
+          onFocus={() => setShowDropdown(true)}
+          onBlur={(e) => {
+            const related = e.relatedTarget as HTMLElement | null;
+            if (!related || !related.closest(".search-suggestion")) {
+              setTimeout(() => setShowDropdown(false), 150);
+            }
+          }}
+          className="w-full bg-transparent border-none outline-none text-sm text-gray-800 placeholder-gray-400 focus:outline-none focus:ring-0"
+          style={{ outline: "none", boxShadow: "none" }}
+        />
       </form>
 
       {showDropdown && (
@@ -162,7 +163,9 @@ export default function SearchBar({ userId }: { userId?: string }) {
           {/* Lịch sử tìm kiếm */}
           {!query && history.length > 0 && (
             <div className="p-3">
-              <p className="text-xs text-gray-400 mb-2 uppercase tracking-wider">Tìm kiếm gần đây</p>
+              <p className="text-xs text-gray-400 mb-2 uppercase tracking-wider">
+                Tìm kiếm gần đây
+              </p>
               {history.map((h, i) => (
                 <button
                   key={i}

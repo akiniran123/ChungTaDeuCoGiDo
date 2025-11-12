@@ -130,7 +130,7 @@ export default function MessagesMenu() {
                         className="w-8 h-8 rounded-full"
                       />
                       <div className="flex-1">
-                        <div className="font-medium">{msg.sender?.username || 'Người dùng'}</div>
+                        <div className="font-medium text-black">{msg.sender?.username || 'Người dùng'}</div>
                         <div className="text-gray-500 truncate">{msg.content}</div>
                       </div>
                     </Link>

@@ -17,17 +17,22 @@ import {
 import { supabase } from "@/lib/supabase/client";
 
 export default function SidebarLeft() {
-  const [openSections, setOpenSections] = useState<{ [key: string]: boolean }>({
-    custom: true,
-    communities: true,
-  });
+  type SectionKey = "custom" | "communities";
+
+const [openSections, setOpenSections] = useState<Record<SectionKey, boolean>>({
+  custom: true,
+  communities: true,
+});
+
+const toggleSection = (key: SectionKey) => {
+  setOpenSections((prev) => ({ ...prev, [key]: !prev[key] }));
+};
+
   const [communities, setCommunities] = useState<
     { id: string; title: string | null }[]
   >([]);
 
-  const toggleSection = (key: string) => {
-    setOpenSections((prev) => ({ ...prev, [key]: !prev[key] }));
-  };
+  
 
   useEffect(() => {
     async function fetchCommunities() {
@@ -44,34 +49,34 @@ export default function SidebarLeft() {
   }, []);
 
   return (
-    <div className="w-64 h-screen bg-white text-gray-900 overflow-y-auto border-r border-gray-200">
+    <aside className="w-64 md:w-60 h-screen bg-white text-gray-900 border-r border-gray-200 overflow-y-auto">
       {/* Header */}
-      <div className="flex items-center justify-between px-4 py-3 border-b border-gray-200">
-        <Link href="/" className="flex items-center space-x-2">
+      <div className="flex items-center gap-2 px-4 py-3 border-b border-gray-200">
+        <Link href="/" className="flex items-center gap-2">
           <img src="/reddit-icon.svg" alt="logo" className="w-6 h-6" />
-          <span className="font-semibold text-black">reddit</span>
+          <span className="font-semibold text-black text-sm">reddit</span>
         </Link>
       </div>
 
       {/* MAIN LINKS */}
-      <div className="mt-3">
+      <nav className="mt-3">
         {[
-          { label: "Home", icon: <Home className="w-4 h-4" />, href: "/" },
-          { label: "Popular", icon: <Flame className="w-4 h-4" />, href: "/popular" },
-          { label: "Answers (Beta)", icon: <HelpCircle className="w-4 h-4" />, href: "/answers" },
-          { label: "Explore", icon: <Compass className="w-4 h-4" />, href: "/explore" },
-          { label: "All", icon: <List className="w-4 h-4" />, href: "/all" },
+          { label: "Home", icon: Home, href: "/" },
+          { label: "Popular", icon: Flame, href: "/popular" },
+          { label: "Answers (Beta)", icon: HelpCircle, href: "/answers" },
+          { label: "Explore", icon: Compass, href: "/explore" },
+          { label: "All", icon: List, href: "/all" },
         ].map((item) => (
           <Link
             key={item.label}
             href={item.href}
-            className="flex items-center px-4 py-2 hover:bg-gray-100 rounded-lg mx-2 transition-colors"
+            className="flex items-center gap-3 px-4 py-2 text-sm text-gray-800 hover:bg-gray-100 rounded-md mx-2 transition-colors"
           >
-            {item.icon}
-            <span className="ml-3">{item.label}</span>
+            <item.icon className="w-4 h-4 text-blue-600 shrink-0" />
+            <span className="truncate">{item.label}</span>
           </Link>
         ))}
-      </div>
+      </nav>
 
       <hr className="border-gray-200 my-3" />
 
@@ -93,18 +98,19 @@ export default function SidebarLeft() {
           <div className="mt-1 space-y-1">
             <Link
               href="/create-feed"
-              className="flex items-center px-2 py-1.5 rounded hover:bg-gray-100 text-sm text-gray-800"
+              className="flex items-center gap-2 px-2 py-1.5 text-sm text-gray-800 rounded hover:bg-gray-100"
             >
-              <Plus className="w-4 h-4 mr-2" /> Create Custom Feed
+              <Plus className="w-4 h-4 text-blue-600" />
+              <span>Create Custom Feed</span>
             </Link>
-            <div className="flex items-center px-2 py-1.5 rounded hover:bg-gray-100 text-sm text-gray-800">
+            <div className="flex items-center gap-2 px-2 py-1.5 text-sm text-gray-800 rounded hover:bg-gray-100">
               <img
                 src="/default-feed.png"
                 alt="feed"
-                className="w-5 h-5 rounded-full mr-2"
+                className="w-5 h-5 rounded-full"
               />
-              myFeed
-              <Star className="w-4 h-4 ml-auto text-gray-400" />
+              <span>myFeed</span>
+              <Star className="w-4 h-4 text-gray-400 ml-auto" />
             </div>
           </div>
         )}
@@ -130,35 +136,37 @@ export default function SidebarLeft() {
           <div className="mt-1 space-y-1">
             <Link
               href="/create-community"
-              className="flex items-center px-2 py-1.5 rounded hover:bg-gray-100 text-sm text-gray-800"
+              className="flex items-center gap-2 px-2 py-1.5 text-sm text-gray-800 rounded hover:bg-gray-100"
             >
-              <Plus className="w-4 h-4 mr-2" /> Create Community
+              <Plus className="w-4 h-4 text-blue-600" />
+              <span>Create Community</span>
             </Link>
             <Link
               href="/manage-communities"
-              className="flex items-center px-2 py-1.5 rounded hover:bg-gray-100 text-sm text-gray-800"
+              className="flex items-center gap-2 px-2 py-1.5 text-sm text-gray-800 rounded hover:bg-gray-100"
             >
-              <Users className="w-4 h-4 mr-2" /> Manage Communities
+              <Users className="w-4 h-4 text-blue-600" />
+              <span>Manage Communities</span>
             </Link>
 
             {communities.map((c) => (
               <Link
                 key={c.id}
                 href={`/communities/${c.id}`}
-                className="flex items-center px-2 py-1.5 rounded hover:bg-gray-100 text-sm text-gray-800"
+                className="flex items-center gap-2 px-2 py-1.5 text-sm text-gray-800 rounded hover:bg-gray-100"
               >
                 <img
                   src="/default-community.png"
                   alt={c.title || "community"}
-                  className="w-5 h-5 rounded-full mr-2"
+                  className="w-5 h-5 rounded-full"
                 />
-                {c.title || "Không tên"}
-                <Star className="w-4 h-4 ml-auto text-gray-400" />
+                <span className="truncate">{c.title || "Không tên"}</span>
+                <Star className="w-4 h-4 text-gray-400 ml-auto" />
               </Link>
             ))}
           </div>
         )}
       </div>
-    </div>
+    </aside>
   );
 }

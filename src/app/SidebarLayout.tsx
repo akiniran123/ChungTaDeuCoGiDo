@@ -2,9 +2,6 @@
 
 import { useState } from "react";
 import SidebarLeft from "@/components/Trang_chu/SidebarLeft";
-import { categories } from "@/data/data";
-
-// ✅ Thêm import FirebaseInit
 import FirebaseInit from "@/components/FirebaseInit";
 
 export default function SidebarLayout({ children }: { children: React.ReactNode }) {
@@ -26,7 +23,7 @@ export default function SidebarLayout({ children }: { children: React.ReactNode 
             transform: showSidebar ? "translateX(0)" : `translateX(-${SIDEBAR_WIDTH}px)`,
           }}
         >
-          <SidebarLeft categories={categories} />
+          <SidebarLeft />
         </div>
 
         {/* Nút toggle */}

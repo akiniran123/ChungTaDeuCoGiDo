@@ -15,11 +15,18 @@ export default function UserProfilePage() {
   const [products, setProducts] = useState<any[]>([]);
   const [loading, setLoading] = useState(true);
   const [deleting, setDeleting] = useState<string | null>(null);
+  const [currentUser, setCurrentUser] = useState<any>(null); // ✅ user hiện tại đang đăng nhập
 
   useEffect(() => {
     const fetchData = async () => {
       try {
-        // 1️⃣ Lấy thông tin người dùng
+        // 🔹 Lấy thông tin user đang đăng nhập
+        const {
+          data: { user: sessionUser },
+        } = await supabase.auth.getUser();
+        setCurrentUser(sessionUser);
+
+        // 1️⃣ Lấy thông tin người dùng theo username
         const { data: userData, error: userError } = await supabase
           .from("users")
           .select("*")
@@ -34,7 +41,7 @@ export default function UserProfilePage() {
 
         setUser(userData);
 
-        // 2️⃣ Lấy sản phẩm của user
+        // 2️⃣ Lấy sản phẩm của user đó
         const { data: productsData, error: productError } = await supabase
           .from("products")
           .select("*")
@@ -53,8 +60,13 @@ export default function UserProfilePage() {
     if (username) fetchData();
   }, [username]);
 
-  // ✅ Hàm xóa bài đăng
+  // ✅ Hàm xóa bài đăng (chỉ cho phép chính chủ)
   const handleDelete = async (productId: string, imageUrl?: string) => {
+    if (!currentUser || currentUser.id !== user?.id) {
+      alert("❌ Bạn không có quyền xóa bài đăng của người khác!");
+      return;
+    }
+
     const confirmDelete = confirm("Bạn có chắc muốn xóa bài đăng này?");
     if (!confirmDelete) return;
 
@@ -63,10 +75,9 @@ export default function UserProfilePage() {
 
       // 🧹 Xóa ảnh trong storage nếu có
       if (imageUrl) {
-        // Lấy phần đường dẫn sau /images/
         const parts = imageUrl.split("/images/");
         if (parts.length === 2) {
-          const storagePath = parts[1]; // ví dụ: user_123/product-xxx.png
+          const storagePath = parts[1];
           const { error: removeError } = await supabase.storage
             .from("images")
             .remove([storagePath]);
@@ -85,13 +96,14 @@ export default function UserProfilePage() {
       const { error } = await supabase
         .from("products")
         .delete()
-        .eq("id", productId);
+        .eq("id", productId)
+        .eq("user_id", currentUser.id); // ✅ chỉ xóa nếu bài thuộc về user đó
 
       if (error) throw error;
 
       // ✅ Cập nhật danh sách sau khi xóa
       setProducts((prev) => prev.filter((p) => p.id !== productId));
-      alert("Đã xóa bài đăng và ảnh thành công!");
+      alert("✅ Đã xóa bài đăng và ảnh thành công!");
     } catch (err) {
       console.error("❌ Lỗi khi xóa bài:", err);
       alert("Xóa thất bại, vui lòng thử lại!");
@@ -171,18 +183,20 @@ export default function UserProfilePage() {
                   {p.price?.toLocaleString("vi-VN")}₫
                 </p>
 
-                {/* 🗑️ Nút xóa */}
-                <button
-                  onClick={() => handleDelete(p.id, p.image_url)}
-                  disabled={deleting === p.id}
-                  className={`absolute top-3 right-3 px-3 py-1 rounded-md text-white text-sm transition ${
-                    deleting === p.id
-                      ? "bg-gray-400 cursor-not-allowed"
-                      : "bg-red-500 hover:bg-red-600"
-                  }`}
-                >
-                  {deleting === p.id ? "Đang xóa..." : "🗑️ Xóa"}
-                </button>
+                {/* 🗑️ Nút xóa chỉ hiển thị nếu là chủ tài khoản */}
+                {currentUser && currentUser.id === user.id && (
+                  <button
+                    onClick={() => handleDelete(p.id, p.image_url)}
+                    disabled={deleting === p.id}
+                    className={`absolute top-3 right-3 px-3 py-1 rounded-md text-white text-sm transition ${
+                      deleting === p.id
+                        ? "bg-gray-400 cursor-not-allowed"
+                        : "bg-red-500 hover:bg-red-600"
+                    }`}
+                  >
+                    {deleting === p.id ? "Đang xóa..." : "🗑️ Xóa"}
+                  </button>
+                )}
               </div>
             ))}
           </div>

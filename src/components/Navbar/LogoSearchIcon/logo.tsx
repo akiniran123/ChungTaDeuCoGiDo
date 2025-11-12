@@ -9,7 +9,7 @@ export default function Logo({
   onMenuToggle?: () => void
 }) {
   return (
-    <div className="flex items-center gap-3 justify-start">
+    <div className="flex items-center gap-4 justify-start">
       {/* Nút menu trên mobile */}
       <button
         type="button"
@@ -23,10 +23,14 @@ export default function Logo({
       {/* Logo */}
       <Link
         href="/"
-        className="flex items-center space-x-2 text-2xl font-extrabold"
+        className="flex items-center space-x-3 text-2xl font-extrabold"
       >
-        <span className="text-[#9b4de0]">🛡</span>
-        <span className="text-gray-800">NexLoot</span>
+        <img
+          src="/logo.png"
+          alt="NexLoot logo"
+          className="w-12 h-12 object-contain"
+        />
+        <span className="text-gray-800 text-3xl">NexLoot</span>
       </Link>
 
       {/* Tải ứng dụng + QR */}

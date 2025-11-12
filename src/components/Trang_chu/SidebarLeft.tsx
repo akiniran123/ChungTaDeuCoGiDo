@@ -2,48 +2,33 @@
 
 import React, { useState, useEffect } from "react";
 import Link from "next/link";
-import { Home, Info, HelpCircle, Users, Link2, Folder, Settings } from "lucide-react";
+import {
+  Home,
+  Flame,
+  HelpCircle,
+  Compass,
+  List,
+  Plus,
+  Users,
+  Star,
+  ChevronDown,
+  ChevronRight,
+} from "lucide-react";
 import { supabase } from "@/lib/supabase/client";
 
-type Category = {
-  label: string;
-  href?: string;
-  children?: { label: string; href: string }[];
-};
+export default function SidebarLeft() {
+  const [openSections, setOpenSections] = useState<{ [key: string]: boolean }>({
+    custom: true,
+    communities: true,
+  });
+  const [communities, setCommunities] = useState<
+    { id: string; title: string | null }[]
+  >([]);
 
-type SidebarLeftProps = {
-  categories: Category[];
-};
-
-export default function SidebarLeft({ categories }: SidebarLeftProps) {
-  const [openMenu, setOpenMenu] = useState<string | null>(null);
-  const [communities, setCommunities] = useState<{ id: string; title: string | null }[]>([]);
-
-  const handleToggle = (label: string) => {
-    setOpenMenu(openMenu === label ? null : label);
+  const toggleSection = (key: string) => {
+    setOpenSections((prev) => ({ ...prev, [key]: !prev[key] }));
   };
 
-  const getIcon = (label: string) => {
-    switch (label) {
-      case "Về chúng tôi":
-        return <Info className="w-4 h-4 inline-block mr-2 text-black" />;
-      case "Hỗ trợ":
-        return <HelpCircle className="w-4 h-4 inline-block mr-2 text-black" />;
-      case "Cộng đồng":
-        return <Users className="w-4 h-4 inline-block mr-2 text-black" />;
-      case "Kết nối":
-        return <Link2 className="w-4 h-4 inline-block mr-2 text-black" />;
-      case "Cài đặt":
-        return <Settings className="w-4 h-4 inline-block mr-2 text-black" />;
-      default:
-        return <Folder className="w-4 h-4 inline-block mr-2 text-black" />;
-    }
-  };
-
-  const isSpecialCategory = (label: string) =>
-    ["Về chúng tôi", "Hỗ trợ", "Cộng đồng", "Kết nối", "Cài đặt"].includes(label);
-
-  // 🧠 Lấy danh sách cộng đồng từ Supabase
   useEffect(() => {
     async function fetchCommunities() {
       const { data, error } = await supabase
@@ -51,104 +36,129 @@ export default function SidebarLeft({ categories }: SidebarLeftProps) {
         .select("id, title")
         .order("created_at", { ascending: false });
 
-      if (error) {
-        console.error("Lỗi tải communities:", error);
-      } else {
-        setCommunities(data || []);
-      }
+      if (error) console.error("Lỗi tải communities:", error);
+      else setCommunities(data || []);
     }
 
     fetchCommunities();
   }, []);
 
-  // ✅ Chèn communities vào danh mục "Cộng đồng"
-  const categoriesWithCommunities = categories.map((cat) =>
-    cat.label === "Cộng đồng"
-      ? {
-          ...cat,
-          children: [
-            ...(cat.children || []),
-            ...communities.map((c) => ({
-              label: c.title || "Không tên",
-              href: `/communities/${c.id}`,
-            })),
-            { label: "+ Tạo cộng đồng", href: "/create-community" },
-          ],
-        }
-      : cat
-  );
-
-  // ✅ Thêm mục “Cài đặt” ngay dưới “Kết nối”
-  const finalCategories = [
-    ...categoriesWithCommunities,
-    {
-      label: "Cài đặt",
-      href: "/settings",
-    },
-  ];
-
-  // ✅ Chỉ chỉnh padding-top để nội dung không bị che bởi navbar
   return (
-    <div className="h-[calc(100vh-4.5rem)] overflow-y-auto px-2 pb-20 pt-16">
-      {/* pt-16 = khoảng 4rem, bạn có thể chỉnh cho vừa navbar */}
-      <div className="flex flex-col mb-3">
-        <Link
-          href="/"
-          className="font-bold text-xl flex items-center mb-2 px-2 py-1 rounded-lg !text-gray-800 no-underline hover:bg-gray-100 transition-colors cursor-pointer"
-        >
-          <Home className="w-5 h-5 mr-2 text-gray-800" />
-          Trang chủ
+    <div className="w-64 h-screen bg-white text-gray-900 overflow-y-auto border-r border-gray-200">
+      {/* Header */}
+      <div className="flex items-center justify-between px-4 py-3 border-b border-gray-200">
+        <Link href="/" className="flex items-center space-x-2">
+          <img src="/reddit-icon.svg" alt="logo" className="w-6 h-6" />
+          <span className="font-semibold text-black">reddit</span>
         </Link>
-        <h3 className="font-bold text-lg text-pink-600 px-2">Danh mục</h3>
       </div>
 
-      <ul className="space-y-2 pb-20">
-        {finalCategories.map((cat) => (
-          <li key={cat.label}>
-            {cat.label === "Về chúng tôi" && (
-              <hr className="my-2 border-t border-gray-300 border-[1.5px]" />
-            )}
-
-            {cat.children ? (
-              <>
-                <button
-                  onClick={() => handleToggle(cat.label)}
-                  className="w-full flex items-center text-left px-3 py-2 rounded-lg font-semibold !text-gray-800 hover:bg-pink-50 hover:text-pink-600 transition-colors cursor-pointer"
-                >
-                  {getIcon(cat.label)}
-                  {cat.label}
-                </button>
-                {openMenu === cat.label && (
-                  <ul className="ml-4 mt-1 space-y-1">
-                    {cat.children.map((child) => (
-                      <li key={child.href}>
-                        <Link
-                          href={child.href}
-                          className={`block w-full text-left px-3 py-1.5 rounded-md text-sm cursor-pointer no-underline ${
-                            isSpecialCategory(cat.label)
-                              ? "!text-gray-500 hover:!text-gray-700 hover:bg-gray-100"
-                              : "!text-gray-600 hover:!text-pink-600 hover:bg-pink-50"
-                          } transition-colors`}
-                        >
-                          {child.label}
-                        </Link>
-                      </li>
-                    ))}
-                  </ul>
-                )}
-              </>
-            ) : (
-              <Link
-                href={cat.href!}
-                className="flex items-center w-full text-left px-3 py-2 rounded-lg !text-gray-800 no-underline hover:bg-pink-50 hover:text-pink-600 transition-colors cursor-pointer"
-              >
-                {getIcon(cat.label)}
-                {cat.label}
-              </Link>
-            )}
-          </li>
+      {/* MAIN LINKS */}
+      <div className="mt-3">
+        {[
+          { label: "Home", icon: <Home className="w-4 h-4" />, href: "/" },
+          { label: "Popular", icon: <Flame className="w-4 h-4" />, href: "/popular" },
+          { label: "Answers (Beta)", icon: <HelpCircle className="w-4 h-4" />, href: "/answers" },
+          { label: "Explore", icon: <Compass className="w-4 h-4" />, href: "/explore" },
+          { label: "All", icon: <List className="w-4 h-4" />, href: "/all" },
+        ].map((item) => (
+          <Link
+            key={item.label}
+            href={item.href}
+            className="flex items-center px-4 py-2 hover:bg-gray-100 rounded-lg mx-2 transition-colors"
+          >
+            {item.icon}
+            <span className="ml-3">{item.label}</span>
+          </Link>
         ))}
-      </ul>
+      </div>
+
+      <hr className="border-gray-200 my-3" />
+
+      {/* CUSTOM FEEDS */}
+      <div className="px-4">
+        <button
+          onClick={() => toggleSection("custom")}
+          className="flex items-center justify-between w-full text-xs uppercase text-gray-500 font-semibold tracking-wider py-1"
+        >
+          Custom Feeds
+          {openSections.custom ? (
+            <ChevronDown className="w-4 h-4" />
+          ) : (
+            <ChevronRight className="w-4 h-4" />
+          )}
+        </button>
+
+        {openSections.custom && (
+          <div className="mt-1 space-y-1">
+            <Link
+              href="/create-feed"
+              className="flex items-center px-2 py-1.5 rounded hover:bg-gray-100 text-sm text-gray-800"
+            >
+              <Plus className="w-4 h-4 mr-2" /> Create Custom Feed
+            </Link>
+            <div className="flex items-center px-2 py-1.5 rounded hover:bg-gray-100 text-sm text-gray-800">
+              <img
+                src="/default-feed.png"
+                alt="feed"
+                className="w-5 h-5 rounded-full mr-2"
+              />
+              myFeed
+              <Star className="w-4 h-4 ml-auto text-gray-400" />
+            </div>
+          </div>
+        )}
+      </div>
+
+      <hr className="border-gray-200 my-3" />
+
+      {/* COMMUNITIES */}
+      <div className="px-4 mb-6">
+        <button
+          onClick={() => toggleSection("communities")}
+          className="flex items-center justify-between w-full text-xs uppercase text-gray-500 font-semibold tracking-wider py-1"
+        >
+          Communities
+          {openSections.communities ? (
+            <ChevronDown className="w-4 h-4" />
+          ) : (
+            <ChevronRight className="w-4 h-4" />
+          )}
+        </button>
+
+        {openSections.communities && (
+          <div className="mt-1 space-y-1">
+            <Link
+              href="/create-community"
+              className="flex items-center px-2 py-1.5 rounded hover:bg-gray-100 text-sm text-gray-800"
+            >
+              <Plus className="w-4 h-4 mr-2" /> Create Community
+            </Link>
+            <Link
+              href="/manage-communities"
+              className="flex items-center px-2 py-1.5 rounded hover:bg-gray-100 text-sm text-gray-800"
+            >
+              <Users className="w-4 h-4 mr-2" /> Manage Communities
+            </Link>
+
+            {communities.map((c) => (
+              <Link
+                key={c.id}
+                href={`/communities/${c.id}`}
+                className="flex items-center px-2 py-1.5 rounded hover:bg-gray-100 text-sm text-gray-800"
+              >
+                <img
+                  src="/default-community.png"
+                  alt={c.title || "community"}
+                  className="w-5 h-5 rounded-full mr-2"
+                />
+                {c.title || "Không tên"}
+                <Star className="w-4 h-4 ml-auto text-gray-400" />
+              </Link>
+            ))}
+          </div>
+        )}
+      </div>
     </div>
   );
 }

@@ -163,7 +163,8 @@ export default function ChatDetailPage() {
   // Auto scroll khi có tin mới
   // -------------------------------
   useEffect(() => {
-    messagesEndRef.current?.scrollIntoView({ behavior: "smooth" });
+    const el = document.getElementById("scroll-anchor");
+    if (el) el.scrollIntoView({ behavior: "smooth", block: "end" });
   }, [messages]);
 
   // -------------------------------
@@ -216,8 +217,11 @@ export default function ChatDetailPage() {
           </div>
         </div>
 
-        {/* Messages cuộn độc lập */}
-        <div className="flex-1 overflow-y-auto px-8 py-6 space-y-3">
+        {/* Messages cuộn độc lập + auto scroll */}
+        <div
+          className="flex-1 overflow-y-auto px-8 py-6 space-y-3"
+          style={{ scrollBehavior: "smooth" }}
+        >
           {messages.length === 0 && (
             <div className="text-center text-gray-400 mt-10 text-sm">
               💬 Chưa có tin nhắn nào
@@ -244,7 +248,7 @@ export default function ChatDetailPage() {
               </span>
             </div>
           ))}
-          <div ref={messagesEndRef} />
+          <div id="scroll-anchor" ref={messagesEndRef} />
         </div>
 
         {/* Ô nhập tin nhắn — cố định dưới */}

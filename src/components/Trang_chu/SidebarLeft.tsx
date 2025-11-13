@@ -48,20 +48,12 @@ export default function SidebarLeft() {
 
   return (
     <aside className="fixed top-10 left-0 w-64 h-[calc(100vh-4rem)] bg-white border-r border-gray-200 overflow-y-auto text-gray-900 z-40">
-      {/* HEADER */}
-      <div className="flex items-center gap-2 px-4 py-3 border-b border-gray-200">
-        <Link href="/" className="flex items-center gap-2">
-          <img src="/reddit-icon.svg" alt="logo" className="w-6 h-6" />
-          <span className="font-semibold text-black text-sm">reddit</span>
-        </Link>
-      </div>
 
       {/* MAIN LINKS */}
       <nav className="mt-2">
         {[
           { label: "Home", icon: Home, href: "/" },
           { label: "Popular", icon: Flame, href: "/popular" },
-          { label: "Answers", icon: HelpCircle, href: "/answers" },
           { label: "Explore", icon: Compass, href: "/explore" },
           { label: "All", icon: List, href: "/all" },
         ].map((item) => (
@@ -84,60 +76,6 @@ export default function SidebarLeft() {
 
       <hr className="border-gray-200 my-3 mx-2" />
 
-      {/* GAMES ON REDDIT */}
-      <div className="px-4">
-        <button
-          onClick={() => toggleSection("games")}
-          className="flex items-center justify-between w-full text-xs uppercase text-gray-500 font-semibold tracking-wider py-1"
-        >
-          Games on Reddit
-          {openSections.games ? (
-            <ChevronDown className="w-4 h-4" />
-          ) : (
-            <ChevronRight className="w-4 h-4" />
-          )}
-        </button>
-      </div>
-
-      <hr className="border-gray-200 my-3 mx-2" />
-
-      {/* CUSTOM FEEDS */}
-      <div className="px-4">
-        <button
-          onClick={() => toggleSection("custom")}
-          className="flex items-center justify-between w-full text-xs uppercase text-gray-500 font-semibold tracking-wider py-1"
-        >
-          Custom Feeds
-          {openSections.custom ? (
-            <ChevronDown className="w-4 h-4" />
-          ) : (
-            <ChevronRight className="w-4 h-4" />
-          )}
-        </button>
-
-        {openSections.custom && (
-          <div className="mt-1 space-y-1">
-            <Link
-              href="/create-feed"
-              className="flex items-center gap-2 px-2 py-1.5 text-sm text-gray-800 rounded hover:bg-gray-100"
-            >
-              <Plus className="w-4 h-4 text-gray-600" />
-              <span>Create Custom Feed</span>
-            </Link>
-            <div className="flex items-center gap-2 px-2 py-1.5 text-sm text-gray-800 rounded hover:bg-gray-100">
-              <img
-                src="/default-feed.png"
-                alt="feed"
-                className="w-5 h-5 rounded-full"
-              />
-              <span>hjbjhjhb</span>
-              <Star className="w-4 h-4 text-gray-400 ml-auto" />
-            </div>
-          </div>
-        )}
-      </div>
-
-      <hr className="border-gray-200 my-3 mx-2" />
 
       {/* COMMUNITIES */}
       <div className="px-4 mb-6">

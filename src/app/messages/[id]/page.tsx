@@ -196,7 +196,7 @@ export default function ChatDetailPage() {
   return (
     <div className="flex h-[calc(100vh-64px)] w-full bg-white">
       {/* Cột chat chi tiết */}
-      <div className="flex-1 flex flex-col">
+      <div className="flex-1 flex flex-col bg-gray-50">
         {/* Header */}
         <div className="flex items-center justify-between px-6 py-3 border-b bg-white shadow-sm sticky top-0 z-10">
           <div className="flex items-center gap-3">
@@ -216,8 +216,8 @@ export default function ChatDetailPage() {
           </div>
         </div>
 
-        {/* Messages */}
-        <div className="flex-1 overflow-y-auto px-8 py-6 space-y-3 bg-gray-50">
+        {/* Messages cuộn độc lập */}
+        <div className="flex-1 overflow-y-auto px-8 py-6 space-y-3">
           {messages.length === 0 && (
             <div className="text-center text-gray-400 mt-10 text-sm">
               💬 Chưa có tin nhắn nào
@@ -247,10 +247,10 @@ export default function ChatDetailPage() {
           <div ref={messagesEndRef} />
         </div>
 
-        {/* Input */}
+        {/* Ô nhập tin nhắn — cố định dưới */}
         <form
           onSubmit={sendMessage}
-          className="flex items-center gap-3 px-6 py-3 border-t bg-white"
+          className="flex items-center gap-3 px-6 py-3 border-t bg-white sticky bottom-0 z-10"
         >
           <input
             type="text"
@@ -269,42 +269,41 @@ export default function ChatDetailPage() {
       </div>
 
       {/* Cột danh sách contacts (bên phải) */}
-<div className="w-80 border-l border-gray-200 overflow-y-auto bg-gray-50">
-  {/* Header */}
-  <div className="flex items-center px-6 py-3 border-b bg-white shadow-sm sticky top-4 z-10">
-    <h2 className="text-lg font-semibold">Tin nhắn</h2>
-  </div>
+      <div className="w-80 border-l border-gray-200 overflow-y-auto bg-gray-50">
+        {/* Header */}
+        <div className="flex items-center px-6 py-3 border-b bg-white shadow-sm sticky top-4 z-10">
+          <h2 className="text-lg font-semibold">Tin nhắn</h2>
+        </div>
 
-  {/* Danh sách contacts, thêm margin-top để đẩy xuống */}
-  <div className="mt-8"> {/* tăng mt-? càng lớn, item càng xuống */}
-    {contacts.map((contact) => (
-      <div
-        key={contact.id}
-        onClick={() => router.push(`/messages/${contact.id}`)}
-        className={`flex items-center gap-3 px-6 py-3 cursor-pointer hover:bg-gray-100 ${
-          contact.id === partnerId ? "bg-white font-semibold" : ""
-        }`}
-      >
-        <Image
-          src={contact.avatar_url || "/default-avatar.png"}
-          width={40}
-          height={40}
-          alt="avatar"
-          className="rounded-full"
-        />
-        <div className="flex-1 truncate">
-          <div className="truncate">{contact.username}</div>
-          {contact.last_message && (
-            <div className="text-xs text-gray-400 truncate">
-              {contact.last_message}
+        {/* Danh sách contacts, thêm margin-top để đẩy xuống */}
+        <div className="mt-8">
+          {contacts.map((contact) => (
+            <div
+              key={contact.id}
+              onClick={() => router.push(`/messages/${contact.id}`)}
+              className={`flex items-center gap-3 px-6 py-3 cursor-pointer hover:bg-gray-100 ${
+                contact.id === partnerId ? "bg-white font-semibold" : ""
+              }`}
+            >
+              <Image
+                src={contact.avatar_url || "/default-avatar.png"}
+                width={40}
+                height={40}
+                alt="avatar"
+                className="rounded-full"
+              />
+              <div className="flex-1 truncate">
+                <div className="truncate">{contact.username}</div>
+                {contact.last_message && (
+                  <div className="text-xs text-gray-400 truncate">
+                    {contact.last_message}
+                  </div>
+                )}
+              </div>
             </div>
-          )}
+          ))}
         </div>
       </div>
-    ))}
-  </div>
-</div>
-
     </div>
   );
 }

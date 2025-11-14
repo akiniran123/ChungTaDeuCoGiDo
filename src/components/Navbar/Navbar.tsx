@@ -57,7 +57,6 @@ export default function Navbar() {
       </header>
 
       {/* ✅ Spacer để tránh content bị che bởi fixed navbar */}
-      <div className="h-28 sm:h-[120px]" />
     </>
   );
 }

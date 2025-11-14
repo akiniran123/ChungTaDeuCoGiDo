@@ -10,10 +10,9 @@ export default function SidebarLayout({ children }: { children: React.ReactNode 
 
   return (
     <>
-      {/* ✅ Khởi tạo Firebase chỉ 1 lần ở đây */}
       <FirebaseInit />
 
-      <div className="flex">
+      <div className="flex pt-[4.5rem]"> {/* 👈 chừa khoảng cho Navbar */}
         {/* SidebarLeft */}
         <div
           className="fixed left-0 top-[4.5rem] bg-white border-r-[1.5px] border-gray-300 transition-transform duration-300 ease-in-out"

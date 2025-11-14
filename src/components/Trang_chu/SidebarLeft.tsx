@@ -17,22 +17,21 @@ import {
 import { supabase } from "@/lib/supabase/client";
 
 export default function SidebarLeft() {
-  type SectionKey = "custom" | "communities";
+  type SectionKey = "games" | "custom" | "communities";
 
-const [openSections, setOpenSections] = useState<Record<SectionKey, boolean>>({
-  custom: true,
-  communities: true,
-});
+  const [openSections, setOpenSections] = useState<Record<SectionKey, boolean>>({
+    games: false,
+    custom: true,
+    communities: true,
+  });
 
-const toggleSection = (key: SectionKey) => {
-  setOpenSections((prev) => ({ ...prev, [key]: !prev[key] }));
-};
+  const toggleSection = (key: SectionKey) => {
+    setOpenSections((prev) => ({ ...prev, [key]: !prev[key] }));
+  };
 
   const [communities, setCommunities] = useState<
     { id: string; title: string | null }[]
   >([]);
-
-  
 
   useEffect(() => {
     async function fetchCommunities() {
@@ -40,7 +39,6 @@ const toggleSection = (key: SectionKey) => {
         .from("communities")
         .select("id, title")
         .order("created_at", { ascending: false });
-
       if (error) console.error("Lỗi tải communities:", error);
       else setCommunities(data || []);
     }
@@ -49,74 +47,35 @@ const toggleSection = (key: SectionKey) => {
   }, []);
 
   return (
-    <aside className="w-64 md:w-60 h-screen bg-white text-gray-900 border-r border-gray-200 overflow-y-auto">
-      {/* Header */}
-      <div className="flex items-center gap-2 px-4 py-3 border-b border-gray-200">
-        <Link href="/" className="flex items-center gap-2">
-          <img src="/reddit-icon.svg" alt="logo" className="w-6 h-6" />
-          <span className="font-semibold text-black text-sm">reddit</span>
-        </Link>
-      </div>
+    <aside className="fixed top-10 left-0 w-64 h-[calc(100vh-4rem)] bg-white border-r border-gray-200 overflow-y-auto text-gray-900 z-40">
 
       {/* MAIN LINKS */}
-      <nav className="mt-3">
+      <nav className="mt-2">
         {[
           { label: "Home", icon: Home, href: "/" },
           { label: "Popular", icon: Flame, href: "/popular" },
-          { label: "Answers (Beta)", icon: HelpCircle, href: "/answers" },
           { label: "Explore", icon: Compass, href: "/explore" },
           { label: "All", icon: List, href: "/all" },
         ].map((item) => (
           <Link
             key={item.label}
             href={item.href}
-            className="flex items-center gap-3 px-4 py-2 text-sm text-gray-800 hover:bg-gray-100 rounded-md mx-2 transition-colors"
+            className={`flex items-center gap-3 px-4 py-2 text-sm rounded-md mx-2 transition-colors
+            hover:bg-gray-100 text-gray-800`}
           >
-            <item.icon className="w-4 h-4 text-blue-600 shrink-0" />
+            <item.icon className="w-4 h-4 text-gray-600" />
             <span className="truncate">{item.label}</span>
+            {item.label === "Answers" && (
+              <span className="text-[10px] text-red-600 font-semibold ml-1">
+                BETA
+              </span>
+            )}
           </Link>
         ))}
       </nav>
 
-      <hr className="border-gray-200 my-3" />
+      <hr className="border-gray-200 my-3 mx-2" />
 
-      {/* CUSTOM FEEDS */}
-      <div className="px-4">
-        <button
-          onClick={() => toggleSection("custom")}
-          className="flex items-center justify-between w-full text-xs uppercase text-gray-500 font-semibold tracking-wider py-1"
-        >
-          Custom Feeds
-          {openSections.custom ? (
-            <ChevronDown className="w-4 h-4" />
-          ) : (
-            <ChevronRight className="w-4 h-4" />
-          )}
-        </button>
-
-        {openSections.custom && (
-          <div className="mt-1 space-y-1">
-            <Link
-              href="/create-feed"
-              className="flex items-center gap-2 px-2 py-1.5 text-sm text-gray-800 rounded hover:bg-gray-100"
-            >
-              <Plus className="w-4 h-4 text-blue-600" />
-              <span>Create Custom Feed</span>
-            </Link>
-            <div className="flex items-center gap-2 px-2 py-1.5 text-sm text-gray-800 rounded hover:bg-gray-100">
-              <img
-                src="/default-feed.png"
-                alt="feed"
-                className="w-5 h-5 rounded-full"
-              />
-              <span>myFeed</span>
-              <Star className="w-4 h-4 text-gray-400 ml-auto" />
-            </div>
-          </div>
-        )}
-      </div>
-
-      <hr className="border-gray-200 my-3" />
 
       {/* COMMUNITIES */}
       <div className="px-4 mb-6">
@@ -138,14 +97,14 @@ const toggleSection = (key: SectionKey) => {
               href="/create-community"
               className="flex items-center gap-2 px-2 py-1.5 text-sm text-gray-800 rounded hover:bg-gray-100"
             >
-              <Plus className="w-4 h-4 text-blue-600" />
+              <Plus className="w-4 h-4 text-gray-600" />
               <span>Create Community</span>
             </Link>
             <Link
               href="/manage-communities"
               className="flex items-center gap-2 px-2 py-1.5 text-sm text-gray-800 rounded hover:bg-gray-100"
             >
-              <Users className="w-4 h-4 text-blue-600" />
+              <Users className="w-4 h-4 text-gray-600" />
               <span>Manage Communities</span>
             </Link>
 

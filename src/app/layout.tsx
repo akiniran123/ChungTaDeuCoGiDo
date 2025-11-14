@@ -1,6 +1,6 @@
 import "./globals.css";
 import type { Metadata } from "next";
-import ClientRoot from "./ClientRoot";
+import ClientRootWrapper from "app/ClientRootWrapper";
 
 export const metadata: Metadata = {
   title: "Jawa Clone",
@@ -11,8 +11,8 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
   return (
     <html lang="en" suppressHydrationWarning>
       <body className="bg-white text-black min-h-screen flex flex-col -mt-8">
-        {/* -mt-8 = kéo toàn bộ nội dung lên mạnh hơn (~2rem) */}
-        <ClientRoot>{children}</ClientRoot>
+        {/* ✅ ClientRootWrapper handles client-side rendering */}
+        <ClientRootWrapper>{children}</ClientRootWrapper>
       </body>
     </html>
   );

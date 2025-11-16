@@ -1,16 +1,23 @@
 "use client";
 
+import React from "react";
 import { Loader2 } from "lucide-react";
 
-export default function LoadingState({
-  message = "Đang tải dữ liệu...",
-}: {
+interface LoadingStateProps {
   message?: string;
-}) {
+}
+
+const LoadingState: React.FC<LoadingStateProps> = ({ message = "Đang tải..." }) => {
   return (
-    <div className="flex min-h-[200px] items-center justify-center text-gray-600">
-      <Loader2 className="animate-spin w-6 h-6 text-indigo-500 mr-2" />
-      {message}
+    <div
+      role="status"
+      aria-live="polite"
+      className="bg-white rounded-2xl p-8 flex flex-col items-center justify-center gap-3 border border-gray-100 shadow-sm"
+    >
+      <Loader2 className="w-6 h-6 animate-spin text-blue-600" />
+      <p className="text-gray-600">{message}</p>
     </div>
   );
-}
+};
+
+export default LoadingState;

@@ -69,7 +69,7 @@ export default function CommunitiesPage() {
   }, [communities, query, selectedCategory]);
 
   return (
-    <div className="min-h-screen bg-gray-50 py-10 px-4">
+    <div className="min-h-screen bg-gray-50 pt-24 pb-10 px-4">
       <div className="max-w-6xl mx-auto">
         <header className="mb-8">
           <h1 className="text-3xl font-extrabold text-gray-900 mb-2">
@@ -93,7 +93,8 @@ export default function CommunitiesPage() {
             </div>
 
             <div className="flex items-center gap-3">
-              <div className="flex items-center gap-2 px-3 py-2 border rounded-lg bg-gray-50">
+              {/* BỘ LỌC - đã bỏ border nhưng giữ nguyên mọi thứ */}
+              <div className="flex items-center gap-2 px-3 py-2 rounded-lg bg-gray-50">
                 <Filter className="w-4 h-4 text-gray-500" />
                 <select
                   value={selectedCategory}
@@ -107,13 +108,6 @@ export default function CommunitiesPage() {
                   ))}
                 </select>
               </div>
-
-              <Link
-                href="/create-community"
-                className="inline-flex items-center gap-2 bg-blue-600 text-white px-4 py-2 rounded-lg hover:bg-blue-700 transition"
-              >
-                + Tạo cộng đồng
-              </Link>
             </div>
           </div>
         </section>

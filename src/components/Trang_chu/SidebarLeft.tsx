@@ -54,7 +54,10 @@ export default function SidebarLeft() {
         {[
           { label: "Home", icon: Home, href: "/" },
           { label: "Popular", icon: Flame, href: "/popular" },
-          { label: "Explore", icon: Compass, href: "/explore" },
+
+          // 🔥 ĐÃ ĐỔI /explore → /communities
+          { label: "Explore", icon: Compass, href: "/communities" },
+
           { label: "All", icon: List, href: "/all" },
         ].map((item) => (
           <Link
@@ -75,7 +78,6 @@ export default function SidebarLeft() {
       </nav>
 
       <hr className="border-gray-200 my-3 mx-2" />
-
 
       {/* COMMUNITIES */}
       <div className="px-4 mb-6">

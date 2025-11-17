@@ -148,6 +148,48 @@ const JoinLeaveButton: React.FC<JoinLeaveButtonProps> = ({
     setLoading(false);
   };
 
+  // 🔥 XÓA CỘNG ĐỒNG (CHỈ OWNER)
+  const handleDeleteCommunity = async () => {
+    if (
+      !confirm(
+        "Bạn có chắc chắn muốn xóa hoàn toàn cộng đồng này không? Hành động này không thể hoàn tác!"
+      )
+    ) {
+      return;
+    }
+
+    setLoading(true);
+
+    try {
+      // 1️⃣ Xóa online members
+      await supabase
+        .from("community_online_members")
+        .delete()
+        .eq("community_id", communityId);
+
+      // 2️⃣ Xóa tất cả members
+      await supabase
+        .from("community_members")
+        .delete()
+        .eq("community_id", communityId);
+
+      // 3️⃣ Xóa community
+      const { error } = await supabase
+        .from("communities")
+        .delete()
+        .eq("id", communityId);
+
+      if (error) throw error;
+
+      alert("Cộng đồng đã được xóa hoàn toàn.");
+      window.location.href = "/communities";
+    } catch (err: any) {
+      alert("Lỗi khi xóa cộng đồng: " + err.message);
+    }
+
+    setLoading(false);
+  };
+
   return (
     <div className="flex items-center gap-3">
 
@@ -205,12 +247,31 @@ const JoinLeaveButton: React.FC<JoinLeaveButtonProps> = ({
 
       {/* ⭐ CHỈ CHỦ CỘNG ĐỒNG ĐƯỢC SỬA ⭐ */}
       {isOwner && (
-        <a
-          href={`/communities/${communityId}/edit`}
-          className="inline-flex items-center gap-2 px-3 py-2 rounded-lg text-sm bg-yellow-500 text-white hover:bg-yellow-600"
-        >
-          Chỉnh sửa cộng đồng
-        </a>
+        <>
+          <a
+            href={`/communities/${communityId}/edit`}
+            className="inline-flex items-center gap-2 px-3 py-2 rounded-lg text-sm bg-yellow-500 text-white hover:bg-yellow-600"
+          >
+            Chỉnh sửa cộng đồng
+          </a>
+
+          {/* ❌ NÚT XÓA CỘNG ĐỒNG */}
+          <button
+            type="button"
+            onClick={handleDeleteCommunity}
+            disabled={loading}
+            className="inline-flex items-center gap-2 px-3 py-2 rounded-lg text-sm bg-red-700 text-white hover:bg-red-800 disabled:opacity-60"
+          >
+            {loading ? (
+              <>
+                <Loader2 className="w-4 h-4 animate-spin" />
+                <span>Đang xóa...</span>
+              </>
+            ) : (
+              "Xóa cộng đồng"
+            )}
+          </button>
+        </>
       )}
     </div>
   );

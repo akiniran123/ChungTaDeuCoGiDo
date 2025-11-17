@@ -245,33 +245,23 @@ const JoinLeaveButton: React.FC<JoinLeaveButtonProps> = ({
         </>
       )}
 
-      {/* ⭐ CHỈ CHỦ CỘNG ĐỒNG ĐƯỢC SỬA ⭐ */}
+      {/* ⭐ CHỈ CHỦ CỘNG ĐỒNG ĐƯỢC XÓA ⭐ */}
       {isOwner && (
-        <>
-          <a
-            href={`/communities/${communityId}/edit`}
-            className="inline-flex items-center gap-2 px-3 py-2 rounded-lg text-sm bg-yellow-500 text-white hover:bg-yellow-600"
-          >
-            Chỉnh sửa cộng đồng
-          </a>
-
-          {/* ❌ NÚT XÓA CỘNG ĐỒNG */}
-          <button
-            type="button"
-            onClick={handleDeleteCommunity}
-            disabled={loading}
-            className="inline-flex items-center gap-2 px-3 py-2 rounded-lg text-sm bg-red-700 text-white hover:bg-red-800 disabled:opacity-60"
-          >
-            {loading ? (
-              <>
-                <Loader2 className="w-4 h-4 animate-spin" />
-                <span>Đang xóa...</span>
-              </>
-            ) : (
-              "Xóa cộng đồng"
-            )}
-          </button>
-        </>
+        <button
+          type="button"
+          onClick={handleDeleteCommunity}
+          disabled={loading}
+          className="inline-flex items-center gap-2 px-3 py-2 rounded-lg text-sm bg-red-700 text-white hover:bg-red-800 disabled:opacity-60"
+        >
+          {loading ? (
+            <>
+              <Loader2 className="w-4 h-4 animate-spin" />
+              <span>Đang xóa...</span>
+            </>
+          ) : (
+            "Xóa cộng đồng"
+          )}
+        </button>
       )}
     </div>
   );

@@ -63,6 +63,7 @@ export default function CommunitiesPage() {
         (c.title && c.title.toLowerCase().includes(q)) ||
         (c.description && c.description.toLowerCase().includes(q)) ||
         (c.category && c.category.toLowerCase().includes(q));
+
       return matchCategory && matchQuery;
     });
     setFiltered(arr);
@@ -93,7 +94,6 @@ export default function CommunitiesPage() {
             </div>
 
             <div className="flex items-center gap-3">
-              {/* BỘ LỌC - đã bỏ border nhưng giữ nguyên mọi thứ */}
               <div className="flex items-center gap-2 px-3 py-2 rounded-lg bg-gray-50">
                 <Filter className="w-4 h-4 text-gray-500" />
                 <select
@@ -136,19 +136,22 @@ export default function CommunitiesPage() {
                     <div className="w-12 h-12 rounded-lg bg-blue-50 flex items-center justify-center text-blue-600 font-bold">
                       {c.title ? c.title.charAt(0).toUpperCase() : "C"}
                     </div>
+
                     <div className="flex-1">
                       <h3 className="text-lg font-semibold text-gray-800">
                         {c.title || "Không tên"}
                       </h3>
+
                       <p className="text-sm text-gray-500 mt-1 line-clamp-2">
                         {c.description || "Chưa có mô tả."}
                       </p>
+
                       <div className="flex items-center gap-3 mt-3 text-xs text-gray-400">
                         <span>{c.category || "Khác"}</span>
                         <span>·</span>
-                        <span>👥 {c.members ?? 0}</span>
+                        <span>👥 {c.members_count ?? 0}</span>
                         <span>·</span>
-                        <span>🟢 {c.online ?? 0} online</span>
+                        <span>🟢 {c.online_count ?? 0} online</span>
                       </div>
                     </div>
                   </div>

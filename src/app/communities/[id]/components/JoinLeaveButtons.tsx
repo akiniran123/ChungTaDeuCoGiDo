@@ -16,6 +16,7 @@ const JoinLeaveButton: React.FC<JoinLeaveButtonProps> = ({
   const [isMember, setIsMember] = useState(false);
   const [loading, setLoading] = useState(true);
   const [userId, setUserId] = useState<string | null>(null);
+  const [isOwner, setIsOwner] = useState(false);
 
   // Lấy user hiện tại
   useEffect(() => {
@@ -31,7 +32,7 @@ const JoinLeaveButton: React.FC<JoinLeaveButtonProps> = ({
     };
   }, []);
 
-  // Kiểm tra thành viên
+  // Kiểm tra thành viên + role
   useEffect(() => {
     if (!userId) {
       setLoading(false);
@@ -49,6 +50,7 @@ const JoinLeaveButton: React.FC<JoinLeaveButtonProps> = ({
         .maybeSingle();
 
       setIsMember(!!data);
+      setIsOwner(data?.role === "owner");
       setLoading(false);
     };
 
@@ -64,7 +66,7 @@ const JoinLeaveButton: React.FC<JoinLeaveButtonProps> = ({
 
     setLoading(true);
 
-    // 1. Kiểm tra community tồn tại
+    // Kiểm tra community tồn tại
     const { data: community } = await supabase
       .from("communities")
       .select("id")
@@ -77,7 +79,7 @@ const JoinLeaveButton: React.FC<JoinLeaveButtonProps> = ({
       return;
     }
 
-    // 2. Check nếu đã là member
+    // Check nếu chưa là member thì insert
     const { data: existed } = await supabase
       .from("community_members")
       .select("*")
@@ -86,14 +88,11 @@ const JoinLeaveButton: React.FC<JoinLeaveButtonProps> = ({
       .maybeSingle();
 
     if (!existed) {
-      // 3. Insert vào community_members
-      const { error } = await supabase
-        .from("community_members")
-        .insert({
-          community_id: communityId,
-          user_id: userId,
-          role: "member",
-        });
+      const { error } = await supabase.from("community_members").insert({
+        community_id: communityId,
+        user_id: userId,
+        role: "member",
+      });
 
       if (error) {
         alert("Không thể tham gia cộng đồng: " + error.message);
@@ -102,13 +101,14 @@ const JoinLeaveButton: React.FC<JoinLeaveButtonProps> = ({
       }
     }
 
-    // 4. Insert vào bảng community_online_members
+    // Thêm vào bảng online
     await supabase.from("community_online_members").insert({
       community_id: communityId,
       user_id: userId,
     });
 
     setIsMember(true);
+    setIsOwner(false);
     onChange?.(true);
     setLoading(false);
   };
@@ -124,7 +124,6 @@ const JoinLeaveButton: React.FC<JoinLeaveButtonProps> = ({
 
     setLoading(true);
 
-    // 1. Xóa khỏi community_members
     const { error } = await supabase
       .from("community_members")
       .delete()
@@ -137,7 +136,6 @@ const JoinLeaveButton: React.FC<JoinLeaveButtonProps> = ({
       return;
     }
 
-    // 2. Xóa khỏi community_online_members
     await supabase
       .from("community_online_members")
       .delete()
@@ -145,43 +143,75 @@ const JoinLeaveButton: React.FC<JoinLeaveButtonProps> = ({
       .eq("user_id", userId);
 
     setIsMember(false);
+    setIsOwner(false);
     onChange?.(false);
     setLoading(false);
   };
 
   return (
     <div className="flex items-center gap-3">
-      <button
-        type="button"
-        onClick={() => (isMember ? handleLeave() : handleJoin())}
-        disabled={loading}
-        className={`inline-flex items-center gap-2 px-4 py-2 rounded-lg text-sm font-medium transition
-          ${
-            isMember
-              ? "bg-gray-100 text-gray-800 hover:bg-gray-200"
-              : "bg-blue-600 text-white hover:bg-blue-700"
-          }
-          disabled:opacity-60 disabled:cursor-not-allowed
-        `}
-      >
-        {loading ? (
-          <>
-            <Loader2 className="w-4 h-4 animate-spin" />
-            <span>Đang xử lý...</span>
-          </>
-        ) : isMember ? (
-          <span>Đã tham gia</span>
-        ) : (
-          <span>Tham gia cộng đồng</span>
-        )}
-      </button>
 
-      <a
-        href={`/communities/${communityId}/create-post`}
-        className="inline-flex items-center gap-2 px-3 py-2 rounded-lg text-sm bg-white border border-gray-200 hover:shadow-sm"
-      >
-        Tạo bài đăng
-      </a>
+      {/* NÚT THAM GIA */}
+      {!isMember ? (
+        <button
+          type="button"
+          onClick={handleJoin}
+          disabled={loading}
+          className="inline-flex items-center gap-2 px-4 py-2 rounded-lg text-sm font-medium
+            bg-blue-600 text-white hover:bg-blue-700
+            disabled:opacity-60 disabled:cursor-not-allowed"
+        >
+          {loading ? (
+            <>
+              <Loader2 className="w-4 h-4 animate-spin" />
+              <span>Đang xử lý...</span>
+            </>
+          ) : (
+            "Tham gia cộng đồng"
+          )}
+        </button>
+      ) : (
+        <>
+          {/* ĐÃ THAM GIA */}
+          <button
+            type="button"
+            disabled
+            className="inline-flex items-center gap-2 px-4 py-2 rounded-lg text-sm font-medium 
+              bg-gray-100 text-gray-800 cursor-default"
+          >
+            ✓ Đã tham gia
+          </button>
+
+          {/* RỜI CỘNG ĐỒNG */}
+          <button
+            type="button"
+            onClick={handleLeave}
+            disabled={loading}
+            className="inline-flex items-center gap-2 px-4 py-2 rounded-lg text-sm font-medium 
+              bg-red-600 text-white hover:bg-red-700
+              disabled:opacity-60 disabled:cursor-not-allowed"
+          >
+            {loading ? (
+              <>
+                <Loader2 className="w-4 h-4 animate-spin" />
+                <span>Đang xử lý...</span>
+              </>
+            ) : (
+              "Rời cộng đồng"
+            )}
+          </button>
+        </>
+      )}
+
+      {/* ⭐ CHỈ CHỦ CỘNG ĐỒNG ĐƯỢC SỬA ⭐ */}
+      {isOwner && (
+        <a
+          href={`/communities/${communityId}/edit`}
+          className="inline-flex items-center gap-2 px-3 py-2 rounded-lg text-sm bg-yellow-500 text-white hover:bg-yellow-600"
+        >
+          Chỉnh sửa cộng đồng
+        </a>
+      )}
     </div>
   );
 };

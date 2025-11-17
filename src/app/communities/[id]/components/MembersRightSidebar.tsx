@@ -21,42 +21,66 @@ const MembersSidebar: React.FC<CommunityMemberSidebarProps> = ({ communityId }) 
   const [members, setMembers] = useState<Member[]>([]);
   const [loading, setLoading] = useState(true);
 
-  useEffect(() => {
-    const fetchMembers = async () => {
-      try {
-        const { data, error } = await supabase
-          .from("community_members")
-          .select(`
-            user_id,
-            role,
-            users (
-              username,
-              avatar_url
-            )
-          `)
-          .eq("community_id", communityId);
+  // 🔥 Fetch members
+  const fetchMembers = async () => {
+    try {
+      const { data, error } = await supabase
+        .from("community_members")
+        .select(`
+          user_id,
+          role,
+          users (
+            username,
+            avatar_url
+          )
+        `)
+        .eq("community_id", communityId);
 
-        if (error) throw error;
+      if (error) throw error;
 
-        if (data) {
-          const sortedMembers = [...data].sort((a, b) =>
-            a.role === "owner" ? -1 : b.role === "owner" ? 1 : 0
-          );
-          setMembers(sortedMembers);
-        }
-      } catch (err) {
-        console.error("Lỗi khi fetch members:", err);
-      } finally {
-        setLoading(false);
+      if (data) {
+        const sortedMembers = [...data].sort((a, b) =>
+          a.role === "owner" ? -1 : b.role === "owner" ? 1 : 0
+        );
+        setMembers(sortedMembers);
       }
-    };
+    } catch (err) {
+      console.error("Lỗi khi fetch members:", err);
+    } finally {
+      setLoading(false);
+    }
+  };
 
+  // 🟦 Load lần đầu
+  useEffect(() => {
     fetchMembers();
+  }, [communityId]);
+
+  // 🟩 Realtime listener: auto update khi có người join / leave
+  useEffect(() => {
+    const channel = supabase
+      .channel(`community-members-${communityId}`)
+      .on(
+        "postgres_changes",
+        {
+          event: "*", // listen INSERT + DELETE + UPDATE
+          schema: "public",
+          table: "community_members",
+          filter: `community_id=eq.${communityId}`,
+        },
+        () => {
+          fetchMembers(); // 🔥 reload ngay khi có thay đổi
+        }
+      )
+      .subscribe();
+
+    return () => {
+      supabase.removeChannel(channel);
+    };
   }, [communityId]);
 
   return (
     <div className="fixed top-[115px] right-0 bottom-0 w-72 bg-white border-l border-gray-200 shadow flex flex-col">
-      {/* Heading sticky */}
       <h2 className="text-lg font-semibold p-4 sticky top-0 bg-white z-10">
         Thành viên
       </h2>
@@ -70,7 +94,9 @@ const MembersSidebar: React.FC<CommunityMemberSidebarProps> = ({ communityId }) 
               <div
                 key={member.user_id}
                 className={`flex items-center gap-3 p-2 rounded cursor-pointer ${
-                  member.role === "owner" ? "bg-yellow-50 font-semibold" : "hover:bg-gray-100"
+                  member.role === "owner"
+                    ? "bg-yellow-50 font-semibold"
+                    : "hover:bg-gray-100"
                 }`}
               >
                 <div className="w-10 h-10 rounded-full overflow-hidden bg-gray-200 flex items-center justify-center">

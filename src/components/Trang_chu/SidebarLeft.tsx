@@ -5,51 +5,73 @@ import Link from "next/link";
 import {
   Home,
   Flame,
-  HelpCircle,
   Compass,
   List,
   Plus,
   Users,
   Star,
   ChevronDown,
-  ChevronRight,
 } from "lucide-react";
 import { supabase } from "@/lib/supabase/client";
 
 export default function SidebarLeft() {
-  type SectionKey = "games" | "custom" | "communities";
-
-  const [openSections, setOpenSections] = useState<Record<SectionKey, boolean>>({
-    games: false,
-    custom: true,
-    communities: true,
-  });
-
-  const toggleSection = (key: SectionKey) => {
-    setOpenSections((prev) => ({ ...prev, [key]: !prev[key] }));
-  };
-
   const [communities, setCommunities] = useState<
     { id: string; title: string | null }[]
   >([]);
+  const [loading, setLoading] = useState(true);
 
   useEffect(() => {
     async function fetchCommunities() {
-      const { data, error } = await supabase
-        .from("communities")
-        .select("id, title")
-        .order("created_at", { ascending: false });
-      if (error) console.error("Lỗi tải communities:", error);
-      else setCommunities(data || []);
+      try {
+        const {
+          data: { user },
+          error: userError,
+        } = await supabase.auth.getUser();
+        if (userError || !user) {
+          console.warn("⚠️ Không có user đăng nhập:", userError);
+          setLoading(false);
+          return;
+        }
+
+        // 🔥 Lấy danh sách cộng đồng user đang tham gia
+        const { data, error } = await supabase
+          .from("community_members")
+          .select(
+            `
+            community_id,
+            communities (
+              id,
+              title
+            )
+          `
+          )
+          .eq("user_id", user.id);
+
+        if (error) {
+          console.error("❌ Lỗi tải communities:", error);
+          setLoading(false);
+          return;
+        }
+
+        // Map dữ liệu về dạng gọn
+        const mapped = (data || [])
+          .map((item) => item.communities)
+          .filter(Boolean);
+
+        setCommunities(mapped);
+      } catch (err) {
+        console.error("🔥 Lỗi ngoài ý muốn:", err);
+      } finally {
+        setLoading(false);
+      }
     }
 
     fetchCommunities();
   }, []);
 
   return (
-    <aside className="fixed top-10 left-0 w-64 h-[calc(100vh-4rem)] bg-white border-r border-gray-200 overflow-y-auto text-gray-900 z-40">
-
-      {/* MAIN LINKS */}
+    <aside className="fixed top-10 left-0 w-64 h-[calc(100vh-4rem)] bg-white border-r border-gray-200 overflow-y-auto text-gray-900 z-40 shadow-sm">
+      {/* MAIN NAVIGATION */}
       <nav className="mt-2">
         {[
           { label: "Home", icon: Home, href: "/" },
@@ -60,54 +82,49 @@ export default function SidebarLeft() {
           <Link
             key={item.label}
             href={item.href}
-            className={`flex items-center gap-3 px-4 py-2 text-sm rounded-md mx-2 transition-colors
-            hover:bg-gray-100 text-gray-800`}
+            className="flex items-center gap-3 px-4 py-2 text-sm rounded-md mx-2 hover:bg-gray-100 text-gray-800"
           >
             <item.icon className="w-4 h-4 text-gray-600" />
             <span className="truncate">{item.label}</span>
-            {item.label === "Answers" && (
-              <span className="text-[10px] text-red-600 font-semibold ml-1">
-                BETA
-              </span>
-            )}
           </Link>
         ))}
       </nav>
 
       <hr className="border-gray-200 my-3 mx-2" />
 
-
-      {/* COMMUNITIES */}
+      {/* COMMUNITIES SECTION */}
       <div className="px-4 mb-6">
-        <button
-          onClick={() => toggleSection("communities")}
-          className="flex items-center justify-between w-full text-xs uppercase text-gray-500 font-semibold tracking-wider py-1"
-        >
+        <div className="flex items-center justify-between text-xs uppercase text-gray-500 font-semibold tracking-wider py-1">
           Communities
-          {openSections.communities ? (
-            <ChevronDown className="w-4 h-4" />
-          ) : (
-            <ChevronRight className="w-4 h-4" />
-          )}
-        </button>
+          <ChevronDown className="w-4 h-4" />
+        </div>
 
-        {openSections.communities && (
+        {/* CREATE / MANAGE LINKS */}
+        <Link
+          href="/create-community"
+          className="flex items-center gap-2 px-2 py-1.5 text-sm text-gray-800 rounded hover:bg-gray-100"
+        >
+          <Plus className="w-4 h-4 text-gray-600" />
+          <span>Create Community</span>
+        </Link>
+
+        <Link
+          href="/manage-communities"
+          className="flex items-center gap-2 px-2 py-1.5 text-sm text-gray-800 rounded hover:bg-gray-100"
+        >
+          <Users className="w-4 h-4 text-gray-600" />
+          <span>Manage Communities</span>
+        </Link>
+
+        {/* COMMUNITY LIST */}
+        {loading ? (
+          <p className="text-sm text-gray-400 mt-2">Loading...</p>
+        ) : communities.length === 0 ? (
+          <p className="text-sm text-gray-400 mt-2">
+            You haven’t joined any communities yet.
+          </p>
+        ) : (
           <div className="mt-1 space-y-1">
-            <Link
-              href="/create-community"
-              className="flex items-center gap-2 px-2 py-1.5 text-sm text-gray-800 rounded hover:bg-gray-100"
-            >
-              <Plus className="w-4 h-4 text-gray-600" />
-              <span>Create Community</span>
-            </Link>
-            <Link
-              href="/manage-communities"
-              className="flex items-center gap-2 px-2 py-1.5 text-sm text-gray-800 rounded hover:bg-gray-100"
-            >
-              <Users className="w-4 h-4 text-gray-600" />
-              <span>Manage Communities</span>
-            </Link>
-
             {communities.map((c) => (
               <Link
                 key={c.id}

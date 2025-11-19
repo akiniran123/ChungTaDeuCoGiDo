@@ -1,17 +1,83 @@
 "use client";
 
-import React from "react";
-import { Pencil } from "lucide-react";
+import React, { useState, useEffect } from "react";
+import { Pencil, Loader2 } from "lucide-react";
+import { supabase } from "@/lib/supabase/client";
 import type { Database } from "@/types/supabase";
 
-export default function CommunityHeader({
-  community,
-  user,
-}: {
-  community: Database["public"]["Tables"]["communities"]["Row"];
-  user?: any;
-}) {
+type Community = Database["public"]["Tables"]["communities"]["Row"];
+
+// =============================================================
+// 🚀 COMPONENT UPLOAD AVATAR (ICON BÚT TRÊN GÓC PHẢI)
+// =============================================================
+function AvatarUploader({ onUploaded }: { onUploaded: (url: string) => void }) {
+  const [userId, setUserId] = useState<string | null>(null);
+
+  useEffect(() => {
+    const fetchUser = async () => {
+      const { data } = await supabase.auth.getUser();
+      if (data?.user) setUserId(data.user.id);
+    };
+    fetchUser();
+  }, []);
+
+  const handleUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (!file || !userId) return;
+
+    const fileName = `avatar-${Date.now()}-${file.name}`;
+    const filePath = `user_${userId}/${fileName}`;
+
+    const { error } = await supabase.storage
+      .from("community-avatar-url")
+      .upload(filePath, file, { upsert: true });
+
+    if (error) {
+      console.error("Upload avatar failed:", error.message);
+      return;
+    }
+
+    const { data } = supabase.storage
+      .from("community-avatar-url")
+      .getPublicUrl(filePath);
+
+    onUploaded(data.publicUrl);
+  };
+
+  return (
+    <>
+      {/* input upload ảnh (ẩn) */}
+      <input
+        id="avatarInput"
+        type="file"
+        accept="image/*"
+        onChange={handleUpload}
+        className="hidden"
+      />
+
+      {/* ICON BÚT: GÓC TRÊN BÊN PHẢI */}
+      <label
+        htmlFor="avatarInput"
+        className="
+          absolute 
+          top-0 right-0 
+          translate-x-1 -translate-y-1
+          p-2 bg-white shadow-md 
+          rounded-full hover:bg-gray-100 cursor-pointer
+        "
+      >
+        <Pencil className="w-4 h-4 text-gray-700" />
+      </label>
+    </>
+  );
+}
+
+// =============================================================
+// 🚀 COMMUNITY HEADER
+// =============================================================
+export default function CommunityHeader({ community }: { community: Community }) {
   const {
+    id,
     title,
     description,
     category,
@@ -21,96 +87,127 @@ export default function CommunityHeader({
     banner_url,
   } = community;
 
+  const [uploading, setUploading] = useState<"banner" | null>(null);
+  const [localAvatar, setLocalAvatar] = useState(avatar_url);
+  const [localBanner, setLocalBanner] = useState(banner_url);
+
+  // Upload Banner giữ nguyên
+  async function handleBannerUpload(e: React.ChangeEvent<HTMLInputElement>) {
+    const file = e.target.files?.[0];
+    if (!file) return;
+
+    setUploading("banner");
+
+    const fileName = `${Date.now()}-${file.name}`;
+    const filePath = `${id}/${fileName}`;
+
+    if (localBanner) {
+      try {
+        const parts = localBanner.split("/");
+        const oldFolder = parts[parts.length - 2];
+        const oldFile = parts[parts.length - 1];
+        await supabase.storage.from("community-banners").remove([`${oldFolder}/${oldFile}`]);
+      } catch {}
+    }
+
+    const { error } = await supabase.storage
+      .from("community-banners")
+      .upload(filePath, file, { upsert: true });
+
+    if (error) {
+      alert("Upload banner failed");
+      setUploading(null);
+      return;
+    }
+
+    const { data } = supabase.storage
+      .from("community-banners")
+      .getPublicUrl(filePath);
+
+    await supabase
+      .from("communities")
+      .update({ banner_url: data.publicUrl })
+      .eq("id", id);
+
+    setLocalBanner(data.publicUrl);
+    setUploading(null);
+  }
+
   return (
     <header className="bg-white rounded-2xl overflow-hidden border border-gray-100 shadow-sm">
 
-      {/* Banner */}
+      {/* BANNER */}
       <div className="relative w-full h-36 bg-gray-200">
-        {banner_url ? (
-          <img
-            src={banner_url}
-            alt="Community banner"
-            className="w-full h-full object-cover"
-          />
+        {localBanner ? (
+          <img src={localBanner} className="w-full h-full object-cover" />
         ) : (
-          <div className="w-full h-full bg-gradient-to-r from-blue-50 to-white"></div>
+          <div className="w-full h-full bg-gradient-to-r from-blue-50 to-white" />
         )}
 
-        {/* Edit banner */}
-        <button
-          className="absolute top-2 right-2 p-2 bg-white shadow-md rounded-full hover:bg-gray-100 transition"
-          onClick={() => alert("Open banner upload modal")}
+        <input
+          id="bannerInput"
+          type="file"
+          accept="image/*"
+          onChange={handleBannerUpload}
+          className="hidden"
+        />
+
+        <label
+          htmlFor="bannerInput"
+          className="absolute top-2 right-2 p-2 bg-white shadow-md rounded-full hover:bg-gray-100 cursor-pointer"
         >
-          <Pencil className="w-4 h-4 text-gray-700" />
-        </button>
+          {uploading === "banner" ? (
+            <Loader2 className="w-4 h-4 animate-spin text-gray-600" />
+          ) : (
+            <Pencil className="w-4 h-4 text-gray-700" />
+          )}
+        </label>
       </div>
 
+      {/* CONTENT */}
       <div className="p-6 md:p-8 flex flex-col md:flex-row md:items-center gap-4">
 
-        {/* Avatar */}
-        <div className="relative flex-shrink-0">
-          {avatar_url ? (
+        {/* AVATAR */}
+        <div className="relative flex flex-col items-start">
+          {localAvatar ? (
             <img
-              src={avatar_url}
-              alt="Community avatar"
-              className="w-20 h-20 md:w-24 md:h-24 rounded-xl object-cover bg-gray-100"
+              src={localAvatar}
+              className="w-20 h-20 md:w-24 md:h-24 rounded-xl object-cover border"
             />
           ) : (
-            <div
-              aria-hidden
-              className="w-20 h-20 md:w-24 md:h-24 rounded-xl bg-blue-50 flex items-center justify-center text-blue-600 text-2xl md:text-3xl font-bold"
-            >
-              {title ? title.charAt(0).toUpperCase() : "C"}
+            <div className="w-20 h-20 md:w-24 md:h-24 rounded-xl bg-blue-50 flex items-center justify-center text-blue-600 text-3xl font-bold">
+              {title?.charAt(0).toUpperCase() ?? "C"}
             </div>
           )}
 
-          {/* Edit avatar */}
-          <button
-            className="absolute -top-2 -right-2 p-2 bg-white shadow-md rounded-full hover:bg-gray-100 transition"
-            onClick={() => alert("Open avatar upload modal")}
-          >
-            <Pencil className="w-4 h-4 text-gray-700" />
-          </button>
+          <AvatarUploader
+            onUploaded={async (url) => {
+              await supabase
+                .from("communities")
+                .update({ avatar_url: url })
+                .eq("id", id);
+
+              setLocalAvatar(url);
+            }}
+          />
         </div>
 
-        {/* Info */}
+        {/* INFO */}
         <div className="flex-1 min-w-0">
-
-          {/* ⭐ Title + Edit Icon ⭐ */}
-          <div className="flex items-center gap-2">
-            <h1 className="text-2xl md:text-3xl font-extrabold text-gray-900 truncate">
-              {title ?? "Cộng đồng không tên"}
-            </h1>
-
-            {/* Edit name */}
-            <button
-              className="p-1 bg-gray-100 hover:bg-gray-200 rounded-full transition"
-              onClick={() => alert("Open name edit modal")}
-            >
-              <Pencil className="w-4 h-4 text-gray-700" />
-            </button>
-          </div>
+          <h1 className="text-2xl md:text-3xl font-extrabold text-gray-900 truncate">
+            {title ?? "Cộng đồng không tên"}
+          </h1>
 
           <p className="mt-2 text-sm md:text-base text-gray-600 line-clamp-3">
             {description ?? "Chưa có mô tả cho cộng đồng này."}
           </p>
 
           <div className="mt-3 flex flex-wrap items-center gap-3 text-sm text-gray-500">
-            <span className="inline-flex items-center gap-2">
-              <strong className="text-gray-700">{category ?? "Khác"}</strong>
-            </span>
-
-            <span className="text-sm text-gray-400">·</span>
-
-            <span className="inline-flex items-center gap-2">
-              👥 <span className="text-gray-700">{members_count ?? 0} thành viên</span>
-            </span>
-
-            <span className="text-sm text-gray-400">·</span>
-
-            <span className="inline-flex items-center gap-2">
-              🟢 <span className="text-gray-700">{online_count ?? 0} đang online</span>
-            </span>
+            <strong>{category ?? "Khác"}</strong>
+            <span className="text-gray-400">·</span>
+            <span>👥 {members_count ?? 0} thành viên</span>
+            <span className="text-gray-400">·</span>
+            <span>🟢 {online_count ?? 0} đang online</span>
           </div>
         </div>
       </div>

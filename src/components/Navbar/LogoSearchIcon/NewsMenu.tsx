@@ -10,27 +10,13 @@ type Notification = Database["public"]["Tables"]["notifications"]["Row"];
 export default function NewsMenu() {
   const [notifications, setNotifications] = useState<Notification[]>([]);
   const [open, setOpen] = useState(false);
-  const [userId, setUserId] = useState<string>("");
 
-  // 🔹 Lấy user hiện tại
+  // 🔹 Lấy tất cả thông báo
   useEffect(() => {
-    (async () => {
-      const {
-        data: { user },
-      } = await supabase.auth.getUser();
-      if (user) setUserId(user.id);
-    })();
-  }, []);
-
-  // 🔹 Lấy danh sách thông báo từ Supabase
-  useEffect(() => {
-    if (!userId) return;
-
     const fetchNotifications = async () => {
       const { data, error } = await supabase
         .from("notifications")
         .select("*")
-        .eq("user_id", userId)
         .order("created_at", { ascending: false });
 
       if (!error && data) setNotifications(data);
@@ -38,51 +24,49 @@ export default function NewsMenu() {
 
     fetchNotifications();
 
-    // 🔹 Lắng nghe realtime khi có thông báo mới
+    // 🔹 Lắng nghe realtime cho tất cả user
     const channel = supabase
       .channel("realtime:notifications")
       .on(
         "postgres_changes",
         { event: "*", schema: "public", table: "notifications" },
         (payload) => {
-          // Ép kiểu rõ ràng để tránh lỗi TS
           const newNotification = payload.new as Notification | null;
 
-          if (
-            newNotification &&
-            newNotification.user_id === userId &&
-            !notifications.find((n) => n.id === newNotification.id)
-          ) {
-            setNotifications((prev) => [newNotification, ...prev]);
-          }
+          setNotifications((prev) => {
+            if (!newNotification || prev.some((n) => n.id === newNotification.id))
+              return prev;
+            return [newNotification, ...prev];
+          });
         }
       )
       .subscribe();
 
+    // 🔥 FIX LỖI: cleanup không được return Promise
     return () => {
       supabase.removeChannel(channel);
     };
-  }, [userId, notifications]);
+  }, []);
 
-  // 🔹 Đánh dấu đã đọc khi mở menu
-  const markAllAsRead = async () => {
-    if (!userId) return;
-    await supabase
-      .from("notifications")
-      .update({ read: true })
-      .eq("user_id", userId);
-    setNotifications((prev) => prev.map((n) => ({ ...n, read: true })));
+  // 🔹 Khi mở menu → đánh dấu tất cả là đã đọc (UI)
+  const markAllAsRead = () => {
+    setNotifications((prev) =>
+      prev.map((n) => ({
+        ...n,
+        read: true,
+      }))
+    );
   };
 
   const unreadCount = notifications.filter((n) => !n.read).length;
 
   return (
     <div className="relative">
-      {/* Nút chuông thông báo */}
       <button
         onClick={() => {
-          setOpen(!open);
-          if (!open) markAllAsRead();
+          const newState = !open;
+          setOpen(newState);
+          if (newState) markAllAsRead();
         }}
         className="relative p-2 rounded-full hover:bg-gray-100 transition"
       >
@@ -94,14 +78,13 @@ export default function NewsMenu() {
         )}
       </button>
 
-      {/* Danh sách thông báo (dropdown) */}
       {open && (
         <div className="absolute right-0 mt-2 w-80 bg-white border border-gray-200 rounded-2xl shadow-lg z-50">
           <div className="p-3 font-semibold border-b">Thông báo</div>
           <div className="max-h-80 overflow-y-auto">
             {notifications.length === 0 ? (
               <p className="p-3 text-sm text-gray-500 text-center">
-                Không có thông báo nào.
+                Không có thông báo.
               </p>
             ) : (
               notifications.map((n) => (

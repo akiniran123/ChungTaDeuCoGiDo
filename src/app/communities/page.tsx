@@ -63,13 +63,14 @@ export default function CommunitiesPage() {
         (c.title && c.title.toLowerCase().includes(q)) ||
         (c.description && c.description.toLowerCase().includes(q)) ||
         (c.category && c.category.toLowerCase().includes(q));
+
       return matchCategory && matchQuery;
     });
     setFiltered(arr);
   }, [communities, query, selectedCategory]);
 
   return (
-    <div className="min-h-screen bg-gray-50 py-10 px-4">
+    <div className="min-h-screen bg-gray-50 pt-24 pb-10 px-4">
       <div className="max-w-6xl mx-auto">
         <header className="mb-8">
           <h1 className="text-3xl font-extrabold text-gray-900 mb-2">
@@ -93,7 +94,7 @@ export default function CommunitiesPage() {
             </div>
 
             <div className="flex items-center gap-3">
-              <div className="flex items-center gap-2 px-3 py-2 border rounded-lg bg-gray-50">
+              <div className="flex items-center gap-2 px-3 py-2 rounded-lg bg-gray-50">
                 <Filter className="w-4 h-4 text-gray-500" />
                 <select
                   value={selectedCategory}
@@ -107,13 +108,6 @@ export default function CommunitiesPage() {
                   ))}
                 </select>
               </div>
-
-              <Link
-                href="/create-community"
-                className="inline-flex items-center gap-2 bg-blue-600 text-white px-4 py-2 rounded-lg hover:bg-blue-700 transition"
-              >
-                + Tạo cộng đồng
-              </Link>
             </div>
           </div>
         </section>
@@ -142,19 +136,22 @@ export default function CommunitiesPage() {
                     <div className="w-12 h-12 rounded-lg bg-blue-50 flex items-center justify-center text-blue-600 font-bold">
                       {c.title ? c.title.charAt(0).toUpperCase() : "C"}
                     </div>
+
                     <div className="flex-1">
                       <h3 className="text-lg font-semibold text-gray-800">
                         {c.title || "Không tên"}
                       </h3>
+
                       <p className="text-sm text-gray-500 mt-1 line-clamp-2">
                         {c.description || "Chưa có mô tả."}
                       </p>
+
                       <div className="flex items-center gap-3 mt-3 text-xs text-gray-400">
                         <span>{c.category || "Khác"}</span>
                         <span>·</span>
-                        <span>👥 {c.members ?? 0}</span>
+                        <span>👥 {c.members_count ?? 0}</span>
                         <span>·</span>
-                        <span>🟢 {c.online ?? 0} online</span>
+                        <span>🟢 {c.online_count ?? 0} online</span>
                       </div>
                     </div>
                   </div>

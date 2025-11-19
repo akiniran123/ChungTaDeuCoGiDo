@@ -4,25 +4,25 @@ import { useState, useEffect } from "react";
 import { supabase } from "@/lib/supabase/client";
 import { Loader2, Users } from "lucide-react";
 import { useRouter } from "next/navigation";
-import { v4 as uuidv4 } from "uuid"; // ✅ thêm dòng này
+import { v4 as uuidv4 } from "uuid";
 
 export default function CreateCommunityPage() {
   const router = useRouter();
 
   const [formData, setFormData] = useState({
     title: "",
-    members: 0,
+    members_count: 0,
     category: "",
     description: "",
     topics: "",
-    online: 0,
+    online_count: 0,
   });
 
   const [loading, setLoading] = useState(false);
   const [message, setMessage] = useState("");
   const [communities, setCommunities] = useState<any[]>([]);
 
-  // ✅ Lấy danh sách cộng đồng từ Supabase
+  // Lấy danh sách cộng đồng từ Supabase
   useEffect(() => {
     const fetchCommunities = async () => {
       const { data, error } = await supabase
@@ -47,19 +47,18 @@ export default function CreateCommunityPage() {
     setFormData((prev) => ({ ...prev, [name]: value }));
   };
 
-  // ✅ Sửa phần này
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setLoading(true);
     setMessage("");
 
-    const newId = uuidv4(); // ✅ tạo id thủ công
+    const newId = uuidv4();
 
     const { data, error } = await supabase
       .from("communities")
       .insert([
         {
-          id: newId, // ✅ thêm id này vào
+          id: newId,
           ...formData,
           created_at: new Date().toISOString(),
         },
@@ -69,19 +68,39 @@ export default function CreateCommunityPage() {
     if (error) {
       console.error(error);
       setMessage("❌ Lỗi khi tạo cộng đồng!");
-    } else {
-      setMessage("✅ Tạo cộng đồng thành công!");
-      setFormData({
-        title: "",
-        members: 0,
-        category: "",
-        description: "",
-        topics: "",
-        online: 0,
-      });
-
-      setCommunities((prev) => [data[0], ...prev]);
+      setLoading(false);
+      return;
     }
+
+    // ⭐⭐⭐ THÊM BẠN VÀO COMMUNITY_MEMBERS VỚI ROLE OWNER ⭐⭐⭐
+    const {
+      data: { user },
+    } = await supabase.auth.getUser();
+
+    if (user && data && data[0]) {
+      await supabase.from("community_members").insert([
+        {
+          id: uuidv4(),
+          user_id: user.id,
+          community_id: data[0].id,
+          role: "owner",
+          joined_at: new Date().toISOString(),
+        },
+      ]);
+    }
+    // ⭐⭐⭐ END ⭐⭐⭐
+
+    setMessage("✅ Tạo cộng đồng thành công!");
+    setFormData({
+      title: "",
+      members_count: 0,
+      category: "",
+      description: "",
+      topics: "",
+      online_count: 0,
+    });
+
+    setCommunities((prev) => [data[0], ...prev]);
 
     setLoading(false);
   };
@@ -168,8 +187,8 @@ export default function CreateCommunityPage() {
               </label>
               <input
                 type="number"
-                name="members"
-                value={formData.members}
+                name="members_count"
+                value={formData.members_count}
                 onChange={handleChange}
                 className="w-full border border-gray-300 focus:border-blue-500 focus:ring-2 focus:ring-blue-100 rounded-xl p-3 outline-none transition-all"
               />
@@ -180,8 +199,8 @@ export default function CreateCommunityPage() {
               </label>
               <input
                 type="number"
-                name="online"
-                value={formData.online}
+                name="online_count"
+                value={formData.online_count}
                 onChange={handleChange}
                 className="w-full border border-gray-300 focus:border-blue-500 focus:ring-2 focus:ring-blue-100 rounded-xl p-3 outline-none transition-all"
               />
@@ -240,7 +259,7 @@ export default function CreateCommunityPage() {
                   {c.description || "Chưa có mô tả."}
                 </p>
                 <p className="text-xs text-gray-400 mt-2">
-                  👥 {c.members} thành viên • 🟢 {c.online} online
+                  👥 {c.members_count} thành viên • 🟢 {c.online_count} online
                 </p>
               </div>
             ))}

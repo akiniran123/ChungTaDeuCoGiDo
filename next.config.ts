@@ -1,6 +1,10 @@
 import type { NextConfig } from "next";
 
 const nextConfig: NextConfig = {
+  serverActions: {
+    bodySizeLimit: "20mb", // ✅ Thêm giới hạn upload cho Server Actions
+  },
+
   images: {
     remotePatterns: [
       {
@@ -25,7 +29,7 @@ const nextConfig: NextConfig = {
       },
       {
         protocol: "https",
-        hostname: "kzfmunxbdfdfxumerulj.supabase.co", // 👈 Thêm dòng này
+        hostname: "kzfmunxbdfdfxumerulj.supabase.co",
         pathname: "/storage/v1/object/public/**",
       },
     ],

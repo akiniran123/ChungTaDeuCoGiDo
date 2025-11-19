@@ -16,13 +16,20 @@ type Community = Database["public"]["Tables"]["communities"]["Row"];
 type Product = Database["public"]["Tables"]["products"]["Row"];
 
 interface CommunityDetailPageProps {
-  params: Promise<{ id: string }>; // ⬅️ RẤT QUAN TRỌNG
+  params: Promise<{ id: string }>;
 }
 
 const CommunityDetailPage: React.FC<CommunityDetailPageProps> = ({ params }) => {
+  const [id, setId] = useState<string | null>(null);
 
-  // ⬅️ BẮT BUỘC PHẢI unwrap params
-  const { id } = React.use(params);
+  // ⭐ unwrap params
+  useEffect(() => {
+    async function unwrap() {
+      const resolved = await params;
+      setId(resolved.id);
+    }
+    unwrap();
+  }, [params]);
 
   const [community, setCommunity] = useState<Community | null>(null);
   const [products, setProducts] = useState<Product[]>([]);
@@ -31,33 +38,55 @@ const CommunityDetailPage: React.FC<CommunityDetailPageProps> = ({ params }) => 
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
 
-  // 🔹 Lấy user
+  // Lấy user login
   useEffect(() => {
     supabase.auth.getUser().then(({ data }) => {
       if (data?.user) setUser(data.user);
     });
   }, []);
 
-  // 🔹 Lấy community + product
+  // ⭐ Lấy community + products của tất cả members
   useEffect(() => {
     if (!id) return;
 
     const fetchAll = async () => {
       setLoading(true);
+
       try {
-        const [
-          { data: communityData, error: communityErr },
-          { data: productData, error: productErr },
-        ] = await Promise.all([
-          supabase.from("communities").select("*").eq("id", id).single(),
-          supabase
-            .from("products")
-            .select("*")
-            .eq("community_id", id)
-            .order("created_at", { ascending: false }),
-        ]);
+        // --- Lấy thông tin cộng đồng ---
+        const { data: communityData, error: communityErr } = await supabase
+          .from("communities")
+          .select("*")
+          .eq("id", id)
+          .single();
 
         if (communityErr) throw communityErr;
+
+        // --- Lấy danh sách thành viên của cộng đồng ---
+        const { data: members, error: membersErr } = await supabase
+          .from("community_members")
+          .select("user_id")
+          .eq("community_id", id);
+
+        if (membersErr) throw membersErr;
+
+        const memberIds = members.map((m) => m.user_id);
+
+        // Nếu chưa có thành viên thì không có bài đăng
+        if (memberIds.length === 0) {
+          setCommunity(communityData);
+          setProducts([]);
+          setLoading(false);
+          return;
+        }
+
+        // --- Lấy tất cả sản phẩm của các member ---
+        const { data: productData, error: productErr } = await supabase
+          .from("products")
+          .select("*")
+          .in("user_id", memberIds)
+          .order("created_at", { ascending: false });
+
         if (productErr) throw productErr;
 
         setCommunity(communityData || null);
@@ -66,35 +95,36 @@ const CommunityDetailPage: React.FC<CommunityDetailPageProps> = ({ params }) => 
         console.error(err);
         setError(err.message);
       }
+
       setLoading(false);
     };
 
     fetchAll();
   }, [id]);
 
-  // 🔹 UI states
+  // UI STATE
   if (loading) return <LoadingState />;
   if (error) return <div className="p-10 text-center text-red-500">{error}</div>;
   if (!community) return <EmptyState />;
 
   return (
     <div className="pt-[45px] min-h-screen w-full bg-gray-50 flex">
-
-      {/* MAIN CONTENT */}
+      
+      {/* MAIN */}
       <div className="flex-1 bg-white p-6 rounded-l-2xl">
         <CommunityHeader community={community} />
-        <JoinLeaveButton communityId={id} />
+        <JoinLeaveButton communityId={id!} />
 
         {products.length > 0 ? (
           <ProductList products={products} />
         ) : (
-          <EmptyState message="Chưa có sản phẩm nào" />
+          <EmptyState message="Chưa có bài đăng nào trong cộng đồng này." />
         )}
       </div>
 
       {/* RIGHT SIDEBAR */}
       <div className="hidden lg:flex flex-col w-72 flex-shrink-0 bg-white p-6 rounded-r-2xl overflow-hidden">
-        <MembersSidebar communityId={id} />
+        <MembersSidebar communityId={id!} />
       </div>
     </div>
   );

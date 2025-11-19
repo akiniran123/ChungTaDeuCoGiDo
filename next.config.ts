@@ -1,9 +1,10 @@
 import type { NextConfig } from "next";
 
 const nextConfig: NextConfig = {
-  serverActions: {
-    bodySizeLimit: "20mb", // ✅ Thêm giới hạn upload cho Server Actions
-  },
+  // ❌ XÓA serverActions (Next.js không hỗ trợ)
+  // serverActions: {
+  //   bodySizeLimit: "20mb",
+  // },
 
   images: {
     remotePatterns: [

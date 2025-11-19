@@ -1,14 +1,14 @@
 "use client";
 
 import React, { useState, useEffect } from "react";
-import { Pencil, Loader2 } from "lucide-react";
+import { Pencil, Loader2, Check } from "lucide-react";
 import { supabase } from "@/lib/supabase/client";
 import type { Database } from "@/types/supabase";
 
 type Community = Database["public"]["Tables"]["communities"]["Row"];
 
 // =============================================================
-// 🚀 COMPONENT UPLOAD AVATAR (ICON BÚT TRÊN GÓC PHẢI)
+// 🚀 COMPONENT UPLOAD AVATAR
 // =============================================================
 function AvatarUploader({ onUploaded }: { onUploaded: (url: string) => void }) {
   const [userId, setUserId] = useState<string | null>(null);
@@ -46,7 +46,6 @@ function AvatarUploader({ onUploaded }: { onUploaded: (url: string) => void }) {
 
   return (
     <>
-      {/* input upload ảnh (ẩn) */}
       <input
         id="avatarInput"
         type="file"
@@ -55,7 +54,6 @@ function AvatarUploader({ onUploaded }: { onUploaded: (url: string) => void }) {
         className="hidden"
       />
 
-      {/* ICON BÚT: GÓC TRÊN BÊN PHẢI */}
       <label
         htmlFor="avatarInput"
         className="
@@ -91,7 +89,47 @@ export default function CommunityHeader({ community }: { community: Community })
   const [localAvatar, setLocalAvatar] = useState(avatar_url);
   const [localBanner, setLocalBanner] = useState(banner_url);
 
-  // Upload Banner giữ nguyên
+  // 🔥 CHECK OWNER
+  const [isOwner, setIsOwner] = useState(false);
+
+  useEffect(() => {
+    const fetchRole = async () => {
+      const { data: auth } = await supabase.auth.getUser();
+      const userId = auth?.user?.id;
+      if (!userId) return;
+
+      const { data: member } = await supabase
+        .from("community_members")
+        .select("role")
+        .eq("community_id", id)
+        .eq("user_id", userId)
+        .single();
+
+      if (member?.role === "owner") {
+        setIsOwner(true);
+      }
+    };
+
+    fetchRole();
+  }, [id]);
+
+  // ========== STATE CHỈNH TÊN ==========
+  const [editingTitle, setEditingTitle] = useState(false);
+  const [localTitle, setLocalTitle] = useState(title || "");
+  const [savingTitle, setSavingTitle] = useState(false);
+
+  async function saveTitle() {
+    if (!localTitle.trim()) return;
+
+    setSavingTitle(true);
+
+    await supabase.from("communities").update({ title: localTitle }).eq("id", id);
+
+    setSavingTitle(false);
+    setEditingTitle(false);
+  }
+
+  // ========== Upload Banner ==========
   async function handleBannerUpload(e: React.ChangeEvent<HTMLInputElement>) {
     const file = e.target.files?.[0];
     if (!file) return;
@@ -106,7 +144,9 @@ export default function CommunityHeader({ community }: { community: Community })
         const parts = localBanner.split("/");
         const oldFolder = parts[parts.length - 2];
         const oldFile = parts[parts.length - 1];
-        await supabase.storage.from("community-banners").remove([`${oldFolder}/${oldFile}`]);
+        await supabase.storage
+          .from("community-banners")
+          .remove([`${oldFolder}/${oldFile}`]);
       } catch {}
     }
 
@@ -144,24 +184,28 @@ export default function CommunityHeader({ community }: { community: Community })
           <div className="w-full h-full bg-gradient-to-r from-blue-50 to-white" />
         )}
 
-        <input
-          id="bannerInput"
-          type="file"
-          accept="image/*"
-          onChange={handleBannerUpload}
-          className="hidden"
-        />
+        {isOwner && (
+          <>
+            <input
+              id="bannerInput"
+              type="file"
+              accept="image/*"
+              onChange={handleBannerUpload}
+              className="hidden"
+            />
 
-        <label
-          htmlFor="bannerInput"
-          className="absolute top-2 right-2 p-2 bg-white shadow-md rounded-full hover:bg-gray-100 cursor-pointer"
-        >
-          {uploading === "banner" ? (
-            <Loader2 className="w-4 h-4 animate-spin text-gray-600" />
-          ) : (
-            <Pencil className="w-4 h-4 text-gray-700" />
-          )}
-        </label>
+            <label
+              htmlFor="bannerInput"
+              className="absolute top-2 right-2 p-2 bg-white shadow-md rounded-full hover:bg-gray-100 cursor-pointer"
+            >
+              {uploading === "banner" ? (
+                <Loader2 className="w-4 h-4 animate-spin text-gray-600" />
+              ) : (
+                <Pencil className="w-4 h-4 text-gray-700" />
+              )}
+            </label>
+          </>
+        )}
       </div>
 
       {/* CONTENT */}
@@ -180,23 +224,63 @@ export default function CommunityHeader({ community }: { community: Community })
             </div>
           )}
 
-          <AvatarUploader
-            onUploaded={async (url) => {
-              await supabase
-                .from("communities")
-                .update({ avatar_url: url })
-                .eq("id", id);
+          {isOwner && (
+            <AvatarUploader
+              onUploaded={async (url) => {
+                await supabase
+                  .from("communities")
+                  .update({ avatar_url: url })
+                  .eq("id", id);
 
-              setLocalAvatar(url);
-            }}
-          />
+                setLocalAvatar(url);
+              }}
+            />
+          )}
         </div>
 
         {/* INFO */}
         <div className="flex-1 min-w-0">
-          <h1 className="text-2xl md:text-3xl font-extrabold text-gray-900 truncate">
-            {title ?? "Cộng đồng không tên"}
-          </h1>
+
+          {/* TITLE */}
+          <div className="flex items-center gap-2">
+
+            {editingTitle ? (
+              <div className="flex items-center gap-2">
+                <input
+                  autoFocus
+                  value={localTitle}
+                  onChange={(e) => setLocalTitle(e.target.value)}
+                  onBlur={saveTitle}
+                  onKeyDown={(e) => e.key === "Enter" && saveTitle()}
+                  className="border px-3 py-1 rounded-lg text-lg md:text-2xl font-bold"
+                />
+
+                {savingTitle ? (
+                  <Loader2 className="w-4 h-4 animate-spin text-gray-600" />
+                ) : (
+                  <Check
+                    className="w-5 h-5 text-green-600 cursor-pointer"
+                    onClick={saveTitle}
+                  />
+                )}
+              </div>
+            ) : (
+              <>
+                <h1 className="text-2xl md:text-3xl font-extrabold text-gray-900 truncate">
+                  {localTitle}
+                </h1>
+
+                {isOwner && (
+                  <button
+                    className="p-2 bg-white rounded-full shadow hover:bg-gray-100 cursor-pointer"
+                    onClick={() => setEditingTitle(true)}
+                  >
+                    <Pencil className="w-4 h-4 text-gray-700" />
+                  </button>
+                )}
+              </>
+            )}
+          </div>
 
           <p className="mt-2 text-sm md:text-base text-gray-600 line-clamp-3">
             {description ?? "Chưa có mô tả cho cộng đồng này."}

@@ -35,7 +35,10 @@ select,
 textarea {
   font-family: inherit;
   @apply border border-gray-300 rounded-md px-3 py-2 text-sm;
-  @apply focus:ring-2 focus:ring-blue-500 focus:outline-none;
+  /* XÓA HOÀN TOÀN VIỀN XANH */
+  @apply focus:outline-none;
+  @apply focus:ring-0;
+  @apply focus:border-gray-300;
   transition: border-color 0.2s ease-in-out;
 }
 
@@ -89,4 +92,12 @@ ul, ol {
 
 .slick-dots li.slick-active button:before {
   color: #1d4ed8; /* Tailwind blue-700 */
+}
+
+/* TẮT outline của Chrome 100% */
+input:focus,
+input:focus-visible,
+input:focus-within {
+  outline: none !important;
+  box-shadow: none !important;
 }

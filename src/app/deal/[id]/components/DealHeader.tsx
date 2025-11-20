@@ -77,82 +77,56 @@ export default function DealHeader({
         />
       )}
 
-      {/* ACTIONS */}
-      <div className="flex items-center justify-between gap-3 mt-3 text-sm text-gray-700 mb-3">
+      {/* ACTIONS — CLEAN STYLE + CLICKABLE */}
+      <div className="flex items-center justify-between mt-3 text-gray-700 select-none">
 
-        {/* LEFT */}
-        <div className="flex items-center gap-3">
+        {/* LEFT ACTIONS */}
+        <div className="flex items-center gap-6">
 
-          {/* Like */}
-          <motion.div
-            className={`flex items-center rounded-full px-2 py-1 shadow-sm transition-all relative ${
-              liked ? "bg-pink-50" : "bg-gray-100"
-            }`}
+          {/* LIKE */}
+          <motion.button
+            onClick={onLike}
+            whileTap={{ scale: 0.9 }}
+            className="flex items-center gap-1 cursor-pointer px-1
+                       text-gray-700 hover:text-gray-900 transition"
           >
-            {liked && (
-              <span
-                className="absolute inset-0 rounded-full"
-                style={{
-                  background: "rgba(255,192,203,0.4)",
-                  filter: "blur(6px)",
-                  zIndex: 0,
-                }}
-              />
-            )}
+            <HeartIcon
+              size={22}
+              fill={liked ? "currentColor" : "none"}
+              className={liked ? "text-pink-600" : ""}
+            />
+            <span className="text-sm">{likesCount}</span>
+          </motion.button>
 
-            <motion.button
-              onClick={onLike}
-              whileTap={{ scale: 0.9 }}
-              className={`relative p-1 transition-transform duration-200 z-10 ${
-                liked
-                  ? "text-pink-600 scale-110"
-                  : "text-gray-600 hover:text-pink-600"
-              }`}
-            >
-              <HeartIcon size={18} fill={liked ? "currentColor" : "none"} />
-            </motion.button>
-
-            <span className="font-semibold text-xs min-w-[20px] relative z-10">
-              {likesCount}
-            </span>
-          </motion.div>
-
-          {/* Comment */}
-          <div className="flex items-center bg-gray-100 rounded-full px-2 py-1 shadow-sm">
-            <button
-              onClick={onComment}
-              className="hover:text-pink-600 p-1 cursor-pointer"
-            >
-              <MessageSquare size={18} />
-            </button>
-            <span className="font-semibold text-xs min-w-[20px]">
-              {commentCount}
-            </span>
-          </div>
-
-          {/* Share */}
-          <div className="flex items-center bg-gray-100 rounded-full px-2 py-1 shadow-sm border border-gray-200 hover:border-pink-300 transition">
-            <button
-              onClick={onShare}
-              className="hover:text-pink-600 p-1 cursor-pointer flex items-center gap-1"
-            >
-              <Share2 size={18} />
-              <span className="text-xs hidden sm:inline">Chia sẻ</span>
-            </button>
-          </div>
-        </div>
-
-        {/* Save */}
-        <div className="flex items-center bg-gray-100 rounded-full px-2 py-1 shadow-sm">
+          {/* COMMENT */}
           <button
-            onClick={onSave}
-            className={`hover:text-pink-600 p-1 cursor-pointer ${
-              saved ? "text-pink-600" : "text-gray-700"
-            }`}
+            onClick={onComment}
+            className="flex items-center gap-1 cursor-pointer px-1
+                       text-gray-700 hover:text-gray-900 transition"
           >
-            <Bookmark size={18} fill={saved ? "currentColor" : "none"} />
+            <MessageSquare size={22} />
+            <span className="text-sm">{commentCount}</span>
+          </button>
+
+          {/* SHARE */}
+          <button
+            onClick={onShare}
+            className="flex items-center gap-1 cursor-pointer px-1
+                       text-gray-700 hover:text-gray-900 transition"
+          >
+            <Share2 size={22} />
+            <span className="text-sm hidden sm:inline">Chia sẻ</span>
           </button>
         </div>
+
+        {/* SAVE */}
+        <button
+          onClick={onSave}
+          className={`cursor-pointer px-1 transition
+                     ${saved ? "text-pink-600" : "text-gray-700 hover:text-gray-900"}`}
+        >
+          <Bookmark size={22} fill={saved ? "currentColor" : "none"} />
+        </button>
 
       </div>
     </div>

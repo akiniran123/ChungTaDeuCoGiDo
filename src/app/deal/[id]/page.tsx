@@ -4,17 +4,15 @@ import { useParams } from "next/navigation";
 import { useEffect, useState, useRef } from "react";
 import { supabase } from "@/lib/supabase/client";
 import type { Database } from "@/types/supabase";
-import { User } from "lucide-react";
+
+import DealHeader from "./components/DealHeader";
 
 type Product = Database["public"]["Tables"]["products"]["Row"];
 type UserRow = Database["public"]["Tables"]["users"]["Row"];
 type CommentRow = Database["public"]["Tables"]["comments"]["Row"];
 
 interface CommentWithUser extends CommentRow {
-  user: {
-    username: string;
-    avatar_url?: string;
-  };
+  user: { username: string; avatar_url?: string };
 }
 
 export default function DealDetailPage() {
@@ -29,42 +27,45 @@ export default function DealDetailPage() {
 
   const commentsEndRef = useRef<HTMLDivElement>(null);
 
-  // Lấy chi tiết sản phẩm + author + comments
+  //  🚫 BỎ auto scroll khi load comment
+  // useEffect(() => {
+  //   commentsEndRef.current?.scrollIntoView({ behavior: "smooth" });
+  // }, [comments]);
+
+  // ⭐ FIX: scroll lên đầu trang khi mở chi tiết
   useEffect(() => {
-    async function fetchProductDetail() {
+    window.scrollTo(0, 0);
+  }, []);
+
+  useEffect(() => {
+    async function fetchDetail() {
       if (!idParam) return;
       setLoading(true);
 
       try {
-        // Lấy sản phẩm
-        const { data: productData, error: productError } = await supabase
+        const { data: productData } = await supabase
           .from("products")
           .select("*")
           .eq("id", idParam)
           .single();
 
-        if (productError) throw productError;
         setProduct(productData);
 
-        // Lấy thông tin tác giả
         if (productData?.user_id) {
           const { data: userData } = await supabase
             .from("users")
             .select("*")
             .eq("id", productData.user_id)
             .single();
-          setAuthor(userData || null);
+
+          setAuthor(userData);
         }
 
-        // Lấy bình luận kèm user info
         const { data: commentsData } = await supabase
           .from("comments")
           .select(`
             *,
-            users (
-              username,
-              avatar_url
-            )
+            users ( username, avatar_url )
           `)
           .eq("product_id", idParam)
           .order("created_at", { ascending: true });
@@ -78,36 +79,30 @@ export default function DealDetailPage() {
             },
           }))
         );
-      } catch (error) {
-        console.error("Lỗi khi tải dữ liệu:", error);
+      } catch (err) {
+        console.error(err);
       } finally {
         setLoading(false);
       }
     }
 
-    fetchProductDetail();
+    fetchDetail();
   }, [idParam]);
 
-  // Scroll xuống dưới khi có bình luận mới
-  useEffect(() => {
-    commentsEndRef.current?.scrollIntoView({ behavior: "smooth" });
-  }, [comments]);
-
+  // Gửi bình luận + scroll xuống cuối
   const handleSendComment = async () => {
     const content = newComment.trim();
-    if (!content) return;
-    if (!idParam) return;
+    if (!content || !idParam) return;
 
-    // Lấy user hiện tại
     const { data: userData } = await supabase.auth.getUser();
     const user = userData.user;
-    if (!user?.id) {
+
+    if (!user) {
       alert("Bạn cần đăng nhập để bình luận.");
       return;
     }
 
-    // Insert comment vào Supabase và lấy luôn thông tin user
-    const { data: inserted, error } = await supabase
+    const { data: inserted } = await supabase
       .from("comments")
       .insert({
         product_id: idParam,
@@ -116,19 +111,12 @@ export default function DealDetailPage() {
       })
       .select(`
         *,
-        users (
-          username,
-          avatar_url
-        )
+        users ( username, avatar_url )
       `)
       .single();
 
-    if (error || !inserted) {
-      console.error(error);
-      return;
-    }
+    if (!inserted) return;
 
-    // Thêm comment ngay vào UI
     setComments((prev) => [
       ...prev,
       {
@@ -139,7 +127,13 @@ export default function DealDetailPage() {
         },
       },
     ]);
+
     setNewComment("");
+
+    // ⭐ Scroll xuống khi gửi comment thôi
+    setTimeout(() => {
+      commentsEndRef.current?.scrollIntoView({ behavior: "smooth" });
+    }, 50);
   };
 
   if (loading)
@@ -157,81 +151,88 @@ export default function DealDetailPage() {
     );
 
   return (
-    <div className="min-h-screen bg-gray-50 text-gray-900 pt-20 px-4">
-      <div className="max-w-5xl mx-auto">
-        {/* Khung chính */}
-        <div className="bg-white rounded-2xl shadow-md p-6">
-          <h1 className="text-3xl font-bold mb-6">{product.title}</h1>
+    <div className="min-h-screen bg-gray-50 pt-20 px-4">
+      <div className="max-w-6xl mx-auto">
 
-          {product.image_url && (
-            <div className="w-full mb-6">
-              <img
-                src={product.image_url}
-                alt={product.title}
-                className="w-full max-h-[480px] object-cover rounded-xl shadow"
-              />
-            </div>
-          )}
+        {/* GRID 2 CỘT CHUẨN */}
+        <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
 
-          <div className="prose max-w-none mb-8">
-            <p className="text-lg leading-relaxed">
-              {product.description || "Không có mô tả cho sản phẩm này."}
-            </p>
-          </div>
+          {/* LEFT 2/3 — HEADER + COMMENTS */}
+          <div className="md:col-span-2 space-y-6">
 
-          <div className="flex items-center justify-between border-t pt-4 text-sm text-gray-600">
-            <div className="flex items-center gap-3">
-              <User className="w-5 h-5 text-gray-500" />
-              <span>
-                Tác giả: <strong>{author?.username || product.user_id}</strong>
-              </span>
-            </div>
-          </div>
-        </div>
+            {/* HEADER */}
+            <DealHeader product={product} author={author} />
 
-        {/* Bình luận */}
-        <div className="bg-white rounded-2xl shadow-md p-6 mt-8">
-          <h2 className="text-xl font-semibold mb-4">Bình luận</h2>
+            {/* COMMENTS */}
+            <div className="bg-white rounded-2xl shadow-md p-6">
+              <h2 className="text-xl font-semibold mb-4">Bình luận</h2>
 
-          <div className="flex items-center gap-3 mb-6">
-            <input
-              type="text"
-              placeholder="Viết bình luận..."
-              value={newComment}
-              onChange={(e) => setNewComment(e.target.value)}
-              onKeyDown={(e) => e.key === "Enter" && handleSendComment()}
-              className="flex-1 border rounded-lg px-4 py-2 focus:ring-2 focus:ring-pink-300 outline-none"
-            />
-            <button
-              onClick={handleSendComment}
-              className="bg-pink-500 text-white px-4 py-2 rounded-lg shadow hover:bg-pink-600"
-            >
-              Gửi
-            </button>
-          </div>
-
-          <div className="space-y-4">
-            {comments.length === 0 && (
-              <div className="text-gray-600 italic">Chưa có bình luận nào.</div>
-            )}
-            {comments.map((c) => (
-              <div key={c.id} className="flex items-start gap-3">
-                <img
-                  src={c.user.avatar_url}
-                  alt={c.user.username}
-                  className="w-10 h-10 rounded-full object-cover border border-gray-200"
+              <div className="flex items-center gap-3 mb-6">
+                <input
+                  type="text"
+                  placeholder="Viết bình luận..."
+                  value={newComment}
+                  onChange={(e) => setNewComment(e.target.value)}
+                  onKeyDown={(e) => e.key === "Enter" && handleSendComment()}
+                  className="flex-1 border rounded-lg px-4 py-2"
                 />
-                <div>
-                  <p className="text-gray-800 font-semibold">{c.user.username}</p>
-                  <p className="text-gray-800">{c.content}</p>
-                  <p className="text-gray-400 text-xs">
-                    {c.created_at ? new Date(c.created_at).toLocaleString() : ""}
-                  </p>
-                </div>
+                <button
+                  onClick={handleSendComment}
+                  className="bg-pink-500 text-white px-4 py-2 rounded-lg"
+                >
+                  Gửi
+                </button>
               </div>
-            ))}
-            <div ref={commentsEndRef} />
+
+              <div className="space-y-4">
+                {comments.length === 0 && (
+                  <div className="italic text-gray-600">
+                    Chưa có bình luận nào.
+                  </div>
+                )}
+
+                {comments.map((c) => (
+                  <div key={c.id} className="flex items-start gap-3">
+                    <img
+                      src={c.user.avatar_url}
+                      className="w-10 h-10 rounded-full border object-cover"
+                    />
+                    <div>
+                      <p className="font-semibold">{c.user.username}</p>
+                      <p>{c.content}</p>
+
+                      <p className="text-gray-400 text-xs">
+                        {c.created_at
+                          ? new Date(c.created_at).toLocaleString()
+                          : ""}
+                      </p>
+                    </div>
+                  </div>
+                ))}
+
+                <div ref={commentsEndRef} />
+              </div>
+            </div>
           </div>
+
+          {/* RIGHT 1/3 — SIDEBAR */}
+          <div className="space-y-6">
+
+            <div className="bg-white rounded-2xl shadow p-6">
+              <h2 className="text-lg font-semibold mb-3">Mô tả sản phẩm</h2>
+              <p className="text-gray-700 whitespace-pre-line">
+                {product.description || "Không có mô tả."}
+              </p>
+            </div>
+
+            <div className="bg-white rounded-2xl shadow p-6">
+              <h2 className="text-lg font-semibold mb-3">Thông tin sản phẩm</h2>
+              <p><strong>Giá:</strong> {product.price ?? "—"}</p>
+              <p><strong>Số lượng:</strong> {product.quantity ?? "—"}</p>
+              <p><strong>Tình trạng:</strong> {product.condition ?? "—"}</p>
+            </div>
+          </div>
+
         </div>
       </div>
     </div>

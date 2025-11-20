@@ -149,13 +149,11 @@ export default function DealDetailPage() {
           {/* LEFT — KHUNG DUY NHẤT */}
           <div className="md:col-span-2">
 
-            {/* 🚫 BỎ TẤT CẢ KHUNG ẢNH — CHỈ ĐỂ NỘI DUNG */}
             <DealHeader product={product} author={author} />
 
-            {/* COMMENT — CHUNG MỘT KHUNG VỚI ẢNH */}
+            {/* COMMENT */}
             <div className="px-6 pb-6">
 
-              {/* INPUT */}
               <div className="flex items-center gap-3 mb-6">
                 <input
                   type="text"
@@ -177,7 +175,6 @@ export default function DealDetailPage() {
                 </button>
               </div>
 
-              {/* COMMENT LIST */}
               <div className="space-y-4">
                 {comments.length === 0 && (
                   <div className="italic text-gray-600">
@@ -210,21 +207,25 @@ export default function DealDetailPage() {
             </div>
           </div>
 
-          {/* RIGHT SIDEBAR */}
-          <div className="space-y-6">
-            <div className="bg-white rounded-2xl shadow p-6">
-              <h2 className="text-lg font-semibold mb-3">Mô tả sản phẩm</h2>
+          {/* RIGHT SIDEBAR — ĐẨY SANG PHẢI XA HƠN */}
+          <div className="space-y-10 py-2 pl-20 ml-10">
+
+            {/* Mô tả sản phẩm */}
+            <div>
+              <h2 className="text-lg font-semibold mb-2">Mô tả sản phẩm</h2>
               <p className="text-gray-700 whitespace-pre-line">
                 {product.description || "Không có mô tả."}
               </p>
             </div>
 
-            <div className="bg-white rounded-2xl shadow p-6">
-              <h2 className="text-lg font-semibold mb-3">Thông tin sản phẩm</h2>
+            {/* Thông tin sản phẩm */}
+            <div>
+              <h2 className="text-lg font-semibold mb-2">Thông tin sản phẩm</h2>
               <p><strong>Giá:</strong> {product.price ?? "—"}</p>
               <p><strong>Số lượng:</strong> {product.quantity ?? "—"}</p>
               <p><strong>Tình trạng:</strong> {product.condition ?? "—"}</p>
             </div>
+
           </div>
 
         </div>

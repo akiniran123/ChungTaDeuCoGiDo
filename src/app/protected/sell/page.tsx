@@ -1,3 +1,4 @@
+// Fixed SellPage code
 "use client";
 
 import { useState, useEffect } from "react";
@@ -16,14 +17,11 @@ import ReturnPolicies from "@/components/sell/ReturnPolicies";
 import ActionButtons from "@/components/sell/ActionButtons";
 import CommunitySelector from "@/components/sell/CommunitySelector";
 
-// ===========================
-// FORM TYPE CHUẨN XÁC
-// ===========================
 type SellForm = {
   title: string;
   description: string;
   price: string;
-  category: string | null;
+  category: string; // FIX: never null for select
   condition: string;
   images: string[];
   video_url: string | null;
@@ -43,7 +41,7 @@ export default function SellPage() {
       title: "",
       description: "",
       price: "",
-      category: null,
+      category: "", // FIX
       condition: "used",
       images: [],
       video_url: null,
@@ -67,13 +65,9 @@ export default function SellPage() {
 
   const [loading, setLoading] = useState(false);
   const [message, setMessage] = useState<string | null>(null);
-
   const [communityTagId, setCommunityTagId] = useState<string | null>(null);
   const [authUserId, setAuthUserId] = useState("");
 
-  // ===========================
-  // Lấy user ID
-  // ===========================
   useEffect(() => {
     async function fetchUser() {
       const { data } = await supabase.auth.getUser();
@@ -82,9 +76,6 @@ export default function SellPage() {
     fetchUser();
   }, []);
 
-  // ===========================
-  // Submit
-  // ===========================
   const onSubmit = async (data: SellForm) => {
     setLoading(true);
     setMessage(null);
@@ -102,7 +93,6 @@ export default function SellPage() {
       return;
     }
 
-    // Chuẩn hóa payload theo schema DB (images = text => JSON stringify)
     const payload = {
       user_id: auth.user.id,
       title: data.title,
@@ -111,8 +101,8 @@ export default function SellPage() {
       category: data.category,
       is_private: data.is_private,
       condition: data.condition,
-      specs: data.specs || [], // jsonb OK
-      images: JSON.stringify(data.images || []), // DB type = text
+      specs: data.specs || [],
+      images: JSON.stringify(data.images || []),
       image_url: data.images?.[0] ?? null,
       video_url: data.video_url,
       enable_offers: data.enable_offers,
@@ -126,7 +116,6 @@ export default function SellPage() {
       is_completed: false,
     };
 
-    // Insert product
     const { data: insertedProduct, error: insertErr } = await supabase
       .from("products")
       .insert(payload)
@@ -142,7 +131,6 @@ export default function SellPage() {
 
     const productId = insertedProduct.id;
 
-    // Insert TAG nếu có
     if (data.community_tag_id) {
       await supabase.from("product_tags").insert({
         product_id: productId,
@@ -169,7 +157,7 @@ export default function SellPage() {
 
         <CommunitySelector
           userId={authUserId}
-          value={watch("community_id")}
+          value={watch("community_id") ?? ""}
           onChange={(v: string) => {
             methods.setValue("community_id", v || null);
             setCommunityTagId(null);
@@ -192,4 +180,3 @@ export default function SellPage() {
     </FormProvider>
   );
 }
-

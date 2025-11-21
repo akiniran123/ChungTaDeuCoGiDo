@@ -3,7 +3,7 @@
 import { useEffect, useState } from "react";
 import { supabase } from "@/lib/supabase/client";
 import type { Database } from "@/types/supabase";
-import ProductsList from "@/components/Trang_chu/ProductsList"; // ✅ sửa đúng tên file
+import ProductsList from "@/components/Trang_chu/ProductsList";
 
 type ProductWithUser = Database["public"]["Tables"]["products"]["Row"] & {
   users?: {
@@ -12,7 +12,10 @@ type ProductWithUser = Database["public"]["Tables"]["products"]["Row"] & {
     avatar_url: string | null;
   } | null;
   tags?: string[];
+  mainTag?: string | null;
   communityNames?: string[];
+  communityName?: string | null;
+  communityIcon?: string | null;
 };
 
 type Badge = Database["public"]["Tables"]["badges"]["Row"];
@@ -28,7 +31,9 @@ export default function ProductsPage() {
   useEffect(() => {
     const fetchProducts = async () => {
       try {
-        // 🧩 1️⃣ Lấy danh sách sản phẩm + user + tag + cộng đồng
+        // =========================================
+        // 🟦 QUERY SẢN PHẨM + USER + TAGS
+        // =========================================
         const { data, error } = await supabase
           .from("products")
           .select(
@@ -39,14 +44,17 @@ export default function ProductsPage() {
               username,
               avatar_url
             ),
+            communities:community_id (
+              id,
+              title,
+              avatar_url
+            ),
             product_tags (
               tag_id,
               community_tags:tag_id (
                 id,
                 name,
-                communities:community_id (
-                  title
-                )
+                community_id
               )
             )
           `
@@ -57,38 +65,84 @@ export default function ProductsPage() {
 
         const productsData = (data || []) as any[];
 
-        const productsWithTags = productsData.map((p) => ({
-          ...p,
-          tags: (p.product_tags || []).map(
-            (pt: any) => pt.community_tags?.name || "Không rõ"
+        // =========================================
+        // 🟩 LẤY DANH SÁCH community_id TỪ TAGS
+        // =========================================
+        const communityIds = [
+          ...new Set(
+            productsData
+              .flatMap((p) =>
+                (p.product_tags || []).map(
+                  (pt: any) => pt?.community_tags?.community_id
+                )
+              )
+              .filter(Boolean)
           ),
+        ];
+
+        let communityMap: Record<string, string> = {};
+
+        if (communityIds.length > 0) {
+          const { data: commData } = await supabase
+            .from("communities")
+            .select("id, title")
+            .in("id", communityIds);
+
+          commData?.forEach((c) => {
+            communityMap[c.id] = c.title;
+          });
+        }
+
+        // =========================================
+        // 🟨 FORMAT DATA
+        // =========================================
+        const formatted = productsData.map((p) => ({
+          ...p,
+
+          mainTag: null,
+
+          tags: (p.product_tags || []).map(
+            (pt: any) => pt.community_tags?.name || null
+          ),
+
           communityNames: (p.product_tags || [])
-            .map((pt: any) => pt.community_tags?.communities?.title)
+            .map((pt: any) => communityMap[pt.community_tags?.community_id])
             .filter(Boolean),
+
+          communityName: p.communities?.title || null,
+          communityIcon: p.communities?.avatar_url || null,
         }));
 
-        setProducts(productsWithTags);
+        setProducts(formatted);
 
-        // 💬 2️⃣ Lấy số lượng comment từng sản phẩm
+        // =========================================
+        // 💬 COMMENTS COUNT
+        // =========================================
         const commentCounts: Record<string, number> = {};
+
         await Promise.all(
-          productsWithTags.map(async (p) => {
+          formatted.map(async (p) => {
             const { count } = await supabase
               .from("comments")
               .select("*", { count: "exact" })
               .eq("product_id", p.id);
+
             commentCounts[p.id] = count || 0;
           })
         );
+
         setCommentsCount(commentCounts);
 
-        // ❤️ 3️⃣ Lấy dữ liệu like
+        // =========================================
+        // ❤️ LIKES
+        // =========================================
         const { data: likesData } = await supabase
           .from("product_likes")
           .select("product_id, user_id");
 
         const likeCounts: Record<string, number> = {};
         const userLikes: string[] = [];
+
         likesData?.forEach((like) => {
           likeCounts[like.product_id] =
             (likeCounts[like.product_id] || 0) + 1;
@@ -108,15 +162,18 @@ export default function ProductsPage() {
         setLikesCount(likeCounts);
         setLikedIds(userLikes);
 
-        // 🏅 4️⃣ Lấy huy hiệu từng user
+        // =========================================
+        // 🏅 BADGES
+        // =========================================
         const uniqueUserIds = [
-          ...new Set(productsWithTags.map((p) => p.users?.id).filter(Boolean)),
+          ...new Set(formatted.map((p) => p.users?.id).filter(Boolean)),
         ] as string[];
 
         const badgesMap: Record<string, Badge[]> = {};
+
         await Promise.all(
           uniqueUserIds.map(async (uid) => {
-            const { data: badgeData, error: badgeErr } = await supabase
+            const { data: badgeData } = await supabase
               .from("user_badges")
               .select(
                 `
@@ -132,7 +189,7 @@ export default function ProductsPage() {
               )
               .eq("user_id", uid);
 
-            if (!badgeErr && badgeData) {
+            if (badgeData) {
               badgesMap[uid] = badgeData
                 .map((b) => b.badges)
                 .filter((b): b is Badge => !!b);
@@ -158,7 +215,6 @@ export default function ProductsPage() {
       </div>
     );
 
-  // 📦 Truyền toàn bộ dữ liệu sang component ProductsList
   return (
     <ProductsList
       products={products}

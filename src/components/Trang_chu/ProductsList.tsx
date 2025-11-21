@@ -24,8 +24,14 @@ type ProductWithUser = Database["public"]["Tables"]["products"]["Row"] & {
     avatar_url: string | null;
     id?: string;
   } | null;
+
   tags?: string[];
   communityNames?: string[];
+
+  // ⭐ Thêm mới
+  communityName?: string | null;
+  communityIcon?: string | null;
+  mainTag?: string | null;
 };
 
 type Badge = Database["public"]["Tables"]["badges"]["Row"];
@@ -51,9 +57,6 @@ export default function ProductsList({
   const [saved, setSaved] = useState<string[]>([]);
   const scrollPosition = useRef(0);
 
-  // ================================
-  // Lưu vị trí scroll
-  // ================================
   useEffect(() => {
     const handleScroll = () => {
       scrollPosition.current = window.scrollY;
@@ -71,18 +74,12 @@ export default function ProductsList({
     window.scrollTo({ top: scrollPosition.current, behavior: "instant" });
   }, [biggerGrid]);
 
-  // ================================
-  // Lưu / bỏ lưu sản phẩm
-  // ================================
   const toggleSave = (id: string) => {
     setSaved((prev) =>
       prev.includes(id) ? prev.filter((x) => x !== id) : [...prev, id]
     );
   };
 
-  // ================================
-  // ❤️ LIKE API — mỗi user chỉ thả 1 lần, bấm lại = bỏ thả
-  // ================================
   const [localLikesCount, setLocalLikesCount] = useState(likesCount);
 
   const toggleLike = async (productId: string) => {
@@ -96,9 +93,6 @@ export default function ProductsList({
     const alreadyLiked = likedIds.includes(productId);
 
     if (alreadyLiked) {
-      // ===========================
-      // ❌ UNLIKE
-      // ===========================
       await supabase
         .from("product_likes")
         .delete()
@@ -111,9 +105,6 @@ export default function ProductsList({
         [productId]: (prev[productId] || 1) - 1,
       }));
     } else {
-      // ===========================
-      // ❤️ LIKE
-      // ===========================
       await supabase.from("product_likes").insert({
         product_id: productId,
         user_id: userId,
@@ -127,24 +118,16 @@ export default function ProductsList({
     }
   };
 
-  // ================================
-  // SHARE sản phẩm
-  // ================================
   const shareProduct = (product: ProductWithUser) => {
     const url = `${window.location.origin}/deal/${product.id}`;
     const title = product.title || "Sản phẩm";
     if (navigator.share) {
-      navigator
-        .share({ title, url })
-        .catch((err) => console.error("Lỗi chia sẻ:", err));
+      navigator.share({ title, url }).catch(() => {});
     } else {
       alert(`Copy link để chia sẻ: ${url}`);
     }
   };
 
-  // ==========================================================
-  // ===================== Giao diện ===========================
-  // ==========================================================
   return (
     <div className="p-6">
       <div className="flex justify-end mb-4">
@@ -226,7 +209,52 @@ export default function ProductsList({
                   </Link>
 
                   <div className="p-4">
-                    <div className="flex justify-between items-start">
+
+                    {/* ⭐ HIỂN THỊ CỘNG ĐỒNG */}
+                    {p.communityName && (
+                      <div className="flex items-center gap-2 mb-2">
+                        {p.communityIcon && (
+                          <img
+                            src={p.communityIcon}
+                            className="w-6 h-6 rounded-full"
+                          />
+                        )}
+                        <span className="text-sm text-blue-600 font-semibold">
+                          {p.communityName}
+                        </span>
+                      </div>
+                    )}
+
+                    {/* ⭐ HIỂN THỊ TAG CHÍNH */}
+                    {p.mainTag && (
+                      <span className="text-xs bg-purple-50 text-purple-600 px-2 py-1 rounded-full">
+                        #{p.mainTag}
+                      </span>
+                    )}
+
+                    {/* ⭐ LIST TAG + COMMUNITY TAG */}
+                    {(p.tags?.length || p.communityNames?.length) && (
+                      <div className="flex flex-wrap gap-2 mt-2">
+                        {p.tags?.map((tag, i) => (
+                          <span
+                            key={i}
+                            className="text-xs bg-pink-50 text-pink-600 px-2 py-1 rounded-full"
+                          >
+                            {tag}
+                          </span>
+                        ))}
+                        {p.communityNames?.map((cName, i) => (
+                          <span
+                            key={`c-${i}`}
+                            className="text-xs bg-blue-50 text-blue-600 px-2 py-1 rounded-full"
+                          >
+                            {cName}
+                          </span>
+                        ))}
+                      </div>
+                    )}
+
+                    <div className="flex justify-between items-start mt-2">
                       <Link href={`/deal/${p.id}`}>
                         <h3 className="font-semibold text-lg cursor-pointer hover:text-pink-500">
                           {p.title}
@@ -254,27 +282,6 @@ export default function ProductsList({
                       {p.price ? `${p.price.toLocaleString()}₫` : "Liên hệ"}
                     </p>
 
-                    {(p.tags?.length || p.communityNames?.length) && (
-                      <div className="flex flex-wrap gap-2 mt-2">
-                        {p.tags?.map((tag, i) => (
-                          <span
-                            key={i}
-                            className="text-xs bg-pink-50 text-pink-600 px-2 py-1 rounded-full"
-                          >
-                            {tag}
-                          </span>
-                        ))}
-                        {p.communityNames?.map((cName, i) => (
-                          <span
-                            key={`c-${i}`}
-                            className="text-xs bg-blue-50 text-blue-600 px-2 py-1 rounded-full"
-                          >
-                            {cName}
-                          </span>
-                        ))}
-                      </div>
-                    )}
-
                     <p className="text-xs text-gray-500 mt-1">
                       Tình trạng: {p.condition}
                     </p>
@@ -299,6 +306,7 @@ export default function ProductsList({
                               <p className="text-sm font-medium text-gray-700">
                                 {p.users.username || "Người dùng"}
                               </p>
+
                               {userBadges[p.users.id || ""]?.length ? (
                                 <div className="flex items-center gap-1">
                                   {userBadges[p.users.id || ""]
@@ -345,7 +353,6 @@ export default function ProductsList({
                       </span>
 
                       <div className="flex items-center gap-2">
-                        {/* ❤️ Like button */}
                         <button
                           onClick={() => toggleLike(p.id)}
                           className={`flex items-center gap-1 px-2 py-1 rounded-full transition ${
@@ -357,7 +364,9 @@ export default function ProductsList({
                           <HeartIcon
                             size={14}
                             fill={
-                              likedIds.includes(p.id) ? "currentColor" : "none"
+                              likedIds.includes(p.id)
+                                ? "currentColor"
+                                : "none"
                             }
                           />
                           <span className="text-xs font-semibold">

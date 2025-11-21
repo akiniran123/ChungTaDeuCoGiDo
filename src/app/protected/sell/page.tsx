@@ -14,51 +14,78 @@ import TechSpecsEditor from "@/components/sell/TechSpecsEditor";
 import PrivateToggle from "@/components/sell/PrivateToggle";
 import ReturnPolicies from "@/components/sell/ReturnPolicies";
 import ActionButtons from "@/components/sell/ActionButtons";
-
 import CommunitySelector from "@/components/sell/CommunitySelector";
 
+// ===========================
+// FORM TYPE CHUẨN XÁC
+// ===========================
+type SellForm = {
+  title: string;
+  description: string;
+  price: string;
+  category: string | null;
+  condition: string;
+  images: string[];
+  video_url: string | null;
+  enable_offers: boolean;
+  min_offer: string | null;
+  quantity: number;
+  specs: any[];
+  is_private: boolean;
+  return_policy: string | null;
+  community_id: string | null;
+  community_tag_id: string | null;
+};
+
 export default function SellPage() {
-  const methods = useForm({
+  const methods = useForm<SellForm>({
     defaultValues: {
       title: "",
       description: "",
       price: "",
-      category: "",
+      category: null,
       condition: "used",
       images: [],
-      video_url: "",
+      video_url: null,
       enable_offers: true,
-      min_offer: "",
+      min_offer: null,
       quantity: 1,
       specs: [],
       is_private: false,
-      return_policy: "",
-      community_id: ""
-    }
+      return_policy: null,
+      community_id: null,
+      community_tag_id: null,
+    },
   });
 
   const {
     handleSubmit,
     watch,
     reset,
-    formState: { errors }
+    formState: { errors },
   } = methods;
 
   const [loading, setLoading] = useState(false);
   const [message, setMessage] = useState<string | null>(null);
 
-  // ⭐ Sửa lỗi Promise<string>: Lấy userId bằng useEffect
+  const [communityTagId, setCommunityTagId] = useState<string | null>(null);
   const [authUserId, setAuthUserId] = useState("");
 
+  // ===========================
+  // Lấy user ID
+  // ===========================
   useEffect(() => {
     async function fetchUser() {
-      const { data: auth } = await supabase.auth.getUser();
-      setAuthUserId(auth?.user?.id || "");
+      const { data } = await supabase.auth.getUser();
+      setAuthUserId(data?.user?.id || "");
     }
     fetchUser();
   }, []);
 
-  const onSubmit = async (data: any) => {
+  // ===========================
+  // Submit
+  // ===========================
+  const onSubmit = async (data: SellForm) => {
     setLoading(true);
     setMessage(null);
 
@@ -75,74 +102,94 @@ export default function SellPage() {
       return;
     }
 
+    // Chuẩn hóa payload theo schema DB (images = text => JSON stringify)
     const payload = {
       user_id: auth.user.id,
       title: data.title,
       description: data.description,
       price: Number(data.price),
-      category: data.category || null,
+      category: data.category,
       is_private: data.is_private,
       condition: data.condition,
-      specs: data.specs,
-      images: data.images,
-      video_url: data.video_url || null,
-      enable_offers: data.enable_offers,
-      min_offer: data.min_offer || null,
-      quantity: Number(data.quantity),
-      return_policy: data.return_policy || null,
+      specs: data.specs || [], // jsonb OK
+      images: JSON.stringify(data.images || []), // DB type = text
       image_url: data.images?.[0] ?? null,
+      video_url: data.video_url,
+      enable_offers: data.enable_offers,
+      min_offer: data.min_offer ? Number(data.min_offer) : null,
+      quantity: Number(data.quantity),
+      return_policy: data.return_policy,
       sku: null,
       community_id: data.community_id,
       upvotes: 0,
       views: 0,
-      is_completed: false
+      is_completed: false,
     };
 
-    const { error } = await supabase.from("products").insert(payload);
+    // Insert product
+    const { data: insertedProduct, error: insertErr } = await supabase
+      .from("products")
+      .insert(payload)
+      .select("id")
+      .single();
 
-    if (error) {
+    if (insertErr || !insertedProduct) {
+      console.error("Insert error:", insertErr);
       setMessage("🚨 Đăng sản phẩm thất bại!");
-      console.error(error);
-    } else {
-      setMessage("✅ Đăng sản phẩm thành công!");
-      reset();
+      setLoading(false);
+      return;
     }
 
+    const productId = insertedProduct.id;
+
+    // Insert TAG nếu có
+    if (data.community_tag_id) {
+      await supabase.from("product_tags").insert({
+        product_id: productId,
+        tag_id: data.community_tag_id,
+      });
+    }
+
+    setMessage("✅ Đăng sản phẩm thành công!");
+    reset();
+    setCommunityTagId(null);
     setLoading(false);
   };
 
   return (
     <FormProvider {...methods}>
-      <form onSubmit={handleSubmit(onSubmit)} className="space-y-6 p-5 max-w-2xl mx-auto">
-
+      <form
+        onSubmit={handleSubmit(onSubmit)}
+        className="space-y-6 p-5 max-w-2xl mx-auto"
+      >
         <ListingTitleInput error={errors.title} />
-
         <DescriptionEditor error={errors.description} />
-
         <CategorySelect error={errors.category} />
-
         <ConditionSelector error={errors.condition} />
 
-        {/* ⭐ Chọn cộng đồng */}
         <CommunitySelector
           userId={authUserId}
           value={watch("community_id")}
-          onChange={(v) => methods.setValue("community_id", v)}
+          onChange={(v: string) => {
+            methods.setValue("community_id", v || null);
+            setCommunityTagId(null);
+            methods.setValue("community_tag_id", null);
+          }}
+          selectedTag={communityTagId}
+          onTagChange={(tag: string | null) => {
+            setCommunityTagId(tag);
+            methods.setValue("community_tag_id", tag ?? null);
+          }}
         />
 
         <ImageUploader error={errors.images} />
-
         <PriceAndOffers watch={watch} error={errors.price} />
-
         <TechSpecsEditor error={errors.specs} />
-
         <PrivateToggle />
-
         <ReturnPolicies />
-
         <ActionButtons loading={loading} message={message} />
-
       </form>
     </FormProvider>
   );
 }
+

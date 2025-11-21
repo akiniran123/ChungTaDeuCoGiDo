@@ -5,21 +5,32 @@ import { supabase } from "@/lib/supabase/client";
 import type { Database } from "@/types/supabase";
 
 type Community = Database["public"]["Tables"]["communities"]["Row"];
+type CommunityTag = Database["public"]["Tables"]["community_tags"]["Row"];
 
 type CommunitySelectorProps = {
-  value: string | null;
+  value: string | null; // community_id
   onChange: (value: string) => void;
   userId: string;
+
+  selectedTag?: string | null;
+  onTagChange?: (value: string | null) => void;
 };
 
 export default function CommunitySelector({
   value,
   onChange,
   userId,
+  selectedTag,
+  onTagChange,
 }: CommunitySelectorProps) {
   const [communities, setCommunities] = useState<Community[]>([]);
+  const [communityTags, setCommunityTags] = useState<CommunityTag[]>([]);
   const [loading, setLoading] = useState(true);
+  const [tagsLoading, setTagsLoading] = useState(false);
 
+  // ==========================
+  // 🔥 Lấy danh sách community user đã tham gia
+  // ==========================
   useEffect(() => {
     if (!userId) return;
 
@@ -27,7 +38,6 @@ export default function CommunitySelector({
       try {
         setLoading(true);
 
-        // 1️⃣ Lấy danh sách community mà user là thành viên
         const { data: joined, error: joinErr } = await supabase
           .from("community_members")
           .select("community_id")
@@ -47,7 +57,6 @@ export default function CommunitySelector({
 
         const communityIds = joined.map((x) => x.community_id);
 
-        // 2️⃣ Lấy thông tin community theo ID
         const { data: communityData, error: commErr } = await supabase
           .from("communities")
           .select("*")
@@ -68,6 +77,39 @@ export default function CommunitySelector({
     fetchCommunities();
   }, [userId]);
 
+  // ==========================
+  // 🔥 Khi chọn community → load tags
+  // ==========================
+  useEffect(() => {
+    if (!value) {
+      setCommunityTags([]);
+      onTagChange?.(null); // reset tag khi đổi community
+      return;
+    }
+
+    const fetchTags = async () => {
+      setTagsLoading(true);
+
+      const { data, error } = await supabase
+        .from("community_tags")
+        .select("*")
+        .eq("community_id", value)
+        .order("created_at", { ascending: true });
+
+      if (error) {
+        console.error("❌ Lỗi tải tag:", error.message);
+      }
+
+      setCommunityTags(data || []);
+      setTagsLoading(false);
+    };
+
+    fetchTags();
+  }, [value]);
+
+  // ==========================
+  // UI
+  // ==========================
   if (loading) return <p className="text-gray-500">Đang tải cộng đồng...</p>;
 
   if (communities.length === 0)
@@ -79,28 +121,62 @@ export default function CommunitySelector({
     );
 
   return (
-    <div className="flex flex-col gap-2">
-      <label className="text-sm font-medium text-gray-700">
-        Chọn cộng đồng đăng bài
-      </label>
+    <div className="flex flex-col gap-4">
+      {/* SELECT COMMUNITY */}
+      <div className="flex flex-col gap-2">
+        <label className="text-sm font-medium text-gray-700">
+          Chọn cộng đồng đăng bài
+        </label>
 
-      <select
-        value={value ?? ""}
-        onChange={(e) => onChange(e.target.value)}
-        className="border rounded-lg px-3 py-2"
-      >
-        <option value="">-- Chọn cộng đồng --</option>
+        <select
+          value={value ?? ""}
+          onChange={(e) => onChange(e.target.value)}
+          className="border rounded-lg px-3 py-2"
+        >
+          <option value="">-- Chọn cộng đồng --</option>
 
-        {communities.map((c) => (
-          <option key={c.id} value={c.id}>
-            {c.title}
-          </option>
-        ))}
-      </select>
+          {communities.map((c) => (
+            <option key={c.id} value={c.id}>
+              {c.title}
+            </option>
+          ))}
+        </select>
 
-      <p className="text-xs text-gray-500">
-        Chỉ hiển thị các cộng đồng bạn đã tham gia.
-      </p>
+        <p className="text-xs text-gray-500">
+          Chỉ hiển thị các cộng đồng bạn đã tham gia.
+        </p>
+      </div>
+
+      {/* TAG SELECTOR */}
+      {value && (
+        <div className="flex flex-col gap-2">
+          <label className="text-sm font-medium text-gray-700">
+            Chọn tag của cộng đồng
+          </label>
+
+          {tagsLoading ? (
+            <p className="text-gray-400 text-sm">Đang tải tag...</p>
+          ) : communityTags.length === 0 ? (
+            <p className="text-gray-500 text-sm">
+              Cộng đồng này chưa có tag nào.
+            </p>
+          ) : (
+            <select
+              value={selectedTag ?? ""}
+              onChange={(e) => onTagChange?.(e.target.value)}
+              className="border rounded-lg px-3 py-2"
+            >
+              <option value="">-- Chọn tag --</option>
+
+              {communityTags.map((tag) => (
+                <option key={tag.id} value={tag.id}>
+                  {tag.name}
+                </option>
+              ))}
+            </select>
+          )}
+        </div>
+      )}
     </div>
   );
 }

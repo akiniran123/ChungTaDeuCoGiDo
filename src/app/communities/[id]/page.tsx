@@ -11,6 +11,7 @@ import JoinLeaveButton from "./components/JoinLeaveButtons";
 import LoadingState from "./components/LoadingState";
 import MembersSidebar from "./components/MembersRightSidebar";
 import ProductList from "./components/ProductList";
+import CreateTagButton from "./components/CreateTagButton"; // ⭐ THÊM DÒNG NÀY
 
 type Community = Database["public"]["Tables"]["communities"]["Row"];
 type Product = Database["public"]["Tables"]["products"]["Row"];
@@ -62,7 +63,7 @@ const CommunityDetailPage: React.FC<CommunityDetailPageProps> = ({ params }) => 
 
         if (communityErr) throw communityErr;
 
-        // --- Lấy danh sách thành viên của cộng đồng ---
+        // --- Lấy danh sách thành viên ---
         const { data: members, error: membersErr } = await supabase
           .from("community_members")
           .select("user_id")
@@ -72,7 +73,6 @@ const CommunityDetailPage: React.FC<CommunityDetailPageProps> = ({ params }) => 
 
         const memberIds = members.map((m) => m.user_id);
 
-        // Nếu chưa có thành viên thì không có bài đăng
         if (memberIds.length === 0) {
           setCommunity(communityData);
           setProducts([]);
@@ -80,7 +80,7 @@ const CommunityDetailPage: React.FC<CommunityDetailPageProps> = ({ params }) => 
           return;
         }
 
-        // --- Lấy tất cả sản phẩm của các member ---
+        // --- Lấy sản phẩm ---
         const { data: productData, error: productErr } = await supabase
           .from("products")
           .select("*")
@@ -112,8 +112,13 @@ const CommunityDetailPage: React.FC<CommunityDetailPageProps> = ({ params }) => 
       
       {/* MAIN */}
       <div className="flex-1 bg-white p-6 rounded-l-2xl">
+
         <CommunityHeader community={community} />
-        <JoinLeaveButton communityId={id!} />
+
+        <div className="flex gap-3 items-center mt-4">
+          <JoinLeaveButton communityId={id!} />
+          <CreateTagButton communityId={id!} /> {/* ⭐ NÚT TẠO TAG */}
+        </div>
 
         {products.length > 0 ? (
           <ProductList products={products} />

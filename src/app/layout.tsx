@@ -10,7 +10,8 @@ export const metadata: Metadata = {
 export default function RootLayout({ children }: { children: React.ReactNode }) {
   return (
     <html lang="en" suppressHydrationWarning>
-      <body className="bg-white text-black min-h-screen flex flex-col -mt-8">
+      <body className="bg-white text-black min-h-screen flex flex-col ">
+        
         {/* ✅ ClientRootWrapper handles client-side rendering */}
         <ClientRootWrapper>{children}</ClientRootWrapper>
       </body>

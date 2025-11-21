@@ -44,18 +44,19 @@ export default function DealHeader({
   return (
     <div className="p-6">
 
-      {/* USER */}
+      {/* AUTHOR SECTION */}
       <div className="flex items-center gap-4 mb-6">
         <img
           src={author?.avatar_url || "/default-avatar.png"}
           alt={author?.username || "User Avatar"}
-          className="w-12 h-12 rounded-full border object-cover"
+          className="w-12 h-12 rounded-full border object-cover shadow"
         />
 
         <div>
           <p className="font-semibold text-lg">
             {author?.username || "Người dùng"}
           </p>
+
           <p className="text-gray-500 text-sm">
             Đăng vào:{" "}
             {product.created_at
@@ -65,30 +66,34 @@ export default function DealHeader({
         </div>
       </div>
 
-      {/* TITLE */}
-      <h1 className="text-3xl font-bold mb-6">{product.title}</h1>
+      {/* PRODUCT TITLE */}
+      <h1 className="text-3xl font-bold mb-6 leading-snug">
+        {product.title}
+      </h1>
 
-      {/* IMAGE */}
+      {/* MAIN IMAGE */}
       {product.image_url && (
-        <img
+        <motion.img
+          initial={{ opacity: 0, scale: 0.98 }}
+          animate={{ opacity: 1, scale: 1 }}
+          transition={{ duration: 0.3 }}
           src={product.image_url}
           alt={product.title}
-          className="w-full max-h-[460px] object-cover rounded-xl shadow mb-4"
+          className="w-full max-h-[460px] object-cover rounded-xl shadow-lg mb-6"
         />
       )}
 
-      {/* ACTIONS — CLEAN STYLE + CLICKABLE */}
+      {/* ACTION BUTTONS */}
       <div className="flex items-center justify-between mt-3 text-gray-700 select-none">
 
-        {/* LEFT ACTIONS */}
+        {/* LEFT SIDE */}
         <div className="flex items-center gap-6">
 
-          {/* LIKE */}
+          {/* LIKE BUTTON */}
           <motion.button
             onClick={onLike}
             whileTap={{ scale: 0.9 }}
-            className="flex items-center gap-1 cursor-pointer px-1
-                       text-gray-700 hover:text-gray-900 transition"
+            className="flex items-center gap-1 cursor-pointer px-1 hover:text-pink-600 transition"
           >
             <HeartIcon
               size={22}
@@ -98,32 +103,30 @@ export default function DealHeader({
             <span className="text-sm">{likesCount}</span>
           </motion.button>
 
-          {/* COMMENT */}
+          {/* COMMENT BUTTON */}
           <button
             onClick={onComment}
-            className="flex items-center gap-1 cursor-pointer px-1
-                       text-gray-700 hover:text-gray-900 transition"
+            className="flex items-center gap-1 cursor-pointer px-1 hover:text-gray-900 transition"
           >
             <MessageSquare size={22} />
             <span className="text-sm">{commentCount}</span>
           </button>
 
-          {/* SHARE */}
+          {/* SHARE BUTTON */}
           <button
             onClick={onShare}
-            className="flex items-center gap-1 cursor-pointer px-1
-                       text-gray-700 hover:text-gray-900 transition"
+            className="flex items-center gap-1 cursor-pointer px-1 hover:text-gray-900 transition"
           >
             <Share2 size={22} />
             <span className="text-sm hidden sm:inline">Chia sẻ</span>
           </button>
         </div>
 
-        {/* SAVE */}
+        {/* SAVE BUTTON */}
         <button
           onClick={onSave}
-          className={`cursor-pointer px-1 transition
-                     ${saved ? "text-pink-600" : "text-gray-700 hover:text-gray-900"}`}
+          className={`cursor-pointer px-1 transition 
+            ${saved ? "text-pink-600" : "text-gray-700 hover:text-gray-900"}`}
         >
           <Bookmark size={22} fill={saved ? "currentColor" : "none"} />
         </button>

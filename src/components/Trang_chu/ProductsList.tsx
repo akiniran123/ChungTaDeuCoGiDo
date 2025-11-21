@@ -51,6 +51,9 @@ export default function ProductsList({
   const [saved, setSaved] = useState<string[]>([]);
   const scrollPosition = useRef(0);
 
+  // ================================
+  // Lưu vị trí scroll
+  // ================================
   useEffect(() => {
     const handleScroll = () => {
       scrollPosition.current = window.scrollY;
@@ -68,11 +71,19 @@ export default function ProductsList({
     window.scrollTo({ top: scrollPosition.current, behavior: "instant" });
   }, [biggerGrid]);
 
+  // ================================
+  // Lưu / bỏ lưu sản phẩm
+  // ================================
   const toggleSave = (id: string) => {
     setSaved((prev) =>
       prev.includes(id) ? prev.filter((x) => x !== id) : [...prev, id]
     );
   };
+
+  // ================================
+  // ❤️ LIKE API — mỗi user chỉ thả 1 lần, bấm lại = bỏ thả
+  // ================================
+  const [localLikesCount, setLocalLikesCount] = useState(likesCount);
 
   const toggleLike = async (productId: string) => {
     const { data: authData } = await supabase.auth.getUser();
@@ -85,21 +96,40 @@ export default function ProductsList({
     const alreadyLiked = likedIds.includes(productId);
 
     if (alreadyLiked) {
+      // ===========================
+      // ❌ UNLIKE
+      // ===========================
       await supabase
         .from("product_likes")
         .delete()
         .eq("product_id", productId)
         .eq("user_id", userId);
+
       setLikedIds((prev) => prev.filter((id) => id !== productId));
+      setLocalLikesCount((prev) => ({
+        ...prev,
+        [productId]: (prev[productId] || 1) - 1,
+      }));
     } else {
+      // ===========================
+      // ❤️ LIKE
+      // ===========================
       await supabase.from("product_likes").insert({
         product_id: productId,
         user_id: userId,
       });
+
       setLikedIds((prev) => [...prev, productId]);
+      setLocalLikesCount((prev) => ({
+        ...prev,
+        [productId]: (prev[productId] || 0) + 1,
+      }));
     }
   };
 
+  // ================================
+  // SHARE sản phẩm
+  // ================================
   const shareProduct = (product: ProductWithUser) => {
     const url = `${window.location.origin}/deal/${product.id}`;
     const title = product.title || "Sản phẩm";
@@ -153,7 +183,7 @@ export default function ProductsList({
                     title: p.title,
                     image: p.image_url || undefined,
                     media: p.image_url ? [p.image_url] : [],
-                    votes: likesCount[p.id] ?? 0,
+                    votes: localLikesCount[p.id] ?? 0,
                     comments: commentsCount[p.id] ?? 0,
                     category: p.category || "",
                     author: p.users?.username || "Người dùng",
@@ -254,7 +284,6 @@ export default function ProductsList({
 
                     {p.users && (
                       <div className="flex justify-between items-center mt-3">
-                        {/* ✅ Link sang trang chi tiết user */}
                         <Link
                           href={`/user/${p.users.username}`}
                           onClick={(e) => e.stopPropagation()}
@@ -316,6 +345,7 @@ export default function ProductsList({
                       </span>
 
                       <div className="flex items-center gap-2">
+                        {/* ❤️ Like button */}
                         <button
                           onClick={() => toggleLike(p.id)}
                           className={`flex items-center gap-1 px-2 py-1 rounded-full transition ${
@@ -331,7 +361,7 @@ export default function ProductsList({
                             }
                           />
                           <span className="text-xs font-semibold">
-                            {likesCount[p.id] ?? 0}
+                            {localLikesCount[p.id] ?? 0}
                           </span>
                         </button>
 

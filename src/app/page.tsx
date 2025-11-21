@@ -1,3 +1,4 @@
+// Fixed ProductsPage.tsx
 "use client";
 
 import { useEffect, useState } from "react";
@@ -11,9 +12,8 @@ type ProductWithUser = Database["public"]["Tables"]["products"]["Row"] & {
     username: string | null;
     avatar_url: string | null;
   } | null;
-  tags?: string[];
-  mainTag?: string | null;
-  communityNames?: string[];
+
+  tags: string[]; // always string[]
   communityName?: string | null;
   communityIcon?: string | null;
 };
@@ -31,9 +31,6 @@ export default function ProductsPage() {
   useEffect(() => {
     const fetchProducts = async () => {
       try {
-        // =========================================
-        // 🟦 QUERY SẢN PHẨM + USER + TAGS
-        // =========================================
         const { data, error } = await supabase
           .from("products")
           .select(
@@ -51,10 +48,9 @@ export default function ProductsPage() {
             ),
             product_tags (
               tag_id,
-              community_tags:tag_id (
+              tags:tag_id (
                 id,
-                name,
-                community_id
+                name
               )
             )
           `
@@ -63,51 +59,24 @@ export default function ProductsPage() {
 
         if (error) throw error;
 
-        const productsData = (data || []) as any[];
+        const raw = (data || []) as any[];
 
-        // =========================================
-        // 🟩 LẤY DANH SÁCH community_id TỪ TAGS
-        // =========================================
-        const communityIds = [
-          ...new Set(
-            productsData
-              .flatMap((p) =>
-                (p.product_tags || []).map(
-                  (pt: any) => pt?.community_tags?.community_id
-                )
-              )
-              .filter(Boolean)
-          ),
-        ];
-
-        let communityMap: Record<string, string> = {};
-
-        if (communityIds.length > 0) {
-          const { data: commData } = await supabase
-            .from("communities")
-            .select("id, title")
-            .in("id", communityIds);
-
-          commData?.forEach((c) => {
-            communityMap[c.id] = c.title;
-          });
-        }
-
-        // =========================================
-        // 🟨 FORMAT DATA
-        // =========================================
-        const formatted = productsData.map((p) => ({
+        // Format final product object
+        const formatted: ProductWithUser[] = raw.map((p) => ({
           ...p,
 
-          mainTag: null,
+          users: p.users
+            ? {
+                id: p.users.id,
+                username: p.users.username,
+                avatar_url: p.users.avatar_url,
+              }
+            : null,
 
-          tags: (p.product_tags || []).map(
-            (pt: any) => pt.community_tags?.name || null
-          ),
-
-          communityNames: (p.product_tags || [])
-            .map((pt: any) => communityMap[pt.community_tags?.community_id])
-            .filter(Boolean),
+          tags:
+            (p.product_tags || [])
+              .map((pt: any) => pt.tags?.name)
+              .filter(Boolean) || [],
 
           communityName: p.communities?.title || null,
           communityIcon: p.communities?.avatar_url || null,
@@ -115,65 +84,56 @@ export default function ProductsPage() {
 
         setProducts(formatted);
 
-        // =========================================
-        // 💬 COMMENTS COUNT
-        // =========================================
-        const commentCounts: Record<string, number> = {};
-
+        // COMMENTS COUNT
+        const commentMap: Record<string, number> = {};
         await Promise.all(
-          formatted.map(async (p) => {
+          formatted.map(async (prod) => {
             const { count } = await supabase
               .from("comments")
               .select("*", { count: "exact" })
-              .eq("product_id", p.id);
+              .eq("product_id", prod.id);
 
-            commentCounts[p.id] = count || 0;
+            commentMap[prod.id] = count || 0;
           })
         );
+        setCommentsCount(commentMap);
 
-        setCommentsCount(commentCounts);
-
-        // =========================================
-        // ❤️ LIKES
-        // =========================================
+        // LIKES
         const { data: likesData } = await supabase
           .from("product_likes")
           .select("product_id, user_id");
 
-        const likeCounts: Record<string, number> = {};
-        const userLikes: string[] = [];
+        const likeMap: Record<string, number> = {};
+        const liked: string[] = [];
 
-        likesData?.forEach((like) => {
-          likeCounts[like.product_id] =
-            (likeCounts[like.product_id] || 0) + 1;
+        likesData?.forEach((l) => {
+          likeMap[l.product_id] = (likeMap[l.product_id] || 0) + 1;
         });
 
         const { data: authData } = await supabase.auth.getUser();
-        const currentUser = authData.user;
+        const user = authData.user;
 
-        if (currentUser && likesData) {
-          userLikes.push(
+        if (user && likesData) {
+          liked.push(
             ...likesData
-              .filter((like) => like.user_id === currentUser.id)
-              .map((like) => like.product_id)
+              .filter((l) => l.user_id === user.id)
+              .map((l) => l.product_id)
           );
         }
 
-        setLikesCount(likeCounts);
-        setLikedIds(userLikes);
+        setLikesCount(likeMap);
+        setLikedIds(liked);
 
-        // =========================================
-        // 🏅 BADGES
-        // =========================================
-        const uniqueUserIds = [
+        // BADGES
+        const userIds = [
           ...new Set(formatted.map((p) => p.users?.id).filter(Boolean)),
         ] as string[];
 
-        const badgesMap: Record<string, Badge[]> = {};
+        const badgeMap: Record<string, Badge[]> = {};
 
         await Promise.all(
-          uniqueUserIds.map(async (uid) => {
-            const { data: badgeData } = await supabase
+          userIds.map(async (uid) => {
+            const { data: bData } = await supabase
               .from("user_badges")
               .select(
                 `
@@ -189,15 +149,13 @@ export default function ProductsPage() {
               )
               .eq("user_id", uid);
 
-            if (badgeData) {
-              badgesMap[uid] = badgeData
-                .map((b) => b.badges)
-                .filter((b): b is Badge => !!b);
-            }
+            badgeMap[uid] = (bData || [])
+              .map((b) => b.badges)
+              .filter(Boolean);
           })
         );
 
-        setUserBadges(badgesMap);
+        setUserBadges(badgeMap);
       } catch (err) {
         console.error("Lỗi tải sản phẩm:", err);
       } finally {

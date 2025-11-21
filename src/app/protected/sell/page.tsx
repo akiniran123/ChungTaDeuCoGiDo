@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { useForm, FormProvider } from "react-hook-form";
 import { supabase } from "@/lib/supabase/client";
 
@@ -14,6 +14,8 @@ import TechSpecsEditor from "@/components/sell/TechSpecsEditor";
 import PrivateToggle from "@/components/sell/PrivateToggle";
 import ReturnPolicies from "@/components/sell/ReturnPolicies";
 import ActionButtons from "@/components/sell/ActionButtons";
+
+import CommunitySelector from "@/components/sell/CommunitySelector";
 
 export default function SellPage() {
   const methods = useForm({
@@ -30,7 +32,8 @@ export default function SellPage() {
       quantity: 1,
       specs: [],
       is_private: false,
-      return_policy: ""
+      return_policy: "",
+      community_id: ""
     }
   });
 
@@ -44,6 +47,17 @@ export default function SellPage() {
   const [loading, setLoading] = useState(false);
   const [message, setMessage] = useState<string | null>(null);
 
+  // ⭐ Sửa lỗi Promise<string>: Lấy userId bằng useEffect
+  const [authUserId, setAuthUserId] = useState("");
+
+  useEffect(() => {
+    async function fetchUser() {
+      const { data: auth } = await supabase.auth.getUser();
+      setAuthUserId(auth?.user?.id || "");
+    }
+    fetchUser();
+  }, []);
+
   const onSubmit = async (data: any) => {
     setLoading(true);
     setMessage(null);
@@ -51,6 +65,12 @@ export default function SellPage() {
     const { data: auth } = await supabase.auth.getUser();
     if (!auth?.user) {
       setMessage("⚠️ Bạn cần đăng nhập để đăng sản phẩm.");
+      setLoading(false);
+      return;
+    }
+
+    if (!data.community_id) {
+      setMessage("⚠️ Bạn phải chọn cộng đồng để đăng bài.");
       setLoading(false);
       return;
     }
@@ -72,7 +92,7 @@ export default function SellPage() {
       return_policy: data.return_policy || null,
       image_url: data.images?.[0] ?? null,
       sku: null,
-      community_id: null,
+      community_id: data.community_id,
       upvotes: 0,
       views: 0,
       is_completed: false
@@ -102,6 +122,13 @@ export default function SellPage() {
         <CategorySelect error={errors.category} />
 
         <ConditionSelector error={errors.condition} />
+
+        {/* ⭐ Chọn cộng đồng */}
+        <CommunitySelector
+          userId={authUserId}
+          value={watch("community_id")}
+          onChange={(v) => methods.setValue("community_id", v)}
+        />
 
         <ImageUploader error={errors.images} />
 

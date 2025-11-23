@@ -2,7 +2,8 @@
 
 import Link from "next/link";
 import Image from "next/image";
-import type { DealType } from ".";
+import type { DealType } from "@/components/Trang_chu/pc/DealCard";
+
 
 const DealHeader = ({ deal }: { deal: DealType }) => {
   let dateText = "Không rõ";

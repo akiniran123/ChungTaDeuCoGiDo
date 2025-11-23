@@ -231,7 +231,7 @@ const DealCard: React.FC<DealCardProps> = ({
         } ${isAd ? "bg-yellow-50 border-l-4 border-yellow-400" : "bg-white"}`}
         id={`deal-${deal.id}`}
       >
-        {/* ⭐ COMMUNITY INFO — THÊM CHÍNH XÁC PHẦN NÀY */}
+        {/* ⭐ COMMUNITY INFO */}
         {deal.community_title && (
           <div className="flex items-center gap-2 px-4 pt-4">
             {deal.community_avatar_url && (

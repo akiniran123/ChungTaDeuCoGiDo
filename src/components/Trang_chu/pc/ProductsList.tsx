@@ -3,7 +3,7 @@
 import { useState, useEffect, useRef } from "react";
 import Link from "next/link";
 import { supabase } from "@/lib/supabase/client";
-import DealCard, { DealType } from "@/components/Trang_chu/DealCard/DealCard";
+import DealCard, { DealType } from "@/components/Trang_chu/pc/DealCard";
 import { motion, AnimatePresence } from "framer-motion";
 import {
   LayoutGrid,

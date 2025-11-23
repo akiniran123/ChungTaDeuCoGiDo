@@ -4,8 +4,8 @@ import React, { useState, useEffect, useRef } from "react";
 import { supabase } from "@/lib/supabase/client";
 import { useCart } from "@/app/context/CartContext";
 import { ArrowLeft, ArrowRight, X } from "lucide-react";
-import DealActions from "./DealActions";
-import DealHeader from "./DealHeader";
+import DealActions from "./DealCard/DealActions";
+import DealHeader from "./DealCard/DealHeader";
 
 // ⭐ DealType CHUẨN, đồng bộ với dữ liệu ProductsPage truyền xuống
 export type DealType = {

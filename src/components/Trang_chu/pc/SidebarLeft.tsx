@@ -2,17 +2,10 @@
 
 import React, { useState, useEffect } from "react";
 import Link from "next/link";
-import {
-  Home,
-  Flame,
-  Compass,
-  List,
-  Plus,
-  Users,
-  Star,
-  ChevronDown,
-} from "lucide-react";
+import { Home, Compass, Plus, Users, Star, ChevronDown } from "lucide-react";
 import { supabase } from "@/lib/supabase/client";
+import MessagesMenu from "@/components/Navbar/pc/LogoSearchIcon/MessagesMenu";
+import StartSellingButtons from "@/components/Navbar/pc/LogoSearchIcon/StartSellingButtons";
 
 export default function SidebarLeft() {
   const [communities, setCommunities] = useState<
@@ -25,26 +18,22 @@ export default function SidebarLeft() {
       try {
         const {
           data: { user },
-          error: userError,
         } = await supabase.auth.getUser();
-        if (userError || !user) {
-          console.warn("⚠️ Không có user đăng nhập:", userError);
+
+        if (!user) {
           setLoading(false);
           return;
         }
 
-        // 🔥 Lấy danh sách cộng đồng user đang tham gia
         const { data, error } = await supabase
           .from("community_members")
-          .select(
-            `
+          .select(`
             community_id,
             communities (
               id,
               title
             )
-          `
-          )
+          `)
           .eq("user_id", user.id);
 
         if (error) {
@@ -53,7 +42,6 @@ export default function SidebarLeft() {
           return;
         }
 
-        // Map dữ liệu về dạng gọn
         const mapped = (data || [])
           .map((item) => item.communities)
           .filter(Boolean);
@@ -69,40 +57,60 @@ export default function SidebarLeft() {
     fetchCommunities();
   }, []);
 
+  const handleRequireLogin = () => {
+    alert("Bạn cần đăng nhập trước!");
+  };
+
   return (
-    <aside className="fixed top-10 left-0 w-64 h-[calc(100vh-4rem)] bg-white border-r border-gray-200 overflow-y-auto text-gray-900 z-40 shadow-sm">
-      {/* MAIN NAVIGATION */}
-      <nav className="mt-2">
-        {[
-          { label: "Home", icon: Home, href: "/" },
-          { label: "Popular", icon: Flame, href: "/popular" },
+    <aside
+      className="
+        fixed top-10 left-0 
+        w-64 h-[calc(100vh-4rem)]
+        bg-white border-r border-gray-200 
+        overflow-y-visible 
+        text-gray-900 z-40 shadow-sm
+      "
+    >
+      <nav className="mt-4 space-y-1">
+        {/* Home */}
+        <Link
+          href="/"
+          className="flex items-center gap-4 px-5 py-3 text-base font-medium rounded-xl mx-2 hover:bg-gray-100 text-gray-900"
+        >
+          <Home className="w-6 h-6 text-gray-700" />
+          <span>Home</span>
+        </Link>
 
-          // 🔥 ĐÃ ĐỔI /explore → /communities
-          { label: "Explore", icon: Compass, href: "/communities" },
+        {/* Explore */}
+        <Link
+          href="/communities"
+          className="flex items-center gap-4 px-5 py-3 text-base font-medium rounded-xl mx-2 hover:bg-gray-100 text-gray-900"
+        >
+          <Compass className="w-6 h-6 text-gray-700" />
+          <span>Explore</span>
+        </Link>
 
-          { label: "All", icon: List, href: "/all" },
-        ].map((item) => (
-          <Link
-            key={item.label}
-            href={item.href}
-            className="flex items-center gap-3 px-4 py-2 text-sm rounded-md mx-2 hover:bg-gray-100 text-gray-800"
-          >
-            <item.icon className="w-4 h-4 text-gray-600" />
-            <span className="truncate">{item.label}</span>
-          </Link>
-        ))}
+        {/* Messages — FIXED */}
+        <div className="flex items-center gap-4 px-5 py-3 mx-2 rounded-xl hover:bg-gray-100 cursor-pointer">
+          <MessagesMenu />
+          <span className="text-base font-medium text-gray-900">Messages</span>
+        </div>
       </nav>
+
+      {/* Start Selling */}
+      <div className="px-5 mt-3 mb-2">
+        <StartSellingButtons onRequireLogin={handleRequireLogin} />
+      </div>
 
       <hr className="border-gray-200 my-3 mx-2" />
 
-      {/* COMMUNITIES */}
+      {/* Communities */}
       <div className="px-4 mb-6">
         <div className="flex items-center justify-between text-xs uppercase text-gray-500 font-semibold tracking-wider py-1">
           Communities
           <ChevronDown className="w-4 h-4" />
         </div>
 
-        {/* CREATE / MANAGE LINKS */}
         <Link
           href="/create-community"
           className="flex items-center gap-2 px-2 py-1.5 text-sm text-gray-800 rounded hover:bg-gray-100"
@@ -119,7 +127,6 @@ export default function SidebarLeft() {
           <span>Manage Communities</span>
         </Link>
 
-        {/* COMMUNITY LIST */}
         {loading ? (
           <p className="text-sm text-gray-400 mt-2">Loading...</p>
         ) : communities.length === 0 ? (

@@ -6,8 +6,8 @@ import { z } from "zod";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { FcGoogle } from "react-icons/fc";
 import { supabase } from "@/lib/supabase/client";
-import SignUpModal from "@/components/auth/SignUpModal";
-import ForgotPasswordModal from "@/components/auth/ForgotPasswordModal";
+import SignUpModal from "@/components/auth/pc/SignUpModal";
+import ForgotPasswordModal from "@/components/auth/pc/ForgotPasswordModal";
 import type { Database } from "@/types/supabase";
 import { useRouter } from "next/navigation";
 

@@ -2,7 +2,7 @@
 
 import Link from "next/link";
 import Image from "next/image";
-import type { DealType } from "./DealCard";
+import type { DealType } from ".";
 
 const DealHeader = ({ deal }: { deal: DealType }) => {
   let dateText = "Không rõ";

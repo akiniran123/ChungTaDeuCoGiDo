@@ -4,17 +4,17 @@ import { useState, useEffect } from "react";
 import { useForm, FormProvider } from "react-hook-form";
 import { supabase } from "@/lib/supabase/client";
 
-import ListingTitleInput from "@/components/sell/ListingTitleInput";
-import DescriptionEditor from "@/components/sell/DescriptionEditor";
-// ❌ Đã bỏ CategorySelect
-import ConditionSelector from "@/components/sell/ConditionSelector";
-import ImageUploader from "@/components/sell/ImageUploader";
-import PriceAndOffers from "@/components/sell/PriceAndOffers";
-import TechSpecsEditor from "@/components/sell/TechSpecsEditor";
-import PrivateToggle from "@/components/sell/PrivateToggle";
-import ReturnPolicies from "@/components/sell/ReturnPolicies";
-import ActionButtons from "@/components/sell/ActionButtons";
-import CommunitySelector from "@/components/sell/CommunitySelector";
+import ListingTitleInput from "@/components/sell/pc//ListingTitleInput";
+import DescriptionEditor from "@/components/sell/pc//DescriptionEditor";
+import CategorySelect from "@/components/sell/pc//CategorySelect";
+import ConditionSelector from "@/components/sell/pc//ConditionSelector";
+import ImageUploader from "@/components/sell/pc//ImageUploader";
+import PriceAndOffers from "@/components/sell/pc//PriceAndOffers";
+import TechSpecsEditor from "@/components/sell/pc//TechSpecsEditor";
+import PrivateToggle from "@/components/sell/pc//PrivateToggle";
+import ReturnPolicies from "@/components/sell/pc//ReturnPolicies";
+import ActionButtons from "@/components/sell/pc//ActionButtons";
+import CommunitySelector from "@/components/sell/pc/CommunitySelector";
 
 type SellForm = {
   title: string;

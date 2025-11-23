@@ -12,7 +12,7 @@ import NewsMenu from './LogoSearchIcon/NewsMenu'
 import CartMenu from './LogoSearchIcon/CartMenu'
 import UserMenu from './LogoSearchIcon/UserMenu'
 
-import LoginModal from '../auth/LoginModal'
+import LoginModal from '@/components/auth/pc/LoginModal'
 import { useCart } from '@/app/context/CartContext'
 
 type Props = {

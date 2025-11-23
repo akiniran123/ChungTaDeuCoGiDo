@@ -4,7 +4,7 @@
 import { useEffect, useState } from "react";
 import { supabase } from "@/lib/supabase/client";
 import type { Database } from "@/types/supabase";
-import ProductsList from "@/components/Trang_chu/ProductsList";
+import ProductsList from "@/components/Trang_chu/pc/ProductsList";
 
 type ProductWithUser = Database["public"]["Tables"]["products"]["Row"] & {
   users?: {

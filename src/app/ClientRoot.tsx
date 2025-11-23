@@ -1,7 +1,7 @@
 "use client";
 
 import { CartProvider } from "./context/CartContext";
-import Navbar from "@/components/Navbar/Navbar";
+import Navbar from "@/components/Navbar/pc/Navbar";
 import SidebarLayout from "./SidebarLayout";
 import FirebaseInit from "@/components/FirebaseInit";
 

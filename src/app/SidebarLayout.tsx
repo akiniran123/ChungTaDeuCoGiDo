@@ -1,7 +1,7 @@
 "use client";
 
 import { useState } from "react";
-import SidebarLeft from "@/components/Trang_chu/SidebarLeft";
+import SidebarLeft from "@/components/Trang_chu/pc/SidebarLeft";
 import FirebaseInit from "@/components/FirebaseInit";
 
 export default function SidebarLayout({ children }: { children: React.ReactNode }) {

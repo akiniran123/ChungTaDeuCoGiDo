@@ -1,4 +1,3 @@
-// Fixed SellPage code
 "use client";
 
 import { useState, useEffect } from "react";
@@ -21,7 +20,7 @@ type SellForm = {
   title: string;
   description: string;
   price: string;
-  category: string; // FIX: never null for select
+  category: string; // vẫn giữ trong payload nhưng không render select
   condition: string;
   images: string[];
   video_url: string | null;
@@ -41,7 +40,7 @@ export default function SellPage() {
       title: "",
       description: "",
       price: "",
-      category: "", // FIX
+      category: "", // không hiển thị nhưng Supabase vẫn có cột này
       condition: "used",
       images: [],
       video_url: null,
@@ -68,6 +67,7 @@ export default function SellPage() {
   const [communityTagId, setCommunityTagId] = useState<string | null>(null);
   const [authUserId, setAuthUserId] = useState("");
 
+  // Lấy user id
   useEffect(() => {
     async function fetchUser() {
       const { data } = await supabase.auth.getUser();
@@ -76,6 +76,9 @@ export default function SellPage() {
     fetchUser();
   }, []);
 
+  // ==========================
+  // Submit
+  // ==========================
   const onSubmit = async (data: SellForm) => {
     setLoading(true);
     setMessage(null);
@@ -98,7 +101,7 @@ export default function SellPage() {
       title: data.title,
       description: data.description,
       price: Number(data.price),
-      category: data.category,
+      category: data.category, // vẫn gửi lên dù không có select UI
       is_private: data.is_private,
       condition: data.condition,
       specs: data.specs || [],
@@ -152,7 +155,9 @@ export default function SellPage() {
       >
         <ListingTitleInput error={errors.title} />
         <DescriptionEditor error={errors.description} />
-        <CategorySelect error={errors.category} />
+
+        {/* ❌ Đã BỎ CategorySelect */}
+
         <ConditionSelector error={errors.condition} />
 
         <CommunitySelector

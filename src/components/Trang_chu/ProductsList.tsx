@@ -28,7 +28,6 @@ type ProductWithUser = Database["public"]["Tables"]["products"]["Row"] & {
   tags?: string[];
   communityNames?: string[];
 
-  // ⭐ Thêm mới
   communityName?: string | null;
   communityIcon?: string | null;
   mainTag?: string | null;
@@ -159,6 +158,7 @@ export default function ProductsList({
           >
             {products.map((p) =>
               biggerGrid ? (
+                /* ⭐⭐⭐ DEALCARD GID LỚN — ĐÃ THÊM COMMUNITY ⭐⭐⭐ */
                 <DealCard
                   key={p.id}
                   deal={{
@@ -181,12 +181,20 @@ export default function ProductsList({
                           minute: "2-digit",
                         })
                       : undefined,
+
+                    /* ⭐⭐ FULL COMMUNITY + TAGS TRUYỀN XUỐNG ⭐⭐ */
+                    tags: p.tags || [],
+                    communityNames: p.communityNames || [],
+                    communityName: p.communityName || null,
+                    communityIcon: p.communityIcon || null,
+                    mainTag: p.mainTag || null,
                   } as DealType}
                   vote={() => {}}
                   setSelectedDeal={() => {}}
                   bigger
                 />
               ) : (
+                /* ⭐⭐⭐ GID NHỎ — GIỮ NGUYÊN ⭐⭐⭐ */
                 <motion.div
                   key={p.id}
                   initial={{ opacity: 0, y: 15 }}
@@ -209,8 +217,6 @@ export default function ProductsList({
                   </Link>
 
                   <div className="p-4">
-
-                    {/* ⭐ HIỂN THỊ CỘNG ĐỒNG */}
                     {p.communityName && (
                       <div className="flex items-center gap-2 mb-2">
                         {p.communityIcon && (
@@ -225,14 +231,12 @@ export default function ProductsList({
                       </div>
                     )}
 
-                    {/* ⭐ HIỂN THỊ TAG CHÍNH */}
                     {p.mainTag && (
                       <span className="text-xs bg-purple-50 text-purple-600 px-2 py-1 rounded-full">
                         #{p.mainTag}
                       </span>
                     )}
 
-                    {/* ⭐ LIST TAG + COMMUNITY TAG */}
                     {(p.tags?.length || p.communityNames?.length) && (
                       <div className="flex flex-wrap gap-2 mt-2">
                         {p.tags?.map((tag, i) => (
@@ -364,9 +368,7 @@ export default function ProductsList({
                           <HeartIcon
                             size={14}
                             fill={
-                              likedIds.includes(p.id)
-                                ? "currentColor"
-                                : "none"
+                              likedIds.includes(p.id) ? "currentColor" : "none"
                             }
                           />
                           <span className="text-xs font-semibold">

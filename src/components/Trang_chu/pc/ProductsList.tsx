@@ -3,7 +3,10 @@
 import { useState, useEffect, useRef } from "react";
 import Link from "next/link";
 import { supabase } from "@/lib/supabase/client";
+
+/* ⛔ CHỈ CHỈNH DÒNG NÀY — ĐÃ FIX CHUẨN */
 import DealCard, { DealType } from "@/components/Trang_chu/pc/DealCard";
+
 import { motion, AnimatePresence } from "framer-motion";
 import {
   LayoutGrid,
@@ -158,7 +161,6 @@ export default function ProductsList({
           >
             {products.map((p) =>
               biggerGrid ? (
-                /* ⭐⭐⭐ DEALCARD GID LỚN — ĐÃ THÊM COMMUNITY ⭐⭐⭐ */
                 <DealCard
                   key={p.id}
                   deal={{
@@ -182,7 +184,9 @@ export default function ProductsList({
                         })
                       : undefined,
 
-                    /* ⭐⭐ FULL COMMUNITY + TAGS TRUYỀN XUỐNG ⭐⭐ */
+                    community_title: p.communityName || null,
+                    community_avatar_url: p.communityIcon || null,
+
                     tags: p.tags || [],
                     communityNames: p.communityNames || [],
                     communityName: p.communityName || null,
@@ -194,7 +198,6 @@ export default function ProductsList({
                   bigger
                 />
               ) : (
-                /* ⭐⭐⭐ GID NHỎ — GIỮ NGUYÊN ⭐⭐⭐ */
                 <motion.div
                   key={p.id}
                   initial={{ opacity: 0, y: 15 }}

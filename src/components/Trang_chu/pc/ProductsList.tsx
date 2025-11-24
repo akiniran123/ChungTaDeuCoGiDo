@@ -308,19 +308,23 @@ export default function ProductsList({
                           </div>
                         )}
 
-                        {/* ⭐ CHỈNH MÀU XÁM Ở ĐÂY ⭐ */}
+                        {/* ⭐ ĐÃ SỬA THÀNH LINK ⭐ */}
                         {p.communityName && (
-                          <div className="flex items-center gap-2">
+                          <Link
+                           href={`/communities/${p.community_id}`}
+
+                            className="flex items-center gap-2 hover:opacity-80 transition"
+                          >
                             {p.communityIcon && (
                               <img
                                 src={p.communityIcon}
                                 className="w-6 h-6 rounded-full"
                               />
                             )}
-                            <span className="text-sm text-gray-600 font-semibold">
+                            <span className="text-sm text-gray-600 font-semibold hover:text-pink-600">
                               {p.communityName}
                             </span>
-                          </div>
+                          </Link>
                         )}
 
                         {p.mainTag && (

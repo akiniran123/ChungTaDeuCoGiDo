@@ -13,7 +13,7 @@ type ProductWithUser = Database["public"]["Tables"]["products"]["Row"] & {
     avatar_url: string | null;
   } | null;
 
-  tags: string[]; // always string[]
+  tags: string[];
   communityName?: string | null;
   communityIcon?: string | null;
 };
@@ -61,7 +61,9 @@ export default function ProductsPage() {
 
         const raw = (data || []) as any[];
 
-        // Format final product object
+        // ================================
+        // FIX CHUẨN PHẦN LẤY AVATAR USER
+        // ================================
         const formatted: ProductWithUser[] = raw.map((p) => ({
           ...p,
 
@@ -69,7 +71,10 @@ export default function ProductsPage() {
             ? {
                 id: p.users.id,
                 username: p.users.username,
-                avatar_url: p.users.avatar_url,
+                avatar_url:
+                  p.users.avatar_url && p.users.avatar_url !== ""
+                    ? p.users.avatar_url
+                    : null,
               }
             : null,
 

@@ -1,4 +1,4 @@
-/* FULL CODE — CHỈ THAY ĐỔI VỊ TRÍ COMMUNITY & TAGS */
+/* FULL CODE — XOÁ TÌNH TRẠNG + MÔ TẢ + BỎ KHUNG NÚT LIKE/SHARE/SAVE */
 
 "use client";
 
@@ -249,16 +249,12 @@ export default function ProductsList({
 
                       <button
                         onClick={() => toggleSave(p.id)}
-                        className={`flex items-center gap-1 px-2 py-1 rounded-full transition ${
-                          saved.includes(p.id)
-                            ? "bg-pink-100 text-pink-500"
-                            : "bg-gray-100 text-gray-600 hover:bg-pink-50 hover:text-pink-500"
-                        }`}
+                        className="flex items-center gap-1 text-gray-600 hover:text-pink-500 transition"
                       >
                         {saved.includes(p.id) ? (
-                          <BookmarkCheck size={16} />
+                          <BookmarkCheck size={18} />
                         ) : (
-                          <Bookmark size={16} />
+                          <Bookmark size={18} />
                         )}
                       </button>
                     </div>
@@ -273,7 +269,7 @@ export default function ProductsList({
                     </Link>
                   </div>
 
-                  {/* ⭐⭐⭐ PHẦN DƯỚI — COMMUNITY/TAGS ĐƯA SANG BÊN PHẢI ⭐⭐⭐ */}
+                  {/* ⭐⭐⭐ PHẦN DƯỚI ⭐⭐⭐ */}
                   <div className="p-4 pt-2">
                     <div className="flex justify-between items-start">
                       <div className="flex-1">
@@ -284,38 +280,12 @@ export default function ProductsList({
                             ? `${p.price.toLocaleString()}₫`
                             : "Liên hệ"}
                         </p>
-
-                        <p className="text-xs text-gray-500 mt-1">
-                          Tình trạng: {p.condition}
-                        </p>
-
-                        <p className="text-sm text-gray-700 line-clamp-2 mt-2">
-                          {p.description}
-                        </p>
                       </div>
 
-                      {/* ⭐⭐⭐ PHẦN COMMUNITY + TAGS SANG BÊN PHẢI ⭐⭐⭐ */}
+                      {/* ⭐⭐⭐ COMMUNITY + TAGS ⭐⭐⭐ */}
                       <div className="flex flex-col items-end gap-2 ml-4 w-32">
-                        {p.communityName && (
-                          <div className="flex items-center gap-2">
-                            {p.communityIcon && (
-                              <img
-                                src={p.communityIcon}
-                                className="w-6 h-6 rounded-full"
-                              />
-                            )}
-                            <span className="text-sm text-blue-600 font-semibold">
-                              {p.communityName}
-                            </span>
-                          </div>
-                        )}
 
-                        {p.mainTag && (
-                          <span className="text-xs bg-purple-50 text-purple-600 px-2 py-1 rounded-full">
-                            #{p.mainTag}
-                          </span>
-                        )}
-
+                        {/* 🔄 ĐÃ HOÁN ĐỔI — B block lên trên */}
                         {(p.tags?.length || p.communityNames?.length) && (
                           <div className="flex flex-wrap justify-end gap-2 max-w-32">
                             {p.tags?.map((tag, i) => (
@@ -336,6 +306,27 @@ export default function ProductsList({
                             ))}
                           </div>
                         )}
+
+                        {/* 🔄 ĐÃ HOÁN ĐỔI — A block xuống dưới */}
+                        {p.communityName && (
+                          <div className="flex items-center gap-2">
+                            {p.communityIcon && (
+                              <img
+                                src={p.communityIcon}
+                                className="w-6 h-6 rounded-full"
+                              />
+                            )}
+                            <span className="text-sm text-blue-600 font-semibold">
+                              {p.communityName}
+                            </span>
+                          </div>
+                        )}
+
+                        {p.mainTag && (
+                          <span className="text-xs bg-purple-50 text-purple-600 px-2 py-1 rounded-full">
+                            #{p.mainTag}
+                          </span>
+                        )}
                       </div>
                     </div>
 
@@ -352,19 +343,17 @@ export default function ProductsList({
                         {p.views ?? 0} lượt xem
                       </span>
 
-                      <div className="flex items-center gap-2">
+                      <div className="flex items-center gap-3">
                         <button
                           onClick={() => toggleLike(p.id)}
-                          className={`flex items-center gap-1 px-2 py-1 rounded-full transition ${
-                            likedIds.includes(p.id)
-                              ? "bg-pink-100 text-pink-500"
-                              : "bg-gray-100 text-gray-600 hover:bg-pink-50 hover:text-pink-500"
-                          }`}
+                          className="flex items-center gap-1 text-gray-600 hover:text-pink-500 transition"
                         >
                           <HeartIcon
-                            size={14}
+                            size={16}
                             fill={
-                              likedIds.includes(p.id) ? "currentColor" : "none"
+                              likedIds.includes(p.id)
+                                ? "currentColor"
+                                : "none"
                             }
                           />
                           <span className="text-xs font-semibold">
@@ -374,9 +363,9 @@ export default function ProductsList({
 
                         <button
                           onClick={() => shareProduct(p)}
-                          className="flex items-center gap-1 px-2 py-1 rounded-full bg-gray-100 text-gray-600 hover:bg-gray-200 hover:text-gray-700 transition"
+                          className="flex items-center text-gray-600 hover:text-gray-800 transition"
                         >
-                          <Share2 size={14} />
+                          <Share2 size={16} />
                         </button>
                       </div>
                     </div>
@@ -390,4 +379,3 @@ export default function ProductsList({
     </div>
   );
 }
-

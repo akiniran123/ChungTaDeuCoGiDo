@@ -221,7 +221,6 @@ export default function ProductsList({
                     )}
                   </Link>
 
-                  {/* ⭐⭐⭐ USER + TIME + SAVE ⭐⭐⭐ */}
                   {p.users && (
                     <div className="flex items-center justify-between p-4 pb-0">
                       <div className="flex items-center gap-2">
@@ -235,13 +234,16 @@ export default function ProductsList({
                           </span>
                           <span className="text-xs text-gray-500">
                             {p.created_at
-                              ? new Date(p.created_at).toLocaleString("vi-VN", {
-                                  day: "2-digit",
-                                  month: "2-digit",
-                                  year: "2-digit",
-                                  hour: "2-digit",
-                                  minute: "2-digit",
-                                })
+                              ? new Date(p.created_at).toLocaleString(
+                                  "vi-VN",
+                                  {
+                                    day: "2-digit",
+                                    month: "2-digit",
+                                    year: "2-digit",
+                                    hour: "2-digit",
+                                    minute: "2-digit",
+                                  }
+                                )
                               : "Không rõ thời gian"}
                           </span>
                         </div>
@@ -260,7 +262,6 @@ export default function ProductsList({
                     </div>
                   )}
 
-                  {/* ⭐⭐⭐ TIÊU ĐỀ ⭐⭐⭐ */}
                   <div className="px-4 mt-2">
                     <Link href={`/deal/${p.id}`}>
                       <h3 className="font-semibold text-lg cursor-pointer hover:text-pink-500">
@@ -269,19 +270,15 @@ export default function ProductsList({
                     </Link>
                   </div>
 
-                  {/* ⭐⭐⭐ PHẦN DƯỚI ⭐⭐⭐ */}
                   <div className="p-4 pt-2">
                     <div className="flex justify-between items-start">
                       <div className="flex-1">
                         <p className="text-sm text-gray-600">{p.category}</p>
 
                         <p className="mt-2 text-indigo-600 font-bold">
-                          {p.price
-                            ? `${p.price.toLocaleString()}₫`
-                            : "Liên hệ"}
+                          {p.price ? `${p.price.toLocaleString()}₫` : "Liên hệ"}
                         </p>
 
-                        {/* ⭐ MOVED HERE — bình luận ngay dưới giá tiền ⭐ */}
                         {p.users && (
                           <p className="text-xs text-gray-500 mt-1">
                             {commentsCount[p.id] ?? 0} bình luận
@@ -289,7 +286,6 @@ export default function ProductsList({
                         )}
                       </div>
 
-                      {/* ⭐⭐⭐ COMMUNITY + TAGS ⭐⭐⭐ */}
                       <div className="flex flex-col items-end gap-2 ml-4 w-32">
                         {(p.tags?.length || p.communityNames?.length) && (
                           <div className="flex flex-wrap justify-end gap-2 max-w-32">
@@ -312,6 +308,7 @@ export default function ProductsList({
                           </div>
                         )}
 
+                        {/* ⭐ CHỈNH MÀU XÁM Ở ĐÂY ⭐ */}
                         {p.communityName && (
                           <div className="flex items-center gap-2">
                             {p.communityIcon && (
@@ -320,7 +317,7 @@ export default function ProductsList({
                                 className="w-6 h-6 rounded-full"
                               />
                             )}
-                            <span className="text-sm text-blue-600 font-semibold">
+                            <span className="text-sm text-gray-600 font-semibold">
                               {p.communityName}
                             </span>
                           </div>
@@ -346,11 +343,7 @@ export default function ProductsList({
                         >
                           <HeartIcon
                             size={16}
-                            fill={
-                              likedIds.includes(p.id)
-                                ? "currentColor"
-                                : "none"
-                            }
+                            fill={likedIds.includes(p.id) ? "currentColor" : "none"}
                           />
                           <span className="text-xs font-semibold">
                             {localLikesCount[p.id] ?? 0}

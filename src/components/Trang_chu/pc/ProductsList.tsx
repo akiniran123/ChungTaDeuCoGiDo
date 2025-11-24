@@ -1,9 +1,14 @@
+/* FULL CODE — XOÁ TÌNH TRẠNG + MÔ TẢ + BỎ KHUNG NÚT LIKE/SHARE/SAVE */
+
 "use client";
 
 import { useState, useEffect, useRef } from "react";
 import Link from "next/link";
 import { supabase } from "@/lib/supabase/client";
+
+/* ⛔ CHỈ CHỈNH DÒNG NÀY — ĐÃ FIX CHUẨN */
 import DealCard, { DealType } from "@/components/Trang_chu/pc/DealCard";
+
 import { motion, AnimatePresence } from "framer-motion";
 import {
   LayoutGrid,
@@ -28,7 +33,6 @@ type ProductWithUser = Database["public"]["Tables"]["products"]["Row"] & {
   tags?: string[];
   communityNames?: string[];
 
-  // ⭐ Thêm mới
   communityName?: string | null;
   communityIcon?: string | null;
   mainTag?: string | null;
@@ -181,6 +185,15 @@ export default function ProductsList({
                           minute: "2-digit",
                         })
                       : undefined,
+
+                    community_title: p.communityName || null,
+                    community_avatar_url: p.communityIcon || null,
+
+                    tags: p.tags || [],
+                    communityNames: p.communityNames || [],
+                    communityName: p.communityName || null,
+                    communityIcon: p.communityIcon || null,
+                    mainTag: p.mainTag || null,
                   } as DealType}
                   vote={() => {}}
                   setSelectedDeal={() => {}}
@@ -208,161 +221,131 @@ export default function ProductsList({
                     )}
                   </Link>
 
-                  <div className="p-4">
-
-                    {/* ⭐ HIỂN THỊ CỘNG ĐỒNG */}
-                    {p.communityName && (
-                      <div className="flex items-center gap-2 mb-2">
-                        {p.communityIcon && (
-                          <img
-                            src={p.communityIcon}
-                            className="w-6 h-6 rounded-full"
-                          />
-                        )}
-                        <span className="text-sm text-blue-600 font-semibold">
-                          {p.communityName}
-                        </span>
-                      </div>
-                    )}
-
-                    {/* ⭐ HIỂN THỊ TAG CHÍNH */}
-                    {p.mainTag && (
-                      <span className="text-xs bg-purple-50 text-purple-600 px-2 py-1 rounded-full">
-                        #{p.mainTag}
-                      </span>
-                    )}
-
-                    {/* ⭐ LIST TAG + COMMUNITY TAG */}
-                    {(p.tags?.length || p.communityNames?.length) && (
-                      <div className="flex flex-wrap gap-2 mt-2">
-                        {p.tags?.map((tag, i) => (
-                          <span
-                            key={i}
-                            className="text-xs bg-pink-50 text-pink-600 px-2 py-1 rounded-full"
-                          >
-                            {tag}
+                  {/* ⭐⭐⭐ USER + TIME + SAVE ⭐⭐⭐ */}
+                  {p.users && (
+                    <div className="flex items-center justify-between p-4 pb-0">
+                      <div className="flex items-center gap-2">
+                        <img
+                          src={p.users.avatar_url || "/default-avatar.png"}
+                          className="w-8 h-8 rounded-full object-cover"
+                        />
+                        <div className="flex flex-col">
+                          <span className="text-sm font-semibold text-gray-800">
+                            {p.users.username}
                           </span>
-                        ))}
-                        {p.communityNames?.map((cName, i) => (
-                          <span
-                            key={`c-${i}`}
-                            className="text-xs bg-blue-50 text-blue-600 px-2 py-1 rounded-full"
-                          >
-                            {cName}
+                          <span className="text-xs text-gray-500">
+                            {p.created_at
+                              ? new Date(p.created_at).toLocaleString("vi-VN", {
+                                  day: "2-digit",
+                                  month: "2-digit",
+                                  year: "2-digit",
+                                  hour: "2-digit",
+                                  minute: "2-digit",
+                                })
+                              : "Không rõ thời gian"}
                           </span>
-                        ))}
+                        </div>
                       </div>
-                    )}
-
-                    <div className="flex justify-between items-start mt-2">
-                      <Link href={`/deal/${p.id}`}>
-                        <h3 className="font-semibold text-lg cursor-pointer hover:text-pink-500">
-                          {p.title}
-                        </h3>
-                      </Link>
 
                       <button
                         onClick={() => toggleSave(p.id)}
-                        className={`flex items-center gap-1 px-2 py-1 rounded-full transition ${
-                          saved.includes(p.id)
-                            ? "bg-pink-100 text-pink-500"
-                            : "bg-gray-100 text-gray-600 hover:bg-pink-50 hover:text-pink-500"
-                        }`}
+                        className="flex items-center gap-1 text-gray-600 hover:text-pink-500 transition"
                       >
                         {saved.includes(p.id) ? (
-                          <BookmarkCheck size={16} />
+                          <BookmarkCheck size={18} />
                         ) : (
-                          <Bookmark size={16} />
+                          <Bookmark size={18} />
                         )}
                       </button>
                     </div>
+                  )}
 
-                    <p className="text-sm text-gray-600">{p.category}</p>
-                    <p className="mt-2 text-indigo-600 font-bold">
-                      {p.price ? `${p.price.toLocaleString()}₫` : "Liên hệ"}
-                    </p>
+                  {/* ⭐⭐⭐ TIÊU ĐỀ ⭐⭐⭐ */}
+                  <div className="px-4 mt-2">
+                    <Link href={`/deal/${p.id}`}>
+                      <h3 className="font-semibold text-lg cursor-pointer hover:text-pink-500">
+                        {p.title}
+                      </h3>
+                    </Link>
+                  </div>
 
-                    <p className="text-xs text-gray-500 mt-1">
-                      Tình trạng: {p.condition}
-                    </p>
-                    <p className="text-sm text-gray-700 line-clamp-2 mt-2">
-                      {p.description}
-                    </p>
+                  {/* ⭐⭐⭐ PHẦN DƯỚI ⭐⭐⭐ */}
+                  <div className="p-4 pt-2">
+                    <div className="flex justify-between items-start">
+                      <div className="flex-1">
+                        <p className="text-sm text-gray-600">{p.category}</p>
 
-                    {p.users && (
-                      <div className="flex justify-between items-center mt-3">
-                        <Link
-                          href={`/user/${p.users.username}`}
-                          onClick={(e) => e.stopPropagation()}
-                          className="flex items-center hover:opacity-80 transition"
-                        >
-                          <img
-                            src={p.users.avatar_url || "/default-avatar.png"}
-                            alt={p.users.username || "User"}
-                            className="w-8 h-8 rounded-full object-cover"
-                          />
-                          <div className="ml-2 flex flex-col">
-                            <div className="flex items-center gap-1">
-                              <p className="text-sm font-medium text-gray-700">
-                                {p.users.username || "Người dùng"}
-                              </p>
-
-                              {userBadges[p.users.id || ""]?.length ? (
-                                <div className="flex items-center gap-1">
-                                  {userBadges[p.users.id || ""]
-                                    .slice(0, 2)
-                                    .map((badge) => (
-                                      <img
-                                        key={badge.id}
-                                        src={badge.icon}
-                                        alt={badge.name}
-                                        title={badge.name}
-                                        className="w-4 h-4 object-contain"
-                                      />
-                                    ))}
-                                </div>
-                              ) : null}
-                            </div>
-
-                            <p className="text-xs text-gray-400">
-                              {p.created_at
-                                ? new Date(p.created_at).toLocaleString(
-                                    "vi-VN",
-                                    {
-                                      day: "2-digit",
-                                      month: "2-digit",
-                                      year: "2-digit",
-                                      hour: "2-digit",
-                                      minute: "2-digit",
-                                    }
-                                  )
-                                : "Không rõ thời gian"}
-                            </p>
-                          </div>
-                        </Link>
-
-                        <p className="text-xs text-gray-500">
-                          {commentsCount[p.id] ?? 0} bình luận
+                        <p className="mt-2 text-indigo-600 font-bold">
+                          {p.price
+                            ? `${p.price.toLocaleString()}₫`
+                            : "Liên hệ"}
                         </p>
+
+                        {/* ⭐ MOVED HERE — bình luận ngay dưới giá tiền ⭐ */}
+                        {p.users && (
+                          <p className="text-xs text-gray-500 mt-1">
+                            {commentsCount[p.id] ?? 0} bình luận
+                          </p>
+                        )}
                       </div>
-                    )}
+
+                      {/* ⭐⭐⭐ COMMUNITY + TAGS ⭐⭐⭐ */}
+                      <div className="flex flex-col items-end gap-2 ml-4 w-32">
+                        {(p.tags?.length || p.communityNames?.length) && (
+                          <div className="flex flex-wrap justify-end gap-2 max-w-32">
+                            {p.tags?.map((tag, i) => (
+                              <span
+                                key={i}
+                                className="text-xs bg-pink-50 text-pink-600 px-2 py-1 rounded-full"
+                              >
+                                {tag}
+                              </span>
+                            ))}
+                            {p.communityNames?.map((cName, i) => (
+                              <span
+                                key={`c-${i}`}
+                                className="text-xs bg-blue-50 text-blue-600 px-2 py-1 rounded-full"
+                              >
+                                {cName}
+                              </span>
+                            ))}
+                          </div>
+                        )}
+
+                        {p.communityName && (
+                          <div className="flex items-center gap-2">
+                            {p.communityIcon && (
+                              <img
+                                src={p.communityIcon}
+                                className="w-6 h-6 rounded-full"
+                              />
+                            )}
+                            <span className="text-sm text-blue-600 font-semibold">
+                              {p.communityName}
+                            </span>
+                          </div>
+                        )}
+
+                        {p.mainTag && (
+                          <span className="text-xs bg-purple-50 text-purple-600 px-2 py-1 rounded-full">
+                            #{p.mainTag}
+                          </span>
+                        )}
+                      </div>
+                    </div>
 
                     <div className="flex justify-between items-center mt-2">
                       <span className="text-xs text-gray-400">
                         {p.views ?? 0} lượt xem
                       </span>
 
-                      <div className="flex items-center gap-2">
+                      <div className="flex items-center gap-3">
                         <button
                           onClick={() => toggleLike(p.id)}
-                          className={`flex items-center gap-1 px-2 py-1 rounded-full transition ${
-                            likedIds.includes(p.id)
-                              ? "bg-pink-100 text-pink-500"
-                              : "bg-gray-100 text-gray-600 hover:bg-pink-50 hover:text-pink-500"
-                          }`}
+                          className="flex items-center gap-1 text-gray-600 hover:text-pink-500 transition"
                         >
                           <HeartIcon
-                            size={14}
+                            size={16}
                             fill={
                               likedIds.includes(p.id)
                                 ? "currentColor"
@@ -376,9 +359,9 @@ export default function ProductsList({
 
                         <button
                           onClick={() => shareProduct(p)}
-                          className="flex items-center gap-1 px-2 py-1 rounded-full bg-gray-100 text-gray-600 hover:bg-gray-200 hover:text-gray-700 transition"
+                          className="flex items-center text-gray-600 hover:text-gray-800 transition"
                         >
-                          <Share2 size={14} />
+                          <Share2 size={16} />
                         </button>
                       </div>
                     </div>

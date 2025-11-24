@@ -2,13 +2,12 @@
 
 import Link from "next/link";
 import Image from "next/image";
-import type { DealType } from ".";
+import type { DealType } from "@/components/Trang_chu/pc/DealCard";
 
 const DealHeader = ({ deal }: { deal: DealType }) => {
   let dateText = "Không rõ";
 
   if (deal.createdAt) {
-    // Nếu deal.createdAt là Date hoặc ISO string
     const d = new Date(deal.createdAt);
     if (!isNaN(d.getTime())) {
       dateText = d.toLocaleString("vi-VN", {
@@ -19,14 +18,16 @@ const DealHeader = ({ deal }: { deal: DealType }) => {
         minute: "2-digit",
       });
     } else {
-      // Nếu đã là string format sẵn
       dateText = deal.createdAt;
     }
   }
 
   return (
-    <div className="flex flex-col px-3 py-2 border-b">
+    <div className="flex flex-col px-3 py-2">
+      {/* USER + COMMUNITY */}
       <div className="flex items-center gap-2 text-sm">
+        
+        {/* Avatar + Username */}
         <Link
           href={`/user/${deal.author || ""}`}
           onClick={(e) => e.stopPropagation()}
@@ -44,18 +45,36 @@ const DealHeader = ({ deal }: { deal: DealType }) => {
           </span>
         </Link>
 
+        {deal.category && (
+          <>
+            <span className="text-gray-400">•</span>
+            <Link
+              href={`/category/${deal.category}`}
+              className="text-xs px-2 py-0.5 rounded bg-gray-100 text-gray-700 hover:bg-gray-200 transition"
+            >
+              {deal.category}
+            </Link>
+          </>
+        )}
+
         <span className="text-xs text-gray-400">· {dateText}</span>
       </div>
 
+      {/* Title */}
       <Link
         href={`/deal/${deal.id}`}
         className="block mt-2 no-underline hover:text-pink-500 transition-colors"
       >
-        <h3 className="font-semibold text-base md:text-lg">{deal.title}</h3>
+        <h3 className="font-semibold text-base md:text-lg">
+          {deal.title}
+        </h3>
       </Link>
 
+      {/* Description */}
       {deal.content && (
-        <p className="text-sm text-gray-600 line-clamp-2 mt-1">{deal.content}</p>
+        <p className="text-sm text-gray-600 line-clamp-2 mt-1">
+          {deal.content}
+        </p>
       )}
     </div>
   );

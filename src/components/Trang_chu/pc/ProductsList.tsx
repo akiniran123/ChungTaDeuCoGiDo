@@ -1,3 +1,5 @@
+/* FULL CODE — CHỈ THAY ĐỔI VỊ TRÍ COMMUNITY & TAGS */
+
 "use client";
 
 import { useState, useEffect, useRef } from "react";
@@ -219,81 +221,31 @@ export default function ProductsList({
                     )}
                   </Link>
 
-                  {/* ⭐⭐⭐ USER + THỜI GIAN ĐƯA LÊN ĐẦU ⭐⭐⭐ */}
+                  {/* ⭐⭐⭐ USER + TIME + SAVE ⭐⭐⭐ */}
                   {p.users && (
-                    <div className="flex items-center p-4 pb-0 gap-2">
-                      <img
-                        src={p.users.avatar_url || "/default-avatar.png"}
-                        className="w-8 h-8 rounded-full object-cover"
-                      />
-                      <div className="flex flex-col">
-                        <span className="text-sm font-semibold text-gray-800">
-                          {p.users.username}
-                        </span>
-                        <span className="text-xs text-gray-500">
-                          {p.created_at
-                            ? new Date(p.created_at).toLocaleString("vi-VN", {
-                                day: "2-digit",
-                                month: "2-digit",
-                                year: "2-digit",
-                                hour: "2-digit",
-                                minute: "2-digit",
-                              })
-                            : "Không rõ thời gian"}
-                        </span>
-                      </div>
-                    </div>
-                  )}
-                  {/* ⭐⭐⭐ END — USER ON TOP ⭐⭐⭐ */}
-
-                  <div className="p-4">
-                    {p.communityName && (
-                      <div className="flex items-center gap-2 mb-2">
-                        {p.communityIcon && (
-                          <img
-                            src={p.communityIcon}
-                            className="w-6 h-6 rounded-full"
-                          />
-                        )}
-                        <span className="text-sm text-blue-600 font-semibold">
-                          {p.communityName}
-                        </span>
-                      </div>
-                    )}
-
-                    {p.mainTag && (
-                      <span className="text-xs bg-purple-50 text-purple-600 px-2 py-1 rounded-full">
-                        #{p.mainTag}
-                      </span>
-                    )}
-
-                    {(p.tags?.length || p.communityNames?.length) && (
-                      <div className="flex flex-wrap gap-2 mt-2">
-                        {p.tags?.map((tag, i) => (
-                          <span
-                            key={i}
-                            className="text-xs bg-pink-50 text-pink-600 px-2 py-1 rounded-full"
-                          >
-                            {tag}
+                    <div className="flex items-center justify-between p-4 pb-0">
+                      <div className="flex items-center gap-2">
+                        <img
+                          src={p.users.avatar_url || "/default-avatar.png"}
+                          className="w-8 h-8 rounded-full object-cover"
+                        />
+                        <div className="flex flex-col">
+                          <span className="text-sm font-semibold text-gray-800">
+                            {p.users.username}
                           </span>
-                        ))}
-                        {p.communityNames?.map((cName, i) => (
-                          <span
-                            key={`c-${i}`}
-                            className="text-xs bg-blue-50 text-blue-600 px-2 py-1 rounded-full"
-                          >
-                            {cName}
+                          <span className="text-xs text-gray-500">
+                            {p.created_at
+                              ? new Date(p.created_at).toLocaleString("vi-VN", {
+                                  day: "2-digit",
+                                  month: "2-digit",
+                                  year: "2-digit",
+                                  hour: "2-digit",
+                                  minute: "2-digit",
+                                })
+                              : "Không rõ thời gian"}
                           </span>
-                        ))}
+                        </div>
                       </div>
-                    )}
-
-                    <div className="flex justify-between items-start mt-2">
-                      <Link href={`/deal/${p.id}`}>
-                        <h3 className="font-semibold text-lg cursor-pointer hover:text-pink-500">
-                          {p.title}
-                        </h3>
-                      </Link>
 
                       <button
                         onClick={() => toggleSave(p.id)}
@@ -310,18 +262,82 @@ export default function ProductsList({
                         )}
                       </button>
                     </div>
+                  )}
 
-                    <p className="text-sm text-gray-600">{p.category}</p>
-                    <p className="mt-2 text-indigo-600 font-bold">
-                      {p.price ? `${p.price.toLocaleString()}₫` : "Liên hệ"}
-                    </p>
+                  {/* ⭐⭐⭐ TIÊU ĐỀ ⭐⭐⭐ */}
+                  <div className="px-4 mt-2">
+                    <Link href={`/deal/${p.id}`}>
+                      <h3 className="font-semibold text-lg cursor-pointer hover:text-pink-500">
+                        {p.title}
+                      </h3>
+                    </Link>
+                  </div>
 
-                    <p className="text-xs text-gray-500 mt-1">
-                      Tình trạng: {p.condition}
-                    </p>
-                    <p className="text-sm text-gray-700 line-clamp-2 mt-2">
-                      {p.description}
-                    </p>
+                  {/* ⭐⭐⭐ PHẦN DƯỚI — COMMUNITY/TAGS ĐƯA SANG BÊN PHẢI ⭐⭐⭐ */}
+                  <div className="p-4 pt-2">
+                    <div className="flex justify-between items-start">
+                      <div className="flex-1">
+                        <p className="text-sm text-gray-600">{p.category}</p>
+
+                        <p className="mt-2 text-indigo-600 font-bold">
+                          {p.price
+                            ? `${p.price.toLocaleString()}₫`
+                            : "Liên hệ"}
+                        </p>
+
+                        <p className="text-xs text-gray-500 mt-1">
+                          Tình trạng: {p.condition}
+                        </p>
+
+                        <p className="text-sm text-gray-700 line-clamp-2 mt-2">
+                          {p.description}
+                        </p>
+                      </div>
+
+                      {/* ⭐⭐⭐ PHẦN COMMUNITY + TAGS SANG BÊN PHẢI ⭐⭐⭐ */}
+                      <div className="flex flex-col items-end gap-2 ml-4 w-32">
+                        {p.communityName && (
+                          <div className="flex items-center gap-2">
+                            {p.communityIcon && (
+                              <img
+                                src={p.communityIcon}
+                                className="w-6 h-6 rounded-full"
+                              />
+                            )}
+                            <span className="text-sm text-blue-600 font-semibold">
+                              {p.communityName}
+                            </span>
+                          </div>
+                        )}
+
+                        {p.mainTag && (
+                          <span className="text-xs bg-purple-50 text-purple-600 px-2 py-1 rounded-full">
+                            #{p.mainTag}
+                          </span>
+                        )}
+
+                        {(p.tags?.length || p.communityNames?.length) && (
+                          <div className="flex flex-wrap justify-end gap-2 max-w-32">
+                            {p.tags?.map((tag, i) => (
+                              <span
+                                key={i}
+                                className="text-xs bg-pink-50 text-pink-600 px-2 py-1 rounded-full"
+                              >
+                                {tag}
+                              </span>
+                            ))}
+                            {p.communityNames?.map((cName, i) => (
+                              <span
+                                key={`c-${i}`}
+                                className="text-xs bg-blue-50 text-blue-600 px-2 py-1 rounded-full"
+                              >
+                                {cName}
+                              </span>
+                            ))}
+                          </div>
+                        )}
+                      </div>
+                    </div>
 
                     {p.users && (
                       <div className="flex justify-between items-center mt-3">
@@ -374,3 +390,4 @@ export default function ProductsList({
     </div>
   );
 }
+

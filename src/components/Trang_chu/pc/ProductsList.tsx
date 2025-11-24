@@ -280,12 +280,17 @@ export default function ProductsList({
                             ? `${p.price.toLocaleString()}₫`
                             : "Liên hệ"}
                         </p>
+
+                        {/* ⭐ MOVED HERE — bình luận ngay dưới giá tiền ⭐ */}
+                        {p.users && (
+                          <p className="text-xs text-gray-500 mt-1">
+                            {commentsCount[p.id] ?? 0} bình luận
+                          </p>
+                        )}
                       </div>
 
                       {/* ⭐⭐⭐ COMMUNITY + TAGS ⭐⭐⭐ */}
                       <div className="flex flex-col items-end gap-2 ml-4 w-32">
-
-                        {/* 🔄 ĐÃ HOÁN ĐỔI — B block lên trên */}
                         {(p.tags?.length || p.communityNames?.length) && (
                           <div className="flex flex-wrap justify-end gap-2 max-w-32">
                             {p.tags?.map((tag, i) => (
@@ -307,7 +312,6 @@ export default function ProductsList({
                           </div>
                         )}
 
-                        {/* 🔄 ĐÃ HOÁN ĐỔI — A block xuống dưới */}
                         {p.communityName && (
                           <div className="flex items-center gap-2">
                             {p.communityIcon && (
@@ -329,14 +333,6 @@ export default function ProductsList({
                         )}
                       </div>
                     </div>
-
-                    {p.users && (
-                      <div className="flex justify-between items-center mt-3">
-                        <p className="text-xs text-gray-500">
-                          {commentsCount[p.id] ?? 0} bình luận
-                        </p>
-                      </div>
-                    )}
 
                     <div className="flex justify-between items-center mt-2">
                       <span className="text-xs text-gray-400">

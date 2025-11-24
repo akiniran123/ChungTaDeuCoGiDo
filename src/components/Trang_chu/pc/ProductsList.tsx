@@ -219,6 +219,33 @@ export default function ProductsList({
                     )}
                   </Link>
 
+                  {/* ⭐⭐⭐ USER + THỜI GIAN ĐƯA LÊN ĐẦU ⭐⭐⭐ */}
+                  {p.users && (
+                    <div className="flex items-center p-4 pb-0 gap-2">
+                      <img
+                        src={p.users.avatar_url || "/default-avatar.png"}
+                        className="w-8 h-8 rounded-full object-cover"
+                      />
+                      <div className="flex flex-col">
+                        <span className="text-sm font-semibold text-gray-800">
+                          {p.users.username}
+                        </span>
+                        <span className="text-xs text-gray-500">
+                          {p.created_at
+                            ? new Date(p.created_at).toLocaleString("vi-VN", {
+                                day: "2-digit",
+                                month: "2-digit",
+                                year: "2-digit",
+                                hour: "2-digit",
+                                minute: "2-digit",
+                              })
+                            : "Không rõ thời gian"}
+                        </span>
+                      </div>
+                    </div>
+                  )}
+                  {/* ⭐⭐⭐ END — USER ON TOP ⭐⭐⭐ */}
+
                   <div className="p-4">
                     {p.communityName && (
                       <div className="flex items-center gap-2 mb-2">
@@ -298,56 +325,6 @@ export default function ProductsList({
 
                     {p.users && (
                       <div className="flex justify-between items-center mt-3">
-                        <Link
-                          href={`/user/${p.users.username}`}
-                          onClick={(e) => e.stopPropagation()}
-                          className="flex items-center hover:opacity-80 transition"
-                        >
-                          <img
-                            src={p.users.avatar_url || "/default-avatar.png"}
-                            alt={p.users.username || "User"}
-                            className="w-8 h-8 rounded-full object-cover"
-                          />
-                          <div className="ml-2 flex flex-col">
-                            <div className="flex items-center gap-1">
-                              <p className="text-sm font-medium text-gray-700">
-                                {p.users.username || "Người dùng"}
-                              </p>
-
-                              {userBadges[p.users.id || ""]?.length ? (
-                                <div className="flex items-center gap-1">
-                                  {userBadges[p.users.id || ""]
-                                    .slice(0, 2)
-                                    .map((badge) => (
-                                      <img
-                                        key={badge.id}
-                                        src={badge.icon}
-                                        alt={badge.name}
-                                        title={badge.name}
-                                        className="w-4 h-4 object-contain"
-                                      />
-                                    ))}
-                                </div>
-                              ) : null}
-                            </div>
-
-                            <p className="text-xs text-gray-400">
-                              {p.created_at
-                                ? new Date(p.created_at).toLocaleString(
-                                    "vi-VN",
-                                    {
-                                      day: "2-digit",
-                                      month: "2-digit",
-                                      year: "2-digit",
-                                      hour: "2-digit",
-                                      minute: "2-digit",
-                                    }
-                                  )
-                                : "Không rõ thời gian"}
-                            </p>
-                          </div>
-                        </Link>
-
                         <p className="text-xs text-gray-500">
                           {commentsCount[p.id] ?? 0} bình luận
                         </p>

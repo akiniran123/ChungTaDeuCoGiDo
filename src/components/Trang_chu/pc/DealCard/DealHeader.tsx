@@ -4,7 +4,6 @@ import Link from "next/link";
 import Image from "next/image";
 import type { DealType } from "@/components/Trang_chu/pc/DealCard";
 
-
 const DealHeader = ({ deal }: { deal: DealType }) => {
   let dateText = "Không rõ";
 
@@ -24,7 +23,7 @@ const DealHeader = ({ deal }: { deal: DealType }) => {
   }
 
   return (
-    <div className="flex flex-col px-3 py-2 border-b">
+    <div className="flex flex-col px-3 py-2">
       {/* USER + COMMUNITY */}
       <div className="flex items-center gap-2 text-sm">
         
@@ -46,7 +45,6 @@ const DealHeader = ({ deal }: { deal: DealType }) => {
           </span>
         </Link>
 
-        {/* Nếu có cộng đồng → hiện rõ ràng */}
         {deal.category && (
           <>
             <span className="text-gray-400">•</span>

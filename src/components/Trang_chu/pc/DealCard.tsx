@@ -7,7 +7,6 @@ import { ArrowLeft, ArrowRight, X } from "lucide-react";
 import DealActions from "./DealCard/DealActions";
 import DealHeader from "./DealCard/DealHeader";
 
-// ⭐ DealType CHUẨN, đồng bộ với dữ liệu ProductsPage truyền xuống
 export type DealType = {
   id: string;
   title: string;
@@ -75,9 +74,6 @@ const DealCard: React.FC<DealCardProps> = ({
     });
   };
 
-  // ==========================
-  // ⭐ CHECK USER HAS LIKED
-  // ==========================
   useEffect(() => {
     const fetchLikeStatus = async () => {
       const {
@@ -98,9 +94,6 @@ const DealCard: React.FC<DealCardProps> = ({
     fetchLikeStatus();
   }, [deal.id]);
 
-  // ==========================
-  // ⭐ HANDLE LIKE
-  // ==========================
   const handleLike = async () => {
     const {
       data: { user },
@@ -131,9 +124,6 @@ const DealCard: React.FC<DealCardProps> = ({
     }
   };
 
-  // ==========================
-  // ⭐ FETCH COMMENTS WHEN CHAT OPEN
-  // ==========================
   useEffect(() => {
     if (!chatOpen) return;
 
@@ -190,9 +180,6 @@ const DealCard: React.FC<DealCardProps> = ({
     messagesEndRef.current?.scrollIntoView({ behavior: "smooth" });
   }, [messages]);
 
-  // ==========================
-  // ⭐ MEDIA SLIDER
-  // ==========================
   const DealMedia = () => (
     <div className="relative w-full overflow-hidden bg-gray-100">
       {mediaList.length > 0 && (
@@ -231,57 +218,55 @@ const DealCard: React.FC<DealCardProps> = ({
         } ${isAd ? "bg-yellow-50 border-l-4 border-yellow-400" : "bg-white"}`}
         id={`deal-${deal.id}`}
       >
-        {/* ⭐ COMMUNITY INFO */}
-        {deal.community_title && (
-          <div className="flex items-center gap-2 px-4 pt-4">
-            {deal.community_avatar_url && (
-              <img
-                src={deal.community_avatar_url}
-                className="w-7 h-7 rounded-full object-cover"
-              />
-            )}
-            <span className="text-sm font-medium text-blue-600">
-              {deal.community_title}
-            </span>
-          </div>
-        )}
-
-        {/* ⭐ MAIN TAG */}
-        {bigger &&
-          deal.product_tags &&
-          deal.product_tags.length > 0 && (
-            <div className="px-4 pt-2">
-              <span className="text-xs bg-purple-50 text-purple-600 px-2 py-1 rounded-full">
-                #{deal.product_tags[0]}
-              </span>
-            </div>
-          )}
-
-        {/* ⭐ LIST TAGS */}
-        {(deal.tags?.length || deal.product_tags?.length) && (
-          <div className="px-4 pt-2 flex flex-wrap gap-2">
-            {deal.tags?.map((tag, i) => (
-              <span
-                key={i}
-                className="text-xs bg-pink-50 text-pink-600 px-2 py-1 rounded-full"
-              >
-                {tag}
-              </span>
-            ))}
-
-            {deal.product_tags?.map((tag, i) => (
-              <span
-                key={`pt-${i}`}
-                className="text-xs bg-blue-50 text-blue-700 px-2 py-1 rounded-full"
-              >
-                {tag}
-              </span>
-            ))}
-          </div>
-        )}
-
         {/* ⭐ HEADER */}
-        <DealHeader deal={deal} />
+        <div className="px-3 py-2 flex justify-between items-start w-full">
+          {/* LEFT = DealHeader (avatar + username + time + title + desc) */}
+          <div className="flex-1">
+            <DealHeader deal={deal} />
+          </div>
+
+          {/* RIGHT = TAGS + PRODUCT TAGS + COMMUNITY */}
+          <div className="flex flex-col items-end gap-2 ml-3">
+
+            {/* TAGS */}
+            {(deal.tags?.length || deal.product_tags?.length) && (
+              <div className="flex flex-wrap justify-end gap-2 max-w-[160px]">
+                {deal.tags?.map((tag, i) => (
+                  <span
+                    key={i}
+                    className="text-xs bg-pink-50 text-pink-600 px-2 py-1 rounded-full"
+                  >
+                    {tag}
+                  </span>
+                ))}
+
+                {deal.product_tags?.map((tag, i) => (
+                  <span
+                    key={`pt-${i}`}
+                    className="text-xs bg-blue-50 text-blue-700 px-2 py-1 rounded-full"
+                  >
+                    {tag}
+                  </span>
+                ))}
+              </div>
+            )}
+
+            {/* COMMUNITY */}
+            {deal.community_title && (
+              <div className="flex items-center gap-2">
+                {deal.community_avatar_url && (
+                  <img
+                    src={deal.community_avatar_url}
+                    className="w-7 h-7 rounded-full object-cover"
+                  />
+                )}
+                <span className="text-sm font-medium text-blue-600">
+                  {deal.community_title}
+                </span>
+              </div>
+            )}
+          </div>
+        </div>
 
         {/* ⭐ MEDIA */}
         <DealMedia />

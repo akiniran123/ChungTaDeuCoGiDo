@@ -2,7 +2,7 @@
 
 import { useState } from "react";
 import { useCart, CartItem } from "../context/CartContext";
-import ProductCard from "@/components/ProductCard/ProductCard";
+import ProductCard from "@/components/ProductCard/pc/ProductCard";
 
 // Giả lập thông tin người bán (demo)
 const sellersInfo: Record<

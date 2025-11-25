@@ -6,7 +6,6 @@ import { useRouter } from 'next/navigation'
 
 import Logo from './LogoSearchIcon/logo'
 import SearchBar from './LogoSearchIcon/SearchBar'
-import StartSellingButtons from './LogoSearchIcon/StartSellingButtons'
 import MessagesMenu from './LogoSearchIcon/MessagesMenu'
 import NewsMenu from './LogoSearchIcon/NewsMenu'
 import CartMenu from './LogoSearchIcon/CartMenu'
@@ -56,7 +55,6 @@ export default function LogoSearchIcons({
           <Logo onMenuToggle={onMenuToggle} />
           <SearchBar />
           <div className="flex items-center gap-3">
-            <StartSellingButtons onRequireLogin={() => openLogin('/sell')} />
             <MessagesMenu />
             <NewsMenu />
 

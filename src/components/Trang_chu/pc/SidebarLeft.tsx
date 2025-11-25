@@ -5,6 +5,7 @@ import Link from "next/link";
 import { Home, Compass, Plus, Users, Star, ChevronDown } from "lucide-react";
 import { supabase } from "@/lib/supabase/client";
 import MessagesMenu from "@/components/Navbar/pc/LogoSearchIcon/MessagesMenu";
+import NewsMenu from "@/components/Navbar/pc/LogoSearchIcon/NewsMenu"; // ⭐ THÊM DÒNG NÀY
 import StartSellingButtons from "@/components/Navbar/pc/LogoSearchIcon/StartSellingButtons";
 
 export default function SidebarLeft() {
@@ -90,10 +91,16 @@ export default function SidebarLeft() {
           <span>Explore</span>
         </Link>
 
-        {/* Messages — FIXED */}
+        {/* Messages */}
         <div className="flex items-center gap-4 px-5 py-3 mx-2 rounded-xl hover:bg-gray-100 cursor-pointer">
           <MessagesMenu />
           <span className="text-base font-medium text-gray-900">Messages</span>
+        </div>
+
+        {/* ⭐ Notifications — Added Here */}
+        <div className="flex items-center gap-4 px-5 py-3 mx-2 rounded-xl hover:bg-gray-100 cursor-pointer">
+          <NewsMenu />
+          <span className="text-base font-medium text-gray-900">Notifications</span>
         </div>
       </nav>
 

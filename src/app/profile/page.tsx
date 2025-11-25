@@ -2,13 +2,14 @@
 
 import { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
-import { supabase } from "@/lib/supabase/client";
 import Image from "next/image";
+import { supabase } from "@/lib/supabase/client";
 import { Loader2, Edit3, Save, X } from "lucide-react";
+import type { Product } from "@/types";
 
-// ==============================
-// 🔹 Kiểu dữ liệu user theo Supabase
-// ==============================
+// ==========================
+// 📌 Kiểu dữ liệu User
+// ==========================
 export type UserData = {
   id: string;
   username: string | null;
@@ -25,9 +26,11 @@ export type UserData = {
 
 export default function ProfilePage() {
   const router = useRouter();
+
   const [user, setUser] = useState<UserData | null>(null);
   const [loading, setLoading] = useState(true);
   const [isEditing, setIsEditing] = useState(false);
+
   const [formData, setFormData] = useState({
     username: "",
     avatar_url: "",
@@ -36,89 +39,45 @@ export default function ProfilePage() {
     birth: "",
   });
 
-  // ==============================
-  // 📦 Tải thông tin người dùng
-  // ==============================
+  const [userProducts, setUserProducts] = useState<Product[]>([]);
+  const [loadingProducts, setLoadingProducts] = useState(true);
+
+  // ==========================
+  // 📌 Load User Profile
+  // ==========================
   useEffect(() => {
     const loadProfile = async () => {
       setLoading(true);
 
-      const { data: sessionData, error: sessionError } =
-        await supabase.auth.getSession();
-
-      if (sessionError) {
-        console.error("❌ Lỗi khi lấy session:", sessionError);
-        setLoading(false);
-        return;
-      }
-
+      const { data: sessionData } = await supabase.auth.getSession();
       const userSession = sessionData.session?.user;
+
       if (!userSession) {
         setLoading(false);
         return;
       }
 
-      const { data: userData, error } = await supabase
+      // Load user
+      const { data: userData } = await supabase
         .from("users")
         .select("*")
         .eq("id", userSession.id)
         .maybeSingle();
 
-      if (error) {
-        console.error("❌ Lỗi khi lấy user:", error);
+      if (!userData) {
         setLoading(false);
         return;
       }
 
-      // 🆕 Nếu chưa có user, tạo mới
-      if (!userData) {
-        const username =
-          userSession.email?.split("@")[0] || "user_" + userSession.id.slice(0, 8);
-        const avatarUrl =
-          userSession.user_metadata?.avatar_url ||
-          userSession.user_metadata?.picture ||
-          "/default-avatar.png";
+      setUser(userData);
 
-        const { data: newUser, error: insertError } = await supabase
-          .from("users")
-          .insert([
-            {
-              id: userSession.id,
-              username,
-              email: userSession.email,
-              avatar_url: avatarUrl,
-              created_at: new Date().toISOString(),
-              karma: 0,
-              is_online: true,
-            },
-          ])
-          .select()
-          .single();
-
-        if (insertError) {
-          console.error("❌ Lỗi khi tạo user:", insertError);
-          setLoading(false);
-          return;
-        }
-
-        setUser(newUser);
-        setFormData({
-          username: newUser.username ?? "",
-          avatar_url: newUser.avatar_url ?? "",
-          address: newUser.address ?? "",
-          phone: newUser.phone?.toString() ?? "",
-          birth: newUser.birth ?? "",
-        });
-      } else {
-        setUser(userData);
-        setFormData({
-          username: userData.username ?? "",
-          avatar_url: userData.avatar_url ?? "",
-          address: userData.address ?? "",
-          phone: userData.phone?.toString() ?? "",
-          birth: userData.birth ?? "",
-        });
-      }
+      setFormData({
+        username: userData.username ?? "",
+        avatar_url: userData.avatar_url ?? "",
+        address: userData.address ?? "",
+        phone: userData.phone?.toString() ?? "",
+        birth: userData.birth ?? "",
+      });
 
       setLoading(false);
     };
@@ -126,9 +85,56 @@ export default function ProfilePage() {
     loadProfile();
   }, []);
 
-  // ==============================
-  // 💾 Lưu chỉnh sửa
-  // ==============================
+  // ==========================
+  // 📌 Load danh sách sản phẩm của user
+  // ==========================
+  useEffect(() => {
+    if (!user) return;
+
+    const loadProducts = async () => {
+      setLoadingProducts(true);
+
+      const { data, error } = await supabase
+        .from("products")
+        .select("*")
+        .eq("user_id", user.id)
+        .order("created_at", { ascending: false });
+
+      if (error) {
+        console.error("🔥 Lỗi tải sản phẩm:", error);
+      }
+
+      if (data) {
+        const normalized = data.map((p) => {
+          let images: string[] = [];
+
+          if (Array.isArray(p.images)) {
+            images = p.images;
+          } else if (typeof p.images === "string") {
+            try {
+              const parsed = JSON.parse(p.images);
+              if (Array.isArray(parsed)) images = parsed;
+              else images = [p.images];
+            } catch {
+              images = [p.images];
+            }
+          }
+
+          return { ...p, images } as Product;
+        });
+
+        setUserProducts(normalized);
+      }
+
+      setLoadingProducts(false);
+    };
+
+    loadProducts();
+  }, [user]);
+
+  // =========================================
+  // 📌 Lưu chỉnh sửa
+  // =========================================
   const handleSave = async () => {
     if (!user) return;
 
@@ -141,54 +147,47 @@ export default function ProfilePage() {
       updated_at: new Date().toISOString(),
     };
 
-    const { error } = await supabase.from("users").update(updates).eq("id", user.id);
-
-    if (error) {
-      alert("❌ Lỗi khi lưu hồ sơ: " + error.message);
-      return;
-    }
+    await supabase.from("users").update(updates).eq("id", user.id);
 
     setUser({ ...user, ...updates });
     setIsEditing(false);
-    alert("✅ Hồ sơ đã được cập nhật thành công!");
   };
 
-  // ==============================
-  // ⏳ Loading state
-  // ==============================
+  // ==========================
+  // 📌 UI Loading
+  // ==========================
   if (loading)
     return (
-      <div className="flex justify-center items-center h-80 bg-gray-50">
-        <Loader2 className="w-6 h-6 animate-spin text-gray-500" />
+      <div className="flex justify-center items-center h-80">
+        <Loader2 className="w-6 h-6 animate-spin text-gray-600" />
       </div>
     );
 
   if (!user)
-    return (
-      <div className="text-center py-20 text-gray-600 bg-gray-50">
-        <p>Bạn chưa đăng nhập. Vui lòng đăng nhập để xem hồ sơ cá nhân.</p>
-      </div>
-    );
+    return <p className="text-center py-20">Chưa đăng nhập</p>;
 
-  // ==============================
-  // 🧩 Giao diện hiển thị hồ sơ
-  // ==============================
+  // ==========================
+  // 📌 UI
+  // ==========================
   return (
     <div className="min-h-screen bg-gray-50 py-10">
-      <div className="max-w-2xl mx-auto bg-white rounded-2xl shadow-lg p-8 relative border border-gray-200">
-        {/* Nút chỉnh sửa ở góc phải */}
-        <div className="absolute top-4 right-4">
+      <div className="max-w-3xl mx-auto bg-white rounded-2xl shadow-lg p-8">
+        
+        {/* ================= USER INFO ================ */}
+        <div className="flex justify-between">
+          <h2 className="text-2xl font-semibold text-gray-800">Hồ sơ cá nhân</h2>
+
           {isEditing ? (
             <div className="flex gap-2">
               <button
                 onClick={handleSave}
-                className="flex items-center bg-green-500 hover:bg-green-600 text-white px-3 py-2 rounded-md text-sm gap-1"
+                className="flex items-center bg-green-500 text-white px-3 py-2 rounded-md text-sm"
               >
                 <Save size={16} /> Lưu
               </button>
               <button
                 onClick={() => setIsEditing(false)}
-                className="flex items-center bg-gray-300 hover:bg-gray-400 text-gray-800 px-3 py-2 rounded-md text-sm gap-1"
+                className="flex items-center bg-gray-300 px-3 py-2 rounded-md text-sm"
               >
                 <X size={16} /> Hủy
               </button>
@@ -196,15 +195,14 @@ export default function ProfilePage() {
           ) : (
             <button
               onClick={() => setIsEditing(true)}
-              className="flex items-center bg-blue-500 hover:bg-blue-600 text-white px-3 py-2 rounded-md text-sm gap-1"
+              className="flex items-center bg-blue-500 text-white px-3 py-2 rounded-md text-sm"
             >
               <Edit3 size={16} /> Chỉnh sửa
             </button>
           )}
         </div>
 
-        {/* Thông tin người dùng */}
-        <div className="flex flex-col items-center space-y-4">
+        <div className="flex flex-col items-center mt-6">
           <Image
             src={formData.avatar_url || "/default-avatar.png"}
             alt="avatar"
@@ -213,95 +211,101 @@ export default function ProfilePage() {
             className="rounded-full border shadow-md"
           />
 
-          <h2 className="text-2xl font-semibold text-gray-800">
+          <h2 className="text-xl font-semibold text-gray-800 mt-2">
             {user.username || "Người dùng"}
           </h2>
           <p className="text-gray-500 text-sm">{user.email}</p>
         </div>
 
-        {/* Form / Thông tin */}
+        {/* =============== EDIT FORM / VIEW ============== */}
         <div className="mt-6 space-y-4">
           {isEditing ? (
             <>
-              <div>
-                <label className="block text-sm text-gray-600 mb-1">Tên người dùng</label>
-                <input
-                  type="text"
-                  value={formData.username}
-                  onChange={(e) =>
-                    setFormData({ ...formData, username: e.target.value })
-                  }
-                  className="w-full border border-gray-300 rounded-md p-2 text-sm focus:ring-2 focus:ring-blue-400 focus:outline-none"
-                />
-              </div>
-
-              <div>
-                <label className="block text-sm text-gray-600 mb-1">URL ảnh đại diện</label>
-                <input
-                  type="text"
-                  value={formData.avatar_url}
-                  onChange={(e) =>
-                    setFormData({ ...formData, avatar_url: e.target.value })
-                  }
-                  className="w-full border border-gray-300 rounded-md p-2 text-sm focus:ring-2 focus:ring-blue-400 focus:outline-none"
-                />
-              </div>
-
-              <div>
-                <label className="block text-sm text-gray-600 mb-1">Địa chỉ</label>
-                <input
-                  type="text"
-                  value={formData.address}
-                  onChange={(e) =>
-                    setFormData({ ...formData, address: e.target.value })
-                  }
-                  className="w-full border border-gray-300 rounded-md p-2 text-sm focus:ring-2 focus:ring-blue-400 focus:outline-none"
-                />
-              </div>
-
-              <div>
-                <label className="block text-sm text-gray-600 mb-1">Số điện thoại</label>
-                <input
-                  type="text"
-                  value={formData.phone}
-                  onChange={(e) =>
-                    setFormData({ ...formData, phone: e.target.value })
-                  }
-                  className="w-full border border-gray-300 rounded-md p-2 text-sm focus:ring-2 focus:ring-blue-400 focus:outline-none"
-                />
-              </div>
-
-              <div>
-                <label className="block text-sm text-gray-600 mb-1">Ngày sinh</label>
-                <input
-                  type="date"
-                  value={formData.birth}
-                  onChange={(e) =>
-                    setFormData({ ...formData, birth: e.target.value })
-                  }
-                  className="w-full border border-gray-300 rounded-md p-2 text-sm focus:ring-2 focus:ring-blue-400 focus:outline-none"
-                />
-              </div>
+              {Object.entries({
+                username: "Tên người dùng",
+                avatar_url: "Avatar URL",
+                address: "Địa chỉ",
+                phone: "Số điện thoại",
+                birth: "Ngày sinh",
+              }).map(([key, label]) => (
+                <div key={key}>
+                  <label className="block text-sm text-gray-600 mb-1">
+                    {label}
+                  </label>
+                  <input
+                    type={key === "birth" ? "date" : "text"}
+                    value={(formData as any)[key]}
+                    onChange={(e) =>
+                      setFormData({ ...formData, [key]: e.target.value })
+                    }
+                    className="w-full border border-gray-300 rounded-md p-2 text-sm"
+                  />
+                </div>
+              ))}
             </>
           ) : (
-            <div className="space-y-2 text-sm text-gray-700">
-              <p>
-                <strong>Địa chỉ:</strong> {user.address || "Chưa cập nhật"}
-              </p>
-              <p>
-                <strong>Số điện thoại:</strong> {user.phone || "Chưa có"}
-              </p>
-              <p>
-                <strong>Ngày sinh:</strong> {user.birth || "Chưa cập nhật"}
-              </p>
+            <div className="text-sm text-gray-700 space-y-2">
+              <p><strong>Địa chỉ:</strong> {user.address || "Chưa cập nhật"}</p>
+              <p><strong>Số điện thoại:</strong> {user.phone || "Chưa có"}</p>
+              <p><strong>Ngày sinh:</strong> {user.birth || "Chưa cập nhật"}</p>
             </div>
           )}
         </div>
 
-        <div className="mt-8 text-gray-500 text-sm text-center border-t pt-4">
-          <p>⭐ Điểm uy tín: {user.karma ?? 0}</p>
-          <p>📅 Tham gia từ: {new Date(user.created_at || "").toLocaleDateString()}</p>
-        </div>
+        {/* ======================================= */}
+        {/* 🔥 DANH SÁCH SẢN PHẨM CỦA USER */}
+        {/* ======================================= */}
+
+        <h3 className="text-xl font-semibold text-gray-800 mt-10 mb-4">
+          Sản phẩm đã đăng
+        </h3>
+
+        {loadingProducts ? (
+          <p className="text-gray-500 text-center">Đang tải...</p>
+        ) : userProducts.length === 0 ? (
+          <p className="text-gray-500 text-center">Bạn chưa đăng sản phẩm nào.</p>
+        ) : (
+          <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-5">
+            {userProducts.map((p) => {
+              const imageUrl =
+                Array.isArray(p.images) && p.images.length > 0
+                  ? p.images[0]
+                  : "/no-image.jpg";
+
+              return (
+                <div
+                  key={p.id}
+                  className="bg-white rounded-xl border shadow-sm overflow-hidden"
+                >
+                  <Image
+                    src={imageUrl}
+                    alt={p.title}
+                    width={400}
+                    height={300}
+                    className="object-cover w-full h-40"
+                  />
+
+                  <div className="p-3">
+                    <h3 className="font-semibold text-gray-800 text-sm">
+                      {p.title}
+                    </h3>
+
+                    <p className="text-gray-600 text-sm mt-1">
+                      {p.price ? p.price.toLocaleString() + "₫" : "Chưa có giá"}
+                    </p>
+
+                    {p.description && (
+                      <p className="text-gray-500 text-xs mt-1 line-clamp-2">
+                        {p.description}
+                      </p>
+                    )}
+                  </div>
+                </div>
+              );
+            })}
+          </div>
+        )}
+
       </div>
     </div>
   );

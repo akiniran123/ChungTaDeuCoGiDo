@@ -320,14 +320,16 @@ export default function ProductsList({
 
                             {/* ⭐⭐⭐ CLICK TAG → LỌC NGAY ⭐⭐⭐ */}
                             {p.tags?.map((tag, i) => (
-                              <button
-                                key={i}
-                                onClick={() => setActiveTag(tag)}
-                                className="text-xs bg-pink-50 text-pink-600 px-2 py-1 rounded-full hover:bg-pink-100 transition"
-                              >
-                                #{tag}
-                              </button>
-                            ))}
+  <button
+  key={i}
+  onClick={() => setActiveTag(tag)}
+  className="text-xs bg-pink-50 text-purple-500 px-2 py-1 rounded-full hover:bg-pink-100 transition"
+>
+  {tag}
+</button>
+
+))}
+
 
                             {p.communityNames?.map((cName, i) => (
                               <span

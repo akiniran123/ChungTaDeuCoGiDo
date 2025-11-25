@@ -1,4 +1,4 @@
-/* FULL CODE — XOÁ TÌNH TRẠNG + MÔ TẢ + BỎ KHUNG NÚT LIKE/SHARE/SAVE */
+/* FULL CODE — BẤM TAG → LỌC NGAY TRONG TRANG CHÍNH */
 
 "use client";
 
@@ -6,7 +6,6 @@ import { useState, useEffect, useRef } from "react";
 import Link from "next/link";
 import { supabase } from "@/lib/supabase/client";
 
-/* ⛔ CHỈ CHỈNH DÒNG NÀY — ĐÃ FIX CHUẨN */
 import DealCard, { DealType } from "@/components/Trang_chu/pc/DealCard";
 
 import { motion, AnimatePresence } from "framer-motion";
@@ -60,6 +59,14 @@ export default function ProductsList({
   const [biggerGrid, setBiggerGrid] = useState(false);
   const [saved, setSaved] = useState<string[]>([]);
   const scrollPosition = useRef(0);
+
+  /* ⭐⭐⭐ THÊM STATE LỌC TAG ⭐⭐⭐ */
+  const [activeTag, setActiveTag] = useState<string | null>(null);
+
+  /* ⭐⭐⭐ LỌC PRODUCT THEO TAG ⭐⭐⭐ */
+  const visibleProducts = activeTag
+    ? products.filter((p) => p.tags?.includes(activeTag))
+    : products;
 
   useEffect(() => {
     const handleScroll = () => {
@@ -134,6 +141,23 @@ export default function ProductsList({
 
   return (
     <div className="p-6">
+      {/* ⭐⭐⭐ HIỂN THỊ TAG ĐANG LỌC ⭐⭐⭐ */}
+      {activeTag && (
+        <div className="mb-4 flex items-center gap-3">
+          <span className="text-sm">
+            Đang lọc theo tag:
+            <strong className="ml-1 text-pink-600">#{activeTag}</strong>
+          </span>
+
+          <button
+            onClick={() => setActiveTag(null)}
+            className="px-3 py-1 bg-gray-200 text-gray-700 rounded-full text-sm hover:bg-gray-300 transition"
+          >
+            Hủy lọc
+          </button>
+        </div>
+      )}
+
       <div className="flex justify-end mb-4">
         <button
           onClick={toggleGrid}
@@ -161,7 +185,8 @@ export default function ProductsList({
                 : "grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4"
             }`}
           >
-            {products.map((p) =>
+            {/* ⭐⭐⭐ DÙNG visibleProducts THAY CHO products ⭐⭐⭐ */}
+            {visibleProducts.map((p) =>
               biggerGrid ? (
                 <DealCard
                   key={p.id}
@@ -221,6 +246,7 @@ export default function ProductsList({
                     )}
                   </Link>
 
+                  {/* ------- USER / TIME -------- */}
                   {p.users && (
                     <div className="flex items-center justify-between p-4 pb-0">
                       <div className="flex items-center gap-2">
@@ -262,6 +288,7 @@ export default function ProductsList({
                     </div>
                   )}
 
+                  {/* ------- TITLE -------- */}
                   <div className="px-4 mt-2">
                     <Link href={`/deal/${p.id}`}>
                       <h3 className="font-semibold text-lg cursor-pointer hover:text-pink-500">
@@ -270,6 +297,7 @@ export default function ProductsList({
                     </Link>
                   </div>
 
+                  {/* ------- CATEGORY / PRICE / TAGS -------- */}
                   <div className="p-4 pt-2">
                     <div className="flex justify-between items-start">
                       <div className="flex-1">
@@ -289,14 +317,18 @@ export default function ProductsList({
                       <div className="flex flex-col items-end gap-2 ml-4 w-32">
                         {(p.tags?.length || p.communityNames?.length) && (
                           <div className="flex flex-wrap justify-end gap-2 max-w-32">
+
+                            {/* ⭐⭐⭐ CLICK TAG → LỌC NGAY ⭐⭐⭐ */}
                             {p.tags?.map((tag, i) => (
-                              <span
+                              <button
                                 key={i}
-                                className="text-xs bg-pink-50 text-pink-600 px-2 py-1 rounded-full"
+                                onClick={() => setActiveTag(tag)}
+                                className="text-xs bg-pink-50 text-pink-600 px-2 py-1 rounded-full hover:bg-pink-100 transition"
                               >
-                                {tag}
-                              </span>
+                                #{tag}
+                              </button>
                             ))}
+
                             {p.communityNames?.map((cName, i) => (
                               <span
                                 key={`c-${i}`}
@@ -308,11 +340,10 @@ export default function ProductsList({
                           </div>
                         )}
 
-                        {/* ⭐ ĐÃ SỬA THÀNH LINK ⭐ */}
+                        {/* COMMUNITY */}
                         {p.communityName && (
                           <Link
-                           href={`/communities/${p.community_id}`}
-
+                            href={`/communities/${p.community_id}`}
                             className="flex items-center gap-2 hover:opacity-80 transition"
                           >
                             {p.communityIcon && (
@@ -335,6 +366,7 @@ export default function ProductsList({
                       </div>
                     </div>
 
+                    {/* ------- LIKE / SHARE -------- */}
                     <div className="flex justify-between items-center mt-2">
                       <span className="text-xs text-gray-400">
                         {p.views ?? 0} lượt xem
@@ -347,7 +379,9 @@ export default function ProductsList({
                         >
                           <HeartIcon
                             size={16}
-                            fill={likedIds.includes(p.id) ? "currentColor" : "none"}
+                            fill={
+                              likedIds.includes(p.id) ? "currentColor" : "none"
+                            }
                           />
                           <span className="text-xs font-semibold">
                             {localLikesCount[p.id] ?? 0}

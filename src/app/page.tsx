@@ -1,4 +1,3 @@
-// Fixed ProductsPage.tsx
 "use client";
 
 import { useEffect, useState } from "react";
@@ -12,7 +11,6 @@ type ProductWithUser = Database["public"]["Tables"]["products"]["Row"] & {
     username: string | null;
     avatar_url: string | null;
   } | null;
-
   tags: string[];
   communityName?: string | null;
   communityIcon?: string | null;
@@ -61,12 +59,8 @@ export default function ProductsPage() {
 
         const raw = (data || []) as any[];
 
-        // ================================
-        // FIX CHUẨN PHẦN LẤY AVATAR USER
-        // ================================
         const formatted: ProductWithUser[] = raw.map((p) => ({
           ...p,
-
           users: p.users
             ? {
                 id: p.users.id,
@@ -77,19 +71,17 @@ export default function ProductsPage() {
                     : null,
               }
             : null,
-
           tags:
             (p.product_tags || [])
               .map((pt: any) => pt.tags?.name)
               .filter(Boolean) || [],
-
           communityName: p.communities?.title || null,
           communityIcon: p.communities?.avatar_url || null,
         }));
 
         setProducts(formatted);
 
-        // COMMENTS COUNT
+        // COMMENTS
         const commentMap: Record<string, number> = {};
         await Promise.all(
           formatted.map(async (prod) => {

@@ -141,7 +141,6 @@ export default function ProductsList({
 
   return (
     <div className="p-6">
-      {/* ⭐⭐⭐ HIỂN THỊ TAG ĐANG LỌC ⭐⭐⭐ */}
       {activeTag && (
         <div className="mb-4 flex items-center gap-3">
           <span className="text-sm">
@@ -185,7 +184,6 @@ export default function ProductsList({
                 : "grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4"
             }`}
           >
-            {/* ⭐⭐⭐ DÙNG visibleProducts THAY CHO products ⭐⭐⭐ */}
             {visibleProducts.map((p) =>
               biggerGrid ? (
                 <DealCard
@@ -254,25 +252,29 @@ export default function ProductsList({
                           src={p.users.avatar_url || "/default-avatar.png"}
                           className="w-8 h-8 rounded-full object-cover"
                         />
-                        <div className="flex flex-col">
-                          <span className="text-sm font-semibold text-gray-800">
-                            {p.users.username}
-                          </span>
-                          <span className="text-xs text-gray-500">
-                            {p.created_at
-                              ? new Date(p.created_at).toLocaleString(
-                                  "vi-VN",
-                                  {
-                                    day: "2-digit",
-                                    month: "2-digit",
-                                    year: "2-digit",
-                                    hour: "2-digit",
-                                    minute: "2-digit",
-                                  }
-                                )
-                              : "Không rõ thời gian"}
-                          </span>
-                        </div>
+
+                        {/* ⭐⭐⭐ SỬA MÀU TÊN USER Ở ĐÂY ⭐⭐⭐ */}
+                        <Link href={`/user/${p.users.username}`}>
+                          <div className="flex flex-col cursor-pointer">
+                            <span className="text-sm font-semibold text-gray-600">
+                              {p.users.username}
+                            </span>
+                            <span className="text-xs text-gray-500">
+                              {p.created_at
+                                ? new Date(p.created_at).toLocaleString(
+                                    "vi-VN",
+                                    {
+                                      day: "2-digit",
+                                      month: "2-digit",
+                                      year: "2-digit",
+                                      hour: "2-digit",
+                                      minute: "2-digit",
+                                    }
+                                  )
+                                : "Không rõ thời gian"}
+                            </span>
+                          </div>
+                        </Link>
                       </div>
 
                       <button
@@ -318,18 +320,15 @@ export default function ProductsList({
                         {(p.tags?.length || p.communityNames?.length) && (
                           <div className="flex flex-wrap justify-end gap-2 max-w-32">
 
-                            {/* ⭐⭐⭐ CLICK TAG → LỌC NGAY ⭐⭐⭐ */}
                             {p.tags?.map((tag, i) => (
-  <button
-  key={i}
-  onClick={() => setActiveTag(tag)}
-  className="text-xs bg-pink-50 text-purple-500 px-2 py-1 rounded-full hover:bg-pink-100 transition"
->
-  {tag}
-</button>
-
-))}
-
+                              <button
+                                key={i}
+                                onClick={() => setActiveTag(tag)}
+                                className="text-xs bg-pink-50 text-purple-500 px-2 py-1 rounded-full hover:bg-pink-100 transition"
+                              >
+                                {tag}
+                              </button>
+                            ))}
 
                             {p.communityNames?.map((cName, i) => (
                               <span
@@ -342,7 +341,6 @@ export default function ProductsList({
                           </div>
                         )}
 
-                        {/* COMMUNITY */}
                         {p.communityName && (
                           <Link
                             href={`/communities/${p.community_id}`}

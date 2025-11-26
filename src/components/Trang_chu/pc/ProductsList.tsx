@@ -253,8 +253,8 @@ export default function ProductsList({
                           className="w-8 h-8 rounded-full object-cover"
                         />
 
-                        {/* ⭐⭐⭐ SỬA MÀU TÊN USER Ở ĐÂY ⭐⭐⭐ */}
-                        <Link href={`/user/${p.users.username}`}>
+                        {/* ⭐⭐⭐ ĐIỀU HƯỚNG ĐẾN PROFILE/[id] ⭐⭐⭐ */}
+                        <Link href={`/profile/${p.users.id}`}>
                           <div className="flex flex-col cursor-pointer">
                             <span className="text-sm font-semibold text-gray-600">
                               {p.users.username}
@@ -319,7 +319,6 @@ export default function ProductsList({
                       <div className="flex flex-col items-end gap-2 ml-4 w-32">
                         {(p.tags?.length || p.communityNames?.length) && (
                           <div className="flex flex-wrap justify-end gap-2 max-w-32">
-
                             {p.tags?.map((tag, i) => (
                               <button
                                 key={i}

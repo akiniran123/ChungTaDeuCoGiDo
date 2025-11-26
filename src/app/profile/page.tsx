@@ -39,8 +39,11 @@ export default function ProfilePage() {
     birth: "",
   });
 
+  // 🔥 Thêm từ file 2
+  const [currentUser, setCurrentUser] = useState<any>(null);
   const [userProducts, setUserProducts] = useState<Product[]>([]);
   const [loadingProducts, setLoadingProducts] = useState(true);
+  const [deleting, setDeleting] = useState<string | null>(null);
 
   // ==========================
   // 📌 Load User Profile
@@ -57,7 +60,8 @@ export default function ProfilePage() {
         return;
       }
 
-      // Load user
+      setCurrentUser(userSession); // 🔥 lấy user đang đăng nhập
+
       const { data: userData } = await supabase
         .from("users")
         .select("*")
@@ -86,7 +90,7 @@ export default function ProfilePage() {
   }, []);
 
   // ==========================
-  // 📌 Load danh sách sản phẩm của user
+  // 📌 Load Sản Phẩm của User
   // ==========================
   useEffect(() => {
     if (!user) return;
@@ -100,21 +104,17 @@ export default function ProfilePage() {
         .eq("user_id", user.id)
         .order("created_at", { ascending: false });
 
-      if (error) {
-        console.error("🔥 Lỗi tải sản phẩm:", error);
-      }
+      if (error) console.error(error);
 
       if (data) {
         const normalized = data.map((p) => {
           let images: string[] = [];
 
-          if (Array.isArray(p.images)) {
-            images = p.images;
-          } else if (typeof p.images === "string") {
+          if (Array.isArray(p.images)) images = p.images;
+          else if (typeof p.images === "string") {
             try {
               const parsed = JSON.parse(p.images);
-              if (Array.isArray(parsed)) images = parsed;
-              else images = [p.images];
+              images = Array.isArray(parsed) ? parsed : [p.images];
             } catch {
               images = [p.images];
             }
@@ -153,6 +153,41 @@ export default function ProfilePage() {
     setIsEditing(false);
   };
 
+  // =========================================
+  // 🗑️ XÓA SẢN PHẨM (Chính chủ)
+  // =========================================
+  const handleDelete = async (productId: string, imageUrl?: string) => {
+    if (!currentUser || currentUser.id !== user?.id) {
+      alert("❌ Bạn không có quyền xóa bài này");
+      return;
+    }
+
+    if (!confirm("Bạn có chắc muốn xóa bài này?")) return;
+
+    setDeleting(productId);
+
+    try {
+      // Xóa ảnh trong storage
+      if (imageUrl) {
+        const parts = imageUrl.split("/images/");
+        if (parts.length === 2) {
+          await supabase.storage.from("images").remove([parts[1]]);
+        }
+      }
+
+      // Xóa product
+      await supabase
+        .from("products")
+        .delete()
+        .eq("id", productId)
+        .eq("user_id", currentUser.id);
+
+      setUserProducts((prev) => prev.filter((p) => p.id !== productId));
+    } finally {
+      setDeleting(null);
+    }
+  };
+
   // ==========================
   // 📌 UI Loading
   // ==========================
@@ -175,28 +210,21 @@ export default function ProfilePage() {
         
         {/* ================= USER INFO ================ */}
         <div className="flex justify-between">
-          <h2 className="text-2xl font-semibold text-gray-800">Hồ sơ cá nhân</h2>
+          <h2 className="text-2xl font-semibold text-gray-800">
+            Hồ sơ cá nhân
+          </h2>
 
           {isEditing ? (
             <div className="flex gap-2">
-              <button
-                onClick={handleSave}
-                className="flex items-center bg-green-500 text-white px-3 py-2 rounded-md text-sm"
-              >
+              <button onClick={handleSave} className="bg-green-600 text-white px-3 py-2 rounded-md text-sm flex items-center">
                 <Save size={16} /> Lưu
               </button>
-              <button
-                onClick={() => setIsEditing(false)}
-                className="flex items-center bg-gray-300 px-3 py-2 rounded-md text-sm"
-              >
+              <button onClick={() => setIsEditing(false)} className="bg-gray-300 px-3 py-2 rounded-md text-sm flex items-center">
                 <X size={16} /> Hủy
               </button>
             </div>
           ) : (
-            <button
-              onClick={() => setIsEditing(true)}
-              className="flex items-center bg-blue-500 text-white px-3 py-2 rounded-md text-sm"
-            >
+            <button onClick={() => setIsEditing(true)} className="bg-blue-500 text-white px-3 py-2 rounded-md text-sm flex items-center">
               <Edit3 size={16} /> Chỉnh sửa
             </button>
           )}
@@ -217,7 +245,7 @@ export default function ProfilePage() {
           <p className="text-gray-500 text-sm">{user.email}</p>
         </div>
 
-        {/* =============== EDIT FORM / VIEW ============== */}
+        {/* FORM */}
         <div className="mt-6 space-y-4">
           {isEditing ? (
             <>
@@ -229,7 +257,7 @@ export default function ProfilePage() {
                 birth: "Ngày sinh",
               }).map(([key, label]) => (
                 <div key={key}>
-                  <label className="block text-sm text-gray-600 mb-1">
+                  <label className="block text-sm mb-1 text-gray-600">
                     {label}
                   </label>
                   <input
@@ -238,7 +266,7 @@ export default function ProfilePage() {
                     onChange={(e) =>
                       setFormData({ ...formData, [key]: e.target.value })
                     }
-                    className="w-full border border-gray-300 rounded-md p-2 text-sm"
+                    className="w-full border rounded-md p-2 text-sm"
                   />
                 </div>
               ))}
@@ -253,7 +281,7 @@ export default function ProfilePage() {
         </div>
 
         {/* ======================================= */}
-        {/* 🔥 DANH SÁCH SẢN PHẨM CỦA USER */}
+        {/* 🔥 DANH SÁCH SẢN PHẨM CỦA USER  */}
         {/* ======================================= */}
 
         <h3 className="text-xl font-semibold text-gray-800 mt-10 mb-4">
@@ -275,7 +303,7 @@ export default function ProfilePage() {
               return (
                 <div
                   key={p.id}
-                  className="bg-white rounded-xl border shadow-sm overflow-hidden"
+                  className="bg-white rounded-xl border shadow-sm overflow-hidden relative"
                 >
                   <Image
                     src={imageUrl}
@@ -300,12 +328,26 @@ export default function ProfilePage() {
                       </p>
                     )}
                   </div>
+
+                  {/* 🔥 nút xóa y như file 2 */}
+                  {currentUser?.id === user.id && (
+                    <button
+                      onClick={() => handleDelete(p.id, imageUrl)}
+                      disabled={deleting === p.id}
+                      className={`absolute top-2 right-2 px-3 py-1 rounded text-white text-xs ${
+                        deleting === p.id
+                          ? "bg-gray-400"
+                          : "bg-red-500 hover:bg-red-600"
+                      }`}
+                    >
+                      {deleting === p.id ? "Đang xoá..." : "Xoá"}
+                    </button>
+                  )}
                 </div>
               );
             })}
           </div>
         )}
-
       </div>
     </div>
   );

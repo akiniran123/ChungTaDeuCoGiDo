@@ -6,7 +6,7 @@ import { supabase } from "@/lib/supabase/client";
 
 import ListingTitleInput from "@/components/sell/pc//ListingTitleInput";
 import DescriptionEditor from "@/components/sell/pc//DescriptionEditor";
-import CategorySelect from "@/components/sell/pc//CategorySelect";
+// ❌ Bỏ CategorySelect
 import ConditionSelector from "@/components/sell/pc//ConditionSelector";
 import ImageUploader from "@/components/sell/pc//ImageUploader";
 import PriceAndOffers from "@/components/sell/pc//PriceAndOffers";
@@ -20,7 +20,7 @@ type SellForm = {
   title: string;
   description: string;
   price: string;
-  category: string; // vẫn giữ trong payload nhưng không render select
+  category: string;
   condition: string;
   images: string[];
   video_url: string | null;
@@ -40,7 +40,7 @@ export default function SellPage() {
       title: "",
       description: "",
       price: "",
-      category: "", // không hiển thị nhưng Supabase vẫn có cột này
+      category: "",
       condition: "used",
       images: [],
       video_url: null,
@@ -101,7 +101,7 @@ export default function SellPage() {
       title: data.title,
       description: data.description,
       price: Number(data.price),
-      category: data.category, // vẫn gửi lên dù không có select UI
+      category: data.category,
       is_private: data.is_private,
       condition: data.condition,
       specs: data.specs || [],
@@ -117,6 +117,7 @@ export default function SellPage() {
       upvotes: 0,
       views: 0,
       is_completed: false,
+      tags: null,
     };
 
     const { data: insertedProduct, error: insertErr } = await supabase
@@ -154,10 +155,13 @@ export default function SellPage() {
         className="space-y-6 p-5 max-w-2xl mx-auto"
       >
         <ListingTitleInput error={errors.title} />
-        <DescriptionEditor error={errors.description} />
 
-        {/* ❌ Đã BỎ CategorySelect */}
+        <DescriptionEditor
+          control={methods.control as any}
+          error={errors.description}
+        />
 
+        {/* ConditionSelector uses useFormContext internally */}
         <ConditionSelector error={errors.condition} />
 
         <CommunitySelector
@@ -176,10 +180,15 @@ export default function SellPage() {
         />
 
         <ImageUploader error={errors.images} />
-        <PriceAndOffers watch={watch} error={errors.price} />
-        <TechSpecsEditor error={errors.specs} />
+
+        <PriceAndOffers />
+
+        <TechSpecsEditor control={methods.control as any} />
+
         <PrivateToggle />
+
         <ReturnPolicies />
+
         <ActionButtons loading={loading} message={message} />
       </form>
     </FormProvider>

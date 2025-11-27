@@ -1,6 +1,7 @@
 "use client";
 
 import { useEffect, useState } from "react";
+import { createPortal } from "react-dom";
 import { Bell } from "lucide-react";
 import { supabase } from "@/lib/supabase/client";
 import type { Database } from "@/types/supabase";
@@ -16,8 +17,12 @@ export function toggleNewsMenu() {
 export default function NewsMenu() {
   const [notifications, setNotifications] = useState<Notification[]>([]);
   const [open, setOpen] = useState(false);
+  const [mounted, setMounted] = useState(false);
 
-  // ⭐ GÁN toggle để SidebarLeft có thể gọi
+  // Cho portal mount
+  useEffect(() => setMounted(true), []);
+
+  // ⭐ GÁN toggle gọi từ SidebarLeft
   externalToggleNewsMenu = () => {
     setOpen((prev) => {
       const newState = !prev;
@@ -26,20 +31,20 @@ export default function NewsMenu() {
     });
   };
 
-  // 🔹 Lấy tất cả thông báo
+  // 🔹 Lấy dữ liệu thông báo
   useEffect(() => {
     const fetchNotifications = async () => {
-      const { data, error } = await supabase
+      const { data } = await supabase
         .from("notifications")
         .select("*")
         .order("created_at", { ascending: false });
 
-      if (!error && data) setNotifications(data);
+      if (data) setNotifications(data);
     };
 
     fetchNotifications();
 
-    // 🔹 Lắng nghe realtime
+    // 🔹 Realtime
     const channel = supabase
       .channel("realtime:notifications")
       .on(
@@ -51,6 +56,7 @@ export default function NewsMenu() {
           setNotifications((prev) => {
             if (!newNotification || prev.some((n) => n.id === newNotification.id))
               return prev;
+
             return [newNotification, ...prev];
           });
         }
@@ -62,13 +68,10 @@ export default function NewsMenu() {
     };
   }, []);
 
-  // 🔹 Khi mở menu → đánh dấu tất cả là đã đọc
+  // 🔹 Khi mở → đánh dấu đọc
   const markAllAsRead = () => {
     setNotifications((prev) =>
-      prev.map((n) => ({
-        ...n,
-        read: true,
-      }))
+      prev.map((n) => ({ ...n, read: true }))
     );
   };
 
@@ -76,7 +79,9 @@ export default function NewsMenu() {
 
   return (
     <div className="relative">
+      {/* Nút chuông */}
       <button
+        id="news-menu-btn"
         onClick={() => {
           const newState = !open;
           setOpen(newState);
@@ -85,6 +90,7 @@ export default function NewsMenu() {
         className="relative p-2 rounded-full hover:bg-gray-100 transition"
       >
         <Bell className="w-6 h-6 text-gray-700" />
+
         {unreadCount > 0 && (
           <span className="absolute -top-0.5 -right-0.5 bg-red-500 text-white text-[10px] font-semibold rounded-full px-[5px]">
             {unreadCount}
@@ -92,37 +98,58 @@ export default function NewsMenu() {
         )}
       </button>
 
-      {open && (
-        <div className="absolute right-0 mt-2 w-80 bg-white border border-gray-200 rounded-2xl shadow-lg z-50">
-          <div className="p-3 font-semibold border-b">Thông báo</div>
-          <div className="max-h-80 overflow-y-auto">
-            {notifications.length === 0 ? (
-              <p className="p-3 text-sm text-gray-500 text-center">
-                Không có thông báo.
-              </p>
-            ) : (
-              notifications.map((n) => (
-                <div
-                  key={n.id}
-                  className={`p-3 text-sm border-b last:border-0 ${
-                    n.read ? "bg-white" : "bg-blue-50"
-                  }`}
-                >
-                  <div className="font-medium text-gray-800">{n.title}</div>
-                  {n.body && (
-                    <div className="text-gray-600 text-xs mt-1">{n.body}</div>
-                  )}
-                  <div className="text-gray-400 text-[11px] mt-1">
-                    {n.created_at
-                      ? new Date(n.created_at).toLocaleString("vi-VN")
-                      : ""}
+      {/* ⭐⭐ PORTAL RENDER NGOÀI BODY → KHÔNG BAO GIỜ BỊ CHE ⭐⭐ */}
+      {mounted &&
+        open &&
+        createPortal(
+          <div
+            className="
+              fixed
+              top-[70px]         /* chỉnh tùy theo header */
+              left-[280px]       /* chỉnh tùy theo sidebar */
+              w-80
+              bg-white
+              border border-gray-200
+              rounded-2xl
+              shadow-2xl
+              z-[2147483647]     /* MAXIMUM z-index */
+            "
+          >
+            <div className="p-3 font-semibold border-b">Thông báo</div>
+
+            <div className="max-h-80 overflow-y-auto">
+              {notifications.length === 0 ? (
+                <p className="p-3 text-sm text-gray-500 text-center">
+                  Không có thông báo.
+                </p>
+              ) : (
+                notifications.map((n) => (
+                  <div
+                    key={n.id}
+                    className={`p-3 text-sm border-b last:border-0 ${
+                      n.read ? "bg-white" : "bg-blue-50"
+                    }`}
+                  >
+                    <div className="font-medium text-gray-800">{n.title}</div>
+
+                    {n.body && (
+                      <div className="text-gray-600 text-xs mt-1">
+                        {n.body}
+                      </div>
+                    )}
+
+                    <div className="text-gray-400 text-[11px] mt-1">
+                      {n.created_at
+                        ? new Date(n.created_at).toLocaleString("vi-VN")
+                        : ""}
+                    </div>
                   </div>
-                </div>
-              ))
-            )}
-          </div>
-        </div>
-      )}
+                ))
+              )}
+            </div>
+          </div>,
+          document.body
+        )}
     </div>
   );
 }

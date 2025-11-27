@@ -24,12 +24,11 @@ const DealHeader = ({ deal }: { deal: DealType }) => {
 
   return (
     <div className="flex flex-col px-3 py-2">
-      {/* USER + COMMUNITY */}
       <div className="flex items-center gap-2 text-sm">
-        
+
         {/* Avatar + Username */}
         <Link
-          href={`/user/${deal.author || ""}`}
+          href={`/profile/${deal.author_id || ""}`}   // ⭐ SỬA CHỈ DÒNG NÀY
           onClick={(e) => e.stopPropagation()}
           className="flex items-center gap-2 no-underline transition"
         >
@@ -60,7 +59,6 @@ const DealHeader = ({ deal }: { deal: DealType }) => {
         <span className="text-xs text-gray-400">· {dateText}</span>
       </div>
 
-      {/* Title */}
       <Link
         href={`/deal/${deal.id}`}
         className="block mt-2 no-underline hover:text-pink-500 transition-colors"
@@ -70,7 +68,6 @@ const DealHeader = ({ deal }: { deal: DealType }) => {
         </h3>
       </Link>
 
-      {/* Description */}
       {deal.content && (
         <p className="text-sm text-gray-600 line-clamp-2 mt-1">
           {deal.content}

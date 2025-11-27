@@ -18,6 +18,7 @@ export type DealType = {
   category?: string;
 
   author?: string;
+  author_id?: string;     // ⭐ THÊM DÒNG NÀY
   avatar?: string;
   createdAt?: string;
 
@@ -212,81 +213,80 @@ const DealCard: React.FC<DealCardProps> = ({
 
   return (
     <>
-      <article
-        className={`flex flex-col mx-auto rounded-lg shadow ${
-          bigger ? "max-w-3xl" : "max-w-xl"
-        } ${isAd ? "bg-yellow-50 border-l-4 border-yellow-400" : "bg-white"}`}
-        id={`deal-${deal.id}`}
+      <div
+        onClick={(e) => {
+          if ((e.target as HTMLElement).closest("a")) return;
+          setSelectedDeal(deal.id);
+        }}
+        className="cursor-pointer"
       >
-        {/* ⭐ HEADER */}
-        <div className="px-3 py-2 flex justify-between items-start w-full">
-          {/* LEFT = DealHeader (avatar + username + time + title + desc) */}
-          <div className="flex-1">
-            <DealHeader deal={deal} />
+        <article
+          className={`flex flex-col mx-auto rounded-lg shadow ${
+            bigger ? "max-w-3xl" : "max-w-xl"
+          } ${isAd ? "bg-yellow-50 border-l-4 border-yellow-400" : "bg-white"}`}
+          id={`deal-${deal.id}`}
+        >
+          <div className="px-3 py-2 flex justify-between items-start w-full">
+            <div className="flex-1">
+              <DealHeader deal={deal} />
+            </div>
+
+            <div className="flex flex-col items-end gap-2 ml-3">
+              {(deal.tags?.length || deal.product_tags?.length) && (
+                <div className="flex flex-wrap justify-end gap-2 max-w-[160px]">
+                  {deal.tags?.map((tag, i) => (
+                    <span
+                      key={i}
+                      className="text-xs bg-pink-50 text-pink-600 px-2 py-1 rounded-full"
+                    >
+                      {tag}
+                    </span>
+                  ))}
+
+                  {deal.product_tags?.map((tag, i) => (
+                    <span
+                      key={`pt-${i}`}
+                      className="text-xs bg-blue-50 text-blue-700 px-2 py-1 rounded-full"
+                    >
+                      {tag}
+                    </span>
+                  ))}
+                </div>
+              )}
+
+              {deal.community_title && (
+                <div className="flex items-center gap-2">
+                  {deal.community_avatar_url && (
+                    <img
+                      src={deal.community_avatar_url}
+                      className="w-7 h-7 rounded-full object-cover"
+                    />
+                  )}
+                  <span className="text-sm font-medium text-blue-600">
+                    {deal.community_title}
+                  </span>
+                </div>
+              )}
+            </div>
           </div>
 
-          {/* RIGHT = TAGS + PRODUCT TAGS + COMMUNITY */}
-          <div className="flex flex-col items-end gap-2 ml-3">
+          <DealMedia />
 
-            {/* TAGS */}
-            {(deal.tags?.length || deal.product_tags?.length) && (
-              <div className="flex flex-wrap justify-end gap-2 max-w-[160px]">
-                {deal.tags?.map((tag, i) => (
-                  <span
-                    key={i}
-                    className="text-xs bg-pink-50 text-pink-600 px-2 py-1 rounded-full"
-                  >
-                    {tag}
-                  </span>
-                ))}
+          {!isAd && (
+            <DealActions
+              liked={liked}
+              likesCount={likesCount}
+              commentCount={commentCount}
+              saved={saved}
+              handleLike={handleLike}
+              handleSave={handleSave}
+              toggleChat={() => setChatOpen(!chatOpen)}
+              deal={deal}
+            />
+          )}
+        </article>
+      </div>
 
-                {deal.product_tags?.map((tag, i) => (
-                  <span
-                    key={`pt-${i}`}
-                    className="text-xs bg-blue-50 text-blue-700 px-2 py-1 rounded-full"
-                  >
-                    {tag}
-                  </span>
-                ))}
-              </div>
-            )}
-
-            {/* COMMUNITY */}
-            {deal.community_title && (
-              <div className="flex items-center gap-2">
-                {deal.community_avatar_url && (
-                  <img
-                    src={deal.community_avatar_url}
-                    className="w-7 h-7 rounded-full object-cover"
-                  />
-                )}
-                <span className="text-sm font-medium text-blue-600">
-                  {deal.community_title}
-                </span>
-              </div>
-            )}
-          </div>
-        </div>
-
-        {/* ⭐ MEDIA */}
-        <DealMedia />
-
-        {/* ⭐ ACTIONS */}
-        {!isAd && (
-          <DealActions
-            liked={liked}
-            likesCount={likesCount}
-            commentCount={commentCount}
-            saved={saved}
-            handleLike={handleLike}
-            handleSave={handleSave}
-            toggleChat={() => setChatOpen(!chatOpen)}
-            deal={deal}
-          />
-        )}
-      </article>
-
-      {/* ⭐ CHAT PANEL */}
       {chatOpen && (
         <div className="fixed top-0 right-0 w-80 h-full bg-white shadow-lg border-l flex flex-col z-50">
           <div className="flex justify-between items-center p-3 border-b">

@@ -6,6 +6,7 @@ import { useCart } from "@/app/context/CartContext";
 import { ArrowLeft, ArrowRight, X } from "lucide-react";
 import DealActions from "./DealCard/DealActions";
 import DealHeader from "./DealCard/DealHeader";
+import Link from "next/link";
 
 export type DealType = {
   id: string;
@@ -24,6 +25,8 @@ export type DealType = {
 
   community_title?: string | null;
   community_avatar_url?: string | null;
+  // ✅ thêm community_id (tùy chọn)
+  community_id?: string | null;
 
   tags?: string[];
   product_tags?: string[];
@@ -36,7 +39,6 @@ export interface DealCardProps {
   bigger?: boolean;
   isAd?: boolean;
 
-  // ⭐ PROP QUAN TRỌNG
   onTagClick?: (tag: string) => void;
 }
 
@@ -215,6 +217,16 @@ const DealCard: React.FC<DealCardProps> = ({
     </div>
   );
 
+  // helper: safe slugify (fallback)
+  const makeSlug = (s?: string | null) =>
+    (s || "")
+      .toString()
+      .trim()
+      .toLowerCase()
+      .replace(/[^a-z0-9\s-]/g, "")
+      .replace(/\s+/g, "-")
+      .replace(/-+/g, "-");
+
   return (
     <>
       <div
@@ -238,14 +250,12 @@ const DealCard: React.FC<DealCardProps> = ({
             <div className="flex flex-col items-end gap-2 ml-3">
               {(deal.tags?.length || deal.product_tags?.length) && (
                 <div className="flex flex-wrap justify-end gap-2 max-w-[160px]">
-
-                  {/* ⭐⭐⭐ TAG CLICK — ĐÃ SỬA + GIỮ NGUYÊN STYLE */}
                   {deal.tags?.map((tag, i) => (
                     <button
                       key={i}
                       onClick={(e) => {
                         e.stopPropagation();
-                        onTagClick?.(tag); // ⭐ GỌI LỌC TAG
+                        onTagClick?.(tag);
                       }}
                       className="text-xs bg-pink-50 text-pink-600 px-2 py-1 rounded-full hover:bg-pink-100"
                     >
@@ -258,7 +268,7 @@ const DealCard: React.FC<DealCardProps> = ({
                       key={`pt-${i}`}
                       onClick={(e) => {
                         e.stopPropagation();
-                        onTagClick?.(tag); // ⭐ GỌI LỌC TAG
+                        onTagClick?.(tag);
                       }}
                       className="text-xs bg-blue-50 text-blue-700 px-2 py-1 rounded-full hover:bg-blue-100"
                     >
@@ -268,18 +278,30 @@ const DealCard: React.FC<DealCardProps> = ({
                 </div>
               )}
 
+              {/* ---------- community (clickable) ---------- */}
               {deal.community_title && (
-                <div className="flex items-center gap-2">
-                  {deal.community_avatar_url && (
-                    <img
-                      src={deal.community_avatar_url}
-                      className="w-7 h-7 rounded-full object-cover"
-                    />
-                  )}
-                  <span className="text-sm font-medium text-blue-600">
-                    {deal.community_title}
-                  </span>
-                </div>
+                // ưu tiên community_id (route /communities/[id]), fallback slug
+                <Link
+                  href={
+                    deal.community_id
+                      ? `/communities/${encodeURIComponent(deal.community_id)}`
+                      : `/communities/${makeSlug(deal.community_title)}`
+                  }
+                  onClick={(e) => e.stopPropagation()}
+                >
+                  <div className="flex items-center gap-2 hover:opacity-80 transition cursor-pointer">
+                    {deal.community_avatar_url && (
+                      <img
+                        src={deal.community_avatar_url}
+                        className="w-7 h-7 rounded-full object-cover"
+                        alt={deal.community_title || "community"}
+                      />
+                    )}
+                    <span className="text-sm font-medium text-blue-600">
+                      {deal.community_title}
+                    </span>
+                  </div>
+                </Link>
               )}
             </div>
           </div>

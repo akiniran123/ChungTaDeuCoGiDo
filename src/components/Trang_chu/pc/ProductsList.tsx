@@ -35,6 +35,9 @@ type ProductWithUser = Database["public"]["Tables"]["products"]["Row"] & {
   communityName?: string | null;
   communityIcon?: string | null;
   mainTag?: string | null;
+
+  /* ⭐⭐⭐ THÊM community_id — CHỈ MỘT DÒNG NÀY ⭐⭐⭐ */
+  community_id?: string | null;
 };
 
 type Badge = Database["public"]["Tables"]["badges"]["Row"];
@@ -214,7 +217,6 @@ export default function ProductsList({
                     community_title: p.communityName || null,
                     community_avatar_url: p.communityIcon || null,
 
-                    /* ⭐⭐⭐ BẢN SỬA CHUẨN ⭐⭐⭐ */
                     tags: Array.isArray(p.tags)
                       ? p.tags
                       : JSON.parse(p.tags || "[]"),
@@ -223,6 +225,9 @@ export default function ProductsList({
                     communityName: p.communityName || null,
                     communityIcon: p.communityIcon || null,
                     mainTag: p.mainTag || null,
+
+                    /* ⭐⭐ TRUYỀN community_id XUỐNG CARD ⭐⭐ */
+                    community_id: p.community_id ?? null,
                   } as DealType}
                   vote={() => {}}
                   setSelectedDeal={() => {}}
@@ -284,7 +289,6 @@ export default function ProductsList({
                         </div>
                       </Link>
 
-                      {/* SAVE BUTTON */}
                       <button
                         onClick={() => toggleSave(p.id)}
                         className="flex items-center gap-1 text-gray-600 hover:text-pink-500 transition"
@@ -348,7 +352,7 @@ export default function ProductsList({
                           </div>
                         )}
 
-                        {p.communityName && (
+                        {p.communityName && p.community_id && (
                           <Link
                             href={`/communities/${p.community_id}`}
                             className="flex items-center gap-2 hover:opacity-80 transition"

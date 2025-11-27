@@ -14,6 +14,15 @@ export default function SidebarLeft() {
   >([]);
   const [loading, setLoading] = useState(true);
 
+  // ⭐ LẤY USER ID để điều hướng /messages/[id]
+  const [userId, setUserId] = useState<string | null>(null);
+
+  useEffect(() => {
+    supabase.auth.getUser().then(({ data }) => {
+      setUserId(data.user?.id || null);
+    });
+  }, []);
+
   useEffect(() => {
     async function fetchCommunities() {
       try {
@@ -91,18 +100,21 @@ export default function SidebarLeft() {
           <span>Explore</span>
         </Link>
 
-        {/* Messages */}
-        <div className="flex items-center gap-4 px-5 py-3 mx-2 rounded-xl hover:bg-gray-100 cursor-pointer">
+        {/* ⭐ Messages → điều hướng tới /messages/[id] */}
+        <Link
+          href={userId ? `/messages/${userId}` : "/messages"}
+          className="flex items-center gap-4 px-5 py-3 mx-2 rounded-xl hover:bg-gray-100 cursor-pointer"
+        >
           <MessagesMenu />
           <span className="text-base font-medium text-gray-900">Messages</span>
-        </div>
+        </Link>
 
         {/* ⭐ Tin tức — click chữ cũng mở menu */}
         <div
           className="relative z-50 flex items-center gap-4 px-5 py-3 mx-2 rounded-xl hover:bg-gray-100 cursor-pointer"
           onClick={(e) => {
             e.stopPropagation();
-            toggleNewsMenu();  // ⭐ CHẠY TRỰC TIẾP — không dùng click giả
+            toggleNewsMenu();
           }}
         >
           <NewsMenu />

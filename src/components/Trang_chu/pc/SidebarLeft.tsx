@@ -5,7 +5,7 @@ import Link from "next/link";
 import { Home, Compass, Plus, Users, Star, ChevronDown } from "lucide-react";
 import { supabase } from "@/lib/supabase/client";
 import MessagesMenu from "@/components/Navbar/pc/LogoSearchIcon/MessagesMenu";
-import NewsMenu from "@/components/Navbar/pc/LogoSearchIcon/NewsMenu"; // ⭐ THÊM DÒNG NÀY
+import NewsMenu, { toggleNewsMenu } from "@/components/Navbar/pc/LogoSearchIcon/NewsMenu";
 import StartSellingButtons from "@/components/Navbar/pc/LogoSearchIcon/StartSellingButtons";
 
 export default function SidebarLeft() {
@@ -97,10 +97,16 @@ export default function SidebarLeft() {
           <span className="text-base font-medium text-gray-900">Messages</span>
         </div>
 
-        {/* ⭐ Notifications — Added Here */}
-        <div className="flex items-center gap-4 px-5 py-3 mx-2 rounded-xl hover:bg-gray-100 cursor-pointer">
+        {/* ⭐ Tin tức — click chữ cũng mở menu */}
+        <div
+          className="relative z-50 flex items-center gap-4 px-5 py-3 mx-2 rounded-xl hover:bg-gray-100 cursor-pointer"
+          onClick={(e) => {
+            e.stopPropagation();
+            toggleNewsMenu();  // ⭐ CHẠY TRỰC TIẾP — không dùng click giả
+          }}
+        >
           <NewsMenu />
-          <span className="text-base font-medium text-gray-900">Notifications</span>
+          <span className="text-base font-medium text-gray-900">Tin tức</span>
         </div>
       </nav>
 

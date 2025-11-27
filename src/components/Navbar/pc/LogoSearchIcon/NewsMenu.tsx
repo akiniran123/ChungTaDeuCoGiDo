@@ -7,9 +7,24 @@ import type { Database } from "@/types/supabase";
 
 type Notification = Database["public"]["Tables"]["notifications"]["Row"];
 
+// ⭐ Cho phép SidebarLeft trigger mở menu
+let externalToggleNewsMenu: null | (() => void) = null;
+export function toggleNewsMenu() {
+  if (externalToggleNewsMenu) externalToggleNewsMenu();
+}
+
 export default function NewsMenu() {
   const [notifications, setNotifications] = useState<Notification[]>([]);
   const [open, setOpen] = useState(false);
+
+  // ⭐ GÁN toggle để SidebarLeft có thể gọi
+  externalToggleNewsMenu = () => {
+    setOpen((prev) => {
+      const newState = !prev;
+      if (newState) markAllAsRead();
+      return newState;
+    });
+  };
 
   // 🔹 Lấy tất cả thông báo
   useEffect(() => {
@@ -24,7 +39,7 @@ export default function NewsMenu() {
 
     fetchNotifications();
 
-    // 🔹 Lắng nghe realtime cho tất cả user
+    // 🔹 Lắng nghe realtime
     const channel = supabase
       .channel("realtime:notifications")
       .on(
@@ -42,13 +57,12 @@ export default function NewsMenu() {
       )
       .subscribe();
 
-    // 🔥 FIX LỖI: cleanup không được return Promise
     return () => {
       supabase.removeChannel(channel);
     };
   }, []);
 
-  // 🔹 Khi mở menu → đánh dấu tất cả là đã đọc (UI)
+  // 🔹 Khi mở menu → đánh dấu tất cả là đã đọc
   const markAllAsRead = () => {
     setNotifications((prev) =>
       prev.map((n) => ({

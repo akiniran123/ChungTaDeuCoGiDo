@@ -14,6 +14,9 @@ type ProductWithUser = Database["public"]["Tables"]["products"]["Row"] & {
   tags: string[];
   communityName?: string | null;
   communityIcon?: string | null;
+  author_id?: string | null;
+  author?: string | null;
+  avatar?: string | null;
 };
 
 type Badge = Database["public"]["Tables"]["badges"]["Row"];
@@ -59,8 +62,17 @@ export default function ProductsPage() {
 
         const raw = (data || []) as any[];
 
+        // ⭐ THÊM author_id / author / avatar
         const formatted: ProductWithUser[] = raw.map((p) => ({
           ...p,
+
+          author_id: p.users?.id ?? null,
+          author: p.users?.username ?? "Người dùng",
+          avatar:
+            p.users?.avatar_url && p.users?.avatar_url !== ""
+              ? p.users.avatar_url
+              : null,
+
           users: p.users
             ? {
                 id: p.users.id,
@@ -71,10 +83,12 @@ export default function ProductsPage() {
                     : null,
               }
             : null,
+
           tags:
             (p.product_tags || [])
               .map((pt: any) => pt.tags?.name)
               .filter(Boolean) || [],
+
           communityName: p.communities?.title || null,
           communityIcon: p.communities?.avatar_url || null,
         }));

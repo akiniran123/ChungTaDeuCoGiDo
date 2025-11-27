@@ -26,7 +26,7 @@ type ProductWithUser = Database["public"]["Tables"]["products"]["Row"] & {
   users?: {
     username: string | null;
     avatar_url: string | null;
-    id?: string;
+    id?: string; // ⭐ SUPABASE TRẢ VỀ ID Ở ĐÂY
   } | null;
 
   tags?: string[];
@@ -196,6 +196,10 @@ export default function ProductsList({
                     votes: localLikesCount[p.id] ?? 0,
                     comments: commentsCount[p.id] ?? 0,
                     category: p.category || "",
+
+                    /* ⭐⭐⭐ GRID LỚN — SẴN ĐÚNG ⭐⭐⭐ */
+                    author_id: p.users?.id || null,
+
                     author: p.users?.username || "Người dùng",
                     avatar: p.users?.avatar_url || "/default-avatar.png",
                     content: p.description || "",
@@ -244,39 +248,39 @@ export default function ProductsList({
                     )}
                   </Link>
 
-                  {/* ------- USER / TIME -------- */}
+                  {/* -------- USER / TIME -------- */}
                   {p.users && (
                     <div className="flex items-center justify-between p-4 pb-0">
-                      <div className="flex items-center gap-2">
+
+                      {/* ⭐⭐⭐ TẤT CẢ GÓI VÀO CHUNG LINK ⭐⭐⭐ */}
+                      <Link href={`/profile/${p.users?.id}`} className="flex items-center gap-2">
                         <img
                           src={p.users.avatar_url || "/default-avatar.png"}
                           className="w-8 h-8 rounded-full object-cover"
                         />
 
-                        {/* ⭐⭐⭐ ĐIỀU HƯỚNG ĐẾN PROFILE/[id] ⭐⭐⭐ */}
-                        <Link href={`/profile/${p.users.id}`}>
-                          <div className="flex flex-col cursor-pointer">
-                            <span className="text-sm font-semibold text-gray-600">
-                              {p.users.username}
-                            </span>
-                            <span className="text-xs text-gray-500">
-                              {p.created_at
-                                ? new Date(p.created_at).toLocaleString(
-                                    "vi-VN",
-                                    {
-                                      day: "2-digit",
-                                      month: "2-digit",
-                                      year: "2-digit",
-                                      hour: "2-digit",
-                                      minute: "2-digit",
-                                    }
-                                  )
-                                : "Không rõ thời gian"}
-                            </span>
-                          </div>
-                        </Link>
-                      </div>
+                        <div className="flex flex-col cursor-pointer">
+                          <span className="text-sm font-semibold text-gray-600">
+                            {p.users.username}
+                          </span>
+                          <span className="text-xs text-gray-500">
+                            {p.created_at
+                              ? new Date(p.created_at).toLocaleString(
+                                  "vi-VN",
+                                  {
+                                    day: "2-digit",
+                                    month: "2-digit",
+                                    year: "2-digit",
+                                    hour: "2-digit",
+                                    minute: "2-digit",
+                                  }
+                                )
+                              : "Không rõ thời gian"}
+                          </span>
+                        </div>
+                      </Link>
 
+                      {/* SAVE BUTTON */}
                       <button
                         onClick={() => toggleSave(p.id)}
                         className="flex items-center gap-1 text-gray-600 hover:text-pink-500 transition"
@@ -290,7 +294,7 @@ export default function ProductsList({
                     </div>
                   )}
 
-                  {/* ------- TITLE -------- */}
+                  {/* TITLE */}
                   <div className="px-4 mt-2">
                     <Link href={`/deal/${p.id}`}>
                       <h3 className="font-semibold text-lg cursor-pointer hover:text-pink-500">
@@ -299,7 +303,7 @@ export default function ProductsList({
                     </Link>
                   </div>
 
-                  {/* ------- CATEGORY / PRICE / TAGS -------- */}
+                  {/* -------- CATEGORY / PRICE / TAGS -------- */}
                   <div className="p-4 pt-2">
                     <div className="flex justify-between items-start">
                       <div className="flex-1">
@@ -365,7 +369,7 @@ export default function ProductsList({
                       </div>
                     </div>
 
-                    {/* ------- LIKE / SHARE -------- */}
+                    {/* -------- LIKE / SHARE -------- */}
                     <div className="flex justify-between items-center mt-2">
                       <span className="text-xs text-gray-400">
                         {p.views ?? 0} lượt xem
@@ -379,7 +383,9 @@ export default function ProductsList({
                           <HeartIcon
                             size={16}
                             fill={
-                              likedIds.includes(p.id) ? "currentColor" : "none"
+                              likedIds.includes(p.id)
+                                ? "currentColor"
+                                : "none"
                             }
                           />
                           <span className="text-xs font-semibold">

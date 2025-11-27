@@ -26,9 +26,9 @@ const DealHeader = ({ deal }: { deal: DealType }) => {
     <div className="flex flex-col px-3 py-2">
       <div className="flex items-center gap-2 text-sm">
 
-        {/* Avatar + Username */}
+        {/* Nhấn avatar mở profile theo user_id */}
         <Link
-          href={`/profile/${deal.author_id || ""}`}   // ⭐ SỬA CHỈ DÒNG NÀY
+          href={`/profile/${deal.author_id || ""}`}
           onClick={(e) => e.stopPropagation()}
           className="flex items-center gap-2 no-underline transition"
         >

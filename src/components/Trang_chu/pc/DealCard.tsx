@@ -18,7 +18,7 @@ export type DealType = {
   category?: string;
 
   author?: string;
-  author_id?: string;     // ⭐ THÊM DÒNG NÀY
+  author_id?: string;
   avatar?: string;
   createdAt?: string;
 
@@ -35,6 +35,9 @@ export interface DealCardProps {
   setSelectedDeal: (id: string) => void;
   bigger?: boolean;
   isAd?: boolean;
+
+  // ⭐ PROP QUAN TRỌNG
+  onTagClick?: (tag: string) => void;
 }
 
 const DealCard: React.FC<DealCardProps> = ({
@@ -43,6 +46,7 @@ const DealCard: React.FC<DealCardProps> = ({
   setSelectedDeal,
   bigger = false,
   isAd = false,
+  onTagClick,
 }) => {
   const [currentIndex, setCurrentIndex] = useState(0);
   const [saved, setSaved] = useState(false);
@@ -227,29 +231,39 @@ const DealCard: React.FC<DealCardProps> = ({
           id={`deal-${deal.id}`}
         >
           <div className="px-3 py-2 flex justify-between items-start w-full">
-            <div className="flex-1">
+            <div className="flex-1" onClick={(e) => e.stopPropagation()}>
               <DealHeader deal={deal} />
             </div>
 
             <div className="flex flex-col items-end gap-2 ml-3">
               {(deal.tags?.length || deal.product_tags?.length) && (
                 <div className="flex flex-wrap justify-end gap-2 max-w-[160px]">
+
+                  {/* ⭐⭐⭐ TAG CLICK — ĐÃ SỬA + GIỮ NGUYÊN STYLE */}
                   {deal.tags?.map((tag, i) => (
-                    <span
+                    <button
                       key={i}
-                      className="text-xs bg-pink-50 text-pink-600 px-2 py-1 rounded-full"
+                      onClick={(e) => {
+                        e.stopPropagation();
+                        onTagClick?.(tag); // ⭐ GỌI LỌC TAG
+                      }}
+                      className="text-xs bg-pink-50 text-pink-600 px-2 py-1 rounded-full hover:bg-pink-100"
                     >
                       {tag}
-                    </span>
+                    </button>
                   ))}
 
                   {deal.product_tags?.map((tag, i) => (
-                    <span
+                    <button
                       key={`pt-${i}`}
-                      className="text-xs bg-blue-50 text-blue-700 px-2 py-1 rounded-full"
+                      onClick={(e) => {
+                        e.stopPropagation();
+                        onTagClick?.(tag); // ⭐ GỌI LỌC TAG
+                      }}
+                      className="text-xs bg-blue-50 text-blue-700 px-2 py-1 rounded-full hover:bg-blue-100"
                     >
                       {tag}
-                    </span>
+                    </button>
                   ))}
                 </div>
               )}

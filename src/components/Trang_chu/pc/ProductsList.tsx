@@ -26,7 +26,7 @@ type ProductWithUser = Database["public"]["Tables"]["products"]["Row"] & {
   users?: {
     username: string | null;
     avatar_url: string | null;
-    id?: string; // ⭐ SUPABASE TRẢ VỀ ID Ở ĐÂY
+    id?: string;
   } | null;
 
   tags?: string[];
@@ -197,9 +197,7 @@ export default function ProductsList({
                     comments: commentsCount[p.id] ?? 0,
                     category: p.category || "",
 
-                    /* ⭐⭐⭐ GRID LỚN — SẴN ĐÚNG ⭐⭐⭐ */
                     author_id: p.users?.id || null,
-
                     author: p.users?.username || "Người dùng",
                     avatar: p.users?.avatar_url || "/default-avatar.png",
                     content: p.description || "",
@@ -216,7 +214,11 @@ export default function ProductsList({
                     community_title: p.communityName || null,
                     community_avatar_url: p.communityIcon || null,
 
-                    tags: p.tags || [],
+                    /* ⭐⭐⭐ BẢN SỬA CHUẨN ⭐⭐⭐ */
+                    tags: Array.isArray(p.tags)
+                      ? p.tags
+                      : JSON.parse(p.tags || "[]"),
+
                     communityNames: p.communityNames || [],
                     communityName: p.communityName || null,
                     communityIcon: p.communityIcon || null,
@@ -225,6 +227,7 @@ export default function ProductsList({
                   vote={() => {}}
                   setSelectedDeal={() => {}}
                   bigger
+                  onTagClick={(tag) => setActiveTag(tag)}
                 />
               ) : (
                 <motion.div
@@ -251,9 +254,10 @@ export default function ProductsList({
                   {/* -------- USER / TIME -------- */}
                   {p.users && (
                     <div className="flex items-center justify-between p-4 pb-0">
-
-                      {/* ⭐⭐⭐ TẤT CẢ GÓI VÀO CHUNG LINK ⭐⭐⭐ */}
-                      <Link href={`/profile/${p.users?.id}`} className="flex items-center gap-2">
+                      <Link
+                        href={`/profile/${p.users?.id}`}
+                        className="flex items-center gap-2"
+                      >
                         <img
                           src={p.users.avatar_url || "/default-avatar.png"}
                           className="w-8 h-8 rounded-full object-cover"
@@ -383,9 +387,7 @@ export default function ProductsList({
                           <HeartIcon
                             size={16}
                             fill={
-                              likedIds.includes(p.id)
-                                ? "currentColor"
-                                : "none"
+                              likedIds.includes(p.id) ? "currentColor" : "none"
                             }
                           />
                           <span className="text-xs font-semibold">

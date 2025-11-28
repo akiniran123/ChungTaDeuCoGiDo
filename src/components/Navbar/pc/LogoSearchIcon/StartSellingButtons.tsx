@@ -20,18 +20,21 @@ export default function StartSellingButtons({ onRequireLogin }: { onRequireLogin
   };
 
   return (
-  <div className="inline-block relative group"> 
-    {/* Glow */}
-    <div className="absolute inset-0 bg-gradient-to-r from-purple-500 to-pink-500 rounded-full blur-xl opacity-60 group-hover:opacity-90 transition duration-300"></div>
+    <div className="inline-block relative group"> 
+      {/* Glow trung tính */}
+      <div className="absolute inset-0 bg-neutral-300 rounded-full blur-xl opacity-40 group-hover:opacity-70 transition duration-300"></div>
 
-    {/* Button */}
-    <button
-      onClick={handleStartSelling}
-      className="relative flex items-center justify-center gap-2 bg-[#111] text-purple-300 font-semibold text-sm px-5 py-2.5 rounded-full shadow-md hover:shadow-lg hover:-translate-y-[1px] active:scale-95 transition-all duration-200 border border-gray-800"
-    >
-      <ShoppingBag size={18} />
-      <span>Bán hàng</span>
-    </button>
-  </div>
-);
+      {/* Button không khung, không nền */}
+      <button
+        onClick={handleStartSelling}
+        className="relative flex items-center justify-center gap-2 
+        bg-transparent text-neutral-700 font-semibold text-sm 
+        px-5 py-2.5 rounded-full cursor-pointer
+        hover:-translate-y-[1px] active:scale-95 transition-all duration-200"
+      >
+        <ShoppingBag size={18} strokeWidth={1.5} />
+        <span>Bán hàng</span>
+      </button>
+    </div>
+  );
 }

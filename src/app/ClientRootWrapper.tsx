@@ -1,19 +1,36 @@
 "use client";
 
-import dynamic from "next/dynamic";
+import { useEffect, useRef } from "react";
+import { CartProvider } from "./context/CartContext";
+import FirebaseInit from "@/components/FirebaseInit";
+import AppLayout from "@/components/layouts/AppLayout";
 
-// ✅ Use dynamic import here (client component)
-const ClientRoot = dynamic(() => import("./ClientRoot"), {
-  ssr: false,
-  loading: () => (
-    <div className="p-8 text-center text-gray-500">Loading...</div>
-  ),
-});
+export default function ClientRootWrapper({ children }: { children: React.ReactNode }) {
+  const renderCount = useRef(0);
+  renderCount.current += 1;
 
-export default function ClientRootWrapper({
-  children,
-}: {
-  children: React.ReactNode;
-}) {
-  return <ClientRoot>{children}</ClientRoot>;
+  // Debug logs
+  console.log("🔎 ClientRootWrapper imports check:");
+  console.log(" - AppLayout:", typeof AppLayout, AppLayout);
+  console.log(" - FirebaseInit:", typeof FirebaseInit, FirebaseInit);
+
+  useEffect(() => {
+    console.log("🧭 ClientRootWrapper mounted (effect)");
+    return () => {
+      console.log("🧹 ClientRootWrapper unmounted (cleanup)");
+    };
+  }, []);
+
+  // Render diagnostics
+  console.log("🔁 ClientRootWrapper render:", {
+    renderCount: renderCount.current,
+    childrenType: typeof children,
+  });
+
+  return (
+    <CartProvider>
+      <FirebaseInit />
+      <AppLayout>{children}</AppLayout>
+    </CartProvider>
+  );
 }

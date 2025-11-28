@@ -50,7 +50,7 @@ export default function LogoSearchIcons({
   return (
     <>
       {/* Header với border dưới màu xám nhạt, độ dày 0.5px như SidebarLeftWrapper */}
-      <header className="w-full border-b-[0.5px] border-gray-300 bg-white pb-2 pt-0">
+      <header className="w-full border-b-[0.5px] border-gray-300 bg-white pt-0">
         <div className="w-full py-2 pl-4 pr-4 flex items-center justify-between gap-4">
           <Logo onMenuToggle={onMenuToggle} />
           <SearchBar />

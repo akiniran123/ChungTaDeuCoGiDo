@@ -19,7 +19,7 @@ export default function Navbar() {
 
   return (
     <>
-      <header className="fixed top-0 left-0 w-full z-50 bg-white shadow-sm">
+      <header className="fixed top-0 left-0 w-full z-50 bg-white shadow-sm h-[6.5rem]">
         <TopBar />
         <div className="flex items-center justify-between">
           <LogoSearchIcons onMenuToggle={toggleMenu} />

@@ -2,7 +2,16 @@
 
 import React, { useState, useEffect } from "react";
 import Link from "next/link";
-import { Home, Compass, Plus, Users, Star, ChevronDown, Menu } from "lucide-react";
+import {
+  Home,
+  Compass,
+  Plus,
+  Users,
+  Star,
+  ChevronDown,
+  Menu,
+  MessageSquare,
+} from "lucide-react";
 import { supabase } from "@/lib/supabase/client";
 import MessagesMenu from "@/components/Navbar/pc/LogoSearchIcon/MessagesMenu";
 import NewsMenu, { toggleNewsMenu } from "@/components/Navbar/pc/LogoSearchIcon/NewsMenu";
@@ -192,10 +201,12 @@ export default function SidebarLeft() {
             <span>Explore</span>
           </Link>
 
+          {/* ⭐⭐ THÊM ICON TIN NHẮN — KHÔNG ĐỤNG GÌ KHÁC ⭐⭐ */}
           <div
             onClick={() => setOpenMessages(!openMessages)}
             className="flex items-center gap-4 px-5 py-3 mx-2 rounded-xl hover:bg-gray-100 cursor-pointer"
           >
+            <MessageSquare className="w-6 h-6 text-gray-700" />
             <MessagesMenu />
             <span className="text-base font-medium text-gray-900">Messages</span>
           </div>

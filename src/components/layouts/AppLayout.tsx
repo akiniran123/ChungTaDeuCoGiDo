@@ -5,7 +5,8 @@ import SidebarLeft from "@/components/sidebarleft/pc/SidebarLeft";
 import BottomNav from "@/components/sidebarleft/mobile/BottomNav";
 
 export default function AppLayout({ children }: { children: React.ReactNode }) {
-  const SIDEBAR_WIDTH = 256;
+  const SIDEBAR_WIDTH = 256; // px
+  const NAVBAR_HEIGHT_REM = 6.5; // chiều cao cố định Navbar (rem)
 
   return (
     <div className="flex flex-col min-h-screen bg-white text-black">
@@ -13,24 +14,17 @@ export default function AppLayout({ children }: { children: React.ReactNode }) {
       <Navbar />
 
       {/* Container chính */}
-      <div className="flex pt-[4.5rem] flex-1">
-        {/* Sidebar chỉ hiển thị trên màn hình >= md (desktop) */}
-        <aside
-          className="hidden md:block fixed left-0 top-[4.5rem] bg-white border-r shadow-sm"
-          style={{
-            width: SIDEBAR_WIDTH,
-            height: "calc(100vh - 4.5rem)",
-            zIndex: 40,
-          }}
-        >
+      <div
+        className="flex flex-1"
+        style={{ paddingTop: `${NAVBAR_HEIGHT_REM}rem` }} // đẩy nội dung xuống dưới Navbar
+      >
+        {/* Sidebar desktop (không fixed ở đây) */}
+        <aside className="hidden md:block">
           <SidebarLeft />
         </aside>
 
         {/* Nội dung chính */}
-        <main
-          className="flex-1 p-4 transition-all duration-300"
-          style={{ marginLeft: SIDEBAR_WIDTH }}
-        >
+        <main className="flex-1 p-4 transition-all duration-300 md:ml-[256px]">
           {children}
         </main>
       </div>

@@ -19,8 +19,15 @@ export default function SidebarLeft() {
 
   const [openMessages, setOpenMessages] = useState(false);
 
-  // ⭐ NEW: trạng thái mở/đóng sidebar
+  // NEW: trạng thái mở/đóng sidebar
   const [isOpen, setIsOpen] = useState(true);
+
+  // ⭐ NEW: đảm bảo chỉ render portal ở client
+  const [isClient, setIsClient] = useState(false);
+
+  useEffect(() => {
+    setIsClient(true); // Đánh dấu client đã mount → portal an toàn
+  }, []);
 
   useEffect(() => {
     supabase.auth.getUser().then(({ data }) => {
@@ -184,7 +191,7 @@ export default function SidebarLeft() {
         </div>
       </aside>
 
-      {/* ⭐ NÚT 3 GẠCH DỌC CẠNH ĐƯỜNG KẺ ⭐ */}
+      {/* ⭐ NÚT 3 GẠCH ⭐ */}
       <button
         onClick={() => setIsOpen(!isOpen)}
         className="
@@ -201,8 +208,8 @@ export default function SidebarLeft() {
         <Menu className="w-6 h-6 text-gray-700" />
       </button>
 
-      {/* ⭐⭐⭐ PANEL MESSAGES — PORTAL ⭐⭐⭐ */}
-      {typeof window !== "undefined" &&
+      {/* ⭐⭐⭐ PORTAL — chỉ render sau khi client mount ⭐⭐⭐ */}
+      {isClient &&
         createPortal(
           <div
             className={`

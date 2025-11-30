@@ -3,6 +3,7 @@
 import React, { useState, useEffect } from "react";
 import Link from "next/link";
 import { Home, Compass, Plus, Users, Star, ChevronDown } from "lucide-react";
+import { Home, Compass, Plus, Users, Star, ChevronDown } from "lucide-react";
 import { supabase } from "@/lib/supabase/client";
 import MessagesMenu from "@/components/Navbar/pc/LogoSearchIcon/MessagesMenu";
 import NewsMenu, { toggleNewsMenu } from "@/components/Navbar/pc/LogoSearchIcon/NewsMenu";
@@ -110,7 +111,13 @@ export default function SidebarLeft() {
         className="
           fixed top-10 left-0 
           w-64 h-[calc(100vh-4rem)]
+        className="
+          fixed top-10 left-0 
+          w-64 h-[calc(100vh-4rem)]
           bg-white border-r border-gray-200 
+          overflow-y-visible 
+          text-gray-900 z-40 shadow-sm
+        "
           overflow-y-visible 
           text-gray-900 z-40 shadow-sm
         "
@@ -209,6 +216,8 @@ export default function SidebarLeft() {
         createPortal(
           <div
             className={`
+              fixed top-10 left-[280px]   /* ⭐ đẹp, dịch nhẹ sang phải */
+              w-80 h-[calc(100vh-4rem)]
               fixed top-10 left-[280px]   /* ⭐ đẹp, dịch nhẹ sang phải */
               w-80 h-[calc(100vh-4rem)]
               bg-white border-r border-gray-200 shadow-lg

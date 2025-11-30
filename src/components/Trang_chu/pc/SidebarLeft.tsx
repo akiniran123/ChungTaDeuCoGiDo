@@ -2,12 +2,11 @@
 
 import React, { useState, useEffect } from "react";
 import Link from "next/link";
-import { Home, Compass, Plus, Users, Star, ChevronDown } from "lucide-react";
+import { Home, Compass, Plus, Users, Star, ChevronDown, Menu } from "lucide-react";
 import { supabase } from "@/lib/supabase/client";
 import MessagesMenu from "@/components/Navbar/pc/LogoSearchIcon/MessagesMenu";
 import NewsMenu, { toggleNewsMenu } from "@/components/Navbar/pc/LogoSearchIcon/NewsMenu";
 import StartSellingButtons from "@/components/Navbar/pc/LogoSearchIcon/StartSellingButtons";
-
 import { createPortal } from "react-dom";
 
 export default function SidebarLeft() {
@@ -19,6 +18,9 @@ export default function SidebarLeft() {
   const [userId, setUserId] = useState<string | null>(null);
 
   const [openMessages, setOpenMessages] = useState(false);
+
+  // ⭐ NEW: trạng thái mở/đóng sidebar
+  const [isOpen, setIsOpen] = useState(true);
 
   useEffect(() => {
     supabase.auth.getUser().then(({ data }) => {
@@ -76,15 +78,16 @@ export default function SidebarLeft() {
 
   return (
     <>
-      {/* SIDE BAR TRÁI */}
+      {/* ⭐ SIDEBAR TRÁI ⭐ */}
       <aside
-        className="
-          fixed top-10 left-0 
-          w-64 h-[calc(100vh-4rem)]
+        className={`
+          fixed top-[6.5rem] left-0
+          w-64 h-[calc(100vh-6.5rem)]
           bg-white border-r border-gray-200 
-          overflow-y-visible 
-          text-gray-900 z-40 shadow-sm
-        "
+          overflow-y-visible text-gray-900 z-40 shadow-sm
+          transition-transform duration-300
+          ${isOpen ? "translate-x-0" : "-translate-x-64"}
+        `}
       >
         <nav className="mt-4 space-y-1">
           <Link
@@ -181,13 +184,30 @@ export default function SidebarLeft() {
         </div>
       </aside>
 
+      {/* ⭐ NÚT 3 GẠCH DỌC CẠNH ĐƯỜNG KẺ ⭐ */}
+      <button
+        onClick={() => setIsOpen(!isOpen)}
+        className="
+          fixed top-[6.5rem]
+          w-10 h-10 flex items-center justify-center
+          bg-white border border-gray-200 shadow-md
+          rounded-r-xl z-50
+        "
+        style={{
+          left: isOpen ? "256px" : "0px",
+          transition: "left 0.3s",
+        }}
+      >
+        <Menu className="w-6 h-6 text-gray-700" />
+      </button>
+
       {/* ⭐⭐⭐ PANEL MESSAGES — PORTAL ⭐⭐⭐ */}
       {typeof window !== "undefined" &&
         createPortal(
           <div
             className={`
-              fixed top-10 left-[280px]   /* ⭐ đẹp, dịch nhẹ sang phải */
-              w-80 h-[calc(100vh-4rem)]
+              fixed top-[6.5rem] left-64
+              w-80 h-[calc(100vh-6.5rem)]
               bg-white border-r border-gray-200 shadow-lg
               transition-all duration-300 ease-out
               ${

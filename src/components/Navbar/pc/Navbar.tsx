@@ -1,11 +1,11 @@
-"use client";
+'use client';
 
-import { useState } from "react";
-import TopBar from "./TopBar";
-import LogoSearchIcons from "./LogoSearchIcons";
-import NavLinks from "./NavLinks";
-import { AnimatePresence, motion } from "framer-motion";
-import { useCart } from "@/app/context/CartContext"; // Lấy CartContext
+import { useState } from 'react';
+import TopBar from './TopBar';
+import LogoSearchIcons from './LogoSearchIcons';
+import NavLinks from './NavLinks';
+import { AnimatePresence, motion } from 'framer-motion';
+import { useCart } from '@/app/context/CartContext'; // ✅ import CartContext
 
 export default function Navbar() {
   const [menuOpen, setMenuOpen] = useState(false);
@@ -13,35 +13,26 @@ export default function Navbar() {
   const toggleMenu = () => setMenuOpen(!menuOpen);
   const closeMenu = () => setMenuOpen(false);
 
-  // 🛒 Lấy giỏ hàng từ Context
-  let totalItems = 0;
-  try {
-    const { cart } = useCart();
-    totalItems = cart.reduce((sum, item) => sum + item.quantity, 0);
-  } catch {
-    // Nếu Navbar chạy ngoài CartProvider -> không crash
-    totalItems = 0;
-  }
+  // ✅ Lấy giỏ hàng từ context
+  const { cart } = useCart();
+  const totalItems = cart.reduce((sum, item) => sum + item.quantity, 0);
 
   return (
     <>
       <header className="fixed top-0 left-0 w-full z-50 bg-white shadow-sm h-[6.5rem]">
-        {/* Thanh trên */}
         <TopBar />
-
-        {/* Logo + Search + Icons */}
         <div className="flex items-center justify-between">
           <LogoSearchIcons onMenuToggle={toggleMenu} />
         </div>
 
-        {/* Mobile menu (ẩn trên PC) */}
+        {/* ✅ Mobile Nav with animation */}
         <AnimatePresence>
           {menuOpen && (
             <motion.div
               key="mobile-nav"
-              initial={{ x: "-100%" }}
+              initial={{ x: '-100%' }}
               animate={{ x: 0 }}
-              exit={{ x: "-100%" }}
+              exit={{ x: '-100%' }}
               transition={{ duration: 0.25 }}
               className="sm:hidden fixed top-0 left-0 h-screen w-full bg-white z-50 overflow-y-auto"
             >
@@ -59,11 +50,13 @@ export default function Navbar() {
           )}
         </AnimatePresence>
 
-        {/* Desktop Links */}
+        {/* Desktop Nav */}
         <div className="hidden sm:block">
           <NavLinks />
         </div>
       </header>
+
+      {/* ✅ Spacer để tránh content bị che bởi fixed navbar */}
     </>
   );
 }

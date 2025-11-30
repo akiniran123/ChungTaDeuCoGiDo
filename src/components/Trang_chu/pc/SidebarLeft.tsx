@@ -15,8 +15,12 @@ import { createPortal } from "react-dom";
 >>>>>>> parent of 1e3ddab (d)
 
 export default function SidebarLeft() {
-  const [communities, setCommunities] = useState<{ id: string; title: string | null }[]>([]);
+  const [communities, setCommunities] = useState<
+    { id: string; title: string | null }[]
+  >([]);
   const [loading, setLoading] = useState(true);
+
+  // ⭐ LẤY USER ID để điều hướng /messages/[id]
   const [userId, setUserId] = useState<string | null>(null);
 
 <<<<<<< HEAD
@@ -33,7 +37,10 @@ export default function SidebarLeft() {
   useEffect(() => {
     async function fetchCommunities() {
       try {
-        const { data: { user } } = await supabase.auth.getUser();
+        const {
+          data: { user },
+        } = await supabase.auth.getUser();
+
         if (!user) {
           setLoading(false);
           return;
@@ -79,20 +86,42 @@ export default function SidebarLeft() {
 <<<<<<< HEAD
     <aside
       className="
-        fixed left-0 top-[6.5rem]
-        w-64 h-[calc(100vh-6.5rem)]
-        bg-white border-r border-gray-200
-        overflow-y-auto z-40 shadow-sm text-gray-900
+        fixed top-10 left-0 
+        w-64 h-[calc(100vh-4rem)]
+        bg-white border-r border-gray-200 
+        overflow-y-visible 
+        text-gray-900 z-40 shadow-sm
       "
     >
-      <nav className="mt-2 space-y-1">
-        <SidebarLink href="/" icon={<Home className="w-6 h-6 text-gray-700" />} label="Home" />
-        <SidebarLink href="/communities" icon={<Compass className="w-6 h-6 text-gray-700" />} label="Explore" />
-        <SidebarLink
+      <nav className="mt-4 space-y-1">
+        {/* Home */}
+        <Link
+          href="/"
+          className="flex items-center gap-4 px-5 py-3 text-base font-medium rounded-xl mx-2 hover:bg-gray-100 text-gray-900"
+        >
+          <Home className="w-6 h-6 text-gray-700" />
+          <span>Home</span>
+        </Link>
+
+        {/* Explore */}
+        <Link
+          href="/communities"
+          className="flex items-center gap-4 px-5 py-3 text-base font-medium rounded-xl mx-2 hover:bg-gray-100 text-gray-900"
+        >
+          <Compass className="w-6 h-6 text-gray-700" />
+          <span>Explore</span>
+        </Link>
+
+        {/* ⭐ Messages → điều hướng tới /messages/[id] */}
+        <Link
           href={userId ? `/messages/${userId}` : "/messages"}
-          icon={<MessagesMenu />}
-          label="Messages"
-        />
+          className="flex items-center gap-4 px-5 py-3 mx-2 rounded-xl hover:bg-gray-100 cursor-pointer"
+        >
+          <MessagesMenu />
+          <span className="text-base font-medium text-gray-900">Messages</span>
+        </Link>
+
+        {/* ⭐ Tin tức — click chữ cũng mở menu */}
         <div
           className="relative z-50 flex items-center gap-4 px-5 py-3 mx-2 rounded-xl hover:bg-gray-100 cursor-pointer"
           onClick={(e) => {
@@ -132,26 +161,43 @@ export default function SidebarLeft() {
           </Link>
 >>>>>>> parent of 1e3ddab (d)
 
+      {/* Start Selling */}
       <div className="px-5 mt-3 mb-2">
         <StartSellingButtons onRequireLogin={handleRequireLogin} />
       </div>
 
       <hr className="border-gray-200 my-3 mx-2" />
 
+      {/* Communities */}
       <div className="px-4 mb-6">
         <div className="flex items-center justify-between text-xs uppercase text-gray-500 font-semibold tracking-wider py-1">
           Communities
           <ChevronDown className="w-4 h-4" />
         </div>
 
-        <SidebarLinkSmall href="/create-community" icon={<Plus className="w-4 h-4 text-gray-600" />} label="Create Community" />
-        <SidebarLinkSmall href="/manage-communities" icon={<Users className="w-4 h-4 text-gray-600" />} label="Manage Communities" />
+        <Link
+          href="/create-community"
+          className="flex items-center gap-2 px-2 py-1.5 text-sm text-gray-800 rounded hover:bg-gray-100"
+        >
+          <Plus className="w-4 h-4 text-gray-600" />
+          <span>Create Community</span>
+        </Link>
+
+        <Link
+          href="/manage-communities"
+          className="flex items-center gap-2 px-2 py-1.5 text-sm text-gray-800 rounded hover:bg-gray-100"
+        >
+          <Users className="w-4 h-4 text-gray-600" />
+          <span>Manage Communities</span>
+        </Link>
 
 <<<<<<< HEAD
         {loading ? (
           <p className="text-sm text-gray-400 mt-2">Loading...</p>
         ) : communities.length === 0 ? (
-          <p className="text-sm text-gray-400 mt-2">You haven’t joined any communities yet.</p>
+          <p className="text-sm text-gray-400 mt-2">
+            You haven’t joined any communities yet.
+          </p>
         ) : (
           <div className="mt-1 space-y-1">
             {communities.map((c) => (
@@ -250,29 +296,5 @@ export default function SidebarLeft() {
         )}
       </div>
     </aside>
-  );
-}
-
-function SidebarLink({ href, icon, label }: { href: string; icon: React.ReactNode; label: string }) {
-  return (
-    <Link
-      href={href}
-      className="flex items-center gap-4 px-5 py-3 text-base font-medium rounded-xl mx-2 hover:bg-gray-100 text-gray-900"
-    >
-      {icon}
-      <span>{label}</span>
-    </Link>
-  );
-}
-
-function SidebarLinkSmall({ href, icon, label }: { href: string; icon: React.ReactNode; label: string }) {
-  return (
-    <Link
-      href={href}
-      className="flex items-center gap-2 px-2 py-1.5 text-sm text-gray-800 rounded hover:bg-gray-100"
-    >
-      {icon}
-      <span>{label}</span>
-    </Link>
   );
 }

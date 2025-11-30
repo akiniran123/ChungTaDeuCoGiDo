@@ -24,9 +24,6 @@ export default function ChatDetailPage() {
   const messagesEndRef = useRef<HTMLDivElement | null>(null);
   const router = useRouter();
 
-  // -------------------------------
-  // Lấy user hiện tại
-  // -------------------------------
   useEffect(() => {
     const getUser = async () => {
       const { data } = await supabase.auth.getUser();
@@ -35,9 +32,6 @@ export default function ChatDetailPage() {
     getUser();
   }, []);
 
-  // -------------------------------
-  // Lấy danh sách người nhắn (contacts)
-  // -------------------------------
   useEffect(() => {
     if (!currentUserId) return;
 
@@ -63,9 +57,11 @@ export default function ChatDetailPage() {
       data.forEach((msg: any) => {
         const otherId =
           msg.sender_id === currentUserId ? msg.receiver_id : msg.sender_id;
+
         if (!contactMap[otherId]) {
           const userInfo =
             msg.sender_id === currentUserId ? msg.receiver : msg.sender;
+
           contactMap[otherId] = {
             id: otherId,
             username: userInfo?.username || "Người dùng",
@@ -82,9 +78,6 @@ export default function ChatDetailPage() {
     fetchContacts();
   }, [currentUserId]);
 
-  // -------------------------------
-  // Lấy thông tin người chat hiện tại
-  // -------------------------------
   useEffect(() => {
     const fetchPartner = async () => {
       if (!partnerId) return;
@@ -98,9 +91,6 @@ export default function ChatDetailPage() {
     fetchPartner();
   }, [partnerId]);
 
-  // -------------------------------
-  // Lấy toàn bộ tin nhắn giữa 2 người
-  // -------------------------------
   useEffect(() => {
     if (!currentUserId || !partnerId) return;
 
@@ -118,7 +108,6 @@ export default function ChatDetailPage() {
 
     fetchMessages();
 
-    // Realtime
     const channel = supabase
       .channel("chat-room")
       .on(
@@ -126,6 +115,7 @@ export default function ChatDetailPage() {
         { event: "INSERT", schema: "public", table: "messages" },
         (payload) => {
           const msg = payload.new;
+
           if (
             (msg.sender_id === currentUserId &&
               msg.receiver_id === partnerId) ||
@@ -142,9 +132,6 @@ export default function ChatDetailPage() {
     };
   }, [currentUserId, partnerId]);
 
-  // -------------------------------
-  // Gửi tin nhắn
-  // -------------------------------
   const sendMessage = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!newMessage.trim() || !currentUserId) return;
@@ -159,17 +146,11 @@ export default function ChatDetailPage() {
     if (!error) setNewMessage("");
   };
 
-  // -------------------------------
-  // Auto scroll khi có tin mới
-  // -------------------------------
   useEffect(() => {
     const el = document.getElementById("scroll-anchor");
     if (el) el.scrollIntoView({ behavior: "smooth", block: "end" });
   }, [messages]);
 
-  // -------------------------------
-  // Format thời gian
-  // -------------------------------
   const formatTime = (time: string | null) => {
     if (!time) return "";
     const date = new Date(time);
@@ -183,9 +164,6 @@ export default function ChatDetailPage() {
       .padStart(2, "0")}`;
   };
 
-  // -------------------------------
-  // Giao diện
-  // -------------------------------
   if (!partner) {
     return (
       <div className="flex items-center justify-center h-screen text-gray-500">
@@ -196,9 +174,10 @@ export default function ChatDetailPage() {
 
   return (
     <div className="flex h-[calc(100vh-64px)] w-full bg-white">
-      {/* Cột chat chi tiết */}
-      <div className="flex-1 flex flex-col bg-gray-50">
-        {/* Header */}
+
+      {/* Cột chat chi tiết – giảm xuống nhẹ hơn */}
+      <div className="flex-1 flex flex-col bg-gray-50 pt-14">
+
         <div className="flex items-center justify-between px-6 py-3 border-b bg-white shadow-sm sticky top-0 z-10">
           <div className="flex items-center gap-3">
             <Image
@@ -217,7 +196,6 @@ export default function ChatDetailPage() {
           </div>
         </div>
 
-        {/* Messages cuộn độc lập + auto scroll */}
         <div
           className="flex-1 overflow-y-auto px-8 py-6 space-y-3"
           style={{ scrollBehavior: "smooth" }}
@@ -251,7 +229,6 @@ export default function ChatDetailPage() {
           <div id="scroll-anchor" ref={messagesEndRef} />
         </div>
 
-        {/* Ô nhập tin nhắn — cố định dưới */}
         <form
           onSubmit={sendMessage}
           className="flex items-center gap-3 px-6 py-3 border-t bg-white sticky bottom-0 z-10"
@@ -272,14 +249,13 @@ export default function ChatDetailPage() {
         </form>
       </div>
 
-      {/* Cột danh sách contacts (bên phải) */}
-      <div className="w-80 border-l border-gray-200 overflow-y-auto bg-gray-50">
-        {/* Header */}
+      {/* Cột contacts – giảm xuống như cột trái */}
+      <div className="w-80 border-l border-gray-200 overflow-y-auto bg-gray-50 pt-14">
+
         <div className="flex items-center px-6 py-3 border-b bg-white shadow-sm sticky top-4 z-10">
           <h2 className="text-lg font-semibold">Tin nhắn</h2>
         </div>
 
-        {/* Danh sách contacts, thêm margin-top để đẩy xuống */}
         <div className="mt-8">
           {contacts.map((contact) => (
             <div
@@ -308,6 +284,7 @@ export default function ChatDetailPage() {
           ))}
         </div>
       </div>
+
     </div>
   );
 }

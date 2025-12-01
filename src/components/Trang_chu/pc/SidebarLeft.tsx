@@ -14,7 +14,10 @@ import {
 } from "lucide-react";
 import { supabase } from "@/lib/supabase/client";
 import MessagesMenu from "@/components/Navbar/pc/LogoSearchIcon/MessagesMenu";
-import NewsMenu, { toggleNewsMenu } from "@/components/Navbar/pc/LogoSearchIcon/NewsMenu";
+
+// ⭐ Chỉ import toggleNewsMenu (KHÔNG import NewsMenu component)
+import { toggleNewsMenu } from "@/components/Navbar/pc/LogoSearchIcon/NewsMenu";
+
 import StartSellingButtons from "@/components/Navbar/pc/LogoSearchIcon/StartSellingButtons";
 import { createPortal } from "react-dom";
 import { useRouter } from "next/navigation";
@@ -45,8 +48,7 @@ export default function SidebarLeft() {
     }[]
   >([]);
 
-  const [isOpen] = useState(true); // giữ sidebar luôn mở, không toggle nữa
-
+  const [isOpen] = useState(true);
   const [openMiniChat, setOpenMiniChat] = useState(false);
   const [selectedPartner, setSelectedPartner] = useState<string | null>(null);
 
@@ -175,14 +177,14 @@ export default function SidebarLeft() {
   return (
     <>
       <aside
-        className={`
+        className="
           fixed top-[6.5rem] left-0
           w-64 h-[calc(100vh-6.5rem)]
           bg-white border-r border-gray-200 
           overflow-y-visible text-gray-900 z-40 shadow-sm
           transition-transform duration-300
           translate-x-0
-        `}
+        "
       >
         <nav className="mt-4 space-y-1">
           <Link
@@ -201,25 +203,25 @@ export default function SidebarLeft() {
             <span>Explore</span>
           </Link>
 
+          {/* Messages */}
           <div
             onClick={() => setOpenMessages(!openMessages)}
             className="flex items-center gap-4 px-5 py-3 mx-2 rounded-xl hover:bg-gray-100 cursor-pointer"
           >
             <MessageSquare className="w-6 h-6 text-gray-700" />
-            <span className="text-base font-medium text-gray-900">Messages</span>
+            <span className="text-base font-medium text-gray-900">
+              Messages
+            </span>
             <MessagesMenu />
           </div>
 
+          {/* NEWS (KHÔNG render NewsMenu ở đây) */}
           <div
             className="flex items-center gap-4 px-5 py-3 mx-2 rounded-xl hover:bg-gray-100 cursor-pointer"
-            onClick={(e) => {
-              e.stopPropagation();
-              toggleNewsMenu();
-            }}
+            onClick={() => toggleNewsMenu?.()}
           >
             <Newspaper className="w-6 h-6 text-gray-700" />
             <span className="text-base font-medium text-gray-900">Tin tức</span>
-            <NewsMenu />
           </div>
         </nav>
 
@@ -279,6 +281,7 @@ export default function SidebarLeft() {
         </div>
       </aside>
 
+      {/* PANEL MESSAGES */}
       {isClient &&
         createPortal(
           <div

@@ -56,7 +56,6 @@ export default function NewsMenu() {
     };
   }, []);
 
-  // ⭐⭐ RENDER PANEL GIỐNG Y HỆT MESSAGES PANEL ⭐⭐
   if (!isClient) return null;
 
   return createPortal(
@@ -64,7 +63,7 @@ export default function NewsMenu() {
       className={`
         fixed top-[6.5rem] left-64
         w-80 h-[calc(100vh-6.5rem)]
-        bg-white border-r border-gray-200 shadow-lg
+        bg-white shadow-lg
         transition-all duration-300 ease-out
         ${
           open
@@ -74,7 +73,8 @@ export default function NewsMenu() {
         z-[999998]
       `}
     >
-      <div className="p-4 font-semibold text-gray-800 border-b flex justify-between">
+      {/* HEADER — xoá border-b */}
+      <div className="p-4 font-semibold text-gray-800 flex justify-between">
         Tin tức
         <button
           onClick={() => setOpen(false)}
@@ -84,6 +84,7 @@ export default function NewsMenu() {
         </button>
       </div>
 
+      {/* LIST — xoá border từng item */}
       <div className="overflow-y-auto h-full">
         {notifications.length === 0 ? (
           <p className="text-gray-500 p-4 text-sm text-center">
@@ -93,12 +94,14 @@ export default function NewsMenu() {
           notifications.map((n) => (
             <div
               key={n.id}
-              className="p-4 pb-3 border-b last:border-0 text-sm"
+              className="p-4 text-sm" // xoá border-b
             >
               <div className="font-medium text-gray-900">{n.title}</div>
+
               {n.body && (
                 <div className="text-xs text-gray-600 mt-1">{n.body}</div>
               )}
+
               <div className="text-[10px] text-gray-400 mt-1">
                 {n.created_at
                   ? new Date(n.created_at).toLocaleString("vi-VN")

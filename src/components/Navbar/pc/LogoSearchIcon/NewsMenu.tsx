@@ -2,7 +2,7 @@
 
 import { useEffect, useState } from "react";
 import { createPortal } from "react-dom";
-import { Bell } from "lucide-react";
+import { Bell } from "lucide-react"; // vẫn import để không lỗi, nhưng không hiển thị
 import { supabase } from "@/lib/supabase/client";
 import type { Database } from "@/types/supabase";
 
@@ -79,7 +79,7 @@ export default function NewsMenu() {
 
   return (
     <div className="relative">
-      {/* Nút chuông */}
+      {/* Nút trigger nhưng KHÔNG hiển thị icon chuông */}
       <button
         id="news-menu-btn"
         onClick={() => {
@@ -87,11 +87,13 @@ export default function NewsMenu() {
           setOpen(newState);
           if (newState) markAllAsRead();
         }}
-        className="relative p-2 rounded-full hover:bg-gray-100 transition"
+        className="relative p-2 rounded-full transition"
       >
-        <Bell className="w-6 h-6 text-gray-700" />
+        {/* ICON CHUÔNG ĐÃ BỊ ẨN */}
+        {/* <Bell className="w-6 h-6 text-gray-700" /> */}
 
-        {unreadCount > 0 && (
+        {/* Badge số thông báo – CHỈ HIỆN nếu bạn muốn giữ lại */}
+        {false && unreadCount > 0 && (
           <span className="absolute -top-0.5 -right-0.5 bg-red-500 text-white text-[10px] font-semibold rounded-full px-[5px]">
             {unreadCount}
           </span>
@@ -105,14 +107,14 @@ export default function NewsMenu() {
           <div
             className="
               fixed
-              top-[70px]         /* chỉnh tùy theo header */
-              left-[280px]       /* chỉnh tùy theo sidebar */
+              top-[70px]
+              left-[280px]
               w-80
               bg-white
               border border-gray-200
               rounded-2xl
               shadow-2xl
-              z-[2147483647]     /* MAXIMUM z-index */
+              z-[2147483647]
             "
           >
             <div className="p-3 font-semibold border-b">Thông báo</div>

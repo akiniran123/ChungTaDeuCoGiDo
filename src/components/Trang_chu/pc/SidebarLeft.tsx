@@ -9,8 +9,8 @@ import {
   Users,
   Star,
   ChevronDown,
-  Menu,
   MessageSquare,
+  Newspaper,
 } from "lucide-react";
 import { supabase } from "@/lib/supabase/client";
 import MessagesMenu from "@/components/Navbar/pc/LogoSearchIcon/MessagesMenu";
@@ -45,7 +45,7 @@ export default function SidebarLeft() {
     }[]
   >([]);
 
-  const [isOpen, setIsOpen] = useState(true);
+  const [isOpen] = useState(true); // giữ sidebar luôn mở, không toggle nữa
 
   const [openMiniChat, setOpenMiniChat] = useState(false);
   const [selectedPartner, setSelectedPartner] = useState<string | null>(null);
@@ -181,7 +181,7 @@ export default function SidebarLeft() {
           bg-white border-r border-gray-200 
           overflow-y-visible text-gray-900 z-40 shadow-sm
           transition-transform duration-300
-          ${isOpen ? "translate-x-0" : "-translate-x-64"}
+          translate-x-0
         `}
       >
         <nav className="mt-4 space-y-1">
@@ -201,29 +201,29 @@ export default function SidebarLeft() {
             <span>Explore</span>
           </Link>
 
-          {/* ⭐⭐ THÊM ICON TIN NHẮN — KHÔNG ĐỤNG GÌ KHÁC ⭐⭐ */}
           <div
             onClick={() => setOpenMessages(!openMessages)}
             className="flex items-center gap-4 px-5 py-3 mx-2 rounded-xl hover:bg-gray-100 cursor-pointer"
           >
             <MessageSquare className="w-6 h-6 text-gray-700" />
-            <MessagesMenu />
             <span className="text-base font-medium text-gray-900">Messages</span>
+            <MessagesMenu />
           </div>
 
           <div
-            className="relative z-50 flex items-center gap-4 px-5 py-3 mx-2 rounded-xl hover:bg-gray-100 cursor-pointer"
+            className="flex items-center gap-4 px-5 py-3 mx-2 rounded-xl hover:bg-gray-100 cursor-pointer"
             onClick={(e) => {
               e.stopPropagation();
               toggleNewsMenu();
             }}
           >
-            <NewsMenu />
+            <Newspaper className="w-6 h-6 text-gray-700" />
             <span className="text-base font-medium text-gray-900">Tin tức</span>
+            <NewsMenu />
           </div>
         </nav>
 
-        <div className="px-5 mt-3 mb-2">
+        <div className="px-5 mt-3 mb-2 flex items-center gap-4">
           <StartSellingButtons onRequireLogin={handleRequireLogin} />
         </div>
 
@@ -278,22 +278,6 @@ export default function SidebarLeft() {
           )}
         </div>
       </aside>
-
-      <button
-        onClick={() => setIsOpen(!isOpen)}
-        className="
-          fixed top-[6.5rem]
-          w-10 h-10 flex items-center justify-center
-          bg-white border border-gray-200 shadow-md
-          rounded-r-xl z-50
-        "
-        style={{
-          left: isOpen ? "256px" : "0px",
-          transition: "left 0.3s",
-        }}
-      >
-        <Menu className="w-6 h-6 text-gray-700" />
-      </button>
 
       {isClient &&
         createPortal(

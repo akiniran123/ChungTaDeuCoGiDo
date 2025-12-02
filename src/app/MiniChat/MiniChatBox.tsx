@@ -51,9 +51,12 @@ export default function MiniChatBox({ partnerId, onClose }: MiniChatProps) {
         .or(`sender_id.eq.${currentUserId},receiver_id.eq.${currentUserId}`)
         .order("created_at", { ascending: true });
 
-      const filtered = data?.filter((msg) =>
-        (msg.sender_id === currentUserId && msg.receiver_id === partnerId) ||
-        (msg.sender_id === partnerId && msg.receiver_id === currentUserId)
+      const filtered = data?.filter(
+        (msg) =>
+          (msg.sender_id === currentUserId &&
+            msg.receiver_id === partnerId) ||
+          (msg.sender_id === partnerId &&
+            msg.receiver_id === currentUserId)
       );
 
       if (filtered) setMessages(filtered);
@@ -114,8 +117,9 @@ export default function MiniChatBox({ partnerId, onClose }: MiniChatProps) {
   if (!partner) return null;
 
   return (
-    <div className="fixed bottom-4 right-4 w-80 h-[420px] bg-white shadow-2xl rounded-xl border flex flex-col z-[999]">
+    <div className="fixed bottom-4 right-4 w-80 h-[420px] bg-white shadow-2xl rounded-xl flex flex-col z-[999]">
 
+      {/* HEADER — GIỮ DUY NHẤT BORDER-B */}
       <div className="flex items-center justify-between px-3 py-2 border-b bg-white rounded-t-xl">
         <div className="flex items-center gap-2">
           <Image
@@ -133,6 +137,7 @@ export default function MiniChatBox({ partnerId, onClose }: MiniChatProps) {
         </button>
       </div>
 
+      {/* CHAT AREA — KHÔNG CÓ ĐƯỜNG KẺ NÀO */}
       <div className="flex-1 overflow-y-auto px-3 py-3 space-y-3 bg-gray-50">
         {messages.map((msg) => (
           <div
@@ -145,7 +150,7 @@ export default function MiniChatBox({ partnerId, onClose }: MiniChatProps) {
               className={`px-3 py-2 rounded-2xl max-w-[70%] text-sm shadow-sm ${
                 msg.sender_id === currentUserId
                   ? "bg-pink-600 text-white rounded-br-none"
-                  : "bg-white border border-gray-200 text-gray-900 rounded-bl-none"
+                  : "bg-white text-gray-900 rounded-bl-none"
               }`}
             >
               {msg.content}
@@ -160,9 +165,10 @@ export default function MiniChatBox({ partnerId, onClose }: MiniChatProps) {
         <div ref={scrollRef}></div>
       </div>
 
+      {/* INPUT — BỎ BORDER-T */}
       <form
         onSubmit={sendMessage}
-        className="flex items-center gap-2 px-3 py-2 border-t bg-white"
+        className="flex items-center gap-2 px-3 py-2 bg-white"
       >
         <input
           value={newMessage}

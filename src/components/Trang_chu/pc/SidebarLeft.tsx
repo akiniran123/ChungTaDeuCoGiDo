@@ -298,7 +298,8 @@ export default function SidebarLeft() {
               z-[999999]
             `}
           >
-            <div className="p-4 font-semibold text-gray-800 border-b flex justify-between">
+            {/* ❌ XOÁ border-b Ở ĐÂY */}
+            <div className="p-4 font-semibold text-gray-800 flex justify-between">
               Messages
               <button
                 onClick={() => setOpenMessages(false)}
@@ -317,7 +318,8 @@ export default function SidebarLeft() {
                 conversations.map((c) => (
                   <div
                     key={c.partner_id}
-                    className="flex items-center gap-3 p-4 border-b hover:bg-gray-50 cursor-pointer"
+                    /* ❌ XOÁ border-b Ở ĐÂY */
+                    className="flex items-center gap-3 p-4 hover:bg-gray-50 cursor-pointer"
                     onClick={() => {
                       setSelectedPartner(c.partner_id);
                       setOpenMiniChat(true);

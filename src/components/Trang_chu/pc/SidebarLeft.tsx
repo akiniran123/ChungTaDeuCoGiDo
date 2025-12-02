@@ -72,7 +72,7 @@ export default function SidebarLeft() {
           return;
         }
 
-        // Chỉnh lại query: lấy avatar_url từ communities
+        // Lấy avatar_url từ communities
         const { data, error } = await supabase
           .from("community_members")
           .select(`
@@ -179,6 +179,11 @@ export default function SidebarLeft() {
     else handleRequireLogin();
   };
 
+  const handleCreateCommunity = () => {
+    if (userId) router.push("/create-community");
+    else handleRequireLogin();
+  };
+
   return (
     <>
       <aside
@@ -254,13 +259,13 @@ export default function SidebarLeft() {
           </div>
 
           {/* ⭐ Tạo cộng đồng */}
-          <Link
-            href="/create-community"
-            className="flex items-center gap-2 px-2 py-1.5 text-base font-medium text-gray-900 rounded hover:bg-gray-100"
+          <div
+            onClick={handleCreateCommunity}
+            className="flex items-center gap-2 px-2 py-1.5 text-base font-medium text-gray-900 rounded hover:bg-gray-100 cursor-pointer"
           >
             <Plus className="w-4 h-4 text-gray-600" />
             <span className="text-gray-900">Tạo cộng đồng</span>
-          </Link>
+          </div>
 
           {/* ⭐ Quản lý cộng đồng */}
           <Link

@@ -10,7 +10,7 @@ export default function AppLayout({ children }: { children: React.ReactNode }) {
   return (
     <div className="flex flex-col min-h-screen bg-white text-black">
       {/* Navbar luôn hiển thị */}
-      <Navbar />
+    
 
       {/* Container chính */}
       <div className="flex pt-[4.5rem] flex-1">

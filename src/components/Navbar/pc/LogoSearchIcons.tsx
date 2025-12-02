@@ -7,8 +7,6 @@ import { useRouter } from 'next/navigation'
 import Logo from './LogoSearchIcon/logo'
 import SearchBar from './LogoSearchIcon/SearchBar'
 import MessagesMenu from './LogoSearchIcon/MessagesMenu'
-import NewsMenu from './LogoSearchIcon/NewsMenu'
-import CartMenu from './LogoSearchIcon/CartMenu'
 import UserMenu from './LogoSearchIcon/UserMenu'
 
 import LoginModal from '@/components/auth/pc/LoginModal'
@@ -56,7 +54,6 @@ export default function LogoSearchIcons({
           <SearchBar />
           <div className="flex items-center gap-3">
             <MessagesMenu />
-            <NewsMenu />
 
             <div
               className="relative cursor-pointer"
@@ -66,7 +63,6 @@ export default function LogoSearchIcons({
               onKeyDown={(e) => { if (e.key === 'Enter' || e.key === ' ') handleCartClick() }}
               aria-label="Xem giỏ hàng"
             >
-              <CartMenu />
               {computedTotal > 0 && (
                 <span className="absolute -top-2 -right-2 bg-red-500 text-white rounded-full w-5 h-5 flex items-center justify-center text-xs">
                   {computedTotal}

@@ -119,7 +119,7 @@ export default function MiniChatBox({ partnerId, onClose }: MiniChatProps) {
   return (
     <div className="fixed bottom-4 right-4 w-80 h-[420px] bg-white shadow-2xl rounded-xl flex flex-col z-[999]">
 
-      {/* HEADER — GIẢM ĐỘ ĐẬM ĐƯỜNG KẺ */}
+      {/* HEADER */}
       <div className="flex items-center justify-between px-3 py-2 border-b border-gray-200 bg-white rounded-t-xl">
         <div className="flex items-center gap-2">
           <Image
@@ -149,8 +149,8 @@ export default function MiniChatBox({ partnerId, onClose }: MiniChatProps) {
             <div
               className={`px-3 py-2 rounded-2xl max-w-[70%] text-sm shadow-sm ${
                 msg.sender_id === currentUserId
-                  ? "bg-pink-600 text-white rounded-br-none"
-                  : "bg-white text-gray-900 rounded-bl-none"
+                  ? "bg-white text-gray-900 rounded-br-none" // sender: trắng
+                  : "bg-blue-100 text-blue-800 rounded-bl-none" // partner: xanh dương
               }`}
             >
               {msg.content}
@@ -179,7 +179,7 @@ export default function MiniChatBox({ partnerId, onClose }: MiniChatProps) {
 
         <button
           type="submit"
-          className="p-2 bg-pink-600 text-white rounded-full hover:bg-pink-700"
+          className="p-2 bg-white text-gray-700 rounded-full hover:bg-gray-100"
         >
           <Send size={16} />
         </button>

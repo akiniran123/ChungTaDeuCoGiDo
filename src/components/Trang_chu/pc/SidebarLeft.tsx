@@ -267,14 +267,11 @@ export default function SidebarLeft() {
             <span className="text-gray-900">Tạo cộng đồng</span>
           </div>
 
-          {/* ⭐ Quản lý cộng đồng */}
-          <Link
-            href="/manage-communities"
-            className="flex items-center gap-2 px-2 py-1.5 text-base font-medium text-gray-900 rounded hover:bg-gray-100"
-          >
+          {/* ⭐ Quản lý cộng đồng (bỏ Link) */}
+          <div className="flex items-center gap-2 px-2 py-1.5 text-base font-medium text-gray-900 rounded hover:bg-gray-100 cursor-pointer">
             <Users className="w-4 h-4 text-gray-600" />
             <span className="text-gray-900">Quản lý cộng đồng</span>
-          </Link>
+          </div>
 
           {loading ? (
             <p className="text-sm text-gray-400 mt-2">Đang tải...</p>

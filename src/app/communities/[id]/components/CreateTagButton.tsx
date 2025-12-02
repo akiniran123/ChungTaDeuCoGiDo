@@ -50,9 +50,11 @@ export default function CreateTagButton({ communityId }: { communityId: string }
 
   return (
     <>
+      {/* 🔥 NÚT TẠO TAG — TRUNG TÍNH + CURSOR-POINTER */}
       <button
         onClick={() => setOpen(true)}
-        className="flex items-center gap-2 px-3 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition"
+        className="flex items-center gap-2 px-3 py-2 rounded-lg bg-gray-100 text-gray-900 
+                   hover:bg-gray-200 transition cursor-pointer"
       >
         <Plus size={18} />
         Tạo Tag
@@ -78,7 +80,7 @@ export default function CreateTagButton({ communityId }: { communityId: string }
             <div className="flex justify-end gap-3 mt-4">
               <button
                 onClick={() => setOpen(false)}
-                className="px-3 py-2 rounded-lg border hover:bg-neutral-100 transition"
+                className="px-3 py-2 rounded-lg border hover:bg-neutral-100 transition cursor-pointer"
               >
                 Hủy
               </button>
@@ -86,7 +88,7 @@ export default function CreateTagButton({ communityId }: { communityId: string }
               <button
                 onClick={handleCreateTag}
                 disabled={loading}
-                className="px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition flex items-center gap-2"
+                className="px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition flex items-center gap-2 cursor-pointer"
               >
                 {loading && <Loader2 size={18} className="animate-spin" />}
                 Tạo Tag

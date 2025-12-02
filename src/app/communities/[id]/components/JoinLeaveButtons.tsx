@@ -79,7 +79,6 @@ const JoinLeaveButton: React.FC<JoinLeaveButtonProps> = ({
       return;
     }
 
-    // Check nếu chưa là member thì insert
     const { data: existed } = await supabase
       .from("community_members")
       .select("*")
@@ -101,7 +100,6 @@ const JoinLeaveButton: React.FC<JoinLeaveButtonProps> = ({
       }
     }
 
-    // Thêm vào bảng online
     await supabase.from("community_online_members").insert({
       community_id: communityId,
       user_id: userId,
@@ -148,7 +146,7 @@ const JoinLeaveButton: React.FC<JoinLeaveButtonProps> = ({
     setLoading(false);
   };
 
-  // 🔥 XÓA CỘNG ĐỒNG (CHỈ OWNER)
+  // XÓA CỘNG ĐỒNG – CHỈ OWNER
   const handleDeleteCommunity = async () => {
     if (
       !confirm(
@@ -161,19 +159,16 @@ const JoinLeaveButton: React.FC<JoinLeaveButtonProps> = ({
     setLoading(true);
 
     try {
-      // 1️⃣ Xóa online members
       await supabase
         .from("community_online_members")
         .delete()
         .eq("community_id", communityId);
 
-      // 2️⃣ Xóa tất cả members
       await supabase
         .from("community_members")
         .delete()
         .eq("community_id", communityId);
 
-      // 3️⃣ Xóa community
       const { error } = await supabase
         .from("communities")
         .delete()
@@ -224,13 +219,13 @@ const JoinLeaveButton: React.FC<JoinLeaveButtonProps> = ({
             ✓ Đã tham gia
           </button>
 
-          {/* RỜI CỘNG ĐỒNG */}
+          {/* RỜI CỘNG ĐỒNG — TRUNG TÍNH + CURSOR-POINTER */}
           <button
             type="button"
             onClick={handleLeave}
             disabled={loading}
             className="inline-flex items-center gap-2 px-4 py-2 rounded-lg text-sm font-medium 
-              bg-red-600 text-white hover:bg-red-700
+              bg-gray-100 text-gray-900 hover:bg-gray-200 cursor-pointer
               disabled:opacity-60 disabled:cursor-not-allowed"
           >
             {loading ? (
@@ -245,13 +240,15 @@ const JoinLeaveButton: React.FC<JoinLeaveButtonProps> = ({
         </>
       )}
 
-      {/* ⭐ CHỈ CHỦ CỘNG ĐỒNG ĐƯỢC XÓA ⭐ */}
+      {/* XÓA CỘNG ĐỒNG — TRUNG TÍNH + CURSOR-POINTER */}
       {isOwner && (
         <button
           type="button"
           onClick={handleDeleteCommunity}
           disabled={loading}
-          className="inline-flex items-center gap-2 px-3 py-2 rounded-lg text-sm bg-red-700 text-white hover:bg-red-800 disabled:opacity-60"
+          className="inline-flex items-center gap-2 px-3 py-2 rounded-lg text-sm 
+            bg-gray-100 text-gray-900 hover:bg-gray-200 cursor-pointer
+            disabled:opacity-60 disabled:cursor-not-allowed"
         >
           {loading ? (
             <>

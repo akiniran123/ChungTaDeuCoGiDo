@@ -119,8 +119,8 @@ export default function MiniChatBox({ partnerId, onClose }: MiniChatProps) {
   return (
     <div className="fixed bottom-4 right-4 w-80 h-[420px] bg-white shadow-2xl rounded-xl flex flex-col z-[999]">
 
-      {/* HEADER — GIỮ DUY NHẤT BORDER-B */}
-      <div className="flex items-center justify-between px-3 py-2 border-b bg-white rounded-t-xl">
+      {/* HEADER — GIẢM ĐỘ ĐẬM ĐƯỜNG KẺ */}
+      <div className="flex items-center justify-between px-3 py-2 border-b border-gray-200 bg-white rounded-t-xl">
         <div className="flex items-center gap-2">
           <Image
             src={partner.avatar_url || "/default-avatar.png"}
@@ -137,7 +137,7 @@ export default function MiniChatBox({ partnerId, onClose }: MiniChatProps) {
         </button>
       </div>
 
-      {/* CHAT AREA — KHÔNG CÓ ĐƯỜNG KẺ NÀO */}
+      {/* CHAT AREA */}
       <div className="flex-1 overflow-y-auto px-3 py-3 space-y-3 bg-gray-50">
         {messages.map((msg) => (
           <div
@@ -165,7 +165,7 @@ export default function MiniChatBox({ partnerId, onClose }: MiniChatProps) {
         <div ref={scrollRef}></div>
       </div>
 
-      {/* INPUT — BỎ BORDER-T */}
+      {/* INPUT */}
       <form
         onSubmit={sendMessage}
         className="flex items-center gap-2 px-3 py-2 bg-white"

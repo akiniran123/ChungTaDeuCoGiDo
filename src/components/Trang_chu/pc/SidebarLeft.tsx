@@ -27,7 +27,7 @@ export default function SidebarLeft() {
   const router = useRouter();
 
   const [communities, setCommunities] = useState<
-    { id: string; title: string | null }[]
+    { id: string; title: string | null; avatar_url: string | null }[]
   >([]);
   const [loading, setLoading] = useState(true);
 
@@ -72,13 +72,15 @@ export default function SidebarLeft() {
           return;
         }
 
+        // Chỉnh lại query: lấy avatar_url từ communities
         const { data, error } = await supabase
           .from("community_members")
           .select(`
             community_id,
             communities (
               id,
-              title
+              title,
+              avatar_url
             )
           `)
           .eq("user_id", user.id);
@@ -284,7 +286,7 @@ export default function SidebarLeft() {
                   className="flex items-center gap-2 px-2 py-1.5 text-base font-medium text-gray-900 rounded hover:bg-gray-100"
                 >
                   <img
-                    src="/default-community.png"
+                    src={c.avatar_url || "/default-community.png"}
                     alt={c.title || "community"}
                     className="w-5 h-5 rounded-full"
                   />

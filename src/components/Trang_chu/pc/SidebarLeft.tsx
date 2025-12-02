@@ -11,14 +11,13 @@ import {
   ChevronDown,
   MessageSquare,
   Newspaper,
+  ShoppingBag,
 } from "lucide-react";
 import { supabase } from "@/lib/supabase/client";
 import MessagesMenu from "@/components/Navbar/pc/LogoSearchIcon/MessagesMenu";
 
-// ⭐ Chỉ import toggleNewsMenu (KHÔNG import NewsMenu component)
 import { toggleNewsMenu } from "@/components/Navbar/pc/LogoSearchIcon/NewsMenu";
 
-import StartSellingButtons from "@/components/Navbar/pc/LogoSearchIcon/StartSellingButtons";
 import { createPortal } from "react-dom";
 import { useRouter } from "next/navigation";
 
@@ -48,7 +47,6 @@ export default function SidebarLeft() {
     }[]
   >([]);
 
-  const [isOpen] = useState(true);
   const [openMiniChat, setOpenMiniChat] = useState(false);
   const [selectedPartner, setSelectedPartner] = useState<string | null>(null);
 
@@ -174,6 +172,11 @@ export default function SidebarLeft() {
     alert("Bạn cần đăng nhập trước!");
   };
 
+  const handleStartSelling = () => {
+    if (userId) router.push("/protected/sell");
+    else handleRequireLogin();
+  };
+
   return (
     <>
       <aside
@@ -187,35 +190,50 @@ export default function SidebarLeft() {
         "
       >
         <nav className="mt-4 space-y-1">
+
+          {/* ⭐ Trang chủ */}
           <Link
             href="/"
-            className="flex items-center gap-4 px-5 py-3 text-base font-medium rounded-xl mx-2 hover:bg-gray-100 text-gray-900"
+            className="flex items-center gap-4 px-5 py-3 text-base font-medium text-gray-900 rounded-xl mx-2 hover:bg-gray-100"
           >
             <Home className="w-6 h-6 text-gray-700" />
-            <span>Home</span>
+            <span className="text-gray-900">Trang chủ</span>
           </Link>
 
+          {/* ⭐ Khám phá */}
           <Link
             href="/communities"
-            className="flex items-center gap-4 px-5 py-3 text-base font-medium rounded-xl mx-2 hover:bg-gray-100 text-gray-900"
+            className="flex items-center gap-4 px-5 py-3 text-base font-medium text-gray-900 rounded-xl mx-2 hover:bg-gray-100"
           >
             <Compass className="w-6 h-6 text-gray-700" />
-            <span>Explore</span>
+            <span className="text-gray-900">Khám phá</span>
           </Link>
 
-          {/* Messages */}
+          {/* Tin nhắn */}
           <div
             onClick={() => setOpenMessages(!openMessages)}
             className="flex items-center gap-4 px-5 py-3 mx-2 rounded-xl hover:bg-gray-100 cursor-pointer"
           >
             <MessageSquare className="w-6 h-6 text-gray-700" />
             <span className="text-base font-medium text-gray-900">
-              Messages
+              Tin nhắn
             </span>
+
             <MessagesMenu />
           </div>
 
-          {/* NEWS (KHÔNG render NewsMenu ở đây) */}
+          {/* Bán hàng */}
+          <div
+            onClick={handleStartSelling}
+            className="flex items-center gap-4 px-5 py-3 mx-2 rounded-xl hover:bg-gray-100 cursor-pointer"
+          >
+            <ShoppingBag className="w-6 h-6 text-gray-700" />
+            <span className="text-base font-medium text-gray-900">
+              Bán hàng
+            </span>
+          </div>
+
+          {/* Tin tức */}
           <div
             className="flex items-center gap-4 px-5 py-3 mx-2 rounded-xl hover:bg-gray-100 cursor-pointer"
             onClick={() => toggleNewsMenu?.()}
@@ -225,39 +243,37 @@ export default function SidebarLeft() {
           </div>
         </nav>
 
-        <div className="px-5 mt-3 mb-2 flex items-center gap-4">
-          <StartSellingButtons onRequireLogin={handleRequireLogin} />
-        </div>
-
         <hr className="border-gray-200 my-3 mx-2" />
 
         <div className="px-4 mb-6">
           <div className="flex items-center justify-between text-xs uppercase text-gray-500 font-semibold tracking-wider py-1">
-            Communities
+            Cộng đồng
             <ChevronDown className="w-4 h-4" />
           </div>
 
+          {/* ⭐ Tạo cộng đồng */}
           <Link
             href="/create-community"
-            className="flex items-center gap-2 px-2 py-1.5 text-sm text-gray-800 rounded hover:bg-gray-100"
+            className="flex items-center gap-2 px-2 py-1.5 text-base font-medium text-gray-900 rounded hover:bg-gray-100"
           >
             <Plus className="w-4 h-4 text-gray-600" />
-            <span>Create Community</span>
+            <span className="text-gray-900">Tạo cộng đồng</span>
           </Link>
 
+          {/* ⭐ Quản lý cộng đồng */}
           <Link
             href="/manage-communities"
-            className="flex items-center gap-2 px-2 py-1.5 text-sm text-gray-800 rounded hover:bg-gray-100"
+            className="flex items-center gap-2 px-2 py-1.5 text-base font-medium text-gray-900 rounded hover:bg-gray-100"
           >
             <Users className="w-4 h-4 text-gray-600" />
-            <span>Manage Communities</span>
+            <span className="text-gray-900">Quản lý cộng đồng</span>
           </Link>
 
           {loading ? (
-            <p className="text-sm text-gray-400 mt-2">Loading...</p>
+            <p className="text-sm text-gray-400 mt-2">Đang tải...</p>
           ) : communities.length === 0 ? (
             <p className="text-sm text-gray-400 mt-2">
-              You haven’t joined any communities yet.
+              Bạn chưa tham gia cộng đồng nào.
             </p>
           ) : (
             <div className="mt-1 space-y-1">
@@ -265,14 +281,14 @@ export default function SidebarLeft() {
                 <Link
                   key={c.id}
                   href={`/communities/${c.id}`}
-                  className="flex items-center gap-2 px-2 py-1.5 text-sm text-gray-800 rounded hover:bg-gray-100"
+                  className="flex items-center gap-2 px-2 py-1.5 text-base font-medium text-gray-900 rounded hover:bg-gray-100"
                 >
                   <img
                     src="/default-community.png"
                     alt={c.title || "community"}
                     className="w-5 h-5 rounded-full"
                   />
-                  <span className="truncate">{c.title || "Không tên"}</span>
+                  <span className="truncate text-gray-900">{c.title || "Không tên"}</span>
                   <Star className="w-4 h-4 text-gray-400 ml-auto" />
                 </Link>
               ))}
@@ -298,9 +314,8 @@ export default function SidebarLeft() {
               z-[999999]
             `}
           >
-            {/* ❌ XOÁ border-b Ở ĐÂY */}
             <div className="p-4 font-semibold text-gray-800 flex justify-between">
-              Messages
+              Tin nhắn
               <button
                 onClick={() => setOpenMessages(false)}
                 className="text-gray-500 hover:text-black"
@@ -318,7 +333,6 @@ export default function SidebarLeft() {
                 conversations.map((c) => (
                   <div
                     key={c.partner_id}
-                    /* ❌ XOÁ border-b Ở ĐÂY */
                     className="flex items-center gap-3 p-4 hover:bg-gray-50 cursor-pointer"
                     onClick={() => {
                       setSelectedPartner(c.partner_id);

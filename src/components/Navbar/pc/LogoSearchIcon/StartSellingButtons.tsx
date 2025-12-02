@@ -20,19 +20,18 @@ export default function StartSellingButtons({ onRequireLogin }: { onRequireLogin
   };
 
   return (
-    <div className="inline-block relative group"> 
+    <div className="inline-block relative group">
       {/* Glow trung tính */}
       <div className="absolute inset-0 bg-neutral-300 rounded-full blur-xl opacity-40 group-hover:opacity-70 transition duration-300"></div>
 
-      {/* Button không khung, không nền */}
+      {/* Button giống Tin nhắn */}
       <button
         onClick={handleStartSelling}
-        className="relative flex items-center justify-center gap-2 
-        bg-transparent text-neutral-700 font-semibold text-sm 
-        px-5 py-2.5 rounded-full cursor-pointer
-        hover:-translate-y-[1px] active:scale-95 transition-all duration-200"
+        className="relative flex items-center gap-4
+        px-5 py-3 rounded-xl font-medium text-base text-gray-900
+        hover:bg-gray-100 transition-all duration-200"
       >
-        <ShoppingBag size={18} strokeWidth={1.5} />
+        <ShoppingBag size={24} strokeWidth={1.5} className="text-gray-900" />
         <span>Bán hàng</span>
       </button>
     </div>

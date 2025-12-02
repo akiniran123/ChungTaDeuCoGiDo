@@ -2,14 +2,31 @@
 
 import React, { useState, useEffect } from "react";
 import Link from "next/link";
-import { Home, Compass, Plus, Users, Star, ChevronDown, Menu } from "lucide-react";
+import {
+  Home,
+  Compass,
+  Plus,
+  Users,
+  Star,
+  ChevronDown,
+  MessageSquare,
+  Newspaper,
+} from "lucide-react";
 import { supabase } from "@/lib/supabase/client";
 import MessagesMenu from "@/components/Navbar/pc/LogoSearchIcon/MessagesMenu";
-import NewsMenu, { toggleNewsMenu } from "@/components/Navbar/pc/LogoSearchIcon/NewsMenu";
+
+// ⭐ Chỉ import toggleNewsMenu (KHÔNG import NewsMenu component)
+import { toggleNewsMenu } from "@/components/Navbar/pc/LogoSearchIcon/NewsMenu";
+
 import StartSellingButtons from "@/components/Navbar/pc/LogoSearchIcon/StartSellingButtons";
 import { createPortal } from "react-dom";
+import { useRouter } from "next/navigation";
+
+import MiniChatBox from "@/app/MiniChat/MiniChatBox";
 
 export default function SidebarLeft() {
+  const router = useRouter();
+
   const [communities, setCommunities] = useState<
     { id: string; title: string | null }[]
   >([]);
@@ -19,8 +36,25 @@ export default function SidebarLeft() {
 
   const [openMessages, setOpenMessages] = useState(false);
 
-  // ⭐ NEW: trạng thái mở/đóng sidebar
-  const [isOpen, setIsOpen] = useState(true);
+  const [isClient, setIsClient] = useState(false);
+
+  const [conversations, setConversations] = useState<
+    {
+      partner_id: string;
+      username: string | null;
+      avatar_url: string | null;
+      last_message: string | null;
+      last_time: string | null;
+    }[]
+  >([]);
+
+  const [isOpen] = useState(true);
+  const [openMiniChat, setOpenMiniChat] = useState(false);
+  const [selectedPartner, setSelectedPartner] = useState<string | null>(null);
+
+  useEffect(() => {
+    setIsClient(true);
+  }, []);
 
   useEffect(() => {
     supabase.auth.getUser().then(({ data }) => {
@@ -72,22 +106,85 @@ export default function SidebarLeft() {
     fetchCommunities();
   }, []);
 
+  useEffect(() => {
+    if (!userId) return;
+
+    async function loadConversations() {
+      const { data, error } = await supabase
+        .from("messages")
+        .select("*")
+        .or(`sender_id.eq.${userId},receiver_id.eq.${userId}`)
+        .order("created_at", { ascending: false });
+
+      if (error) {
+        console.error("❌ Lỗi tải tin nhắn:", error);
+        return;
+      }
+
+      const map = new Map();
+
+      data.forEach((msg) => {
+        const partner =
+          msg.sender_id === userId ? msg.receiver_id : msg.sender_id;
+
+        if (!map.has(partner)) {
+          map.set(partner, {
+            last_message: msg.content,
+            last_time: msg.created_at,
+          });
+        }
+      });
+
+      const partnerIds = [...map.keys()];
+
+      if (partnerIds.length === 0) {
+        setConversations([]);
+        return;
+      }
+
+      const { data: usersList, error: userErr } = await supabase
+        .from("users")
+        .select("id, username, avatar_url")
+        .in("id", partnerIds);
+
+      if (userErr) {
+        console.error("❌ Lỗi tải users:", userErr);
+        return;
+      }
+
+      const final = partnerIds.map((pid) => {
+        const u = usersList?.find((x) => x.id === pid);
+        const info = map.get(pid);
+        return {
+          partner_id: pid,
+          username: u?.username || "Unknown",
+          avatar_url: u?.avatar_url || "/default-avatar.png",
+          last_message: info.last_message,
+          last_time: info.last_time,
+        };
+      });
+
+      setConversations(final);
+    }
+
+    loadConversations();
+  }, [userId]);
+
   const handleRequireLogin = () => {
     alert("Bạn cần đăng nhập trước!");
   };
 
   return (
     <>
-      {/* ⭐ SIDEBAR TRÁI ⭐ */}
       <aside
-        className={`
+        className="
           fixed top-[6.5rem] left-0
           w-64 h-[calc(100vh-6.5rem)]
           bg-white border-r border-gray-200 
           overflow-y-visible text-gray-900 z-40 shadow-sm
           transition-transform duration-300
-          ${isOpen ? "translate-x-0" : "-translate-x-64"}
-        `}
+          translate-x-0
+        "
       >
         <nav className="mt-4 space-y-1">
           <Link
@@ -106,34 +203,34 @@ export default function SidebarLeft() {
             <span>Explore</span>
           </Link>
 
+          {/* Messages */}
           <div
             onClick={() => setOpenMessages(!openMessages)}
             className="flex items-center gap-4 px-5 py-3 mx-2 rounded-xl hover:bg-gray-100 cursor-pointer"
           >
+            <MessageSquare className="w-6 h-6 text-gray-700" />
+            <span className="text-base font-medium text-gray-900">
+              Messages
+            </span>
             <MessagesMenu />
-            <span className="text-base font-medium text-gray-900">Messages</span>
           </div>
 
+          {/* NEWS (KHÔNG render NewsMenu ở đây) */}
           <div
-            className="relative z-50 flex items-center gap-4 px-5 py-3 mx-2 rounded-xl hover:bg-gray-100 cursor-pointer"
-            onClick={(e) => {
-              e.stopPropagation();
-              toggleNewsMenu();
-            }}
+            className="flex items-center gap-4 px-5 py-3 mx-2 rounded-xl hover:bg-gray-100 cursor-pointer"
+            onClick={() => toggleNewsMenu?.()}
           >
-            <NewsMenu />
+            <Newspaper className="w-6 h-6 text-gray-700" />
             <span className="text-base font-medium text-gray-900">Tin tức</span>
           </div>
         </nav>
 
-        {/* Sell */}
-        <div className="px-5 mt-3 mb-2">
+        <div className="px-5 mt-3 mb-2 flex items-center gap-4">
           <StartSellingButtons onRequireLogin={handleRequireLogin} />
         </div>
 
         <hr className="border-gray-200 my-3 mx-2" />
 
-        {/* Communities */}
         <div className="px-4 mb-6">
           <div className="flex items-center justify-between text-xs uppercase text-gray-500 font-semibold tracking-wider py-1">
             Communities
@@ -184,25 +281,8 @@ export default function SidebarLeft() {
         </div>
       </aside>
 
-      {/* ⭐ NÚT 3 GẠCH DỌC CẠNH ĐƯỜNG KẺ ⭐ */}
-      <button
-        onClick={() => setIsOpen(!isOpen)}
-        className="
-          fixed top-[6.5rem]
-          w-10 h-10 flex items-center justify-center
-          bg-white border border-gray-200 shadow-md
-          rounded-r-xl z-50
-        "
-        style={{
-          left: isOpen ? "256px" : "0px",
-          transition: "left 0.3s",
-        }}
-      >
-        <Menu className="w-6 h-6 text-gray-700" />
-      </button>
-
-      {/* ⭐⭐⭐ PANEL MESSAGES — PORTAL ⭐⭐⭐ */}
-      {typeof window !== "undefined" &&
+      {/* PANEL MESSAGES */}
+      {isClient &&
         createPortal(
           <div
             className={`
@@ -218,7 +298,8 @@ export default function SidebarLeft() {
               z-[999999]
             `}
           >
-            <div className="p-4 font-semibold text-gray-800 border-b flex justify-between">
+            {/* ❌ XOÁ border-b Ở ĐÂY */}
+            <div className="p-4 font-semibold text-gray-800 flex justify-between">
               Messages
               <button
                 onClick={() => setOpenMessages(false)}
@@ -228,12 +309,58 @@ export default function SidebarLeft() {
               </button>
             </div>
 
-            <div className="p-4 text-gray-600">
-              Mini chat panel nội dung ở đây...
+            <div className="overflow-y-auto h-full">
+              {conversations.length === 0 ? (
+                <p className="text-gray-500 p-4 text-sm">
+                  Bạn chưa có cuộc trò chuyện nào.
+                </p>
+              ) : (
+                conversations.map((c) => (
+                  <div
+                    key={c.partner_id}
+                    /* ❌ XOÁ border-b Ở ĐÂY */
+                    className="flex items-center gap-3 p-4 hover:bg-gray-50 cursor-pointer"
+                    onClick={() => {
+                      setSelectedPartner(c.partner_id);
+                      setOpenMiniChat(true);
+                    }}
+                  >
+                    <img
+                      src={c.avatar_url || "/default-avatar.png"}
+                      className="w-10 h-10 rounded-full object-cover"
+                    />
+
+                    <div className="flex-1">
+                      <p className="font-medium text-gray-900 line-clamp-1">
+                        {c.username}
+                      </p>
+                      <p className="text-sm text-gray-500 line-clamp-1">
+                        {c.last_message}
+                      </p>
+                    </div>
+
+                    <span className="text-[11px] text-gray-400 whitespace-nowrap">
+                      {c.last_time
+                        ? new Date(c.last_time).toLocaleTimeString("vi-VN", {
+                            hour: "2-digit",
+                            minute: "2-digit",
+                          })
+                        : ""}
+                    </span>
+                  </div>
+                ))
+              )}
             </div>
           </div>,
           document.body
         )}
+
+      {openMiniChat && selectedPartner && (
+        <MiniChatBox
+          partnerId={selectedPartner}
+          onClose={() => setOpenMiniChat(false)}
+        />
+      )}
     </>
   );
 }

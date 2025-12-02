@@ -1,37 +1,26 @@
 "use client";
 
 import { useEffect, useState } from "react";
-import { createPortal } from "react-dom";
-import { Bell } from "lucide-react";
 import { supabase } from "@/lib/supabase/client";
 import type { Database } from "@/types/supabase";
+import { createPortal } from "react-dom";
 
 type Notification = Database["public"]["Tables"]["notifications"]["Row"];
 
-// ⭐ Cho phép SidebarLeft trigger mở menu
-let externalToggleNewsMenu: null | (() => void) = null;
-export function toggleNewsMenu() {
-  if (externalToggleNewsMenu) externalToggleNewsMenu();
-}
+// cho SidebarLeft gọi
+export let toggleNewsMenu: (() => void) | null = null;
 
 export default function NewsMenu() {
-  const [notifications, setNotifications] = useState<Notification[]>([]);
   const [open, setOpen] = useState(false);
-  const [mounted, setMounted] = useState(false);
+  const [notifications, setNotifications] = useState<Notification[]>([]);
+  const [isClient, setIsClient] = useState(false);
 
-  // Cho portal mount
-  useEffect(() => setMounted(true), []);
+  toggleNewsMenu = () => setOpen((prev) => !prev);
 
-  // ⭐ GÁN toggle gọi từ SidebarLeft
-  externalToggleNewsMenu = () => {
-    setOpen((prev) => {
-      const newState = !prev;
-      if (newState) markAllAsRead();
-      return newState;
-    });
-  };
+  useEffect(() => {
+    setIsClient(true);
+  }, []);
 
-  // 🔹 Lấy dữ liệu thông báo
   useEffect(() => {
     const fetchNotifications = async () => {
       const { data } = await supabase
@@ -44,7 +33,6 @@ export default function NewsMenu() {
 
     fetchNotifications();
 
-    // 🔹 Realtime
     const channel = supabase
       .channel("realtime:notifications")
       .on(
@@ -68,88 +56,62 @@ export default function NewsMenu() {
     };
   }, []);
 
-  // 🔹 Khi mở → đánh dấu đọc
-  const markAllAsRead = () => {
-    setNotifications((prev) =>
-      prev.map((n) => ({ ...n, read: true }))
-    );
-  };
+  if (!isClient) return null;
 
-  const unreadCount = notifications.filter((n) => !n.read).length;
+  return createPortal(
+    <div
+      className={`
+        fixed top-[6.5rem] left-64
+        w-80 h-[calc(100vh-6.5rem)]
+        bg-white shadow-lg
+        transition-all duration-300 ease-out
+        ${
+          open
+            ? "opacity-100 translate-x-0"
+            : "opacity-0 -translate-x-10 pointer-events-none"
+        }
+        z-[999998]
+      `}
+    >
+      {/* HEADER — xoá border-b */}
+      <div className="p-4 font-semibold text-gray-800 flex justify-between">
+        Tin tức
+        <button
+          onClick={() => setOpen(false)}
+          className="text-gray-500 hover:text-black"
+        >
+          ✕
+        </button>
+      </div>
 
-  return (
-    <div className="relative">
-      {/* Nút chuông */}
-      <button
-        id="news-menu-btn"
-        onClick={() => {
-          const newState = !open;
-          setOpen(newState);
-          if (newState) markAllAsRead();
-        }}
-        className="relative p-2 rounded-full hover:bg-gray-100 transition"
-      >
-        <Bell className="w-6 h-6 text-gray-700" />
+      {/* LIST — xoá border từng item */}
+      <div className="overflow-y-auto h-full">
+        {notifications.length === 0 ? (
+          <p className="text-gray-500 p-4 text-sm text-center">
+            Không có thông báo.
+          </p>
+        ) : (
+          notifications.map((n) => (
+            <div
+              key={n.id}
+              className="p-4 text-sm" // xoá border-b
+            >
+              <div className="font-medium text-gray-900">{n.title}</div>
 
-        {unreadCount > 0 && (
-          <span className="absolute -top-0.5 -right-0.5 bg-red-500 text-white text-[10px] font-semibold rounded-full px-[5px]">
-            {unreadCount}
-          </span>
-        )}
-      </button>
-
-      {/* ⭐⭐ PORTAL RENDER NGOÀI BODY → KHÔNG BAO GIỜ BỊ CHE ⭐⭐ */}
-      {mounted &&
-        open &&
-        createPortal(
-          <div
-            className="
-              fixed
-              top-[70px]         /* chỉnh tùy theo header */
-              left-[280px]       /* chỉnh tùy theo sidebar */
-              w-80
-              bg-white
-              border border-gray-200
-              rounded-2xl
-              shadow-2xl
-              z-[2147483647]     /* MAXIMUM z-index */
-            "
-          >
-            <div className="p-3 font-semibold border-b">Thông báo</div>
-
-            <div className="max-h-80 overflow-y-auto">
-              {notifications.length === 0 ? (
-                <p className="p-3 text-sm text-gray-500 text-center">
-                  Không có thông báo.
-                </p>
-              ) : (
-                notifications.map((n) => (
-                  <div
-                    key={n.id}
-                    className={`p-3 text-sm border-b last:border-0 ${
-                      n.read ? "bg-white" : "bg-blue-50"
-                    }`}
-                  >
-                    <div className="font-medium text-gray-800">{n.title}</div>
-
-                    {n.body && (
-                      <div className="text-gray-600 text-xs mt-1">
-                        {n.body}
-                      </div>
-                    )}
-
-                    <div className="text-gray-400 text-[11px] mt-1">
-                      {n.created_at
-                        ? new Date(n.created_at).toLocaleString("vi-VN")
-                        : ""}
-                    </div>
-                  </div>
-                ))
+              {n.body && (
+                <div className="text-xs text-gray-600 mt-1">{n.body}</div>
               )}
+
+              <div className="text-[10px] text-gray-400 mt-1">
+                {n.created_at
+                  ? new Date(n.created_at).toLocaleString("vi-VN")
+                  : ""}
+              </div>
             </div>
-          </div>,
-          document.body
+          ))
         )}
-    </div>
+      </div>
+    </div>,
+    document.body
   );
 }

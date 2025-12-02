@@ -11,13 +11,13 @@ import {
   ChevronDown,
   MessageSquare,
   Newspaper,
+  ShoppingBag,
 } from "lucide-react";
 import { supabase } from "@/lib/supabase/client";
 import MessagesMenu from "@/components/Navbar/pc/LogoSearchIcon/MessagesMenu";
 
 import { toggleNewsMenu } from "@/components/Navbar/pc/LogoSearchIcon/NewsMenu";
 
-import StartSellingButtons from "@/components/Navbar/pc/LogoSearchIcon/StartSellingButtons";
 import { createPortal } from "react-dom";
 import { useRouter } from "next/navigation";
 
@@ -47,7 +47,6 @@ export default function SidebarLeft() {
     }[]
   >([]);
 
-  const [isOpen] = useState(true);
   const [openMiniChat, setOpenMiniChat] = useState(false);
   const [selectedPartner, setSelectedPartner] = useState<string | null>(null);
 
@@ -173,6 +172,11 @@ export default function SidebarLeft() {
     alert("Bạn cần đăng nhập trước!");
   };
 
+  const handleStartSelling = () => {
+    if (userId) router.push("/protected/sell");
+    else handleRequireLogin();
+  };
+
   return (
     <>
       <aside
@@ -218,6 +222,17 @@ export default function SidebarLeft() {
             <MessagesMenu />
           </div>
 
+          {/* Bán hàng */}
+          <div
+            onClick={handleStartSelling}
+            className="flex items-center gap-4 px-5 py-3 mx-2 rounded-xl hover:bg-gray-100 cursor-pointer"
+          >
+            <ShoppingBag className="w-6 h-6 text-gray-700" />
+            <span className="text-base font-medium text-gray-900">
+              Bán hàng
+            </span>
+          </div>
+
           {/* Tin tức */}
           <div
             className="flex items-center gap-4 px-5 py-3 mx-2 rounded-xl hover:bg-gray-100 cursor-pointer"
@@ -227,10 +242,6 @@ export default function SidebarLeft() {
             <span className="text-base font-medium text-gray-900">Tin tức</span>
           </div>
         </nav>
-
-        <div className="px-5 mt-3 mb-2 flex items-center gap-4">
-          <StartSellingButtons onRequireLogin={handleRequireLogin} />
-        </div>
 
         <hr className="border-gray-200 my-3 mx-2" />
 

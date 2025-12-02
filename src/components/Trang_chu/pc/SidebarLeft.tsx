@@ -241,7 +241,7 @@ export default function SidebarLeft() {
             onClick={() => toggleNewsMenu?.()}
           >
             <Newspaper className="w-6 h-6 text-gray-700" />
-            <span className="text-base font-medium text-gray-900">Tin tức</span>
+            <span className="text-base font-medium text-gray-900">Thông báo</span>
           </div>
         </nav>
 

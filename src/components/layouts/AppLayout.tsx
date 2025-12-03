@@ -41,7 +41,7 @@ export default function AppLayout({
             zIndex: 30,
           }}
         >
-          <SidebarRight posts={[]} />
+          <SidebarRight/>
         </div>
 
         {/* Nội dung chính */}

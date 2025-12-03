@@ -39,7 +39,6 @@ export default function LoginModal({
     formState: { errors },
   } = useForm<LoginFormSchema>({ resolver: zodResolver(loginSchema) });
 
-  // ✅ Tạo hoặc cập nhật hồ sơ người dùng trong bảng "users"
   const createUserProfile = async (user: any) => {
     try {
       const { data: existingUser, error: fetchError } = await supabase
@@ -65,7 +64,6 @@ export default function LoginModal({
           .insert([newUser]);
 
         if (insertError) throw insertError;
-        console.log("🆕 Hồ sơ người dùng mới đã được tạo trong bảng 'users'");
       } else {
         const { error: updateError } = await supabase
           .from("users")
@@ -73,14 +71,12 @@ export default function LoginModal({
           .eq("id", user.id);
 
         if (updateError) throw updateError;
-        console.log("✅ Trạng thái online đã được cập nhật");
       }
     } catch (err) {
       console.error("❌ Lỗi xử lý hồ sơ người dùng:", err);
     }
   };
 
-  // ✅ Đăng nhập bằng email/password
   const onSubmit = async (data: LoginFormSchema) => {
     try {
       setLoading(true);
@@ -96,23 +92,20 @@ export default function LoginModal({
       const user = res.user;
       if (user) await createUserProfile(user);
 
-      console.log("✅ Đăng nhập thành công:", res);
       router.refresh();
       onLoginSuccess?.();
 
-      // ✅ Nếu có redirectTo thì chuyển hướng đến đó, ngược lại về trang chủ
       if (redirectTo) router.push(redirectTo);
       else window.location.href = "/";
 
-      onClose(); // ✅ đóng modal sau khi đăng nhập
+      onClose();
     } catch (err: any) {
-      setErrorMsg(err.message || "Login failed");
+      setErrorMsg(err.message || "Đăng nhập thất bại");
     } finally {
       setLoading(false);
     }
   };
 
-  // ✅ Đăng nhập bằng Google
   const handleGoogleLogin = async () => {
     try {
       setLoading(true);
@@ -128,7 +121,7 @@ export default function LoginModal({
 
       if (error) throw error;
     } catch (err: any) {
-      setErrorMsg(err.message || "Google login failed");
+      setErrorMsg(err.message || "Đăng nhập Google thất bại");
     } finally {
       setLoading(false);
     }
@@ -142,7 +135,6 @@ export default function LoginModal({
             <p className="text-red-500 text-sm text-center">{errorMsg}</p>
           )}
 
-          {/* Email */}
           <div>
             <label className="block text-sm text-gray-700 dark:text-gray-300 mb-1">
               Email
@@ -159,10 +151,9 @@ export default function LoginModal({
             )}
           </div>
 
-          {/* Password */}
           <div>
             <label className="block text-sm text-gray-700 dark:text-gray-300 mb-1">
-              Password
+              Mật khẩu
             </label>
             <input
               type="password"
@@ -176,61 +167,59 @@ export default function LoginModal({
             )}
           </div>
 
-          {/* Submit */}
+          {/* Đăng nhập button */}
           <button
             type="submit"
             disabled={loading}
-            className="w-full bg-indigo-600 hover:bg-indigo-700 text-white py-2 rounded-md text-sm font-medium transition-all duration-200 disabled:opacity-60"
+            className="w-full bg-indigo-600 hover:bg-indigo-700 text-white py-2 rounded-md text-sm font-medium transition-all duration-200 disabled:opacity-60 cursor-pointer"
           >
-            {loading ? "Signing in..." : "Sign in"}
+            {loading ? "Đang đăng nhập..." : "Đăng nhập"}
           </button>
 
-          {/* Divider */}
           <div className="relative text-center my-3">
             <span className="absolute left-0 top-1/2 w-full border-t border-gray-300 dark:border-gray-700" />
             <span className="relative bg-white dark:bg-gray-900 px-2 text-sm text-gray-500">
-              or
+              hoặc
             </span>
           </div>
 
-          {/* Google button */}
+          {/* Tiếp tục với Google */}
           <button
             type="button"
             onClick={handleGoogleLogin}
             disabled={loading}
-            className={`w-full border px-4 py-2 rounded-md flex items-center justify-center gap-2 text-sm font-medium 
-              transition-all duration-200 
+            className={`w-full border px-4 py-2 rounded-md flex items-center justify-center gap-2 text-sm font-medium transition-all duration-200
               ${loading
                 ? "opacity-70 cursor-not-allowed"
-                : "bg-white dark:bg-gray-800 hover:bg-gray-100 dark:hover:bg-gray-700 active:scale-[0.98]"
+                : "bg-white dark:bg-gray-800 hover:bg-gray-100 dark:hover:bg-gray-700 active:scale-[0.98] cursor-pointer"
               }`}
           >
             <FcGoogle className="w-5 h-5" />
             <span className="text-gray-800 dark:text-gray-100">
-              Continue with Google
+              Tiếp tục với Google
             </span>
           </button>
 
-          {/* Links */}
           <div className="flex justify-between text-sm mt-4">
+            {/* Đăng ký */}
             <button
               type="button"
-              className="text-indigo-600 hover:underline"
+              className="text-indigo-600 hover:underline cursor-pointer"
               onClick={() => setShowSignUpModal(true)}
             >
-              Sign up
+              Đăng ký
             </button>
+            {/* Quên mật khẩu */}
             <button
               type="button"
-              className="text-gray-500 hover:underline"
+              className="text-gray-500 hover:underline cursor-pointer"
               onClick={() => setShowForgotPasswordModal(true)}
             >
-              Forgot password?
+              Quên mật khẩu?
             </button>
           </div>
         </form>
 
-        {/* Modals */}
         {showSignUpModal && (
           <SignUpModal onClose={() => setShowSignUpModal(false)} />
         )}

@@ -20,7 +20,7 @@ export default function SignUpModal({ onClose }: { onClose: () => void }) {
     setSuccess('');
 
     if (password !== confirmPassword) {
-      setError('Passwords do not match');
+      setError('Mật khẩu không khớp');
       return;
     }
 
@@ -33,7 +33,7 @@ export default function SignUpModal({ onClose }: { onClose: () => void }) {
     if (error) {
       setError(error.message);
     } else {
-      setSuccess('Sign-up successful! Check your email to verify.');
+      setSuccess('Đăng ký thành công! Vui lòng kiểm tra email để xác thực.');
     }
 
     setLoading(false);
@@ -67,7 +67,7 @@ export default function SignUpModal({ onClose }: { onClose: () => void }) {
             >
               <Dialog.Panel className="w-full max-w-md transform overflow-hidden rounded-lg bg-white dark:bg-gray-900 p-6 shadow-xl transition-all">
                 <Dialog.Title className="text-lg font-medium text-gray-900 dark:text-white">
-                  Sign Up
+                  Đăng ký
                 </Dialog.Title>
 
                 <form onSubmit={handleSignUp} className="space-y-4 mt-4">
@@ -93,7 +93,7 @@ export default function SignUpModal({ onClose }: { onClose: () => void }) {
 
                   <div>
                     <label className="block text-sm mb-1 text-gray-700 dark:text-gray-300">
-                      Password
+                      Mật khẩu
                     </label>
                     <input
                       type="password"
@@ -106,7 +106,7 @@ export default function SignUpModal({ onClose }: { onClose: () => void }) {
 
                   <div>
                     <label className="block text-sm mb-1 text-gray-700 dark:text-gray-300">
-                      Confirm Password
+                      Nhập lại mật khẩu
                     </label>
                     <input
                       type="password"
@@ -117,21 +117,23 @@ export default function SignUpModal({ onClose }: { onClose: () => void }) {
                     />
                   </div>
 
+                  {/* Sign Up button với cursor pointer */}
                   <button
                     type="submit"
                     disabled={loading}
-                    className="w-full bg-indigo-600 hover:bg-indigo-700 text-white py-2 rounded-md text-sm font-medium transition"
+                    className="w-full bg-indigo-600 hover:bg-indigo-700 text-white py-2 rounded-md text-sm font-medium transition cursor-pointer disabled:opacity-60"
                   >
-                    {loading ? 'Signing up...' : 'Sign Up'}
+                    {loading ? 'Đang đăng ký...' : 'Đăng ký'}
                   </button>
                 </form>
 
                 <div className="mt-4 text-center">
+                  {/* Cancel button với cursor pointer */}
                   <button
                     onClick={onClose}
-                    className="text-sm text-gray-500 hover:underline"
+                    className="text-sm text-gray-500 hover:underline cursor-pointer"
                   >
-                    Cancel
+                    Hủy
                   </button>
                 </div>
               </Dialog.Panel>

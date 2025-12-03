@@ -216,15 +216,24 @@ export default function ProfilePage() {
 
           {isEditing ? (
             <div className="flex gap-2">
-              <button onClick={handleSave} className="bg-green-600 text-white px-3 py-2 rounded-md text-sm flex items-center">
+              <button
+                onClick={handleSave}
+                className="bg-green-600 text-white px-3 py-2 rounded-md text-sm flex items-center cursor-pointer"
+              >
                 <Save size={16} /> Lưu
               </button>
-              <button onClick={() => setIsEditing(false)} className="bg-gray-300 px-3 py-2 rounded-md text-sm flex items-center">
+              <button
+                onClick={() => setIsEditing(false)}
+                className="bg-gray-300 px-3 py-2 rounded-md text-sm flex items-center cursor-pointer"
+              >
                 <X size={16} /> Hủy
               </button>
             </div>
           ) : (
-            <button onClick={() => setIsEditing(true)} className="bg-blue-500 text-white px-3 py-2 rounded-md text-sm flex items-center">
+            <button
+              onClick={() => setIsEditing(true)}
+              className="px-3 py-2 rounded-md text-sm flex items-center cursor-pointer border border-gray-300 hover:bg-gray-100"
+            >
               <Edit3 size={16} /> Chỉnh sửa
             </button>
           )}
@@ -334,7 +343,7 @@ export default function ProfilePage() {
                     <button
                       onClick={() => handleDelete(p.id, imageUrl)}
                       disabled={deleting === p.id}
-                      className={`absolute top-2 right-2 px-3 py-1 rounded text-white text-xs ${
+                      className={`absolute top-2 right-2 px-3 py-1 rounded text-white text-xs cursor-pointer ${
                         deleting === p.id
                           ? "bg-gray-400"
                           : "bg-red-500 hover:bg-red-600"

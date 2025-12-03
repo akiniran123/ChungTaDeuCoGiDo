@@ -6,6 +6,7 @@ import { useRouter } from 'next/navigation'
 
 import Logo from './LogoSearchIcon/logo'
 import SearchBar from './LogoSearchIcon/SearchBar'
+// ❌ Removed: import StartSellingButtons from './LogoSearchIcon/StartSellingButtons'
 import MessagesMenu from './LogoSearchIcon/MessagesMenu'
 import NewsMenu from './LogoSearchIcon/NewsMenu'
 import CartMenu from './LogoSearchIcon/CartMenu'
@@ -55,6 +56,8 @@ export default function LogoSearchIcons({
           <SearchBar />
 
           <div className="flex items-center gap-3">
+            {/* ❌ Removed StartSellingButtons here */}
+
             <MessagesMenu />
             <NewsMenu />
 
@@ -74,10 +77,7 @@ export default function LogoSearchIcons({
               )}
             </div>
 
-            {/* 👉 Thêm cursor-pointer vào UserMenu */}
-            <div className="cursor-pointer">
-              <UserMenu onLoginClick={() => openLogin()} />
-            </div>
+            <UserMenu onLoginClick={() => openLogin()} />
           </div>
         </div>
 

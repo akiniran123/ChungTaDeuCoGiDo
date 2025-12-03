@@ -29,7 +29,7 @@ export default function ForgotPasswordModal({
     if (error) {
       setError(error.message);
     } else {
-      setMessage('Password reset email sent. Please check your inbox.');
+      setMessage('Email đặt lại mật khẩu đã được gửi. Vui lòng kiểm tra hộp thư.');
     }
 
     setLoading(false);
@@ -63,7 +63,7 @@ export default function ForgotPasswordModal({
             >
               <Dialog.Panel className="w-full max-w-md transform overflow-hidden rounded-lg bg-white dark:bg-gray-900 p-6 shadow-xl transition-all">
                 <Dialog.Title className="text-lg font-medium text-gray-900 dark:text-white">
-                  Forgot Password
+                  Quên Mật Khẩu
                 </Dialog.Title>
 
                 <form onSubmit={handleReset} className="space-y-4 mt-4">
@@ -83,21 +83,23 @@ export default function ForgotPasswordModal({
                     />
                   </div>
 
+                  {/* Nút gửi email đặt lại mật khẩu với cursor pointer */}
                   <button
                     type="submit"
                     disabled={loading}
-                    className="w-full bg-indigo-600 hover:bg-indigo-700 text-white py-2 rounded-md text-sm font-medium transition"
+                    className="w-full bg-indigo-600 hover:bg-indigo-700 text-white py-2 rounded-md text-sm font-medium transition cursor-pointer disabled:opacity-60"
                   >
-                    {loading ? 'Sending...' : 'Send Reset Link'}
+                    {loading ? 'Đang gửi...' : 'Gửi Email Đặt Lại'}
                   </button>
                 </form>
 
                 <div className="mt-4 text-center">
+                  {/* Nút hủy với cursor pointer */}
                   <button
                     onClick={onClose}
-                    className="text-sm text-gray-500 hover:underline"
+                    className="text-sm text-gray-500 hover:underline cursor-pointer"
                   >
-                    Cancel
+                    Hủy
                   </button>
                 </div>
               </Dialog.Panel>

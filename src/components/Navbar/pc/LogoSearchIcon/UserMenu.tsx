@@ -36,8 +36,8 @@ export default function UserMenu({ onLoginClick }: { onLoginClick: () => void })
 
   return (
     <HeadlessMenu as="div" className="relative">
-      <HeadlessMenu.Button className="flex items-center gap-1 text-sm text-gray-700 hover:text-[#9b4de0]">
-        <UserIcon className="w-5 h-5" />
+      <HeadlessMenu.Button className="flex items-center gap-1 text-sm text-gray-700 hover:text-[#9b4de0] cursor-pointer">
+        <UserIcon className="w-5 h-5 cursor-pointer" />
         <ChevronDown className="w-4 h-4" />
       </HeadlessMenu.Button>
       <HeadlessMenu.Items
@@ -47,7 +47,7 @@ export default function UserMenu({ onLoginClick }: { onLoginClick: () => void })
           {({ active }) => (
             <button
               onClick={() => router.push('/profile')}
-              className={`block w-full px-4 py-2 text-left ${active ? 'bg-gray-100' : ''}`}
+              className={`block w-full px-4 py-2 text-left cursor-pointer ${active ? 'bg-gray-100' : ''}`}
             >
               Profile
             </button>
@@ -61,7 +61,7 @@ export default function UserMenu({ onLoginClick }: { onLoginClick: () => void })
                 setUser(null)
                 router.refresh()
               }}
-              className={`block w-full px-4 py-2 text-left text-red-500 ${active ? 'bg-gray-100' : ''}`}
+              className={`block w-full px-4 py-2 text-left text-red-500 cursor-pointer ${active ? 'bg-gray-100' : ''}`}
             >
               Sign out
             </button>

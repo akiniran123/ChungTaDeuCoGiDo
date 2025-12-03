@@ -6,14 +6,12 @@ import { supabase } from "@/lib/supabase/client";
 
 import ListingTitleInput from "@/components/sell/pc//ListingTitleInput";
 import DescriptionEditor from "@/components/sell/pc//DescriptionEditor";
-// ❌ Bỏ CategorySelect
 import ConditionSelector from "@/components/sell/pc//ConditionSelector";
 import ImageUploader from "@/components/sell/pc//ImageUploader";
 import PriceAndOffers from "@/components/sell/pc//PriceAndOffers";
 import TechSpecsEditor from "@/components/sell/pc//TechSpecsEditor";
 import PrivateToggle from "@/components/sell/pc//PrivateToggle";
 import ReturnPolicies from "@/components/sell/pc//ReturnPolicies";
-import ActionButtons from "@/components/sell/pc//ActionButtons";
 import CommunitySelector from "@/components/sell/pc/CommunitySelector";
 
 type SellForm = {
@@ -161,7 +159,6 @@ export default function SellPage() {
           error={errors.description}
         />
 
-        {/* ConditionSelector uses useFormContext internally */}
         <ConditionSelector error={errors.condition} />
 
         <CommunitySelector
@@ -189,7 +186,22 @@ export default function SellPage() {
 
         <ReturnPolicies />
 
-        <ActionButtons loading={loading} message={message} />
+        {/* Nút đăng sản phẩm trung tính, nhấn chỉ hơi tối */}
+        <div className="text-center">
+          <button
+            type="submit"
+            disabled={loading}
+            className="px-6 py-2 border rounded-md text-sm font-medium transition-colors duration-150 cursor-pointer disabled:opacity-60 bg-transparent hover:bg-gray-100/50 active:bg-gray-200/50 dark:hover:bg-gray-800/30 dark:active:bg-gray-800/20"
+          >
+            {loading ? "Đang đăng..." : "Đăng sản phẩm"}
+          </button>
+        </div>
+
+        {message && (
+          <p className="text-center text-sm mt-2">
+            {message}
+          </p>
+        )}
       </form>
     </FormProvider>
   );

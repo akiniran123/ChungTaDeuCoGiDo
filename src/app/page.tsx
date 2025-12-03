@@ -62,17 +62,14 @@ export default function ProductsPage() {
 
         const raw = (data || []) as any[];
 
-        // ⭐ THÊM author_id / author / avatar
         const formatted: ProductWithUser[] = raw.map((p) => ({
           ...p,
-
           author_id: p.users?.id ?? null,
           author: p.users?.username ?? "Người dùng",
           avatar:
             p.users?.avatar_url && p.users?.avatar_url !== ""
               ? p.users.avatar_url
               : null,
-
           users: p.users
             ? {
                 id: p.users.id,
@@ -83,19 +80,16 @@ export default function ProductsPage() {
                     : null,
               }
             : null,
-
           tags:
             (p.product_tags || [])
               .map((pt: any) => pt.tags?.name)
               .filter(Boolean) || [],
-
           communityName: p.communities?.title || null,
           communityIcon: p.communities?.avatar_url || null,
         }));
 
         setProducts(formatted);
 
-        // COMMENTS
         const commentMap: Record<string, number> = {};
         await Promise.all(
           formatted.map(async (prod) => {
@@ -103,13 +97,11 @@ export default function ProductsPage() {
               .from("comments")
               .select("*", { count: "exact" })
               .eq("product_id", prod.id);
-
             commentMap[prod.id] = count || 0;
           })
         );
         setCommentsCount(commentMap);
 
-        // LIKES
         const { data: likesData } = await supabase
           .from("product_likes")
           .select("product_id, user_id");
@@ -135,7 +127,6 @@ export default function ProductsPage() {
         setLikesCount(likeMap);
         setLikedIds(liked);
 
-        // BADGES
         const userIds = [
           ...new Set(formatted.map((p) => p.users?.id).filter(Boolean)),
         ] as string[];
@@ -185,13 +176,15 @@ export default function ProductsPage() {
     );
 
   return (
-    <ProductsList
-      products={products}
-      likesCount={likesCount}
-      commentsCount={commentsCount}
-      likedIds={likedIds}
-      setLikedIds={setLikedIds}
-      userBadges={userBadges}
-    />
+    <div className="pl-6">
+      <ProductsList
+        products={products}
+        likesCount={likesCount}
+        commentsCount={commentsCount}
+        likedIds={likedIds}
+        setLikedIds={setLikedIds}
+        userBadges={userBadges}
+      />
+    </div>
   );
 }

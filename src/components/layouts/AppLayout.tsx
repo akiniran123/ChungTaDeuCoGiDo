@@ -2,40 +2,61 @@
 
 import Navbar from "@/components/Navbar/pc/Navbar";
 import SidebarLeft from "@/components/sidebarleft/pc/SidebarLeft";
+import SidebarRight from "@/components/Trang_chu/pc/SidebarRight";
 import BottomNav from "@/components/sidebarleft/mobile/BottomNav";
 
-export default function AppLayout({ children }: { children: React.ReactNode }) {
-  const SIDEBAR_WIDTH = 256;
+export default function AppLayout({
+  children,
+}: {
+  children: React.ReactNode;
+}) {
+  const SIDEBAR_LEFT_WIDTH = 256; // w-64
+  const SIDEBAR_RIGHT_WIDTH = 288; // w-72
 
   return (
-    <div className="flex flex-col min-h-screen bg-white text-black">
+    <div className="bg-white text-black min-h-screen flex flex-col">
       {/* Navbar luôn hiển thị */}
       <Navbar />
 
-      {/* Container chính */}
-      <div className="flex pt-[4.5rem] flex-1">
-        {/* Sidebar chỉ hiển thị trên màn hình >= md (desktop) */}
-        <aside
-          className="hidden md:block fixed left-0 top-[4.5rem] bg-white border-r shadow-sm"
+      {/* Layout chính */}
+      <div className="flex flex-1 pt-[4.5rem] relative">
+        {/* Sidebar trái */}
+        <div
+          className="hidden md:block fixed top-[4.5rem] left-0 border-r bg-white shadow-sm"
           style={{
-            width: SIDEBAR_WIDTH,
+            width: SIDEBAR_LEFT_WIDTH,
             height: "calc(100vh - 4.5rem)",
             zIndex: 40,
           }}
         >
           <SidebarLeft />
-        </aside>
+        </div>
+
+        {/* Sidebar phải */}
+        <div
+          className="hidden xl:block fixed top-[4.5rem] right-0 border-l bg-white shadow-sm px-4 py-6 overflow-y-auto"
+          style={{
+            width: SIDEBAR_RIGHT_WIDTH,
+            height: "calc(100vh - 4.5rem)",
+            zIndex: 30,
+          }}
+        >
+          <SidebarRight posts={[]} />
+        </div>
 
         {/* Nội dung chính */}
         <main
-          className="flex-1 p-4 transition-all duration-300"
-          style={{ marginLeft: SIDEBAR_WIDTH }}
+          className="flex-1 px-4 py-6 transition-all duration-300"
+          style={{
+            paddingLeft: SIDEBAR_LEFT_WIDTH,
+            paddingRight: SIDEBAR_RIGHT_WIDTH,
+          }}
         >
           {children}
         </main>
       </div>
 
-      {/* BottomNav chỉ hiển thị trên mobile (< md) */}
+      {/* BottomNav cho mobile */}
       <div className="block md:hidden">
         <BottomNav />
       </div>

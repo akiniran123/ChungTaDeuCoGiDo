@@ -33,7 +33,9 @@ export default function SearchBar({ userId }: { userId?: string }) {
         .order("searched_at", { ascending: false })
         .limit(5);
       if (!error && data) {
-        setHistory(data.filter((h) => h.query).map((h) => ({ query: h.query as string })));
+        setHistory(
+          data.filter((h) => h.query).map((h) => ({ query: h.query as string }))
+        );
       }
     };
     fetchHistory();
@@ -100,17 +102,16 @@ export default function SearchBar({ userId }: { userId?: string }) {
   };
 
   return (
-    <div className="relative w-full max-w-md mx-auto">
-      {/* ✅ Form tròn, bỏ toàn bộ viền xanh kể cả bên trong */}
+    <div className="relative w-full max-w-xl mx-auto">
+      {/* Form mỏng hơn, ép chiều cao */}
       <form
         onSubmit={handleSearch}
-        className="flex w-full items-center bg-white rounded-full shadow-md border border-gray-200 px-4 py-2 transition-all"
-        style={{ outline: "none", boxShadow: "none" }}
+        className="flex w-full items-center bg-white rounded-full shadow-sm border border-gray-200 px-2 h-8"
       >
-        <Search size={20} className="text-gray-400 mr-3" />
+        <Search size={14} className="text-gray-400 mr-2" />
         <input
           type="text"
-          placeholder="Tìm kiếm sản phẩm..."
+          placeholder="Tìm kiếm..."
           value={query}
           onChange={(e) => setQuery(e.target.value)}
           onFocus={() => setShowDropdown(true)}
@@ -120,13 +121,12 @@ export default function SearchBar({ userId }: { userId?: string }) {
               setTimeout(() => setShowDropdown(false), 150);
             }
           }}
-          className="w-full bg-transparent border-none outline-none text-sm text-gray-800 placeholder-gray-400 focus:outline-none focus:ring-0"
-          style={{ outline: "none", boxShadow: "none" }}
+          className="w-full bg-transparent border-none outline-none text-xs text-gray-800 placeholder-gray-400 focus:outline-none focus:ring-0 h-6"
         />
       </form>
 
       {showDropdown && (
-        <div className="absolute z-50 w-full mt-2 max-h-96 overflow-y-auto border border-gray-200 rounded-xl bg-white shadow-lg">
+        <div className="absolute z-50 w-full mt-2 max-h-72 overflow-y-auto border border-gray-200 rounded-lg bg-white shadow-md">
           {/* Kết quả tìm kiếm */}
           {query && results.length > 0 && (
             <ul className="divide-y divide-gray-100">
@@ -135,19 +135,23 @@ export default function SearchBar({ userId }: { userId?: string }) {
                   key={item.id}
                   onClick={() => handleSelectProduct(item.id)}
                   tabIndex={0}
-                  className="search-suggestion flex items-center gap-3 p-3 hover:bg-blue-50 cursor-pointer transition-colors rounded-lg"
+                  className="search-suggestion flex items-center gap-2 p-2 hover:bg-blue-50 cursor-pointer transition-colors rounded-md"
                 >
                   {item.image_url && (
                     <img
                       src={item.image_url}
                       alt={item.title}
-                      className="w-14 h-14 object-cover rounded-lg"
+                      className="w-8 h-8 object-cover rounded-md"
                     />
                   )}
                   <div className="flex-1">
-                    <p className="text-sm font-medium text-gray-800">{item.title}</p>
-                    <p className="text-xs text-gray-500">
-                      {item.price ? `${item.price.toLocaleString()}₫` : "Liên hệ"}
+                    <p className="text-xs font-medium text-gray-800">
+                      {item.title}
+                    </p>
+                    <p className="text-[10px] text-gray-500">
+                      {item.price
+                        ? `${item.price.toLocaleString()}₫`
+                        : "Liên hệ"}
                     </p>
                   </div>
                 </li>
@@ -157,20 +161,22 @@ export default function SearchBar({ userId }: { userId?: string }) {
 
           {/* Không tìm thấy */}
           {query && results.length === 0 && (
-            <p className="text-sm text-gray-500 p-4 text-center">Không tìm thấy sản phẩm nào</p>
+            <p className="text-xs text-gray-500 p-2 text-center">
+              Không tìm thấy sản phẩm nào
+            </p>
           )}
 
           {/* Lịch sử tìm kiếm */}
           {!query && history.length > 0 && (
-            <div className="p-3">
-              <p className="text-xs text-gray-400 mb-2 uppercase tracking-wider">
+            <div className="p-2">
+              <p className="text-[10px] text-gray-400 mb-1 uppercase tracking-wider">
                 Tìm kiếm gần đây
               </p>
               {history.map((h, i) => (
                 <button
                   key={i}
                   onClick={() => handleSelectHistory(h.query)}
-                  className="block w-full text-left text-sm p-2 hover:bg-gray-100 rounded-lg transition-colors"
+                  className="block w-full text-left text-xs p-2 hover:bg-gray-100 rounded-md transition-colors"
                 >
                   {h.query}
                 </button>

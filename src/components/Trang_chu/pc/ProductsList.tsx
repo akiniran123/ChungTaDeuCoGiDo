@@ -1,12 +1,13 @@
 "use client";
-import { useState, useEffect, useRef } from "react";
+import { useState, useEffect, useRef, useMemo } from "react";
 import Link from "next/link";
 import { supabase } from "@/lib/supabase/client";
 import { motion, AnimatePresence } from "framer-motion";
 import { LayoutGrid, Grid } from "lucide-react";
 import SmallCard from "@/components/Trang_chu/pc/SmallCard";
-import DealCard, { DealType } from "@/components/Trang_chu/pc/DealCard";
+import DealCard from "@/components/Trang_chu/pc/DealCard";
 import type { Database } from "@/types/supabase";
+import SearchBar from "@/components/Navbar/pc/LogoSearchIcon/SearchBar"; // ✅ import SearchBar
 
 type ProductWithUser = Database["public"]["Tables"]["products"]["Row"] & {
   users?: {
@@ -43,11 +44,19 @@ export default function ProductsList({
 }: ProductsListProps) {
   const [biggerGrid, setBiggerGrid] = useState(false);
   const [activeTag, setActiveTag] = useState<string | null>(null);
+  const [searchQuery, setSearchQuery] = useState(""); // ✅ thêm state search
   const scrollPosition = useRef(0);
 
-  const visibleProducts = activeTag
-    ? products.filter((p) => p.tags?.includes(activeTag))
-    : products;
+  // ✅ lọc theo tag + search
+  const visibleProducts = useMemo(() => {
+    return products.filter((p) => {
+      const matchTag = activeTag ? p.tags?.includes(activeTag) : true;
+      const matchSearch = searchQuery
+        ? p.title.toLowerCase().includes(searchQuery.toLowerCase())
+        : true;
+      return matchTag && matchSearch;
+    });
+  }, [products, activeTag, searchQuery]);
 
   useEffect(() => {
     const handleScroll = () => (scrollPosition.current = window.scrollY);
@@ -66,6 +75,11 @@ export default function ProductsList({
 
   return (
     <div className="p-6">
+      {/* SEARCH BAR */}
+      <div className="mb-4">
+        <SearchBar onSearch={(q: string) => setSearchQuery(q)} />
+      </div>
+
       {/* FILTERING */}
       {activeTag && (
         <div className="mb-4 flex items-center gap-3">
@@ -82,41 +96,43 @@ export default function ProductsList({
         </div>
       )}
 
-      {/* GRID SWITCH */}
-     {/* FILTER TOOLBAR */}
-<div className="flex items-center justify-between mb-5">
+      {/* FILTER TOOLBAR */}
+      <div className="flex items-center justify-between mb-5">
+        {/* LEFT SIDE — GRID SWITCH */}
+        <div className="flex items-center gap-3">
+          <button
+            onClick={toggleGrid}
+            className={`px-3 py-2 rounded-lg border transition flex items-center gap-2 ${
+              biggerGrid
+                ? "bg-pink-100 text-pink-600 border-pink-300"
+                : "bg-white text-gray-700 border-gray-300 hover:bg-gray-100"
+            }`}
+          >
+            {biggerGrid ? <Grid size={18} /> : <LayoutGrid size={18} />}
+            <span className="text-sm font-medium">Chế độ thẻ</span>
+          </button>
+        </div>
 
-  {/* LEFT SIDE — GRID SWITCH */}
-  <div className="flex items-center gap-3">
-    <button
-      onClick={toggleGrid}
-      className={`px-3 py-2 rounded-lg border transition flex items-center gap-2 ${
-        biggerGrid
-          ? "bg-pink-100 text-pink-600 border-pink-300"
-          : "bg-white text-gray-700 border-gray-300 hover:bg-gray-100"
-      }`}
-    >
-      {biggerGrid ? <Grid size={18} /> : <LayoutGrid size={18} />}
-      <span className="text-sm font-medium">Chế độ thẻ</span>
-    </button>
-  </div>
-
-  {/* RIGHT SIDE — FILTER BUTTONS */}
-  <div className="flex items-center gap-2 overflow-x-auto no-scrollbar">
-
-    {["Hot", "Mới nhất", "Giảm giá", "Nhiều like", "Cộng đồng", "Theo dõi", "Video"]
-      .map((label, idx) => (
-        <button
-          key={idx}
-          className="px-3 py-1.5 rounded-full text-xs whitespace-nowrap bg-gray-100 text-gray-700 hover:bg-gray-200 transition border border-gray-300"
-        >
-          {label}
-        </button>
-      ))}
-
-  </div>
-</div>
-
+        {/* RIGHT SIDE — FILTER BUTTONS */}
+        <div className="flex items-center gap-2 overflow-x-auto no-scrollbar">
+          {[
+            "Hot",
+            "Mới nhất",
+            "Giảm giá",
+            "Nhiều like",
+            "Cộng đồng",
+            "Theo dõi",
+            "Video",
+          ].map((label, idx) => (
+            <button
+              key={idx}
+              className="px-3 py-1.5 rounded-full text-xs whitespace-nowrap bg-gray-100 text-gray-700 hover:bg-gray-200 transition border border-gray-300"
+            >
+              {label}
+            </button>
+          ))}
+        </div>
+      </div>
 
       {/* GRID */}
       <AnimatePresence mode="wait">
@@ -134,48 +150,46 @@ export default function ProductsList({
         >
           {visibleProducts.map((p) =>
             biggerGrid ? (
-            <DealCard
-  key={p.id}
-  bigger
-  deal={{
-    id: p.id,
-    title: p.title,
-    content: p.description ?? undefined,
-    category: p.category ?? undefined,
-    media: p.image_url ? [p.image_url] : [],
-    votes: likesCount[p.id] ?? 0,
-    comments: commentsCount[p.id] ?? 0,
-    author: p.users?.username ?? undefined,
-    author_id: p.users?.id ?? undefined,
-    avatar: p.users?.avatar_url ?? undefined,
-    createdAt: p.created_at ?? undefined,
-    community_title: p.communityName ?? null,
-    community_avatar_url: p.communityIcon ?? null,
-    community_id: p.community_id ?? null,
-    tags: p.tags ?? [],
-    product_tags: p.tags ?? [],
-  }}
-  onTagClick={(tag) => setActiveTag(tag)}
-  vote={() => {}}                 // 🔥 thêm vào để pass type
-  setSelectedDeal={() => {}}      // 🔥 thêm vào để pass type
-/>
-
-
+              <DealCard
+                key={p.id}
+                bigger
+                deal={{
+                  id: p.id,
+                  title: p.title,
+                  content: p.description ?? undefined,
+                  category: p.category ?? undefined,
+                  media: p.image_url ? [p.image_url] : [],
+                  votes: likesCount[p.id] ?? 0,
+                  comments: commentsCount[p.id] ?? 0,
+                  author: p.users?.username ?? undefined,
+                  author_id: p.users?.id ?? undefined,
+                  avatar: p.users?.avatar_url ?? undefined,
+                  createdAt: p.created_at ?? undefined,
+                  community_title: p.communityName ?? null,
+                  community_avatar_url: p.communityIcon ?? null,
+                  community_id: p.community_id ?? null,
+                  tags: p.tags ?? [],
+                  product_tags: p.tags ?? [],
+                }}
+                onTagClick={(tag) => setActiveTag(tag)}
+                vote={() => {}}
+                setSelectedDeal={() => {}}
+              />
             ) : (
               <SmallCard
-  key={p.id}
-  product={{
-    id: p.id,
-    title: p.title,
-    image_url: p.image_url ?? undefined,
-    tags: p.tags ?? [],
-  }}
-  likesCount={likesCount[p.id] ?? 0}
-  commentsCount={commentsCount[p.id] ?? 0}
-  likedIds={likedIds}
-  setLikedIds={setLikedIds}
-  onTagClick={(tag) => setActiveTag(tag)}
-/>
+                key={p.id}
+                product={{
+                  id: p.id,
+                  title: p.title,
+                  image_url: p.image_url ?? undefined,
+                  tags: p.tags ?? [],
+                }}
+                likesCount={likesCount[p.id] ?? 0}
+                commentsCount={commentsCount[p.id] ?? 0}
+                likedIds={likedIds}
+                setLikedIds={setLikedIds}
+                onTagClick={(tag) => setActiveTag(tag)}
+              />
             )
           )}
         </motion.div>

@@ -28,6 +28,7 @@ export default function SearchBar({ userId, onSearch }: SearchBarProps) {
   const [loading, setLoading] = useState(false);
   const router = useRouter();
 
+  // Lấy lịch sử tìm kiếm
   useEffect(() => {
     if (!userId) return;
     const fetchHistory = async () => {
@@ -38,12 +39,15 @@ export default function SearchBar({ userId, onSearch }: SearchBarProps) {
         .order("searched_at", { ascending: false })
         .limit(5);
       if (data) {
-        setHistory(data.filter((h) => h.query).map((h) => ({ query: h.query as string })));
+        setHistory(
+          data.filter((h) => h.query).map((h) => ({ query: h.query as string }))
+        );
       }
     };
     fetchHistory();
   }, [userId]);
 
+  // Lấy gợi ý sản phẩm
   const fetchSuggestions = useCallback(async () => {
     if (!query.trim()) {
       setResults([]);
@@ -64,15 +68,25 @@ export default function SearchBar({ userId, onSearch }: SearchBarProps) {
     return () => clearTimeout(handler);
   }, [fetchSuggestions]);
 
+  // Xử lý khi submit search
   const handleSearch = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!query.trim()) return;
     onSearch?.(query.trim());
 
     if (userId) {
-      await supabase.from("search_history").upsert([
-        { user_id: userId, query: query.trim(), searched_at: new Date().toISOString() },
-      ], { onConflict: ["user_id", "query"] });
+      await supabase
+        .from("search_history")
+        .upsert(
+          [
+            {
+              user_id: userId,
+              query: query.trim(),
+              searched_at: new Date().toISOString(),
+            },
+          ],
+          { onConflict: "user_id,query" } // ✅ cách 1: dùng chuỗi
+        );
     }
 
     if (results.length > 0) {
@@ -84,14 +98,17 @@ export default function SearchBar({ userId, onSearch }: SearchBarProps) {
     <div className="relative w-full max-w-xl mx-auto">
       <form
         onSubmit={handleSearch}
-        className="flex w-full items-center bg-white rounded-full shadow-sm border border-gray-200 px-2 h-8"
+        className="flex w-full items-center bg-white rounded-full shadow-sm border border-gray-200 px-2 h-12"
       >
         <Search size={14} className="text-gray-400 mr-2" />
         <input
           type="text"
           placeholder="Tìm kiếm..."
           value={query}
-          onChange={(e) => { setQuery(e.target.value); onSearch?.(e.target.value); }}
+          onChange={(e) => {
+            setQuery(e.target.value);
+            onSearch?.(e.target.value);
+          }}
           onFocus={() => setShowDropdown(true)}
           onBlur={() => setTimeout(() => setShowDropdown(false), 150)}
           aria-expanded={showDropdown}
@@ -112,12 +129,20 @@ export default function SearchBar({ userId, onSearch }: SearchBarProps) {
                   className="search-suggestion flex items-center gap-2 p-2 hover:bg-blue-50 cursor-pointer transition-colors rounded-md"
                 >
                   {item.image_url && (
-                    <img src={item.image_url} alt={item.title} className="w-8 h-8 object-cover rounded-md" />
+                    <img
+                      src={item.image_url}
+                      alt={item.title}
+                      className="w-8 h-8 object-cover rounded-md"
+                    />
                   )}
                   <div className="flex-1">
-                    <p className="text-xs font-medium text-gray-800">{item.title}</p>
+                    <p className="text-xs font-medium text-gray-800">
+                      {item.title}
+                    </p>
                     <p className="text-[10px] text-gray-500">
-                      {item.price ? `${item.price.toLocaleString()}₫` : "Liên hệ"}
+                      {item.price
+                        ? `${item.price.toLocaleString()}₫`
+                        : "Liên hệ"}
                     </p>
                   </div>
                 </li>
@@ -125,11 +150,15 @@ export default function SearchBar({ userId, onSearch }: SearchBarProps) {
             </ul>
           )}
           {query && !loading && results.length === 0 && (
-            <p className="text-xs text-gray-500 p-2 text-center">Không tìm thấy sản phẩm nào</p>
+            <p className="text-xs text-gray-500 p-2 text-center">
+              Không tìm thấy sản phẩm nào
+            </p>
           )}
           {!query && history.length > 0 && (
             <div className="p-2">
-              <p className="text-[10px] text-gray-400 mb-1 uppercase tracking-wider">Tìm kiếm gần đây</p>
+              <p className="text-[10px] text-gray-400 mb-1 uppercase tracking-wider">
+                Tìm kiếm gần đây
+              </p>
               {history.map((h, i) => (
                 <button
                   key={i}

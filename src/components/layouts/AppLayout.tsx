@@ -11,7 +11,7 @@ export default function AppLayout({
   children: React.ReactNode;
 }) {
   const SIDEBAR_LEFT_WIDTH = 300; // w-64
-  const SIDEBAR_RIGHT_WIDTH = 370; // w-72
+  const SIDEBAR_RIGHT_WIDTH = 300; // w-72
 
   return (
     <div className="bg-white text-black min-h-screen flex flex-col">

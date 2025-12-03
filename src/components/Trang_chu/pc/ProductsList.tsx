@@ -1,5 +1,9 @@
 "use client";
+<<<<<<< HEAD
 import { useState, useEffect, useRef } from "react";
+=======
+import { useState, useEffect, useRef, useMemo } from "react";
+>>>>>>> parent of fdcba33 (ducanh)
 import Link from "next/link";
 import { supabase } from "@/lib/supabase/client";
 import { motion, AnimatePresence } from "framer-motion";
@@ -66,6 +70,14 @@ export default function ProductsList({
 
   return (
     <div className="p-6">
+<<<<<<< HEAD
+=======
+      {/* SEARCH BAR */}
+      <div className="mb-4">
+        <SearchBar onSearch={(q: string) => setSearchQuery(q)} />
+      </div>
+
+>>>>>>> parent of fdcba33 (ducanh)
       {/* FILTERING */}
       {activeTag && (
         <div className="mb-4 flex items-center gap-3">
@@ -76,6 +88,7 @@ export default function ProductsList({
           <button
             onClick={() => setActiveTag(null)}
             className="px-3 py-1 bg-gray-200 text-gray-700 rounded-full text-sm hover:bg-gray-300 transition"
+<<<<<<< HEAD
           >
             Hủy lọc
           </button>
@@ -117,6 +130,51 @@ export default function ProductsList({
   </div>
 </div>
 
+=======
+          >
+            Hủy lọc
+          </button>
+        </div>
+      )}
+
+      {/* FILTER TOOLBAR */}
+      <div className="flex items-center justify-between mb-5">
+        {/* LEFT SIDE — GRID SWITCH */}
+        <div className="flex items-center gap-3">
+          <button
+            onClick={toggleGrid}
+            className={`px-3 py-2 rounded-lg border transition flex items-center gap-2 ${
+              biggerGrid
+                ? "bg-pink-100 text-pink-600 border-pink-300"
+                : "bg-white text-gray-700 border-gray-300 hover:bg-gray-100"
+            }`}
+          >
+            {biggerGrid ? <Grid size={18} /> : <LayoutGrid size={18} />}
+            <span className="text-sm font-medium">Chế độ thẻ</span>
+          </button>
+        </div>
+
+        {/* RIGHT SIDE — FILTER BUTTONS */}
+        <div className="flex items-center gap-2 overflow-x-auto no-scrollbar">
+          {[
+            "Hot",
+            "Mới nhất",
+            "Giảm giá",
+            "Nhiều like",
+            "Cộng đồng",
+            "Theo dõi",
+            "Video",
+          ].map((label, idx) => (
+            <button
+              key={idx}
+              className="px-3 py-1.5 rounded-full text-xs whitespace-nowrap bg-gray-100 text-gray-700 hover:bg-gray-200 transition border border-gray-300"
+            >
+              {label}
+            </button>
+          ))}
+        </div>
+      </div>
+>>>>>>> parent of fdcba33 (ducanh)
 
       {/* GRID */}
       <AnimatePresence mode="wait">
@@ -134,6 +192,7 @@ export default function ProductsList({
         >
           {visibleProducts.map((p) =>
             biggerGrid ? (
+<<<<<<< HEAD
             <DealCard
   key={p.id}
   bigger
@@ -176,6 +235,48 @@ export default function ProductsList({
   setLikedIds={setLikedIds}
   onTagClick={(tag) => setActiveTag(tag)}
 />
+=======
+              <DealCard
+                key={p.id}
+                bigger
+                deal={{
+                  id: p.id,
+                  title: p.title,
+                  content: p.description ?? undefined,
+                  category: p.category ?? undefined,
+                  media: p.image_url ? [p.image_url] : [],
+                  votes: likesCount[p.id] ?? 0,
+                  comments: commentsCount[p.id] ?? 0,
+                  author: p.users?.username ?? undefined,
+                  author_id: p.users?.id ?? undefined,
+                  avatar: p.users?.avatar_url ?? undefined,
+                  createdAt: p.created_at ?? undefined,
+                  community_title: p.communityName ?? null,
+                  community_avatar_url: p.communityIcon ?? null,
+                  community_id: p.community_id ?? null,
+                  tags: p.tags ?? [],
+                  product_tags: p.tags ?? [],
+                }}
+                onTagClick={(tag) => setActiveTag(tag)}
+                vote={() => {}}
+                setSelectedDeal={() => {}}
+              />
+            ) : (
+              <SmallCard
+                key={p.id}
+                product={{
+                  id: p.id,
+                  title: p.title,
+                  image_url: p.image_url ?? undefined,
+                  tags: p.tags ?? [],
+                }}
+                likesCount={likesCount[p.id] ?? 0}
+                commentsCount={commentsCount[p.id] ?? 0}
+                likedIds={likedIds}
+                setLikedIds={setLikedIds}
+                onTagClick={(tag) => setActiveTag(tag)}
+              />
+>>>>>>> parent of fdcba33 (ducanh)
             )
           )}
         </motion.div>

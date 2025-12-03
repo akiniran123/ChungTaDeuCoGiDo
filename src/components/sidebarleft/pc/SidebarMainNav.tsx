@@ -2,8 +2,11 @@
 
 import Link from "next/link";
 import {
-  Home, Compass, MessageSquare,
-  ShoppingBag, Newspaper
+  Home,
+  Compass,
+  MessageSquare,
+  ShoppingBag,
+  Newspaper,
 } from "lucide-react";
 import { toggleNewsMenu } from "@/components/Navbar/pc/LogoSearchIcon/NewsMenu";
 import { useRouter } from "next/navigation";
@@ -14,7 +17,9 @@ type SidebarMainNavProps = {
   setOpenMessages: React.Dispatch<React.SetStateAction<boolean>>;
 };
 
-export default function SidebarMainNav({ setOpenMessages }: SidebarMainNavProps) {
+export default function SidebarMainNav({
+  setOpenMessages,
+}: SidebarMainNavProps) {
   const [userId, setUserId] = useState<string | null>(null);
   const router = useRouter();
 
@@ -31,44 +36,50 @@ export default function SidebarMainNav({ setOpenMessages }: SidebarMainNavProps)
 
   return (
     <nav className="mt-4 space-y-1">
+
+      {/* TRANG CHỦ */}
       <Link
         href="/"
-        className="flex items-center gap-4 px-5 py-3 mx-2 rounded-xl hover:bg-gray-100"
+        className="flex items-center gap-4 px-5 py-3 mx-2 rounded-xl hover:bg-gray-100 text-gray-900"
       >
-        <Home className="w-6 h-6" />
-        Trang chủ
+        <Home className="w-6 h-6 text-gray-900" />
+        <span className="text-gray-900">Trang chủ</span>
       </Link>
 
+      {/* KHÁM PHÁ */}
       <Link
         href="/communities"
-        className="flex items-center gap-4 px-5 py-3 mx-2 rounded-xl hover:bg-gray-100"
+        className="flex items-center gap-4 px-5 py-3 mx-2 rounded-xl hover:bg-gray-100 text-gray-900"
       >
-        <Compass className="w-6 h-6" />
-        Khám phá
+        <Compass className="w-6 h-6 text-gray-900" />
+        <span className="text-gray-900">Khám phá</span>
       </Link>
 
+      {/* TIN NHẮN */}
       <div
         onClick={() => setOpenMessages((v) => !v)}
-        className="flex items-center gap-4 px-5 py-3 mx-2 rounded-xl hover:bg-gray-100 cursor-pointer"
+        className="flex items-center gap-4 px-5 py-3 mx-2 rounded-xl hover:bg-gray-100 cursor-pointer text-gray-900"
       >
-        <MessageSquare className="w-6 h-6" />
-        Tin nhắn
+        <MessageSquare className="w-6 h-6 text-gray-900" />
+        <span className="text-gray-900">Tin nhắn</span>
       </div>
 
+      {/* BÁN HÀNG */}
       <div
         onClick={handleStartSelling}
-        className="flex items-center gap-4 px-5 py-3 mx-2 rounded-xl hover:bg-gray-100 cursor-pointer"
+        className="flex items-center gap-4 px-5 py-3 mx-2 rounded-xl hover:bg-gray-100 cursor-pointer text-gray-900"
       >
-        <ShoppingBag className="w-6 h-6" />
-        Bán hàng
+        <ShoppingBag className="w-6 h-6 text-gray-900" />
+        <span className="text-gray-900">Bán hàng</span>
       </div>
 
+      {/* THÔNG BÁO */}
       <div
         onClick={() => toggleNewsMenu?.()}
-        className="flex items-center gap-4 px-5 py-3 mx-2 rounded-xl hover:bg-gray-100 cursor-pointer"
+        className="flex items-center gap-4 px-5 py-3 mx-2 rounded-xl hover:bg-gray-100 cursor-pointer text-gray-900"
       >
-        <Newspaper className="w-6 h-6" />
-        Thông báo
+        <Newspaper className="w-6 h-6 text-gray-900" />
+        <span className="text-gray-900">Thông báo</span>
       </div>
     </nav>
   );

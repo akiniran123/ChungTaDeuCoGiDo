@@ -49,25 +49,31 @@ export default function SidebarCommunity() {
 
   return (
     <div className="px-4 mb-6 mt-3">
+      {/* Header */}
       <div className="flex items-center justify-between text-xs uppercase text-gray-500 font-semibold tracking-wider py-1">
         Cộng đồng
         <ChevronDown className="w-4 h-4" />
       </div>
 
+      {/* Tạo cộng đồng */}
       <Link
         href="/create-community"
-        className="flex items-center gap-2 px-2 py-1.5 rounded hover:bg-gray-100"
+        className="flex items-center gap-2 px-2 py-1.5 rounded hover:bg-gray-100 text-gray-900"
       >
-        <Plus className="w-4 h-4" /> Tạo cộng đồng
+        <Plus className="w-4 h-4 text-gray-900" /> 
+        <span className="text-gray-900">Tạo cộng đồng</span>
       </Link>
 
+      {/* Quản lý cộng đồng */}
       <Link
         href="/manage-communities"
-        className="flex items-center gap-2 px-2 py-1.5 rounded hover:bg-gray-100"
+        className="flex items-center gap-2 px-2 py-1.5 rounded hover:bg-gray-100 text-gray-900"
       >
-        <Users className="w-4 h-4" /> Quản lý cộng đồng
+        <Users className="w-4 h-4 text-gray-900" /> 
+        <span className="text-gray-900">Quản lý cộng đồng</span>
       </Link>
 
+      {/* Danh sách cộng đồng */}
       {loading ? (
         <p className="text-sm text-gray-400 mt-2">Đang tải...</p>
       ) : communities.length === 0 ? (
@@ -80,13 +86,13 @@ export default function SidebarCommunity() {
             <Link
               key={c.id}
               href={`/communities/${c.id}`}
-              className="flex items-center gap-2 px-2 py-1.5 rounded hover:bg-gray-100"
+              className="flex items-center gap-2 px-2 py-1.5 rounded hover:bg-gray-100 text-gray-900"
             >
               <img
                 src={c.avatar_url || "/default-community.png"}
                 className="w-5 h-5 rounded-full"
               />
-              <span className="truncate">{c.title}</span>
+              <span className="truncate text-gray-900">{c.title}</span>
               <Star className="w-4 h-4 text-gray-400 ml-auto" />
             </Link>
           ))}

@@ -207,10 +207,11 @@ export default function CreateCommunityPage() {
             </div>
           </div>
 
+          {/* NÚT TRUNG TÍNH CÓ CURSOR POINTER */}
           <button
             type="submit"
             disabled={loading}
-            className="w-full flex items-center justify-center bg-blue-600 text-white font-semibold py-3 rounded-xl shadow-md hover:bg-blue-700 transition-all disabled:opacity-70"
+            className="w-full flex items-center justify-center border border-gray-300 text-gray-800 font-semibold py-3 rounded-xl shadow-sm hover:shadow-md transition-all disabled:opacity-70 bg-transparent cursor-pointer"
           >
             {loading ? (
               <>

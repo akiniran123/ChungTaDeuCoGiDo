@@ -23,6 +23,7 @@ export default function TechSpecsEditor({
               <input {...field} placeholder="Tên" className="border rounded px-2 py-1 flex-1" />
             )}
           />
+
           <Controller
             control={control}
             name={`specs.${index}.value`}
@@ -30,12 +31,23 @@ export default function TechSpecsEditor({
               <input {...field} placeholder="Giá trị" className="border rounded px-2 py-1 flex-1" />
             )}
           />
-          <button type="button" onClick={() => remove(index)} className="text-red-500">
+
+          <button
+            type="button"
+            onClick={() => remove(index)}
+            className="text-red-500 cursor-pointer"
+          >
             X
           </button>
         </div>
       ))}
-      <button type="button" onClick={() => append({ key: '', value: '' })} className="text-blue-600">
+
+      {/* Nút thêm thông số đã thêm cursor-pointer */}
+      <button
+        type="button"
+        onClick={() => append({ key: '', value: '' })}
+        className="text-blue-600 cursor-pointer"
+      >
         + Thêm thông số
       </button>
     </div>

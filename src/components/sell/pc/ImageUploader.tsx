@@ -42,13 +42,12 @@ export default function ImageUploader({ error }: any) {
     const previewUrl = URL.createObjectURL(file);
     setPreview(previewUrl);
 
-    // 📂 Gom ảnh vào thư mục riêng của user trong bucket images
     const fileName = `product-${Date.now()}-${file.name}`;
-    const filePath = `user_${userId}/${fileName}`; // 👉 nằm trong storage/images/
+    const filePath = `user_${userId}/${fileName}`;
 
     const { error } = await supabase.storage
       .from("images")
-      .upload(filePath, file, { upsert: true }); // cho phép ghi đè
+      .upload(filePath, file, { upsert: true });
 
     if (error) {
       console.error("❌ Lỗi upload ảnh:", error.message);
@@ -56,7 +55,6 @@ export default function ImageUploader({ error }: any) {
       return;
     }
 
-    // ✅ Lấy public URL
     const { data: publicUrlData } = supabase.storage
       .from("images")
       .getPublicUrl(filePath);
@@ -104,11 +102,13 @@ export default function ImageUploader({ error }: any) {
                 onChange={(e) => handleLinkPaste(e, field.onChange)}
               />
 
+              {/* ⭐ Nút chọn ảnh trung tính (không màu, hover hơi tối) */}
               <label
-                className={`px-3 py-2 text-white rounded cursor-pointer ${
+                className={`px-3 py-2 rounded border cursor-pointer transition duration-150
+                ${
                   userId
-                    ? "bg-blue-500 hover:bg-blue-600"
-                    : "bg-gray-400 cursor-not-allowed"
+                    ? "bg-transparent hover:bg-gray-100 active:bg-gray-200"
+                    : "bg-gray-200 cursor-not-allowed"
                 }`}
               >
                 {userId ? "Chọn ảnh" : "Đang tải user..."}

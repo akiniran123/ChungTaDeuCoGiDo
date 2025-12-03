@@ -9,7 +9,7 @@ export default function Logo({
   onMenuToggle?: () => void;
 }) {
   return (
-    <div className="flex items-center gap-4 justify-start px-4 py-3 border-b">
+    <div className="flex items-center gap-4 justify-start px-4 py-3">
       {/* Nút menu trên mobile */}
       <button
         type="button"

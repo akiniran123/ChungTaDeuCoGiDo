@@ -88,7 +88,7 @@ export default function SidebarLeft() {
   return (
     <>
       {/* SIDEBAR */}
-      <aside className="fixed left-0 top-0 w-64 h-screen bg-white border-r border-gray-200 shadow-sm z-40 flex flex-col overflow-y-auto">
+      <aside className="fixed left-0 top-0 w-64 h-screen bg-white border-gray-200 shadow-sm z-40 flex flex-col overflow-y-auto">
         <Logo />
 
         <SidebarMainNav setOpenMessages={setOpenMessages} />

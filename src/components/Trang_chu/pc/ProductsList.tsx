@@ -1,27 +1,13 @@
-/* FULL CODE — BẤM TAG → LỌC NGAY TRONG TRANG CHÍNH */
-
 "use client";
-
 import { useState, useEffect, useRef } from "react";
 import Link from "next/link";
 import { supabase } from "@/lib/supabase/client";
-
-import DealCard, { DealType } from "@/components/Trang_chu/pc/DealCard";
-
 import { motion, AnimatePresence } from "framer-motion";
-import {
-  LayoutGrid,
-  Grid,
-  Bookmark,
-  BookmarkCheck,
-  Heart as HeartIcon,
-  Share2,
-} from "lucide-react";
+import { LayoutGrid, Grid } from "lucide-react";
+import SmallCard from "@/components/Trang_chu/pc/SmallCard";
+import DealCard, { DealType } from "@/components/Trang_chu/pc/DealCard";
 import type { Database } from "@/types/supabase";
 
-// ======================
-// Type dữ liệu
-// ======================
 type ProductWithUser = Database["public"]["Tables"]["products"]["Row"] & {
   users?: {
     username: string | null;
@@ -31,12 +17,9 @@ type ProductWithUser = Database["public"]["Tables"]["products"]["Row"] & {
 
   tags?: string[];
   communityNames?: string[];
-
   communityName?: string | null;
   communityIcon?: string | null;
   mainTag?: string | null;
-
-  /* ⭐⭐⭐ THÊM community_id — CHỈ MỘT DÒNG NÀY ⭐⭐⭐ */
   community_id?: string | null;
 };
 
@@ -57,100 +40,39 @@ export default function ProductsList({
   commentsCount,
   likedIds,
   setLikedIds,
-  userBadges,
 }: ProductsListProps) {
   const [biggerGrid, setBiggerGrid] = useState(false);
-  const [saved, setSaved] = useState<string[]>([]);
+  const [activeTag, setActiveTag] = useState<string | null>(null);
   const scrollPosition = useRef(0);
 
-  /* ⭐⭐⭐ THÊM STATE LỌC TAG ⭐⭐⭐ */
-  const [activeTag, setActiveTag] = useState<string | null>(null);
-
-  /* ⭐⭐⭐ LỌC PRODUCT THEO TAG ⭐⭐⭐ */
   const visibleProducts = activeTag
     ? products.filter((p) => p.tags?.includes(activeTag))
     : products;
 
   useEffect(() => {
-    const handleScroll = () => {
-      scrollPosition.current = window.scrollY;
-    };
+    const handleScroll = () => (scrollPosition.current = window.scrollY);
     window.addEventListener("scroll", handleScroll);
     return () => window.removeEventListener("scroll", handleScroll);
   }, []);
+
+  useEffect(() => {
+    window.scrollTo({ top: scrollPosition.current, behavior: "instant" });
+  }, [biggerGrid]);
 
   const toggleGrid = () => {
     scrollPosition.current = window.scrollY;
     setBiggerGrid((prev) => !prev);
   };
 
-  useEffect(() => {
-    window.scrollTo({ top: scrollPosition.current, behavior: "instant" });
-  }, [biggerGrid]);
-
-  const toggleSave = (id: string) => {
-    setSaved((prev) =>
-      prev.includes(id) ? prev.filter((x) => x !== id) : [...prev, id]
-    );
-  };
-
-  const [localLikesCount, setLocalLikesCount] = useState(likesCount);
-
-  const toggleLike = async (productId: string) => {
-    const { data: authData } = await supabase.auth.getUser();
-    const userId = authData.user?.id;
-    if (!userId) {
-      alert("Bạn cần đăng nhập để thả tim.");
-      return;
-    }
-
-    const alreadyLiked = likedIds.includes(productId);
-
-    if (alreadyLiked) {
-      await supabase
-        .from("product_likes")
-        .delete()
-        .eq("product_id", productId)
-        .eq("user_id", userId);
-
-      setLikedIds((prev) => prev.filter((id) => id !== productId));
-      setLocalLikesCount((prev) => ({
-        ...prev,
-        [productId]: (prev[productId] || 1) - 1,
-      }));
-    } else {
-      await supabase.from("product_likes").insert({
-        product_id: productId,
-        user_id: userId,
-      });
-
-      setLikedIds((prev) => [...prev, productId]);
-      setLocalLikesCount((prev) => ({
-        ...prev,
-        [productId]: (prev[productId] || 0) + 1,
-      }));
-    }
-  };
-
-  const shareProduct = (product: ProductWithUser) => {
-    const url = `${window.location.origin}/deal/${product.id}`;
-    const title = product.title || "Sản phẩm";
-    if (navigator.share) {
-      navigator.share({ title, url }).catch(() => {});
-    } else {
-      alert(`Copy link để chia sẻ: ${url}`);
-    }
-  };
-
   return (
     <div className="p-6">
+      {/* FILTERING */}
       {activeTag && (
         <div className="mb-4 flex items-center gap-3">
           <span className="text-sm">
             Đang lọc theo tag:
             <strong className="ml-1 text-pink-600">#{activeTag}</strong>
           </span>
-
           <button
             onClick={() => setActiveTag(null)}
             className="px-3 py-1 bg-gray-200 text-gray-700 rounded-full text-sm hover:bg-gray-300 transition"
@@ -160,260 +82,104 @@ export default function ProductsList({
         </div>
       )}
 
-      <div className="flex justify-end mb-4">
+      {/* GRID SWITCH */}
+     {/* FILTER TOOLBAR */}
+<div className="flex items-center justify-between mb-5">
+
+  {/* LEFT SIDE — GRID SWITCH */}
+  <div className="flex items-center gap-3">
+    <button
+      onClick={toggleGrid}
+      className={`px-3 py-2 rounded-lg border transition flex items-center gap-2 ${
+        biggerGrid
+          ? "bg-pink-100 text-pink-600 border-pink-300"
+          : "bg-white text-gray-700 border-gray-300 hover:bg-gray-100"
+      }`}
+    >
+      {biggerGrid ? <Grid size={18} /> : <LayoutGrid size={18} />}
+      <span className="text-sm font-medium">Chế độ thẻ</span>
+    </button>
+  </div>
+
+  {/* RIGHT SIDE — FILTER BUTTONS */}
+  <div className="flex items-center gap-2 overflow-x-auto no-scrollbar">
+
+    {["Hot", "Mới nhất", "Giảm giá", "Nhiều like", "Cộng đồng", "Theo dõi", "Video"]
+      .map((label, idx) => (
         <button
-          onClick={toggleGrid}
-          className={`p-2 rounded-lg transition cursor-pointer ${
+          key={idx}
+          className="px-3 py-1.5 rounded-full text-xs whitespace-nowrap bg-gray-100 text-gray-700 hover:bg-gray-200 transition border border-gray-300"
+        >
+          {label}
+        </button>
+      ))}
+
+  </div>
+</div>
+
+
+      {/* GRID */}
+      <AnimatePresence mode="wait">
+        <motion.div
+          key={biggerGrid ? "large" : "small"}
+          initial={{ opacity: 0, x: biggerGrid ? 100 : -100 }}
+          animate={{ opacity: 1, x: 0 }}
+          exit={{ opacity: 0, x: biggerGrid ? -100 : 100 }}
+          transition={{ duration: 0.45 }}
+          className={`grid gap-6 ${
             biggerGrid
-              ? "bg-pink-100 text-pink-500"
-              : "hover:bg-pink-50 text-gray-700 hover:text-pink-400"
+              ? "grid-cols-1"
+              : "grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4"
           }`}
         >
-          {biggerGrid ? <Grid size={20} /> : <LayoutGrid size={20} />}
-        </button>
-      </div>
+          {visibleProducts.map((p) =>
+            biggerGrid ? (
+            <DealCard
+  key={p.id}
+  bigger
+  deal={{
+    id: p.id,
+    title: p.title,
+    content: p.description ?? undefined,
+    category: p.category ?? undefined,
+    media: p.image_url ? [p.image_url] : [],
+    votes: likesCount[p.id] ?? 0,
+    comments: commentsCount[p.id] ?? 0,
+    author: p.users?.username ?? undefined,
+    author_id: p.users?.id ?? undefined,
+    avatar: p.users?.avatar_url ?? undefined,
+    createdAt: p.created_at ?? undefined,
+    community_title: p.communityName ?? null,
+    community_avatar_url: p.communityIcon ?? null,
+    community_id: p.community_id ?? null,
+    tags: p.tags ?? [],
+    product_tags: p.tags ?? [],
+  }}
+  onTagClick={(tag) => setActiveTag(tag)}
+  vote={() => {}}                 // 🔥 thêm vào để pass type
+  setSelectedDeal={() => {}}      // 🔥 thêm vào để pass type
+/>
 
-      <div className="overflow-visible">
-        <AnimatePresence mode="wait">
-          <motion.div
-            key={biggerGrid ? "large" : "small"}
-            initial={{ opacity: 0, x: biggerGrid ? 100 : -100, scale: 0.98 }}
-            animate={{ opacity: 1, x: 0, scale: 1 }}
-            exit={{ opacity: 0, x: biggerGrid ? -100 : 100, scale: 0.98 }}
-            transition={{ duration: 0.45, ease: "easeInOut" }}
-            className={`grid gap-6 ${
-              biggerGrid
-                ? "grid-cols-1"
-                : "grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4"
-            }`}
-          >
-            {visibleProducts.map((p) =>
-              biggerGrid ? (
-                <DealCard
-                  key={p.id}
-                  deal={{
-                    id: p.id,
-                    title: p.title,
-                    image: p.image_url || undefined,
-                    media: p.image_url ? [p.image_url] : [],
-                    votes: localLikesCount[p.id] ?? 0,
-                    comments: commentsCount[p.id] ?? 0,
-                    category: p.category || "",
 
-                    author_id: p.users?.id || null,
-                    author: p.users?.username || "Người dùng",
-                    avatar: p.users?.avatar_url || "/default-avatar.png",
-                    content: p.description || "",
-                    createdAt: p.created_at
-                      ? new Date(p.created_at).toLocaleString("vi-VN", {
-                          day: "2-digit",
-                          month: "2-digit",
-                          year: "2-digit",
-                          hour: "2-digit",
-                          minute: "2-digit",
-                        })
-                      : undefined,
-
-                    community_title: p.communityName || null,
-                    community_avatar_url: p.communityIcon || null,
-
-                    tags: Array.isArray(p.tags)
-                      ? p.tags
-                      : JSON.parse(p.tags || "[]"),
-
-                    communityNames: p.communityNames || [],
-                    communityName: p.communityName || null,
-                    communityIcon: p.communityIcon || null,
-                    mainTag: p.mainTag || null,
-
-                    /* ⭐⭐ TRUYỀN community_id XUỐNG CARD ⭐⭐ */
-                    community_id: p.community_id ?? null,
-                  } as DealType}
-                  vote={() => {}}
-                  setSelectedDeal={() => {}}
-                  bigger
-                  onTagClick={(tag) => setActiveTag(tag)}
-                />
-              ) : (
-                <motion.div
-                  key={p.id}
-                  initial={{ opacity: 0, y: 15 }}
-                  animate={{ opacity: 1, y: 0 }}
-                  transition={{ duration: 0.35 }}
-                  className="relative rounded-2xl shadow hover:shadow-lg transition bg-white overflow-hidden"
-                >
-                  <Link href={`/deal/${p.id}`}>
-                    {p.image_url ? (
-                      <img
-                        src={p.image_url}
-                        alt={p.title}
-                        className="w-full h-48 object-cover cursor-pointer"
-                      />
-                    ) : (
-                      <div className="w-full h-48 bg-gray-200 flex items-center justify-center text-gray-500 cursor-pointer">
-                        Không có ảnh
-                      </div>
-                    )}
-                  </Link>
-
-                  {/* -------- USER / TIME -------- */}
-                  {p.users && (
-                    <div className="flex items-center justify-between p-4 pb-0">
-                      <Link
-                        href={`/profile/${p.users?.id}`}
-                        className="flex items-center gap-2"
-                      >
-                        <img
-                          src={p.users.avatar_url || "/default-avatar.png"}
-                          className="w-8 h-8 rounded-full object-cover"
-                        />
-
-                        <div className="flex flex-col cursor-pointer">
-                          <span className="text-sm font-semibold text-gray-600">
-                            {p.users.username}
-                          </span>
-                          <span className="text-xs text-gray-500">
-                            {p.created_at
-                              ? new Date(p.created_at).toLocaleString(
-                                  "vi-VN",
-                                  {
-                                    day: "2-digit",
-                                    month: "2-digit",
-                                    year: "2-digit",
-                                    hour: "2-digit",
-                                    minute: "2-digit",
-                                  }
-                                )
-                              : "Không rõ thời gian"}
-                          </span>
-                        </div>
-                      </Link>
-
-                      <button
-                        onClick={() => toggleSave(p.id)}
-                        className="flex items-center gap-1 text-gray-600 hover:text-pink-500 transition"
-                      >
-                        {saved.includes(p.id) ? (
-                          <BookmarkCheck size={18} />
-                        ) : (
-                          <Bookmark size={18} />
-                        )}
-                      </button>
-                    </div>
-                  )}
-
-                  {/* TITLE */}
-                  <div className="px-4 mt-2">
-                    <Link href={`/deal/${p.id}`}>
-                      <h3 className="font-semibold text-lg cursor-pointer hover:text-pink-500">
-                        {p.title}
-                      </h3>
-                    </Link>
-                  </div>
-
-                  {/* -------- CATEGORY / PRICE / TAGS -------- */}
-                  <div className="p-4 pt-2">
-                    <div className="flex justify-between items-start">
-                      <div className="flex-1">
-                        <p className="text-sm text-gray-600">{p.category}</p>
-
-                        <p className="mt-2 text-indigo-600 font-bold">
-                          {p.price ? `${p.price.toLocaleString()}₫` : "Liên hệ"}
-                        </p>
-
-                        {p.users && (
-                          <p className="text-xs text-gray-500 mt-1">
-                            {commentsCount[p.id] ?? 0} bình luận
-                          </p>
-                        )}
-                      </div>
-
-                      <div className="flex flex-col items-end gap-2 ml-4 w-32">
-                        {(p.tags?.length || p.communityNames?.length) && (
-                          <div className="flex flex-wrap justify-end gap-2 max-w-32">
-                            {p.tags?.map((tag, i) => (
-                              <button
-                                key={i}
-                                onClick={() => setActiveTag(tag)}
-                                className="text-xs bg-pink-50 text-purple-500 px-2 py-1 rounded-full hover:bg-pink-100 transition"
-                              >
-                                {tag}
-                              </button>
-                            ))}
-
-                            {p.communityNames?.map((cName, i) => (
-                              <span
-                                key={`c-${i}`}
-                                className="text-xs bg-blue-50 text-blue-600 px-2 py-1 rounded-full"
-                              >
-                                {cName}
-                              </span>
-                            ))}
-                          </div>
-                        )}
-
-                        {p.communityName && p.community_id && (
-                          <Link
-                            href={`/communities/${p.community_id}`}
-                            className="flex items-center gap-2 hover:opacity-80 transition"
-                          >
-                            {p.communityIcon && (
-                              <img
-                                src={p.communityIcon}
-                                className="w-6 h-6 rounded-full"
-                              />
-                            )}
-                            <span className="text-sm text-gray-600 font-semibold hover:text-pink-600">
-                              {p.communityName}
-                            </span>
-                          </Link>
-                        )}
-
-                        {p.mainTag && (
-                          <span className="text-xs bg-purple-50 text-purple-600 px-2 py-1 rounded-full">
-                            #{p.mainTag}
-                          </span>
-                        )}
-                      </div>
-                    </div>
-
-                    {/* -------- LIKE / SHARE -------- */}
-                    <div className="flex justify-between items-center mt-2">
-                      <span className="text-xs text-gray-400">
-                        {p.views ?? 0} lượt xem
-                      </span>
-
-                      <div className="flex items-center gap-3">
-                        <button
-                          onClick={() => toggleLike(p.id)}
-                          className="flex items-center gap-1 text-gray-600 hover:text-pink-500 transition"
-                        >
-                          <HeartIcon
-                            size={16}
-                            fill={
-                              likedIds.includes(p.id) ? "currentColor" : "none"
-                            }
-                          />
-                          <span className="text-xs font-semibold">
-                            {localLikesCount[p.id] ?? 0}
-                          </span>
-                        </button>
-
-                        <button
-                          onClick={() => shareProduct(p)}
-                          className="flex items-center text-gray-600 hover:text-gray-800 transition"
-                        >
-                          <Share2 size={16} />
-                        </button>
-                      </div>
-                    </div>
-                  </div>
-                </motion.div>
-              )
-            )}
-          </motion.div>
-        </AnimatePresence>
-      </div>
+            ) : (
+              <SmallCard
+  key={p.id}
+  product={{
+    id: p.id,
+    title: p.title,
+    image_url: p.image_url ?? undefined,
+    tags: p.tags ?? [],
+  }}
+  likesCount={likesCount[p.id] ?? 0}
+  commentsCount={commentsCount[p.id] ?? 0}
+  likedIds={likedIds}
+  setLikedIds={setLikedIds}
+  onTagClick={(tag) => setActiveTag(tag)}
+/>
+            )
+          )}
+        </motion.div>
+      </AnimatePresence>
     </div>
   );
 }

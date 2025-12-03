@@ -34,16 +34,8 @@ export default function Logo({
       </Link>
 
       {/* Tải ứng dụng + QR */}
-      <div className="flex items-center gap-1">
-        <span className="font-bold text-xs text-gray-800">
-          Tải ứng dụng
-        </span>
-        <img
-          src="https://api.qrserver.com/v1/create-qr-code/?size=150x150&data=https://example.com/app"
-          alt="QR Code tải ứng dụng"
-          className="w-8 h-8 border rounded-md shadow-sm"
-        />
+   
       </div>
-    </div>
+
   )
 }

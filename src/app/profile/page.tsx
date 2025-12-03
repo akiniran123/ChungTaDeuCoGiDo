@@ -60,7 +60,7 @@ export default function ProfilePage() {
         return;
       }
 
-      setCurrentUser(userSession); // 🔥 lấy user đang đăng nhập
+      setCurrentUser(userSession);
 
       const { data: userData } = await supabase
         .from("users")
@@ -312,7 +312,8 @@ export default function ProfilePage() {
               return (
                 <div
                   key={p.id}
-                  className="bg-white rounded-xl border shadow-sm overflow-hidden relative"
+                  onClick={() => router.push(`/deal/${p.id}`)}
+                  className="bg-white rounded-xl border shadow-sm overflow-hidden relative cursor-pointer"
                 >
                   <Image
                     src={imageUrl}
@@ -341,7 +342,10 @@ export default function ProfilePage() {
                   {/* 🔥 nút xóa y như file 2 */}
                   {currentUser?.id === user.id && (
                     <button
-                      onClick={() => handleDelete(p.id, imageUrl)}
+                      onClick={(e) => {
+                        e.stopPropagation(); // ⚡ ngăn click div cha
+                        handleDelete(p.id, imageUrl);
+                      }}
                       disabled={deleting === p.id}
                       className={`absolute top-2 right-2 px-3 py-1 rounded text-white text-xs cursor-pointer ${
                         deleting === p.id

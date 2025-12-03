@@ -1,15 +1,15 @@
-'use client'
+"use client";
 
-import Link from 'next/link'
-import { Menu } from 'lucide-react'
+import Link from "next/link";
+import { Menu } from "lucide-react";
 
 export default function Logo({
   onMenuToggle,
 }: {
-  onMenuToggle?: () => void
+  onMenuToggle?: () => void;
 }) {
   return (
-    <div className="flex items-center gap-4 justify-start">
+    <div className="flex items-center gap-4 justify-start px-4 py-3 border-b">
       {/* Nút menu trên mobile */}
       <button
         type="button"
@@ -32,10 +32,6 @@ export default function Logo({
         />
         <span className="text-gray-800 text-3xl">NexLoot</span>
       </Link>
-
-      {/* Tải ứng dụng + QR */}
-   
-      </div>
-
-  )
+    </div>
+  );
 }

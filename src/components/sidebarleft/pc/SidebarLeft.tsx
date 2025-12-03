@@ -3,9 +3,18 @@
 import React, { useState, useEffect } from "react";
 import SidebarMainNav from "./SidebarMainNav";
 import SidebarCommunity from "./SidebarCommunity";
-import MessagesPanel, { Conversation } from "./MessagesPanel";
+import MessagesPanel from "./MessagesPanel";
 import MiniChatBox from "@/app/MiniChat/MiniChatBox";
 import { supabase } from "@/lib/supabase/client";
+import Logo from "@/components/Navbar/pc/LogoSearchIcon/logo";
+
+type Conversation = {
+  partner_id: string;
+  username: string;
+  avatar_url: string;
+  last_message: string;
+  last_time: string;
+};
 
 export default function SidebarLeft() {
   const [openMessages, setOpenMessages] = useState(false);
@@ -25,7 +34,8 @@ export default function SidebarLeft() {
   }, []);
 
   useEffect(() => {
-    if (userId) loadConversations();
+    if (!userId) return;
+    loadConversations();
   }, [userId]);
 
   async function loadConversations() {
@@ -37,10 +47,7 @@ export default function SidebarLeft() {
 
     if (error) return;
 
-    const map = new Map<
-      string,
-      { last_message: string; last_time: string }
-    >();
+    const map = new Map<string, { last_message: string; last_time: string }>();
 
     data.forEach((msg) => {
       const partner =
@@ -48,8 +55,8 @@ export default function SidebarLeft() {
 
       if (!map.has(partner)) {
         map.set(partner, {
-          last_message: msg.content,
-          last_time: msg.created_at ?? "", // luôn string
+          last_message: msg.content || "",
+          last_time: msg.created_at || "",
         });
       }
     });
@@ -81,12 +88,15 @@ export default function SidebarLeft() {
   return (
     <>
       {/* SIDEBAR */}
-      <aside className="fixed left-0 top-0 w-64 h-screen bg-white border-r border-gray-200 shadow-sm z-40">
+      <aside className="fixed left-0 top-0 w-64 h-screen bg-white border-r border-gray-200 shadow-sm z-40 flex flex-col overflow-y-auto">
+        <Logo />
+
         <SidebarMainNav setOpenMessages={setOpenMessages} />
+
         <SidebarCommunity />
       </aside>
 
-      {/* PANEL */}
+      {/* MESSAGE PANEL */}
       {isClient && (
         <MessagesPanel
           open={openMessages}

@@ -186,16 +186,7 @@ export default function SidebarLeft() {
 
   return (
     <>
-      <aside
-        className="
-          fixed top-[6.5rem] left-0
-          w-64 h-[calc(100vh-6.5rem)]
-          bg-white border-r border-gray-200 
-          overflow-y-visible text-gray-900 z-40 shadow-sm
-          transition-transform duration-300
-          translate-x-0
-        "
-      >
+      
         <nav className="mt-4 space-y-1">
 
           {/* ⭐ Trang chủ */}
@@ -299,7 +290,7 @@ export default function SidebarLeft() {
             </div>
           )}
         </div>
-      </aside>
+  
 
       {/* PANEL MESSAGES */}
       {isClient &&

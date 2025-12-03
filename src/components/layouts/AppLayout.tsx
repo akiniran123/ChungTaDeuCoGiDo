@@ -10,22 +10,22 @@ export default function AppLayout({
 }: {
   children: React.ReactNode;
 }) {
-  const SIDEBAR_LEFT_WIDTH = 256; // w-64
-  const SIDEBAR_RIGHT_WIDTH = 288; // w-72
+  const SIDEBAR_LEFT_WIDTH = 300; // w-64
+  const SIDEBAR_RIGHT_WIDTH = 300; // w-72
 
   return (
     <div className="bg-white text-black min-h-screen flex flex-col">
       {/* Navbar luôn hiển thị */}
-      <Navbar />
+    
 
       {/* Layout chính */}
-      <div className="flex flex-1 pt-[4.5rem] relative">
+      <div className="flex flex-1 relative">
         {/* Sidebar trái */}
         <div
-          className="hidden md:block fixed top-[4.5rem] left-0 border-r bg-white shadow-sm"
+          className="hidden md:block fixed left-0 bg-white "
           style={{
             width: SIDEBAR_LEFT_WIDTH,
-            height: "calc(100vh - 4.5rem)",
+            height: "100vh",
             zIndex: 40,
           }}
         >
@@ -34,7 +34,7 @@ export default function AppLayout({
 
         {/* Sidebar phải */}
         <div
-          className="hidden xl:block fixed top-[4.5rem] right-0 border-l bg-white shadow-sm px-4 py-6 overflow-y-auto"
+          className="hidden xl:block fixed top-[4.5rem] right-0 bg-white  px-4 py-6 overflow-y-auto"
           style={{
             width: SIDEBAR_RIGHT_WIDTH,
             height: "calc(100vh - 4.5rem)",

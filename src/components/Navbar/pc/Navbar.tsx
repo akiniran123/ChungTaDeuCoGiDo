@@ -2,16 +2,13 @@
 
 import { useState } from "react";
 import { useRouter } from "next/navigation";
-
 import TopBar from "./TopBar";
 import NavLinks from "./NavLinks";
-
 import Logo from "./LogoSearchIcon/logo";
 import SearchBar from "./LogoSearchIcon/SearchBar";
 import MessagesMenu from "./LogoSearchIcon/MessagesMenu";
 import UserMenu from "./LogoSearchIcon/UserMenu";
 import LoginModal from "@/components/auth/pc/LoginModal";
-
 import { AnimatePresence, motion } from "framer-motion";
 
 

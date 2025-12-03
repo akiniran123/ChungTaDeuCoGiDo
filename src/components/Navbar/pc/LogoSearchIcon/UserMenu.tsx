@@ -40,19 +40,26 @@ export default function UserMenu({ onLoginClick }: { onLoginClick: () => void })
         <UserIcon className="w-5 h-5 cursor-pointer" />
         <ChevronDown className="w-4 h-4" />
       </HeadlessMenu.Button>
+
       <HeadlessMenu.Items
         className="absolute right-2 mt-2 w-44 bg-white border border-gray-200 rounded-md shadow-lg z-50 text-sm"
       >
+
+        {/* Trang cá nhân */}
         <HeadlessMenu.Item>
           {({ active }) => (
             <button
               onClick={() => router.push('/profile')}
-              className={`block w-full px-4 py-2 text-left cursor-pointer ${active ? 'bg-gray-100' : ''}`}
+              className={`block w-full px-4 py-2 text-left cursor-pointer ${
+                active ? 'bg-gray-100' : ''
+              }`}
             >
-              Profile
+              Trang cá nhân
             </button>
           )}
         </HeadlessMenu.Item>
+
+        {/* Đăng xuất */}
         <HeadlessMenu.Item>
           {({ active }) => (
             <button
@@ -61,13 +68,17 @@ export default function UserMenu({ onLoginClick }: { onLoginClick: () => void })
                 setUser(null)
                 router.refresh()
               }}
-              className={`block w-full px-4 py-2 text-left text-red-500 cursor-pointer ${active ? 'bg-gray-100' : ''}`}
+              className={`block w-full px-4 py-2 text-left text-red-500 cursor-pointer ${
+                active ? 'bg-gray-100' : ''
+              }`}
             >
-              Sign out
+              Đăng xuất
             </button>
           )}
         </HeadlessMenu.Item>
+
       </HeadlessMenu.Items>
     </HeadlessMenu>
   )
 }
+

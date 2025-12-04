@@ -1,11 +1,10 @@
 "use client";
 
-import { useState, useEffect } from "react";
+import React, { useState, useEffect } from "react";
 import SidebarMainNav from "./SidebarMainNav";
 import SidebarCommunity from "./SidebarCommunity";
 import MessagesPanel from "./MessagesPanel";
 import MiniChatBox from "@/app/MiniChat/MiniChatBox";
-import NewsPanel from "./NewsPanel";
 import { supabase } from "@/lib/supabase/client";
 import Logo from "@/components/Navbar/pc/LogoSearchIcon/logo";
 
@@ -21,21 +20,19 @@ export default function SidebarLeft() {
   const [openMessages, setOpenMessages] = useState(false);
   const [openMiniChat, setOpenMiniChat] = useState(false);
   const [selectedPartner, setSelectedPartner] = useState<string | null>(null);
-  const [openNews, setOpenNews] = useState(false);
 
   const [conversations, setConversations] = useState<Conversation[]>([]);
   const [userId, setUserId] = useState<string | null>(null);
   const [isClient, setIsClient] = useState(false);
 
-  // Lấy user hiện tại
   useEffect(() => {
     setIsClient(true);
+
     supabase.auth.getUser().then(({ data }) => {
-      if (data.user?.id) setUserId(data.user.id);
+      setUserId(data.user?.id || null);
     });
   }, []);
 
-  // Load conversations khi userId có
   useEffect(() => {
     if (!userId) return;
     loadConversations();
@@ -48,7 +45,7 @@ export default function SidebarLeft() {
       .or(`sender_id.eq.${userId},receiver_id.eq.${userId}`)
       .order("created_at", { ascending: false });
 
-    if (error || !data) return;
+    if (error) return;
 
     const map = new Map<string, { last_message: string; last_time: string }>();
 
@@ -90,17 +87,19 @@ export default function SidebarLeft() {
 
   return (
     <>
-      {/* Sidebar chính */}
+      {/* SIDEBAR */}
       <aside className="fixed left-0 top-0 w-64 h-screen bg-white border-gray-200 shadow-sm z-40 flex flex-col overflow-y-auto">
-        <Logo />
-        <SidebarMainNav
-          setOpenMessages={setOpenMessages}
-          setOpenNews={setOpenNews} // Nút thông báo sẽ mở panel
-        />
+        <div className="mt-6">
+  <Logo />
+</div>
+
+
+        <SidebarMainNav setOpenMessages={setOpenMessages} />
+
         <SidebarCommunity />
       </aside>
 
-      {/* Panel tin nhắn */}
+      {/* MESSAGE PANEL */}
       {isClient && (
         <MessagesPanel
           open={openMessages}
@@ -113,15 +112,7 @@ export default function SidebarLeft() {
         />
       )}
 
-      {/* Panel thông báo, chỉ hiện khi nhấn nút */}
-      {isClient && (
-        <NewsPanel
-          open={openNews}
-          setOpen={setOpenNews}
-        />
-      )}
-
-      {/* Mini chat */}
+      {/* MINI CHAT */}
       {openMiniChat && selectedPartner && (
         <MiniChatBox
           partnerId={selectedPartner}

@@ -23,7 +23,7 @@ export default function Logo({
       {/* Logo */}
       <Link
         href="/"
-        className="flex items-center space-x-3 text-2xl font-extrabold"
+        className="flex items-center space-x-1 text-2xl font-extrabold"
       >
         <img
           src="/logo.png"

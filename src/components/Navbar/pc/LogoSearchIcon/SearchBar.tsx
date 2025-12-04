@@ -85,7 +85,8 @@ export default function SearchBar({ userId, onSearch }: SearchBarProps) {
               searched_at: new Date().toISOString(),
             },
           ],
-          { onConflict: ["user_id", "query"] } // sửa thành mảng
+          { onConflict: "user_id,query" }
+// sửa thành mảng
         );
     }
 

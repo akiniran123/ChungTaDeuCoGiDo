@@ -92,13 +92,15 @@ export default function SidebarLeft() {
     <>
       {/* Sidebar chính */}
       <aside className="fixed left-0 top-0 w-64 h-screen bg-white border-gray-200 shadow-sm z-40 flex flex-col overflow-y-auto">
-        <Logo />
-        <SidebarMainNav
-          setOpenMessages={setOpenMessages}
-          setOpenNews={setOpenNews} // Nút thông báo sẽ mở panel
-        />
-        <SidebarCommunity />
-      </aside>
+  <div className="mt-6 mb-2 px-4">
+    <Logo />
+  </div>
+  <SidebarMainNav
+    setOpenMessages={setOpenMessages}
+    setOpenNews={setOpenNews}
+  />
+  <SidebarCommunity />
+</aside>
 
       {/* Panel tin nhắn */}
       {isClient && (

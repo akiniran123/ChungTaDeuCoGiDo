@@ -9,12 +9,7 @@ import DealCard, { DealType } from "@/components/Trang_chu/pc/DealCard";
 import type { Database } from "@/types/supabase";
 
 type ProductWithUser = Database["public"]["Tables"]["products"]["Row"] & {
-  users?: {
-    username: string | null;
-    avatar_url: string | null;
-    id?: string;
-  } | null;
-
+  users?: { username: string | null; avatar_url: string | null; id?: string } | null;
   tags?: string[];
   communityNames?: string[];
   communityName?: string | null;
@@ -82,9 +77,8 @@ export default function ProductsList({
         </div>
       )}
 
-      {/* FILTER TOOLBAR */}
+      {/* TOOLBAR */}
       <div className="flex items-center justify-between mb-5">
-        {/* LEFT SIDE — GRID SWITCH */}
         <div className="flex items-center gap-3">
           <button
             onClick={toggleGrid}
@@ -99,7 +93,6 @@ export default function ProductsList({
           </button>
         </div>
 
-        {/* RIGHT SIDE — FILTER BUTTONS */}
         <div className="flex items-center gap-2 overflow-x-auto no-scrollbar">
           {[
             "Hot",
@@ -120,7 +113,7 @@ export default function ProductsList({
         </div>
       </div>
 
-      {/* GRID — ĐÃ LOẠI BỎ 4 CỘT */}
+      {/* LIST */}
       <AnimatePresence mode="wait">
         <motion.div
           key={biggerGrid ? "large" : "small"}
@@ -128,7 +121,7 @@ export default function ProductsList({
           animate={{ opacity: 1, x: 0 }}
           exit={{ opacity: 0, x: biggerGrid ? -100 : 100 }}
           transition={{ duration: 0.45 }}
-          className={`grid gap-6 ${
+          className={`grid gap-4 ${
             biggerGrid ? "grid-cols-1" : "grid-cols-1"
           }`}
         >

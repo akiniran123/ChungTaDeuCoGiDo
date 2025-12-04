@@ -23,7 +23,6 @@ export type SmallCardProps = {
     category?: string | null;
     price?: number | null;
     views?: number | null;
-
     community_id?: string | null;
     communityName?: string | null;
     communityIcon?: string | null;
@@ -86,14 +85,18 @@ export default function SmallCard({
     <motion.div
       initial={{ opacity: 0, y: 6 }}
       animate={{ opacity: 1, y: 0 }}
-      className="w-full rounded-lg bg-white shadow-sm hover:shadow-md transition px-3 py-2"
+      className="
+        w-full px-4 py-3 bg-white
+        transition 
+        hover:bg-gray-50    /* ⭐ Thẻ sáng lên khi hover */
+      "
     >
-      {/* Single-row horizontal flow */}
-      <div className="flex items-center gap-3 min-h-[86px]">
-        {/* IMAGE (left) */}
+      {/* ROW */}
+      <div className="flex items-center gap-4 min-h-[135px]">
+        {/* IMAGE */}
         <Link
           href={`/deal/${product.id}`}
-          className="flex-shrink-0 rounded-md overflow-hidden w-[92px] h-[72px] bg-gray-100"
+          className="flex-shrink-0 overflow-hidden w-[150px] h-[110px] bg-gray-100 rounded-lg"
         >
           {product.image_url ? (
             <img
@@ -108,113 +111,116 @@ export default function SmallCard({
           )}
         </Link>
 
-        {/* MAIN INLINE CONTENT (center) */}
+        {/* MAIN */}
         <div className="flex-1 min-w-0">
-          <div className="flex items-center gap-2">
-            {/* Title (truncate single line) */}
+          <div className="flex items-center gap-3">
             <Link href={`/deal/${product.id}`} className="min-w-0 flex-1">
-              <div className="text-sm font-semibold text-gray-800 truncate hover:text-pink-500">
+              <div className="text-lg font-semibold text-gray-800 leading-snug truncate">
                 {product.title}
               </div>
             </Link>
 
-            {/* Price (if any) */}
             {product.price && (
-              <div className="ml-2 text-sm font-bold text-indigo-600 whitespace-nowrap">
+              <div className="ml-2 text-base font-bold text-indigo-600 whitespace-nowrap">
                 {product.price.toLocaleString()}₫
               </div>
             )}
           </div>
 
-          {/* Inline meta row: category • author • community • comments • views */}
-          <div className="mt-1 text-xs text-gray-500 flex items-center gap-3 flex-wrap">
+          {/* META */}
+          <div className="mt-2 text-sm text-gray-500 flex items-center gap-3 flex-wrap">
             {product.category && (
               <span className="whitespace-nowrap">{product.category}</span>
             )}
 
-            <span className="flex items-center gap-1 whitespace-nowrap">
+            <span className="flex items-center gap-2 whitespace-nowrap">
               <img
                 src={product.avatar_url || "/default-avatar.png"}
-                className="w-4 h-4 rounded-full object-cover"
+                className="w-6 h-6 rounded-full object-cover"
                 alt="avatar"
               />
-              <span className="truncate max-w-[120px]">{product.author || "Người dùng"}</span>
+              <span className="truncate max-w-[150px]">
+                {product.author || "Người dùng"}
+              </span>
             </span>
 
-            <span className="whitespace-nowrap">{commentsCount} bình luận</span>
+            <span className="whitespace-nowrap">
+              {commentsCount} bình luận
+            </span>
 
             {product.communityName && (
               <Link
                 href={`/communities/${product.community_id}`}
-                className="flex items-center gap-1 hover:opacity-80 whitespace-nowrap"
+                className="flex items-center gap-2 hover:opacity-80 whitespace-nowrap"
               >
                 {product.communityIcon && (
                   <img
                     src={product.communityIcon}
-                    className="w-4 h-4 rounded-full object-cover"
+                    className="w-6 h-6 rounded-full object-cover"
                     alt="community"
                   />
                 )}
-                <span className="truncate max-w-[100px]">{product.communityName}</span>
+                <span className="truncate max-w-[140px]">
+                  {product.communityName}
+                </span>
               </Link>
             )}
 
-            <span className="whitespace-nowrap">{product.views ?? 0} lượt xem</span>
+            <span className="whitespace-nowrap">
+              {product.views ?? 0} lượt xem
+            </span>
           </div>
         </div>
 
-        {/* TAGS (inline, scroll if too many) */}
+        {/* TAGS */}
         {product.tags && product.tags.length > 0 && (
-          <div className="flex-shrink-0 hidden md:flex items-center gap-2 ml-2">
+          <div className="flex-shrink-0 hidden lg:flex items-center gap-1 ml-2">
             {product.tags.slice(0, 4).map((t, i) => (
               <button
                 key={i}
                 onClick={() => onTagClick(t)}
-                className="text-xs bg-pink-50 text-purple-500 px-2 py-0.5 rounded-full hover:bg-pink-100 whitespace-nowrap"
+                className="text-xs bg-pink-50 text-purple-500 px-2 py-1 rounded-full hover:bg-pink-100 whitespace-nowrap"
               >
                 {t}
               </button>
             ))}
             {product.tags.length > 4 && (
-              <div className="text-xs text-gray-400 whitespace-nowrap">+{product.tags.length - 4}</div>
+              <div className="text-xs text-gray-400 whitespace-nowrap">
+                +{product.tags.length - 4}
+              </div>
             )}
           </div>
         )}
 
-        {/* ACTIONS (right) */}
-        <div className="flex items-center gap-2 ml-2 flex-shrink-0">
-          {/* Like */}
+        {/* ACTIONS */}
+        <div className="flex items-center gap-3 ml-3 flex-shrink-0">
           <button
             onClick={toggleLike}
             className="flex items-center gap-1 text-gray-600 hover:text-pink-500 transition"
-            aria-label="like"
-            title="Thích"
           >
             <HeartIcon
-              size={16}
+              size={20}
               fill={likedIds.includes(product.id) ? "currentColor" : "none"}
             />
-            <span className="text-xs font-medium">{likesCount}</span>
+            <span className="text-sm">{likesCount}</span>
           </button>
 
-          {/* Share */}
           <button
             onClick={share}
             className="text-gray-600 hover:text-gray-800 transition"
-            aria-label="share"
-            title="Chia sẻ"
           >
-            <Share2 size={16} />
+            <Share2 size={20} />
           </button>
 
-          {/* Save */}
           <button
             onClick={() => toggleSave(product.id)}
             className="text-gray-600 hover:text-pink-500 transition"
-            aria-label="save"
-            title="Lưu"
           >
-            {saved.includes(product.id) ? <BookmarkCheck size={16} /> : <Bookmark size={16} />}
+            {saved.includes(product.id) ? (
+              <BookmarkCheck size={20} />
+            ) : (
+              <Bookmark size={20} />
+            )}
           </button>
         </div>
       </div>

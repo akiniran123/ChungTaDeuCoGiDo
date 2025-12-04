@@ -98,16 +98,22 @@ export default function ProductsList({
         </div>
 
         <div className="flex items-center gap-2 overflow-x-auto no-scrollbar">
-          {["Hot", "Mới nhất", "Giảm giá", "Nhiều like", "Cộng đồng", "Theo dõi", "Video"].map(
-            (label, idx) => (
-              <button
-                key={idx}
-                className="px-3 py-1.5 rounded-full text-xs whitespace-nowrap bg-gray-100 text-gray-700 hover:bg-gray-200 transition border border-gray-300"
-              >
-                {label}
-              </button>
-            )
-          )}
+          {[
+            "Hot",
+            "Mới nhất",
+            "Giảm giá",
+            "Nhiều like",
+            "Cộng đồng",
+            "Theo dõi",
+            "Video",
+          ].map((label, idx) => (
+            <button
+              key={idx}
+              className="px-3 py-1.5 rounded-full text-xs whitespace-nowrap bg-gray-100 text-gray-700 hover:bg-gray-200 transition border border-gray-300"
+            >
+              {label}
+            </button>
+          ))}
         </div>
       </div>
 
@@ -122,7 +128,9 @@ export default function ProductsList({
           animate={{ opacity: 1, x: 0 }}
           exit={{ opacity: 0, x: biggerGrid ? -100 : 100 }}
           transition={{ duration: 0.45 }}
-          className={`grid gap-6 ${biggerGrid ? "grid-cols-1" : "grid-cols-1"}`}
+          className={`grid gap-6 ${
+            biggerGrid ? "grid-cols-1" : "grid-cols-1"
+          }`}
         >
           {visibleProducts.map((p) =>
             biggerGrid ? (
@@ -168,6 +176,9 @@ export default function ProductsList({
                   community_id: p.community_id ?? null,
                   communityName: p.communityName ?? null,
                   communityIcon: p.communityIcon ?? null,
+
+                  // ⭐ THÊM QUAN TRỌNG – FIX LỖI
+                  user_id: p.users?.id ?? "",
                 }}
                 likesCount={likesCount[p.id] ?? 0}
                 commentsCount={commentsCount[p.id] ?? 0}

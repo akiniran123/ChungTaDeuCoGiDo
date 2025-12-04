@@ -26,6 +26,9 @@ export type SmallCardProps = {
     community_id?: string | null;
     communityName?: string | null;
     communityIcon?: string | null;
+
+    // ⭐ THÊM ĐÚNG FIELD NÀY ĐỂ LINK PROFILE HOẠT ĐỘNG
+    user_id: string;
   };
   likesCount: number;
   commentsCount: number;
@@ -134,8 +137,11 @@ export default function SmallCard({
               <span className="whitespace-nowrap">{product.category}</span>
             )}
 
-            {/* USER */}
-            <span className="flex items-center gap-2 whitespace-nowrap">
+            {/* USER — ⭐ THAY THẾ BẰNG LINK PROFILE */}
+            <Link
+              href={`/profile/${product.user_id}`}
+              className="flex items-center gap-2 whitespace-nowrap hover:opacity-80"
+            >
               <img
                 src={product.avatar_url || "/default-avatar.png"}
                 className="w-6 h-6 rounded-full object-cover"
@@ -144,9 +150,9 @@ export default function SmallCard({
               <span className="truncate max-w-[150px]">
                 {product.author || "Người dùng"}
               </span>
-            </span>
+            </Link>
 
-            {/* TIME ⭐⭐⭐ THÊM Ở ĐÂY */}
+            {/* TIME */}
             <span className="whitespace-nowrap text-gray-400 text-xs">
               {product.created_at
                 ? new Date(product.created_at).toLocaleDateString("vi-VN", {

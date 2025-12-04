@@ -26,9 +26,7 @@ export type SmallCardProps = {
     community_id?: string | null;
     communityName?: string | null;
     communityIcon?: string | null;
-
-    // ⭐ THÊM ĐÚNG FIELD NÀY ĐỂ LINK PROFILE HOẠT ĐỘNG
-    user_id: string;
+    user_id: string; // ⭐ quan trọng
   };
   likesCount: number;
   commentsCount: number;
@@ -137,7 +135,7 @@ export default function SmallCard({
               <span className="whitespace-nowrap">{product.category}</span>
             )}
 
-            {/* USER — ⭐ THAY THẾ BẰNG LINK PROFILE */}
+            {/* USER — ⭐ màu text-gray-900 */}
             <Link
               href={`/profile/${product.user_id}`}
               className="flex items-center gap-2 whitespace-nowrap hover:opacity-80"
@@ -147,7 +145,7 @@ export default function SmallCard({
                 className="w-6 h-6 rounded-full object-cover"
                 alt="avatar"
               />
-              <span className="truncate max-w-[150px]">
+              <span className="truncate max-w-[150px] text-gray-900">
                 {product.author || "Người dùng"}
               </span>
             </Link>
@@ -167,6 +165,7 @@ export default function SmallCard({
               {commentsCount} bình luận
             </span>
 
+            {/* COMMUNITY — ⭐ màu text-gray-900 */}
             {product.communityName && (
               <Link
                 href={`/communities/${product.community_id}`}
@@ -179,7 +178,7 @@ export default function SmallCard({
                     alt="community"
                   />
                 )}
-                <span className="truncate max-w-[140px]">
+                <span className="truncate max-w-[140px] text-gray-900">
                   {product.communityName}
                 </span>
               </Link>

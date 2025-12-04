@@ -7,7 +7,7 @@ import { LayoutGrid, Grid } from "lucide-react";
 import SmallCard from "@/components/Trang_chu/pc/SmallCard";
 import DealCard from "@/components/Trang_chu/pc/DealCard";
 import type { Database } from "@/types/supabase";
-import SearchBar from "@/components/Navbar/pc/LogoSearchIcon/SearchBar"; // ✅ import SearchBar
+import SearchBar from "@/components/Navbar/pc/LogoSearchIcon/SearchBar";
 
 type ProductWithUser = Database["public"]["Tables"]["products"]["Row"] & {
   users?: {
@@ -67,7 +67,6 @@ export default function ProductsList({
 
   return (
     <div className="p-6">
-      {/* FILTERING */}
       {activeTag && (
         <div className="mb-4 flex items-center gap-3">
           <span className="text-sm">
@@ -83,9 +82,7 @@ export default function ProductsList({
         </div>
       )}
 
-      {/* FILTER TOOLBAR */}
       <div className="flex items-center justify-between mb-5">
-        {/* LEFT SIDE — GRID SWITCH */}
         <div className="flex items-center gap-3">
           <button
             onClick={toggleGrid}
@@ -100,36 +97,24 @@ export default function ProductsList({
           </button>
         </div>
 
-        {/* RIGHT SIDE — FILTER BUTTONS + SEARCHBAR */}
         <div className="flex items-center gap-2 overflow-x-auto no-scrollbar">
-          {[
-            "Hot",
-            "Mới nhất",
-            "Giảm giá",
-            "Nhiều like",
-            "Cộng đồng",
-            "Theo dõi",
-            "Video",
-          ].map((label, idx) => (
-            <button
-              key={idx}
-              className="px-3 py-1.5 rounded-full text-xs whitespace-nowrap bg-gray-100 text-gray-700 hover:bg-gray-200 transition border border-gray-300"
-            >
-              {label}
-            </button>
-          ))}
+          {["Hot", "Mới nhất", "Giảm giá", "Nhiều like", "Cộng đồng", "Theo dõi", "Video"].map(
+            (label, idx) => (
+              <button
+                key={idx}
+                className="px-3 py-1.5 rounded-full text-xs whitespace-nowrap bg-gray-100 text-gray-700 hover:bg-gray-200 transition border border-gray-300"
+              >
+                {label}
+              </button>
+            )
+          )}
         </div>
       </div>
 
-      {/* ✅ SearchBar đặt ngay dưới toolbar */}
       <div className="mb-6">
-        <SearchBar
-          userId={"demo-user"} // truyền userId thực tế nếu có
-          onSearch={(q) => console.log("Searching:", q)}
-        />
+        <SearchBar userId={"demo-user"} onSearch={(q) => console.log("Searching:", q)} />
       </div>
 
-      {/* GRID */}
       <AnimatePresence mode="wait">
         <motion.div
           key={biggerGrid ? "large" : "small"}
@@ -174,6 +159,15 @@ export default function ProductsList({
                   title: p.title,
                   image_url: p.image_url ?? undefined,
                   tags: p.tags ?? [],
+                  author: p.users?.username ?? null,
+                  avatar_url: p.users?.avatar_url ?? null,
+                  created_at: p.created_at ?? null,
+                  category: p.category ?? null,
+                  price: p.price ?? null,
+                  views: p.views ?? null,
+                  community_id: p.community_id ?? null,
+                  communityName: p.communityName ?? null,
+                  communityIcon: p.communityIcon ?? null,
                 }}
                 likesCount={likesCount[p.id] ?? 0}
                 commentsCount={commentsCount[p.id] ?? 0}

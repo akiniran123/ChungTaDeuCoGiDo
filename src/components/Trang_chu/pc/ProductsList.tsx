@@ -5,11 +5,17 @@ import { supabase } from "@/lib/supabase/client";
 import { motion, AnimatePresence } from "framer-motion";
 import { LayoutGrid, Grid } from "lucide-react";
 import SmallCard from "@/components/Trang_chu/pc/SmallCard";
-import DealCard, { DealType } from "@/components/Trang_chu/pc/DealCard";
+import DealCard from "@/components/Trang_chu/pc/DealCard";
 import type { Database } from "@/types/supabase";
+import SearchBar from "@/components/Navbar/pc/LogoSearchIcon/SearchBar"; // ✅ import SearchBar
 
 type ProductWithUser = Database["public"]["Tables"]["products"]["Row"] & {
-  users?: { username: string | null; avatar_url: string | null; id?: string } | null;
+  users?: {
+    username: string | null;
+    avatar_url: string | null;
+    id?: string;
+  } | null;
+
   tags?: string[];
   communityNames?: string[];
   communityName?: string | null;
@@ -77,8 +83,9 @@ export default function ProductsList({
         </div>
       )}
 
-      {/* TOOLBAR */}
+      {/* FILTER TOOLBAR */}
       <div className="flex items-center justify-between mb-5">
+        {/* LEFT SIDE — GRID SWITCH */}
         <div className="flex items-center gap-3">
           <button
             onClick={toggleGrid}
@@ -93,6 +100,7 @@ export default function ProductsList({
           </button>
         </div>
 
+        {/* RIGHT SIDE — FILTER BUTTONS + SEARCHBAR */}
         <div className="flex items-center gap-2 overflow-x-auto no-scrollbar">
           {[
             "Hot",
@@ -113,7 +121,15 @@ export default function ProductsList({
         </div>
       </div>
 
-      {/* LIST */}
+      {/* ✅ SearchBar đặt ngay dưới toolbar */}
+      <div className="mb-6">
+        <SearchBar
+          userId={"demo-user"} // truyền userId thực tế nếu có
+          onSearch={(q) => console.log("Searching:", q)}
+        />
+      </div>
+
+      {/* GRID */}
       <AnimatePresence mode="wait">
         <motion.div
           key={biggerGrid ? "large" : "small"}
@@ -121,9 +137,7 @@ export default function ProductsList({
           animate={{ opacity: 1, x: 0 }}
           exit={{ opacity: 0, x: biggerGrid ? -100 : 100 }}
           transition={{ duration: 0.45 }}
-          className={`grid gap-4 ${
-            biggerGrid ? "grid-cols-1" : "grid-cols-1"
-          }`}
+          className={`grid gap-6 ${biggerGrid ? "grid-cols-1" : "grid-cols-1"}`}
         >
           {visibleProducts.map((p) =>
             biggerGrid ? (

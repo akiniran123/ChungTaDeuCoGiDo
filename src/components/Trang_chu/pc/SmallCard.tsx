@@ -130,15 +130,14 @@ export default function SmallCard({
 
           {/* META */}
           <div className="mt-2 text-sm text-gray-500 flex items-center gap-3 flex-wrap">
-
             {product.category && (
               <span className="whitespace-nowrap">{product.category}</span>
             )}
 
-            {/* USER — ⭐ màu text-gray-900 */}
+            {/* USER — text-gray-900 + cursor-pointer */}
             <Link
               href={`/profile/${product.user_id}`}
-              className="flex items-center gap-2 whitespace-nowrap hover:opacity-80"
+              className="flex items-center gap-2 whitespace-nowrap hover:opacity-80 cursor-pointer"
             >
               <img
                 src={product.avatar_url || "/default-avatar.png"}
@@ -165,11 +164,11 @@ export default function SmallCard({
               {commentsCount} bình luận
             </span>
 
-            {/* COMMUNITY — ⭐ màu text-gray-900 */}
+            {/* COMMUNITY — text-gray-900 + cursor-pointer */}
             {product.communityName && (
               <Link
                 href={`/communities/${product.community_id}`}
-                className="flex items-center gap-2 hover:opacity-80 whitespace-nowrap"
+                className="flex items-center gap-2 hover:opacity-80 whitespace-nowrap cursor-pointer"
               >
                 {product.communityIcon && (
                   <img
@@ -197,11 +196,12 @@ export default function SmallCard({
               <button
                 key={i}
                 onClick={() => onTagClick(t)}
-                className="text-xs bg-pink-50 text-purple-500 px-2 py-1 rounded-full hover:bg-pink-100 whitespace-nowrap"
+                className="text-xs bg-pink-50 text-purple-500 px-2 py-1 rounded-full hover:bg-pink-100 whitespace-nowrap cursor-pointer"
               >
                 {t}
               </button>
             ))}
+
             {product.tags.length > 4 && (
               <div className="text-xs text-gray-400 whitespace-nowrap">
                 +{product.tags.length - 4}

@@ -69,13 +69,15 @@ export default function ProductsList({
     <div className="p-6">
       {activeTag && (
         <div className="mb-4 flex items-center gap-3">
-          <span className="text-sm">
+          <span className="text-sm cursor-pointer select-none">
             Đang lọc theo tag:
             <strong className="ml-1 text-pink-600">#{activeTag}</strong>
           </span>
+
+          {/* ⭐ FIX: thêm cursor-pointer */}
           <button
             onClick={() => setActiveTag(null)}
-            className="px-3 py-1 bg-gray-200 text-gray-700 rounded-full text-sm hover:bg-gray-300 transition"
+            className="cursor-pointer px-3 py-1 bg-gray-200 text-gray-700 rounded-full text-sm hover:bg-gray-300 transition"
           >
             Hủy lọc
           </button>
@@ -176,8 +178,6 @@ export default function ProductsList({
                   community_id: p.community_id ?? null,
                   communityName: p.communityName ?? null,
                   communityIcon: p.communityIcon ?? null,
-
-                  // ⭐ THÊM QUAN TRỌNG – FIX LỖI
                   user_id: p.users?.id ?? "",
                 }}
                 likesCount={likesCount[p.id] ?? 0}

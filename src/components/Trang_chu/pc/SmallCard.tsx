@@ -88,7 +88,7 @@ export default function SmallCard({
       className="
         w-full px-4 py-3 bg-white
         transition 
-        hover:bg-gray-50    /* ⭐ Thẻ sáng lên khi hover */
+        hover:bg-gray-50
       "
     >
       {/* ROW */}
@@ -129,10 +129,12 @@ export default function SmallCard({
 
           {/* META */}
           <div className="mt-2 text-sm text-gray-500 flex items-center gap-3 flex-wrap">
+
             {product.category && (
               <span className="whitespace-nowrap">{product.category}</span>
             )}
 
+            {/* USER */}
             <span className="flex items-center gap-2 whitespace-nowrap">
               <img
                 src={product.avatar_url || "/default-avatar.png"}
@@ -142,6 +144,17 @@ export default function SmallCard({
               <span className="truncate max-w-[150px]">
                 {product.author || "Người dùng"}
               </span>
+            </span>
+
+            {/* TIME ⭐⭐⭐ THÊM Ở ĐÂY */}
+            <span className="whitespace-nowrap text-gray-400 text-xs">
+              {product.created_at
+                ? new Date(product.created_at).toLocaleDateString("vi-VN", {
+                    day: "2-digit",
+                    month: "2-digit",
+                    year: "numeric",
+                  })
+                : ""}
             </span>
 
             <span className="whitespace-nowrap">

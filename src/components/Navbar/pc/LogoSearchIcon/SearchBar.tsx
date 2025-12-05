@@ -86,7 +86,6 @@ export default function SearchBar({ userId, onSearch }: SearchBarProps) {
             },
           ],
           { onConflict: "user_id,query" }
-// sửa thành mảng
         );
     }
 
@@ -111,8 +110,7 @@ export default function SearchBar({ userId, onSearch }: SearchBarProps) {
             onSearch?.(e.target.value);
           }}
           onFocus={() => setShowDropdown(true)}
-          onBlur={() => setTimeout(() => setShowDropdown(false), 150)}
-          aria-expanded={showDropdown}
+          // ❌ XOÁ onBlur để tránh chặn click vào kết quả
           className="w-full bg-transparent border-none outline-none text-xs text-gray-800 placeholder-gray-400 focus:outline-none focus:ring-0 h-6"
         />
       </form>
@@ -126,7 +124,10 @@ export default function SearchBar({ userId, onSearch }: SearchBarProps) {
                 <li
                   key={item.id}
                   role="option"
-                  onClick={() => router.push(`/deal/${item.id}`)}
+                  onClick={() => {
+                    setShowDropdown(false); // 🔥 đóng dropdown
+                    router.push(`/deal/${item.id}`); // 🔥 chuyển đúng trang chi tiết
+                  }}
                   className="search-suggestion flex items-center gap-2 p-2 hover:bg-blue-50 cursor-pointer transition-colors rounded-md"
                 >
                   {item.image_url && (

@@ -25,11 +25,10 @@ export type DealType = {
 
   community_title?: string | null;
   community_avatar_url?: string | null;
-  // ✅ thêm community_id (tùy chọn)
   community_id?: string | null;
 
   tags?: string[];
-  product_tags?: string[];
+  product_tags?: string[]; // vẫn giữ type nhưng không render
 };
 
 export interface DealCardProps {
@@ -217,7 +216,6 @@ const DealCard: React.FC<DealCardProps> = ({
     </div>
   );
 
-  // helper: safe slugify (fallback)
   const makeSlug = (s?: string | null) =>
     (s || "")
       .toString()
@@ -248,9 +246,9 @@ const DealCard: React.FC<DealCardProps> = ({
             </div>
 
             <div className="flex flex-col items-end gap-2 ml-3">
-              {(deal.tags?.length || deal.product_tags?.length) && (
+              {deal.tags?.length ? (
                 <div className="flex flex-wrap justify-end gap-2 max-w-[160px]">
-                  {deal.tags?.map((tag, i) => (
+                  {deal.tags.map((tag, i) => (
                     <button
                       key={i}
                       onClick={(e) => {
@@ -262,25 +260,10 @@ const DealCard: React.FC<DealCardProps> = ({
                       {tag}
                     </button>
                   ))}
-
-                  {deal.product_tags?.map((tag, i) => (
-                    <button
-                      key={`pt-${i}`}
-                      onClick={(e) => {
-                        e.stopPropagation();
-                        onTagClick?.(tag);
-                      }}
-                      className="text-xs bg-blue-50 text-blue-700 px-2 py-1 rounded-full hover:bg-blue-100"
-                    >
-                      {tag}
-                    </button>
-                  ))}
                 </div>
-              )}
+              ) : null}
 
-              {/* ---------- community (clickable) ---------- */}
               {deal.community_title && (
-                // ưu tiên community_id (route /communities/[id]), fallback slug
                 <Link
                   href={
                     deal.community_id

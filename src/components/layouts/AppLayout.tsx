@@ -10,8 +10,8 @@ export default function AppLayout({
 }: {
   children: React.ReactNode;
 }) {
-  const SIDEBAR_LEFT_WIDTH = 250; // w-64
-  const SIDEBAR_RIGHT_WIDTH = 290; // w-72
+  const SIDEBAR_LEFT_WIDTH = 240; // w-64
+  const SIDEBAR_RIGHT_WIDTH = 270; // w-72
 
   return (
     <div className="bg-white text-black min-h-screen flex flex-col">

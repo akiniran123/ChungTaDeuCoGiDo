@@ -2,7 +2,7 @@
 
 import { useEffect, useState } from 'react'
 import { Menu as HeadlessMenu } from '@headlessui/react'
-import { ChevronDown, Loader2, User as UserIcon } from 'lucide-react'
+import { ChevronDown, Loader2 } from 'lucide-react'
 import { supabase } from '@/lib/supabase/client'
 import type { User } from '@supabase/supabase-js'
 import { useRouter } from 'next/navigation'
@@ -27,24 +27,44 @@ export default function UserMenu({ onLoginClick }: { onLoginClick: () => void })
 
   if (!user) {
     return (
-      <UserIcon
-        className="w-5 h-5 text-gray-600 hover:text-[#9b4de0] cursor-pointer"
+      <div
+        className="flex items-center gap-2 cursor-pointer"
         onClick={onLoginClick}
-      />
+      >
+        <img
+          src="/default-avatar.png"
+          alt="Guest Avatar"
+          className="w-8 h-8 rounded-full object-cover"
+        />
+        <span className="text-sm text-gray-700 hover:text-[#9b4de0]">Đăng nhập</span>
+      </div>
     )
   }
 
+  const avatar = user.user_metadata?.avatar_url || '/default-avatar.png'
+  const username = user.user_metadata?.username || 'aki_photozz'
+  const fullName = user.user_metadata?.full_name || 'Hà Song Phương'
+
   return (
     <HeadlessMenu as="div" className="relative">
-      <HeadlessMenu.Button className="flex items-center gap-1 text-sm text-gray-700 hover:text-[#9b4de0] cursor-pointer">
-        <UserIcon className="w-5 h-5 cursor-pointer" />
-        <ChevronDown className="w-4 h-4" />
+      {/* Nút hiển thị avatar + tên */}
+      <HeadlessMenu.Button className="flex items-center gap-2 px-2 py-1 cursor-pointer hover:bg-gray-50 rounded-md">
+        <img
+          src={avatar}
+          alt="User Avatar"
+          className="w-8 h-8 rounded-full object-cover border border-gray-300"
+        />
+        <div className="flex flex-col text-left">
+          <span className="font-semibold text-sm text-gray-800">{username}</span>
+          <span className="text-xs text-gray-500">{fullName}</span>
+        </div>
+        <ChevronDown className="w-4 h-4 text-gray-400 ml-1" />
       </HeadlessMenu.Button>
 
+      {/* Dropdown giữ nguyên các nút cũ */}
       <HeadlessMenu.Items
-        className="absolute right-2 mt-2 w-44 bg-white border border-gray-200 rounded-md shadow-lg z-50 text-sm"
+        className="absolute right-0 mt-2 w-44 bg-white border border-gray-200 rounded-md shadow-lg z-50 text-sm"
       >
-
         {/* Trang cá nhân */}
         <HeadlessMenu.Item>
           {({ active }) => (
@@ -76,9 +96,7 @@ export default function UserMenu({ onLoginClick }: { onLoginClick: () => void })
             </button>
           )}
         </HeadlessMenu.Item>
-
       </HeadlessMenu.Items>
     </HeadlessMenu>
   )
 }
-

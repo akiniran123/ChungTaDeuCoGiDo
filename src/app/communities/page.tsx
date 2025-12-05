@@ -13,7 +13,6 @@ export default function CommunitiesPage() {
   const [filtered, setFiltered] = useState<Community[]>([]);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
-
   const [query, setQuery] = useState("");
   const [selectedCategory, setSelectedCategory] = useState<string>("All");
 

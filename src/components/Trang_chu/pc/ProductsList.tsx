@@ -65,8 +65,24 @@ export default function ProductsList({
     setBiggerGrid((prev) => !prev);
   };
 
+  // ⭐ Category list
+  const categories = [
+    "eBay Live",
+    "Saved",
+    "Electronics",
+    "Motors",
+    "Fashion",
+    "Collectibles & Art",
+    "Sports",
+    "Health & Beauty",
+    "Industrial equipment",
+    "Home & Garden",
+  ];
+
   return (
     <div className="p-6">
+
+      {/* ⭐ TAG FILTER IF ACTIVE */}
       {activeTag && (
         <div className="mb-4 flex items-center gap-3">
           <span className="text-sm cursor-pointer select-none">
@@ -74,7 +90,6 @@ export default function ProductsList({
             <strong className="ml-1 text-pink-600">#{activeTag}</strong>
           </span>
 
-          {/* ⭐ FIX: thêm cursor-pointer */}
           <button
             onClick={() => setActiveTag(null)}
             className="cursor-pointer px-3 py-1 bg-gray-200 text-gray-700 rounded-full text-sm hover:bg-gray-300 transition"
@@ -84,7 +99,32 @@ export default function ProductsList({
         </div>
       )}
 
+      {/* ⭐ CATEGORY NAV + SEARCHBAR */}
+      <div className="mb-6 flex flex-col gap-3">
+
+        {/* ⭐ CATEGORY NAV */}
+        <div className="flex items-center gap-0 text-[12px] overflow-x-auto no-scrollbar">
+          {categories.map((cat) => (
+            <button
+              key={cat}
+              className="whitespace-nowrap text-gray-700 hover:text-blue-600 transition pb-[2px] hover:border-b hover:border-blue-600"
+            >
+              {cat}
+            </button>
+          ))}
+        </div>
+
+        {/* ⭐ SEARCH BAR */}
+        <SearchBar
+          userId={"demo-user"}
+          onSearch={(q) => console.log("Searching:", q)}
+        />
+      </div>
+
+      {/* ⭐ FILTER TOOLBAR */}
       <div className="flex items-center justify-between mb-5">
+
+        {/* Toggle grid */}
         <div className="flex items-center gap-3">
           <button
             onClick={toggleGrid}
@@ -99,6 +139,7 @@ export default function ProductsList({
           </button>
         </div>
 
+        {/* Filter buttons */}
         <div className="flex items-center gap-2 overflow-x-auto no-scrollbar">
           {[
             "Hot",
@@ -119,10 +160,7 @@ export default function ProductsList({
         </div>
       </div>
 
-      <div className="mb-6">
-        <SearchBar userId={"demo-user"} onSearch={(q) => console.log("Searching:", q)} />
-      </div>
-
+      {/* ⭐ PRODUCT GRID */}
       <AnimatePresence mode="wait">
         <motion.div
           key={biggerGrid ? "large" : "small"}
@@ -130,9 +168,7 @@ export default function ProductsList({
           animate={{ opacity: 1, x: 0 }}
           exit={{ opacity: 0, x: biggerGrid ? -100 : 100 }}
           transition={{ duration: 0.45 }}
-          className={`grid gap-6 ${
-            biggerGrid ? "grid-cols-1" : "grid-cols-1"
-          }`}
+          className="grid gap-6 grid-cols-1"
         >
           {visibleProducts.map((p) =>
             biggerGrid ? (

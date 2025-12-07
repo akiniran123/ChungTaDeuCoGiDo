@@ -26,7 +26,7 @@ export type SmallCardProps = {
     community_id?: string | null;
     communityName?: string | null;
     communityIcon?: string | null;
-    user_id: string; // ⭐ quan trọng
+    user_id: string;
   };
   likesCount: number;
   commentsCount: number;
@@ -114,27 +114,9 @@ export default function SmallCard({
 
         {/* MAIN */}
         <div className="flex-1 min-w-0">
-          <div className="flex items-center gap-3">
-            <Link href={`/deal/${product.id}`} className="min-w-0 flex-1">
-              <div className="text-lg font-semibold text-gray-800 leading-snug truncate">
-                {product.title}
-              </div>
-            </Link>
 
-            {product.price && (
-              <div className="ml-2 text-base font-bold text-indigo-600 whitespace-nowrap">
-                {product.price.toLocaleString()}₫
-              </div>
-            )}
-          </div>
-
-          {/* META */}
-          <div className="mt-2 text-sm text-gray-500 flex items-center gap-3 flex-wrap">
-            {product.category && (
-              <span className="whitespace-nowrap">{product.category}</span>
-            )}
-
-            {/* USER — text-gray-900 + cursor-pointer */}
+          {/* 🔥 USER + TIME — HÀNG TRÊN CÙNG */}
+          <div className="mb-1 text-sm flex items-center gap-3 flex-wrap">
             <Link
               href={`/profile/${product.user_id}`}
               className="flex items-center gap-2 whitespace-nowrap hover:opacity-80 cursor-pointer"
@@ -149,7 +131,6 @@ export default function SmallCard({
               </span>
             </Link>
 
-            {/* TIME */}
             <span className="whitespace-nowrap text-gray-400 text-xs">
               {product.created_at
                 ? new Date(product.created_at).toLocaleDateString("vi-VN", {
@@ -159,29 +140,32 @@ export default function SmallCard({
                   })
                 : ""}
             </span>
+          </div>
+
+          {/* TITLE + PRICE */}
+          <div className="flex items-center gap-3">
+            <Link href={`/deal/${product.id}`} className="min-w-0 flex-1">
+              <div className="text-lg font-semibold text-gray-800 leading-snug truncate">
+                {product.title}
+              </div>
+            </Link>
+
+            {product.price && (
+              <div className="ml-2 text-base font-bold text-indigo-600 whitespace-nowrap">
+                {product.price.toLocaleString()}₫
+              </div>
+            )}
+          </div>
+
+          {/* META giữ nguyên 100%, trừ Community đã di chuyển */}
+          <div className="mt-2 text-sm text-gray-500 flex items-center gap-3 flex-wrap">
+            {product.category && (
+              <span className="whitespace-nowrap">{product.category}</span>
+            )}
 
             <span className="whitespace-nowrap">
               {commentsCount} bình luận
             </span>
-
-            {/* COMMUNITY — text-gray-900 + cursor-pointer */}
-            {product.communityName && (
-              <Link
-                href={`/communities/${product.community_id}`}
-                className="flex items-center gap-2 hover:opacity-80 whitespace-nowrap cursor-pointer"
-              >
-                {product.communityIcon && (
-                  <img
-                    src={product.communityIcon}
-                    className="w-6 h-6 rounded-full object-cover"
-                    alt="community"
-                  />
-                )}
-                <span className="truncate max-w-[140px] text-gray-900">
-                  {product.communityName}
-                </span>
-              </Link>
-            )}
 
             <span className="whitespace-nowrap">
               {product.views ?? 0} lượt xem
@@ -189,26 +173,46 @@ export default function SmallCard({
           </div>
         </div>
 
-        {/* TAGS */}
-        {product.tags && product.tags.length > 0 && (
-          <div className="flex-shrink-0 hidden lg:flex items-center gap-1 ml-2">
-            {product.tags.slice(0, 4).map((t, i) => (
-              <button
-                key={i}
-                onClick={() => onTagClick(t)}
-                className="text-xs bg-pink-50 text-purple-500 px-2 py-1 rounded-full hover:bg-pink-100 whitespace-nowrap cursor-pointer"
-              >
-                {t}
-              </button>
-            ))}
+        {/* TAGS + COMMUNITY DƯỚI TAG */}
+        <div className="flex-shrink-0 hidden lg:flex flex-col gap-1 ml-2">
+          {product.tags && product.tags.length > 0 && (
+            <div className="flex items-center gap-1">
+              {product.tags.slice(0, 4).map((t, i) => (
+                <button
+                  key={i}
+                  onClick={() => onTagClick(t)}
+                  className="text-xs bg-pink-50 text-purple-500 px-2 py-1 rounded-full hover:bg-pink-100 whitespace-nowrap cursor-pointer"
+                >
+                  {t}
+                </button>
+              ))}
 
-            {product.tags.length > 4 && (
-              <div className="text-xs text-gray-400 whitespace-nowrap">
-                +{product.tags.length - 4}
-              </div>
-            )}
-          </div>
-        )}
+              {product.tags.length > 4 && (
+                <div className="text-xs text-gray-400 whitespace-nowrap">
+                  +{product.tags.length - 4}
+                </div>
+              )}
+            </div>
+          )}
+
+          {product.communityName && (
+            <Link
+              href={`/communities/${product.community_id}`}
+              className="flex items-center gap-2 hover:opacity-80 whitespace-nowrap cursor-pointer mt-1"
+            >
+              {product.communityIcon && (
+                <img
+                  src={product.communityIcon}
+                  className="w-6 h-6 rounded-full object-cover"
+                  alt="community"
+                />
+              )}
+              <span className="truncate max-w-[140px] text-gray-900">
+                {product.communityName}
+              </span>
+            </Link>
+          )}
+        </div>
 
         {/* ACTIONS */}
         <div className="flex items-center gap-3 ml-3 flex-shrink-0">

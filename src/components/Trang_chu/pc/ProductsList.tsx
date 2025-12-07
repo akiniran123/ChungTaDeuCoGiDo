@@ -126,7 +126,7 @@ export default function ProductsList({
             </div>
 
             {/* FILTER BAR */}
-            <div className="pb-4 flex items-center gap-2 px-2">
+            <div className="pb-2 flex items-center gap-2 px-2">
               {/* Sort dropdown */}
               <button className="flex items-center gap-1 px-3 py-1.5 text-sm font-medium text-gray-700 hover:bg-gray-100 rounded-md">
                 <span>Best</span>

@@ -46,12 +46,27 @@ export default function ProductsList({
   const [activeTag, setActiveTag] = useState<string | null>(null);
   const scrollPosition = useRef(0);
 
+  const [showHeader, setShowHeader] = useState(true);
+  const lastScrollY = useRef(0);
+
   const visibleProducts = activeTag
     ? products.filter((p) => p.tags?.includes(activeTag))
     : products;
 
   useEffect(() => {
-    const handleScroll = () => (scrollPosition.current = window.scrollY);
+    const handleScroll = () => {
+      const currentScrollY = window.scrollY;
+      if (currentScrollY > lastScrollY.current && currentScrollY > 80) {
+        // Kéo xuống
+        setShowHeader(false);
+      } else {
+        // Kéo lên
+        setShowHeader(true);
+      }
+      lastScrollY.current = currentScrollY;
+      scrollPosition.current = currentScrollY;
+    };
+
     window.addEventListener("scroll", handleScroll);
     return () => window.removeEventListener("scroll", handleScroll);
   }, []);
@@ -81,25 +96,38 @@ export default function ProductsList({
 
   return (
     <div className="px-6 pb-6">
-      {/* ⭐ CATEGORY LIST SÁT VIỀN TOP */}
-      <div className="sticky top-0 z-20 bg-white flex items-center gap-0 text-[12px] overflow-x-auto no-scrollbar border-gray-200 py-0">
-        {categories.map((cat) => (
-          <button
-            key={cat}
-            className="whitespace-nowrap text-gray-700 hover:text-blue-600 transition pb-[2px] hover:border-b hover:border-blue-600"
+      {/* ⭐ HEADER (CATEGORY + SEARCHBAR) */}
+      <AnimatePresence>
+        {showHeader && (
+          <motion.div
+            initial={{ y: -100, opacity: 0 }}
+            animate={{ y: 0, opacity: 1 }}
+            exit={{ y: -100, opacity: 0 }}
+            transition={{ duration: 0.3 }}
+            className="sticky top-0 z-30 bg-white"
           >
-            {cat}
-          </button>
-        ))}
-      </div>
+            {/* CATEGORY LIST */}
+            <div className="flex items-center gap-0 text-[12px] overflow-x-auto no-scrollbar border-gray-200 ">
+              {categories.map((cat) => (
+                <button
+                  key={cat}
+                  className="whitespace-nowrap text-gray-700 hover:text-blue-600 transition pb-[2px] hover:border-b hover:border-blue-600"
+                >
+                  {cat}
+                </button>
+              ))}
+            </div>
 
-      {/* ⭐ SEARCH BAR STICKY NGAY DƯỚI CATEGORY */}
-      <div className="sticky top-10 z-20 bg-white mt-4 mb-6 relative">
-        <SearchBar
-          userId={"demo-user"}
-          onSearch={(q) => console.log("Searching:", q)}
-        />
-      </div>
+            {/* SEARCH BAR */}
+            <div className="mt-2 mb-2 py-2 px-2">
+              <SearchBar
+                userId={"demo-user"}
+                onSearch={(q) => console.log("Searching:", q)}
+              />
+            </div>
+          </motion.div>
+        )}
+      </AnimatePresence>
 
       {/* ⭐ TAG FILTER IF ACTIVE */}
       {activeTag && (

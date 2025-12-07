@@ -96,7 +96,7 @@ export default function SearchBar({ userId, onSearch }: SearchBarProps) {
   };
 
   return (
-    <div className="relative w-full max-w-xl mx-auto">
+    <div className="relative w-full">
       <form
         onSubmit={handleSearch}
         className="flex w-full items-center bg-white rounded-full shadow-sm border border-gray-200 px-2 h-12"

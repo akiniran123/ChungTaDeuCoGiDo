@@ -80,7 +80,26 @@ export default function ProductsList({
   ];
 
   return (
-    <div className="p-6">
+    <div className="px-6 pb-6">
+      {/* ⭐ CATEGORY LIST SÁT VIỀN TOP */}
+      <div className="sticky top-0 z-20 bg-white flex items-center gap-0 text-[12px] overflow-x-auto no-scrollbar border-gray-200 py-0">
+        {categories.map((cat) => (
+          <button
+            key={cat}
+            className="whitespace-nowrap text-gray-700 hover:text-blue-600 transition pb-[2px] hover:border-b hover:border-blue-600"
+          >
+            {cat}
+          </button>
+        ))}
+      </div>
+
+      {/* ⭐ SEARCH BAR STICKY NGAY DƯỚI CATEGORY */}
+      <div className="sticky top-10 z-20 bg-white mt-4 mb-6 relative">
+        <SearchBar
+          userId={"demo-user"}
+          onSearch={(q) => console.log("Searching:", q)}
+        />
+      </div>
 
       {/* ⭐ TAG FILTER IF ACTIVE */}
       {activeTag && (
@@ -89,7 +108,6 @@ export default function ProductsList({
             Đang lọc theo tag:
             <strong className="ml-1 text-pink-600">#{activeTag}</strong>
           </span>
-
           <button
             onClick={() => setActiveTag(null)}
             className="cursor-pointer px-3 py-1 bg-gray-200 text-gray-700 rounded-full text-sm hover:bg-gray-300 transition"
@@ -99,64 +117,43 @@ export default function ProductsList({
         </div>
       )}
 
-      {/* ⭐ CATEGORY NAV + SEARCHBAR */}
-      <div className="mb-6 flex flex-col gap-3">
-
-        {/* ⭐ CATEGORY NAV */}
-        <div className="flex items-center gap-0 text-[12px] overflow-x-auto no-scrollbar">
-          {categories.map((cat) => (
-            <button
-              key={cat}
-              className="whitespace-nowrap text-gray-700 hover:text-blue-600 transition pb-[2px] hover:border-b hover:border-blue-600"
-            >
-              {cat}
-            </button>
-          ))}
-        </div>
-
-        {/* ⭐ SEARCH BAR */}
-        <SearchBar
-          userId={"demo-user"}
-          onSearch={(q) => console.log("Searching:", q)}
-        />
-      </div>
-
       {/* ⭐ FILTER TOOLBAR */}
-      <div className="flex items-center justify-between mb-5">
-
-        {/* Toggle grid */}
-        <div className="flex items-center gap-3">
-          <button
-            onClick={toggleGrid}
-            className={`px-3 py-2 rounded-lg border transition flex items-center gap-2 ${
-              biggerGrid
-                ? "bg-pink-100 text-pink-600 border-pink-300"
-                : "bg-white text-gray-700 border-gray-300 hover:bg-gray-100"
-            }`}
-          >
-            {biggerGrid ? <Grid size={18} /> : <LayoutGrid size={18} />}
-            <span className="text-sm font-medium">Chế độ thẻ</span>
-          </button>
-        </div>
-
-        {/* Filter buttons */}
-        <div className="flex items-center gap-2 overflow-x-auto no-scrollbar">
-          {[
-            "Hot",
-            "Mới nhất",
-            "Giảm giá",
-            "Nhiều like",
-            "Cộng đồng",
-            "Theo dõi",
-            "Video",
-          ].map((label, idx) => (
+      <div className="mb-6">
+        <div className="flex items-center justify-between">
+          {/* Toggle grid */}
+          <div className="flex items-center gap-3">
             <button
-              key={idx}
-              className="px-3 py-1.5 rounded-full text-xs whitespace-nowrap bg-gray-100 text-gray-700 hover:bg-gray-200 transition border border-gray-300"
+              onClick={toggleGrid}
+              className={`px-3 py-2 rounded-lg border transition flex items-center gap-2 ${
+                biggerGrid
+                  ? "bg-pink-100 text-pink-600 border-pink-300"
+                  : "bg-white text-gray-700 border-gray-300 hover:bg-gray-100"
+              }`}
             >
-              {label}
+              {biggerGrid ? <Grid size={18} /> : <LayoutGrid size={18} />}
+              <span className="text-sm font-medium">Chế độ thẻ</span>
             </button>
-          ))}
+          </div>
+
+          {/* Filter buttons */}
+          <div className="flex items-center gap-2 overflow-x-auto no-scrollbar">
+            {[
+              "Hot",
+              "Mới nhất",
+              "Giảm giá",
+              "Nhiều like",
+              "Cộng đồng",
+              "Theo dõi",
+              "Video",
+            ].map((label, idx) => (
+              <button
+                key={idx}
+                className="px-3 py-1.5 rounded-full text-xs whitespace-nowrap bg-gray-100 text-gray-700 hover:bg-gray-200 transition border border-gray-300"
+              >
+                {label}
+              </button>
+            ))}
+          </div>
         </div>
       </div>
 

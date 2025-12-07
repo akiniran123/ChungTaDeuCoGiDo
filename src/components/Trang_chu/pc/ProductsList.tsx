@@ -41,6 +41,7 @@ export default function ProductsList({
 }: ProductsListProps) {
   const [biggerGrid, setBiggerGrid] = useState(false);
   const [activeTag, setActiveTag] = useState<string | null>(null);
+  const [selectedCategory, setSelectedCategory] = useState<string | null>(null);
   const scrollPosition = useRef(0);
   const [showHeader, setShowHeader] = useState(true);
   const lastScrollY = useRef(0);
@@ -100,29 +101,34 @@ export default function ProductsList({
             className="sticky top-0 z-30 bg-white"
           >
             {/* CATEGORY LIST */}
-            <div className="flex items-center gap-0 text-[12px] overflow-x-auto no-scrollbar">
+            <div className="flex items-center text-[12px] overflow-x-auto no-scrollbar px-2 py-2">
               {categories.map((cat) => (
                 <button
-                  key={cat}
-                  className="whitespace-nowrap text-gray-700 hover:text-blue-600 transition pb-[2px] hover:border-b hover:border-blue-600"
-                >
-                  {cat}
-                </button>
+  key={cat}
+  onClick={() => setSelectedCategory(cat)}
+  className={`whitespace-nowrap px-4 py-2 rounded-full text-sm font-medium transition ${
+    selectedCategory === cat
+      ? "bg-red-100 text-red-700 shadow-sm"
+      : "text-gray-700 hover:text-blue-600"
+  }`}
+>
+  {cat}
+</button>
               ))}
             </div>
 
             {/* SEARCH BAR */}
-            <div className="mt-2 mb-2 py-2 px-2">
+            <div className="mb-2 py-2 px-2">
               <SearchBar
                 userId={"demo-user"}
                 onSearch={(q) => console.log("Searching:", q)}
               />
             </div>
 
-            {/* FILTER BAR (chỉ nút có border, không có thanh ngang container) */}
-            <div className="mb-2 flex items-center gap-2 px-2">
+            {/* FILTER BAR */}
+            <div className="pb-4 flex items-center gap-2 px-2">
               {/* Sort dropdown */}
-              <button className="flex items-center gap-1 px-3 py-1.5 text-sm font-medium text-gray-700 hover:bg-gray-100 rounded-md border border-gray-300">
+              <button className="flex items-center gap-1 px-3 py-1.5 text-sm font-medium text-gray-700 hover:bg-gray-100 rounded-md">
                 <span>Best</span>
                 <svg
                   className="w-4 h-4 text-gray-500"
@@ -138,7 +144,7 @@ export default function ProductsList({
               {/* Toggle grid */}
               <button
                 onClick={toggleGrid}
-                className={`flex items-center gap-1 px-3 py-1.5 text-sm font-medium rounded-md border ${
+                className={`flex items-center gap-1 px-3 py-1.5 text-sm font-medium rounded-md ${
                   biggerGrid
                     ? "bg-pink-100 text-pink-600 border-pink-300"
                     : "bg-white text-gray-700 border-gray-300 hover:bg-gray-100"

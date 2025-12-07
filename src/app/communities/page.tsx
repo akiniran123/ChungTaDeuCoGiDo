@@ -69,19 +69,19 @@ export default function CommunitiesPage() {
   }, [communities, query, selectedCategory]);
 
   return (
-    <div className="min-h-screen bg-gray-50 pt-24 pb-10 px-4">
-      <div className="max-w-6xl mx-auto">
-        <header className="mb-8">
-          <h1 className="text-3xl font-extrabold text-gray-900 mb-2">
-            Cộng đồng
-          </h1>
-          <p className="text-gray-600">
+    <div className="min-h-screen bg-gray-50">
+      {/* ⭐ Sticky header */}
+      <div className="fixed top-0 left-0 right-0 z-40 bg-white border-b border-gray-200 shadow-sm">
+        <div className="max-w-6xl mx-auto px-4 py-4">
+          <h1 className="text-xl font-bold text-gray-900">Cộng đồng</h1>
+          <p className="text-sm text-gray-500">
             Khám phá các cộng đồng, tham gia hoặc tạo mới.
           </p>
-        </header>
+        </div>
 
-        <section className="bg-white rounded-2xl p-6 shadow-sm border border-gray-100 mb-6">
-          <div className="flex flex-col sm:flex-row sm:items-center gap-3">
+        {/* Filter bar */}
+        <div className="bg-white px-4 py-3 border-t border-gray-100">
+          <div className="max-w-6xl mx-auto flex flex-col sm:flex-row sm:items-center gap-3">
             <div className="flex items-center gap-2 flex-1">
               <Search className="w-5 h-5 text-gray-400" />
               <input
@@ -93,7 +93,7 @@ export default function CommunitiesPage() {
             </div>
 
             <div className="flex items-center gap-3">
-              <div className="flex items-center gap-2 px-3 py-2 rounded-lg bg-gray-50">
+              <div className="flex items-center gap-2 px-3 py-2 rounded-lg bg-gray-50 border border-gray-200">
                 <Filter className="w-4 h-4 text-gray-500" />
                 <select
                   value={selectedCategory}
@@ -109,56 +109,60 @@ export default function CommunitiesPage() {
               </div>
             </div>
           </div>
-        </section>
+        </div>
+      </div>
 
-        <main>
-          {loading ? (
-            <div className="bg-white rounded-2xl p-8 shadow-sm border border-gray-100 flex items-center justify-center">
-              <Loader2 className="animate-spin w-6 h-6 mr-3 text-blue-600" />
-              <span className="text-gray-600">Đang tải...</span>
-            </div>
-          ) : error ? (
-            <div className="bg-red-50 text-red-700 rounded-2xl p-6">{error}</div>
-          ) : filtered.length === 0 ? (
-            <div className="bg-white rounded-2xl p-8 shadow-sm border border-gray-100 text-center text-gray-500">
-              Không tìm thấy cộng đồng nào.
-            </div>
-          ) : (
-            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
-              {filtered.map((c) => (
-                <Link
-                  key={c.id}
-                  href={`/communities/${c.id}`}
-                  className="bg-white rounded-xl p-5 border border-gray-100 shadow-sm hover:shadow-md transition block"
-                >
-                  <div className="flex items-start gap-4">
-                    <div className="w-12 h-12 rounded-lg bg-blue-50 flex items-center justify-center text-blue-600 font-bold">
-                      {c.title ? c.title.charAt(0).toUpperCase() : "C"}
-                    </div>
+      {/* ⭐ Spacer to offset sticky header height */}
+      <div className="h-[144px]" />
 
-                    <div className="flex-1">
-                      <h3 className="text-lg font-semibold text-gray-800">
-                        {c.title || "Không tên"}
-                      </h3>
+      {/* ⭐ Main content */}
+      <div className="max-w-6xl mx-auto px-4 pb-10">
+        {loading ? (
+          <div className="bg-white rounded-2xl p-8 shadow-sm border border-gray-100 flex items-center justify-center">
+            <Loader2 className="animate-spin w-6 h-6 mr-3 text-blue-600" />
+            <span className="text-gray-600">Đang tải...</span>
+          </div>
+        ) : error ? (
+          <div className="bg-red-50 text-red-700 rounded-2xl p-6">{error}</div>
+        ) : filtered.length === 0 ? (
+          <div className="bg-white rounded-2xl p-8 shadow-sm border border-gray-100 text-center text-gray-500">
+            Không tìm thấy cộng đồng nào.
+          </div>
+        ) : (
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
+            {filtered.map((c) => (
+              <Link
+                key={c.id}
+                href={`/communities/${c.id}`}
+                className="bg-white rounded-xl p-5 border border-gray-100 shadow-sm hover:shadow-md transition block"
+              >
+                <div className="flex items-start gap-4">
+                  <div className="w-12 h-12 rounded-lg bg-blue-50 flex items-center justify-center text-blue-600 font-bold">
+                    {c.title ? c.title.charAt(0).toUpperCase() : "C"}
+                  </div>
 
-                      <p className="text-sm text-gray-500 mt-1 line-clamp-2">
-                        {c.description || "Chưa có mô tả."}
-                      </p>
+                  <div className="flex-1">
+                    <h3 className="text-lg font-semibold text-gray-800">
+                      {c.title || "Không tên"}
+                    </h3>
 
-                      <div className="flex items-center gap-3 mt-3 text-xs text-gray-400">
-                        <span>{c.category || "Khác"}</span>
-                        <span>·</span>
-                        <span>👥 {c.members_count ?? 0}</span>
-                        <span>·</span>
-                        <span>🟢 {c.online_count ?? 0} online</span>
-                      </div>
+                    <p className="text-sm text-gray-500 mt-1 line-clamp-2">
+                      {c.description || "Chưa có mô tả."}
+                    </p>
+
+                    <div className="flex items-center gap-3 mt-3 text-xs text-gray-400">
+                      <span>{c.category || "Khác"}</span>
+                      <span>·</span>
+                      <span>👥 {c.members_count ?? 0}</span>
+                      <span>·</span>
+                      <span>🟢 {c.online_count ?? 0} online</span>
                     </div>
                   </div>
-                </Link>
-              ))}
-            </div>
-          )}
-        </main>
+                </div>
+              </Link>
+            ))}
+          </div>
+        )}
       </div>
     </div>
   );

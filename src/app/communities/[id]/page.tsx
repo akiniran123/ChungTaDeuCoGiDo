@@ -128,7 +128,7 @@ const CommunityDetailPage: React.FC<CommunityDetailPageProps> = ({ params }) => 
       </div>
 
       {/* RIGHT SIDEBAR */}
-      <div className="hidden lg:flex flex-col w-72 flex-shrink-0 bg-white p-6 rounded-r-2xl overflow-hidden">
+      <div className="hidden lg:flex flex-col  flex-shrink-0 bg-white p-6 rounded-r-2xl overflow-hidden">
         <MembersSidebar communityId={id!} />
       </div>
     </div>

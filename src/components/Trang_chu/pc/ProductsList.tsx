@@ -101,16 +101,16 @@ export default function ProductsList({
             className="sticky top-0 z-30 bg-white"
           >
             {/* CATEGORY LIST */}
-            <div className="flex items-center text-[12px] overflow-x-auto no-scrollbar px-2 py-2">
+            <div className="flex items-center text-[12px] overflow-x-auto no-scrollbar px-2 py-2 ">
               {categories.map((cat) => (
                 <button
   key={cat}
   onClick={() => setSelectedCategory(cat)}
-  className={`whitespace-nowrap px-4 py-2 rounded-full text-sm font-medium transition ${
-    selectedCategory === cat
-      ? "bg-red-100 text-red-700 shadow-sm"
-      : "text-gray-700 hover:text-blue-600"
-  }`}
+ className={`whitespace-nowrap px-4 py-2 rounded-full text-sm font-medium transition cursor-pointer ${
+  selectedCategory === cat
+    ? "bg-red-100 text-red-700 shadow-sm underline"
+    : "text-gray-700 hover:underline"
+}`}
 >
   {cat}
 </button>

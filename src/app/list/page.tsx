@@ -1,7 +1,7 @@
 'use client';
 
-import BuildHeader from '@/components/pc-builder/BuildHeader';
-import PartListTable from '@/components/pc-builder/PartListTable';
+import BuildHeader from '@/components/pc-builder/pc/BuildHeader';
+import PartListTable from '@/components/pc-builder/pc/PartListTable';
 
 export default function PartListPage() {
   return (

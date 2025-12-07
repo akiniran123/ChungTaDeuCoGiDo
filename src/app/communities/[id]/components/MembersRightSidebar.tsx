@@ -80,7 +80,7 @@ const MembersSidebar: React.FC<CommunityMemberSidebarProps> = ({ communityId }) 
   }, [communityId]);
 
   return (
-    <div className="fixed top-[115px] right-0 bottom-0 w-72 bg-white border-l border-gray-200 shadow flex flex-col">
+    <div className="fixed top-[115px] right-0 bottom-0 w-72 bg-white  border-gray-200 ">
       <h2 className="text-lg font-semibold p-4 sticky top-0 bg-white z-10">
         Thành viên
       </h2>

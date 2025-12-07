@@ -101,7 +101,7 @@ export default function ProductsList({
             className="sticky top-0 z-30 bg-white"
           >
             {/* CATEGORY LIST */}
-            <div className="flex items-center text-[10px] overflow-x-auto no-scrollbar px-2 py-2 ">
+            <div className="flex items-center text-[12px] overflow-x-auto no-scrollbar px-2 py-2 ">
               {categories.map((cat) => (
                 <button
   key={cat}

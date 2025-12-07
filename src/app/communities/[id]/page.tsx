@@ -110,7 +110,7 @@ const CommunityDetailPage: React.FC<CommunityDetailPageProps> = ({ params }) => 
   if (!community) return <EmptyState />;
 
   return (
-    <div className="pt-[45px] min-h-screen w-full bg-gray-50 flex">
+    <div className="min-h-screen w-full bg-gray-50 flex">
       {/* MAIN */}
       <div className="flex-1 bg-white p-6 rounded-l-2xl">
         <CommunityHeader community={community} />

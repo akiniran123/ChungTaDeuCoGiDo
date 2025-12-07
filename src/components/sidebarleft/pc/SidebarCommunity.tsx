@@ -63,15 +63,7 @@ export default function SidebarCommunity() {
         <Plus className="w-4 h-4 text-gray-900" /> 
         <span className="text-gray-900">Tạo cộng đồng</span>
       </Link>
-
-      {/* Quản lý cộng đồng */}
-      <Link
-        href="/manage-communities"
-        className="flex items-center gap-2 px-2 py-1.5 rounded hover:bg-gray-100 text-gray-900"
-      >
-        <Users className="w-4 h-4 text-gray-900" /> 
-        <span className="text-gray-900">Quản lý cộng đồng</span>
-      </Link>
+     
 
       {/* Danh sách cộng đồng */}
       {loading ? (

@@ -280,7 +280,8 @@ const DealCard: React.FC<DealCardProps> = ({
                         alt={deal.community_title || "community"}
                       />
                     )}
-                    <span className="text-sm font-medium text-blue-600">
+                    {/* 👉 CHỈ ĐỔI DÒNG NÀY */}
+                    <span className="text-sm font-medium text-gray-900">
                       {deal.community_title}
                     </span>
                   </div>

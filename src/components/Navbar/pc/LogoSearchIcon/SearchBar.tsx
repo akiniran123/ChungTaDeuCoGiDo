@@ -1,7 +1,7 @@
 "use client";
 import { useEffect, useState, useCallback } from "react";
 import { supabase } from "@/lib/supabase/client";
-import { Search } from "lucide-react";
+import { Search, User, Tag, Users } from "lucide-react";
 import { useRouter } from "next/navigation";
 
 interface Product {
@@ -9,10 +9,31 @@ interface Product {
   title: string;
   image_url: string | null;
   price: number | null;
+  tags: string | null;
+}
+
+interface UserItem {
+  id: string;
+  username: string | null;
+  avatar_url: string | null;
+}
+
+interface Community {
+  id: string;
+  title: string;
+  banner_url: string | null;
 }
 
 interface HistoryItem {
   query: string;
+}
+
+interface SuggestionItem {
+  type: "product" | "user" | "tag" | "community";
+  id: string;
+  title: string;
+  image?: string | null;
+  price?: number | null;
 }
 
 interface SearchBarProps {
@@ -22,15 +43,16 @@ interface SearchBarProps {
 
 export default function SearchBar({ userId, onSearch }: SearchBarProps) {
   const [query, setQuery] = useState("");
-  const [results, setResults] = useState<Product[]>([]);
+  const [results, setResults] = useState<SuggestionItem[]>([]);
   const [history, setHistory] = useState<HistoryItem[]>([]);
   const [showDropdown, setShowDropdown] = useState(false);
   const [loading, setLoading] = useState(false);
   const router = useRouter();
 
-  // Lấy lịch sử tìm kiếm
+  // Load history
   useEffect(() => {
     if (!userId) return;
+
     const fetchHistory = async () => {
       const { data } = await supabase
         .from("search_history")
@@ -38,28 +60,113 @@ export default function SearchBar({ userId, onSearch }: SearchBarProps) {
         .eq("user_id", userId)
         .order("searched_at", { ascending: false })
         .limit(5);
+
       if (data) {
         setHistory(
           data.filter((h) => h.query).map((h) => ({ query: h.query as string }))
         );
       }
     };
+
     fetchHistory();
   }, [userId]);
 
-  // Lấy gợi ý sản phẩm
+  // Fetch suggestions
   const fetchSuggestions = useCallback(async () => {
     if (!query.trim()) {
       setResults([]);
       return;
     }
+
     setLoading(true);
-    const { data } = await supabase
+    let finalResults: SuggestionItem[] = [];
+
+    // 1️⃣ Products
+    const { data: productData } = await supabase
       .from("products")
-      .select("id, title, image_url, price")
+      .select("id, title, image_url, price, tags")
       .ilike("title", `%${query}%`)
+      .limit(5);
+
+    if (productData) {
+      finalResults.push(
+        ...productData.map((p) => ({
+          type: "product" as const,
+          id: p.id,
+          title: p.title,
+          image: p.image_url,
+          price: p.price,
+        }))
+      );
+    }
+
+    // 2️⃣ Users
+    const { data: userData } = await supabase
+      .from("users")
+      .select("id, username, avatar_url")
+      .ilike("username", `%${query}%`)
+      .limit(5);
+
+    if (userData) {
+      finalResults.push(
+        ...userData.map((u) => ({
+          type: "user" as const,
+          id: u.id,
+          title: u.username ?? "Không tên",
+          image: u.avatar_url,
+        }))
+      );
+    }
+
+    // 3️⃣ TAG SẢN PHẨM
+    const { data: tagProducts } = await supabase
+      .from("products")
+      .select("id, tags")
+      .ilike("tags", `%${query}%`)
       .limit(10);
-    if (data) setResults(data);
+
+    if (tagProducts) {
+      const tagSet = new Set<string>();
+
+      tagProducts.forEach((p) => {
+        if (!p.tags) return;
+        p.tags
+          .split(",")
+          .map((s) => s.trim())
+          .filter((s) => s.toLowerCase().includes(query.toLowerCase()))
+          .forEach((tag) => tagSet.add(tag));
+      });
+
+      const tagResults = Array.from(tagSet)
+        .slice(0, 5)
+        .map((tag) => ({
+          type: "tag" as const,
+          id: tag,
+          title: tag,
+        }));
+
+      finalResults.push(...tagResults);
+    }
+
+    // 4️⃣ Communities
+    const { data: communityData } = await supabase
+      .from("communities")
+      .select("id, title, banner_url")
+      .ilike("title", `%${query}%`)
+      .limit(5);
+
+    if (communityData) {
+      finalResults.push(
+        ...communityData.map((c) => ({
+          type: "community" as const,
+          id: c.id,
+          title: c.title ?? "Không tên",
+          image: c.banner_url,
+        }))
+      );
+    }
+
+    setResults(finalResults);
     setLoading(false);
   }, [query]);
 
@@ -68,31 +175,37 @@ export default function SearchBar({ userId, onSearch }: SearchBarProps) {
     return () => clearTimeout(handler);
   }, [fetchSuggestions]);
 
-  // Xử lý khi submit search
+  // Search submit
   const handleSearch = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!query.trim()) return;
     onSearch?.(query.trim());
 
     if (userId) {
-      await supabase
-        .from("search_history")
-        .upsert(
-          [
-            {
-              user_id: userId,
-              query: query.trim(),
-              searched_at: new Date().toISOString(),
-            },
-          ],
-          { onConflict: "user_id,query" }
-// sửa thành mảng
-        );
+      await supabase.from("search_history").upsert(
+        [
+          {
+            user_id: userId,
+            query: query.trim(),
+            searched_at: new Date().toISOString(),
+          },
+        ],
+        { onConflict: "user_id,query" }
+      );
     }
+  };
 
-    if (results.length > 0) {
-      router.push(`/deal/${results[0].id}`);
-    }
+  // Navigate
+  const goToItem = (item: SuggestionItem) => {
+    setShowDropdown(false);
+
+    if (item.type === "product") return router.push(`/deal/${item.id}`);
+    if (item.type === "user") return router.push(`/profile/${item.id}`);
+
+    // ⭐ ROUTE TAG –> lọc đúng tag đó
+    if (item.type === "tag") return router.push(`/tag/${item.title}`);
+
+    if (item.type === "community") return router.push(`/communities/${item.id}`);
   };
 
   return (
@@ -111,50 +224,73 @@ export default function SearchBar({ userId, onSearch }: SearchBarProps) {
             onSearch?.(e.target.value);
           }}
           onFocus={() => setShowDropdown(true)}
-          onBlur={() => setTimeout(() => setShowDropdown(false), 150)}
-          aria-expanded={showDropdown}
-          className="w-full bg-transparent border-none outline-none text-xs text-gray-800 placeholder-gray-400 focus:outline-none focus:ring-0 h-6"
+          className="w-full bg-transparent border-none outline-none text-xs text-gray-800 placeholder-gray-400 h-6"
         />
       </form>
 
       {showDropdown && (
         <div className="absolute z-50 w-full mt-2 max-h-72 overflow-y-auto border border-gray-200 rounded-lg bg-white shadow-md">
           {loading && <p className="text-xs text-gray-400 p-2">Đang tải...</p>}
+
           {query && results.length > 0 && (
             <ul role="listbox" className="divide-y divide-gray-100">
               {results.map((item) => (
                 <li
-                  key={item.id}
+                  key={`${item.type}-${item.id}`}
                   role="option"
-                  onClick={() => router.push(`/deal/${item.id}`)}
-                  className="search-suggestion flex items-center gap-2 p-2 hover:bg-blue-50 cursor-pointer transition-colors rounded-md"
+                  onClick={() => goToItem(item)}
+                  className="flex items-center gap-2 p-2 hover:bg-blue-50 cursor-pointer transition-colors rounded-md"
                 >
-                  {item.image_url && (
+                  {item.image ? (
                     <img
-                      src={item.image_url}
+                      src={item.image}
                       alt={item.title}
-                      className="w-8 h-8 object-cover rounded-md"
+                      className="w-8 h-8 rounded-md object-cover"
                     />
+                  ) : (
+                    <>
+                      {item.type === "user" && <User size={16} />}
+                      {item.type === "tag" && <Tag size={16} />}
+                      {item.type === "community" && <Users size={16} />}
+                    </>
                   )}
+
                   <div className="flex-1">
                     <p className="text-xs font-medium text-gray-800">
                       {item.title}
                     </p>
-                    <p className="text-[10px] text-gray-500">
-                      {item.price
-                        ? `${item.price.toLocaleString()}₫`
-                        : "Liên hệ"}
-                    </p>
+
+                    {item.type === "product" && (
+                      <p className="text-[10px] text-gray-500">
+                        {item.price
+                          ? `${item.price.toLocaleString()}₫`
+                          : "Liên hệ"}
+                      </p>
+                    )}
+
+                    {item.type === "user" && (
+                      <p className="text-[10px] text-gray-500">Người dùng</p>
+                    )}
+
+                    {item.type === "tag" && (
+                      <p className="text-[10px] text-gray-500">Tag sản phẩm</p>
+                    )}
+
+                    {item.type === "community" && (
+                      <p className="text-[10px] text-gray-500">Cộng đồng</p>
+                    )}
                   </div>
                 </li>
               ))}
             </ul>
           )}
+
           {query && !loading && results.length === 0 && (
             <p className="text-xs text-gray-500 p-2 text-center">
-              Không tìm thấy sản phẩm nào
+              Không tìm thấy kết quả
             </p>
           )}
+
           {!query && history.length > 0 && (
             <div className="p-2">
               <p className="text-[10px] text-gray-400 mb-1 uppercase tracking-wider">

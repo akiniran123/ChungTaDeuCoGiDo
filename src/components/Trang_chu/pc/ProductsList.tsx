@@ -1,13 +1,11 @@
 "use client";
 import { useState, useEffect, useRef } from "react";
-import Link from "next/link";
-import { supabase } from "@/lib/supabase/client";
 import { motion, AnimatePresence } from "framer-motion";
 import { LayoutGrid, Grid } from "lucide-react";
 import SmallCard from "@/components/Trang_chu/pc/SmallCard";
 import DealCard from "@/components/Trang_chu/pc/DealCard";
-import type { Database } from "@/types/supabase";
 import SearchBar from "@/components/Navbar/pc/LogoSearchIcon/SearchBar";
+import type { Database } from "@/types/supabase";
 
 type ProductWithUser = Database["public"]["Tables"]["products"]["Row"] & {
   users?: {
@@ -15,7 +13,6 @@ type ProductWithUser = Database["public"]["Tables"]["products"]["Row"] & {
     avatar_url: string | null;
     id?: string;
   } | null;
-
   tags?: string[];
   communityNames?: string[];
   communityName?: string | null;
@@ -45,7 +42,6 @@ export default function ProductsList({
   const [biggerGrid, setBiggerGrid] = useState(false);
   const [activeTag, setActiveTag] = useState<string | null>(null);
   const scrollPosition = useRef(0);
-
   const [showHeader, setShowHeader] = useState(true);
   const lastScrollY = useRef(0);
 
@@ -57,10 +53,8 @@ export default function ProductsList({
     const handleScroll = () => {
       const currentScrollY = window.scrollY;
       if (currentScrollY > lastScrollY.current && currentScrollY > 80) {
-        // Kéo xuống
         setShowHeader(false);
       } else {
-        // Kéo lên
         setShowHeader(true);
       }
       lastScrollY.current = currentScrollY;
@@ -80,7 +74,6 @@ export default function ProductsList({
     setBiggerGrid((prev) => !prev);
   };
 
-  // ⭐ Category list
   const categories = [
     "eBay Live",
     "Saved",
@@ -96,7 +89,7 @@ export default function ProductsList({
 
   return (
     <div className="px-6 pb-6">
-      {/* ⭐ HEADER (CATEGORY + SEARCHBAR) */}
+      {/* ⭐ HEADER (CATEGORY + SEARCHBAR + FILTERBAR) */}
       <AnimatePresence>
         {showHeader && (
           <motion.div
@@ -104,10 +97,10 @@ export default function ProductsList({
             animate={{ y: 0, opacity: 1 }}
             exit={{ y: -100, opacity: 0 }}
             transition={{ duration: 0.3 }}
-            className="sticky top-0 z-30 bg-white"
+            className="sticky top-0 z-30 bg-white "
           >
             {/* CATEGORY LIST */}
-            <div className="flex items-center gap-0 text-[12px] overflow-x-auto no-scrollbar border-gray-200 ">
+            <div className="flex items-center gap-0 text-[12px] overflow-x-auto no-scrollbar  border-gray-200">
               {categories.map((cat) => (
                 <button
                   key={cat}
@@ -124,6 +117,36 @@ export default function ProductsList({
                 userId={"demo-user"}
                 onSearch={(q) => console.log("Searching:", q)}
               />
+            </div>
+
+            {/* FILTER BAR */}
+            <div className="mb-2 flex items-center gap-2 px-2">
+              {/* Sort dropdown */}
+              <button className="flex items-center gap-1 px-3 py-1.5 text-sm font-medium text-gray-700 hover:bg-gray-100 rounded-md border border-gray-300">
+                <span>Best</span>
+                <svg
+                  className="w-4 h-4 text-gray-500"
+                  fill="none"
+                  stroke="currentColor"
+                  strokeWidth="2"
+                  viewBox="0 0 24 24"
+                >
+                  <path d="M19 9l-7 7-7-7" />
+                </svg>
+              </button>
+
+              {/* Toggle grid */}
+              <button
+                onClick={toggleGrid}
+                className={`flex items-center gap-1 px-3 py-1.5 text-sm font-medium rounded-md border ${
+                  biggerGrid
+                    ? "bg-pink-100 text-pink-600 border-pink-300"
+                    : "bg-white text-gray-700 border-gray-300 hover:bg-gray-100"
+                }`}
+              >
+                {biggerGrid ? <Grid size={16} /> : <LayoutGrid size={16} />}
+                View
+              </button>
             </div>
           </motion.div>
         )}
@@ -144,46 +167,6 @@ export default function ProductsList({
           </button>
         </div>
       )}
-
-      {/* ⭐ FILTER TOOLBAR */}
-      <div className="mb-6">
-        <div className="flex items-center justify-between">
-          {/* Toggle grid */}
-          <div className="flex items-center gap-3">
-            <button
-              onClick={toggleGrid}
-              className={`px-3 py-2 rounded-lg border transition flex items-center gap-2 ${
-                biggerGrid
-                  ? "bg-pink-100 text-pink-600 border-pink-300"
-                  : "bg-white text-gray-700 border-gray-300 hover:bg-gray-100"
-              }`}
-            >
-              {biggerGrid ? <Grid size={18} /> : <LayoutGrid size={18} />}
-              <span className="text-sm font-medium">Chế độ thẻ</span>
-            </button>
-          </div>
-
-          {/* Filter buttons */}
-          <div className="flex items-center gap-2 overflow-x-auto no-scrollbar">
-            {[
-              "Hot",
-              "Mới nhất",
-              "Giảm giá",
-              "Nhiều like",
-              "Cộng đồng",
-              "Theo dõi",
-              "Video",
-            ].map((label, idx) => (
-              <button
-                key={idx}
-                className="px-3 py-1.5 rounded-full text-xs whitespace-nowrap bg-gray-100 text-gray-700 hover:bg-gray-200 transition border border-gray-300"
-              >
-                {label}
-              </button>
-            ))}
-          </div>
-        </div>
-      </div>
 
       {/* ⭐ PRODUCT GRID */}
       <AnimatePresence mode="wait">

@@ -26,7 +26,7 @@ export type SmallCardProps = {
     community_id?: string | null;
     communityName?: string | null;
     communityIcon?: string | null;
-    user_id: string; // ⭐ quan trọng
+    user_id: string;
   };
   likesCount: number;
   commentsCount: number;
@@ -114,27 +114,9 @@ export default function SmallCard({
 
         {/* MAIN */}
         <div className="flex-1 min-w-0">
-          <div className="flex items-center gap-3">
-            <Link href={`/deal/${product.id}`} className="min-w-0 flex-1">
-              <div className="text-lg font-semibold text-gray-800 leading-snug truncate">
-                {product.title}
-              </div>
-            </Link>
 
-            {product.price && (
-              <div className="ml-2 text-base font-bold text-indigo-600 whitespace-nowrap">
-                {product.price.toLocaleString()}₫
-              </div>
-            )}
-          </div>
-
-          {/* META */}
-          <div className="mt-2 text-sm text-gray-500 flex items-center gap-3 flex-wrap">
-            {product.category && (
-              <span className="whitespace-nowrap">{product.category}</span>
-            )}
-
-            {/* USER — text-gray-900 + cursor-pointer */}
+          {/* 🔥 USER + TIME — ĐƯA LÊN HÀNG ĐẦU */}
+          <div className="mb-1 text-sm flex items-center gap-3 flex-wrap">
             <Link
               href={`/profile/${product.user_id}`}
               className="flex items-center gap-2 whitespace-nowrap hover:opacity-80 cursor-pointer"
@@ -149,7 +131,6 @@ export default function SmallCard({
               </span>
             </Link>
 
-            {/* TIME */}
             <span className="whitespace-nowrap text-gray-400 text-xs">
               {product.created_at
                 ? new Date(product.created_at).toLocaleDateString("vi-VN", {
@@ -159,12 +140,33 @@ export default function SmallCard({
                   })
                 : ""}
             </span>
+          </div>
+
+          {/* TITLE + PRICE */}
+          <div className="flex items-center gap-3">
+            <Link href={`/deal/${product.id}`} className="min-w-0 flex-1">
+              <div className="text-lg font-semibold text-gray-800 leading-snug truncate">
+                {product.title}
+              </div>
+            </Link>
+
+            {product.price && (
+              <div className="ml-2 text-base font-bold text-indigo-600 whitespace-nowrap">
+                {product.price.toLocaleString()}₫
+              </div>
+            )}
+          </div>
+
+          {/* META giữ nguyên 100% */}
+          <div className="mt-2 text-sm text-gray-500 flex items-center gap-3 flex-wrap">
+            {product.category && (
+              <span className="whitespace-nowrap">{product.category}</span>
+            )}
 
             <span className="whitespace-nowrap">
               {commentsCount} bình luận
             </span>
 
-            {/* COMMUNITY — text-gray-900 + cursor-pointer */}
             {product.communityName && (
               <Link
                 href={`/communities/${product.community_id}`}

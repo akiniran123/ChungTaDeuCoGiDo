@@ -1,7 +1,6 @@
-// app/layout.tsx
 import "./globals.css";
 import type { Metadata } from "next";
-import ClientRootWrapper from "./ClientRootWrapper"; // thêm import
+import ClientRootWrapper from "./ClientRootWrapper"; // ⭐ import
 
 export const metadata: Metadata = {
   title: "Marketplace",

@@ -97,10 +97,10 @@ export default function ProductsList({
             animate={{ y: 0, opacity: 1 }}
             exit={{ y: -100, opacity: 0 }}
             transition={{ duration: 0.3 }}
-            className="sticky top-0 z-30 bg-white "
+            className="sticky top-0 z-30 bg-white"
           >
             {/* CATEGORY LIST */}
-            <div className="flex items-center gap-0 text-[12px] overflow-x-auto no-scrollbar  border-gray-200">
+            <div className="flex items-center gap-0 text-[12px] overflow-x-auto no-scrollbar">
               {categories.map((cat) => (
                 <button
                   key={cat}
@@ -119,7 +119,7 @@ export default function ProductsList({
               />
             </div>
 
-            {/* FILTER BAR */}
+            {/* FILTER BAR (chỉ nút có border, không có thanh ngang container) */}
             <div className="mb-2 flex items-center gap-2 px-2">
               {/* Sort dropdown */}
               <button className="flex items-center gap-1 px-3 py-1.5 text-sm font-medium text-gray-700 hover:bg-gray-100 rounded-md border border-gray-300">

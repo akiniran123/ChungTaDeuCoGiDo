@@ -115,7 +115,7 @@ export default function SmallCard({
         {/* MAIN */}
         <div className="flex-1 min-w-0">
 
-          {/* 🔥 USER + TIME — ĐƯA LÊN HÀNG ĐẦU */}
+          {/* 🔥 USER + TIME — HÀNG TRÊN CÙNG */}
           <div className="mb-1 text-sm flex items-center gap-3 flex-wrap">
             <Link
               href={`/profile/${product.user_id}`}
@@ -157,7 +157,7 @@ export default function SmallCard({
             )}
           </div>
 
-          {/* META giữ nguyên 100% */}
+          {/* META giữ nguyên 100%, trừ Community đã di chuyển */}
           <div className="mt-2 text-sm text-gray-500 flex items-center gap-3 flex-wrap">
             {product.category && (
               <span className="whitespace-nowrap">{product.category}</span>
@@ -167,50 +167,52 @@ export default function SmallCard({
               {commentsCount} bình luận
             </span>
 
-            {product.communityName && (
-              <Link
-                href={`/communities/${product.community_id}`}
-                className="flex items-center gap-2 hover:opacity-80 whitespace-nowrap cursor-pointer"
-              >
-                {product.communityIcon && (
-                  <img
-                    src={product.communityIcon}
-                    className="w-6 h-6 rounded-full object-cover"
-                    alt="community"
-                  />
-                )}
-                <span className="truncate max-w-[140px] text-gray-900">
-                  {product.communityName}
-                </span>
-              </Link>
-            )}
-
             <span className="whitespace-nowrap">
               {product.views ?? 0} lượt xem
             </span>
           </div>
         </div>
 
-        {/* TAGS */}
-        {product.tags && product.tags.length > 0 && (
-          <div className="flex-shrink-0 hidden lg:flex items-center gap-1 ml-2">
-            {product.tags.slice(0, 4).map((t, i) => (
-              <button
-                key={i}
-                onClick={() => onTagClick(t)}
-                className="text-xs bg-pink-50 text-purple-500 px-2 py-1 rounded-full hover:bg-pink-100 whitespace-nowrap cursor-pointer"
-              >
-                {t}
-              </button>
-            ))}
+        {/* TAGS + COMMUNITY DƯỚI TAG */}
+        <div className="flex-shrink-0 hidden lg:flex flex-col gap-1 ml-2">
+          {product.tags && product.tags.length > 0 && (
+            <div className="flex items-center gap-1">
+              {product.tags.slice(0, 4).map((t, i) => (
+                <button
+                  key={i}
+                  onClick={() => onTagClick(t)}
+                  className="text-xs bg-pink-50 text-purple-500 px-2 py-1 rounded-full hover:bg-pink-100 whitespace-nowrap cursor-pointer"
+                >
+                  {t}
+                </button>
+              ))}
 
-            {product.tags.length > 4 && (
-              <div className="text-xs text-gray-400 whitespace-nowrap">
-                +{product.tags.length - 4}
-              </div>
-            )}
-          </div>
-        )}
+              {product.tags.length > 4 && (
+                <div className="text-xs text-gray-400 whitespace-nowrap">
+                  +{product.tags.length - 4}
+                </div>
+              )}
+            </div>
+          )}
+
+          {product.communityName && (
+            <Link
+              href={`/communities/${product.community_id}`}
+              className="flex items-center gap-2 hover:opacity-80 whitespace-nowrap cursor-pointer mt-1"
+            >
+              {product.communityIcon && (
+                <img
+                  src={product.communityIcon}
+                  className="w-6 h-6 rounded-full object-cover"
+                  alt="community"
+                />
+              )}
+              <span className="truncate max-w-[140px] text-gray-900">
+                {product.communityName}
+              </span>
+            </Link>
+          )}
+        </div>
 
         {/* ACTIONS */}
         <div className="flex items-center gap-3 ml-3 flex-shrink-0">

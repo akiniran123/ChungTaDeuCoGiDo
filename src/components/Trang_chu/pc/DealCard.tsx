@@ -28,7 +28,7 @@ export type DealType = {
   community_id?: string | null;
 
   tags?: string[];
-  product_tags?: string[]; // vẫn giữ type nhưng không render
+  product_tags?: string[];
 };
 
 export interface DealCardProps {
@@ -59,6 +59,9 @@ const DealCard: React.FC<DealCardProps> = ({
   const [newMessage, setNewMessage] = useState("");
   const messagesEndRef = useRef<HTMLDivElement>(null);
   const { addToCart } = useCart();
+
+  /** 🔥 STATE mới để mở xem ảnh lớn */
+  const [previewOpen, setPreviewOpen] = useState(false);
 
   const mediaList =
     deal.media?.length ? deal.media : deal.image ? [deal.image] : [];
@@ -186,13 +189,15 @@ const DealCard: React.FC<DealCardProps> = ({
     messagesEndRef.current?.scrollIntoView({ behavior: "smooth" });
   }, [messages]);
 
+  /** 🔥 COMPONENT MEDIA — thêm onClick mở ảnh lớn */
   const DealMedia = () => (
     <div className="relative w-full overflow-hidden bg-gray-100">
       {mediaList.length > 0 && (
         <img
           src={mediaList[currentIndex] || "/default.png"}
           alt={deal.title}
-          className="object-cover w-full h-auto"
+          onClick={() => setPreviewOpen(true)} // 🟣 mở xem lớn
+          className="object-cover w-full h-auto cursor-pointer"
         />
       )}
 
@@ -216,6 +221,7 @@ const DealCard: React.FC<DealCardProps> = ({
     </div>
   );
 
+  /** 🔥 FORMATTING */
   const makeSlug = (s?: string | null) =>
     (s || "")
       .toString()
@@ -227,6 +233,7 @@ const DealCard: React.FC<DealCardProps> = ({
 
   return (
     <>
+      {/* CARD */}
       <div
         onClick={(e) => {
           if ((e.target as HTMLElement).closest("a")) return;
@@ -255,7 +262,15 @@ const DealCard: React.FC<DealCardProps> = ({
                         e.stopPropagation();
                         onTagClick?.(tag);
                       }}
-                      className="text-xs bg-pink-50 text-pink-600 px-2 py-1 rounded-full hover:bg-pink-100"
+                      className="
+                        text-xs 
+                        bg-pink-50 
+                        text-purple-500 
+                        px-2 py-1 
+                        rounded-full 
+                        hover:bg-pink-100 
+                        cursor-pointer
+                      "
                     >
                       {tag}
                     </button>
@@ -280,7 +295,7 @@ const DealCard: React.FC<DealCardProps> = ({
                         alt={deal.community_title || "community"}
                       />
                     )}
-                    {/* 👉 CHỈ ĐỔI DÒNG NÀY */}
+
                     <span className="text-sm font-medium text-gray-900">
                       {deal.community_title}
                     </span>
@@ -307,6 +322,47 @@ const DealCard: React.FC<DealCardProps> = ({
         </article>
       </div>
 
+      {/* ----------------------------- */}
+      {/* 🔥 LIGHTBOX XEM ẢNH LỚN */}
+      {/* ----------------------------- */}
+      {previewOpen && (
+        <div className="fixed inset-0 bg-black/80 backdrop-blur-sm flex items-center justify-center z-[9999]">
+          {/* NÚT CLOSE */}
+          <button
+            onClick={() => setPreviewOpen(false)}
+            className="absolute top-4 right-4 text-white p-2 rounded-full bg-black/50 hover:bg-black"
+          >
+            <X size={28} />
+          </button>
+
+          {/* ẢNH */}
+          <img
+            src={mediaList[currentIndex]}
+            className="max-w-[90%] max-h-[85%] object-contain rounded-lg shadow-lg"
+          />
+
+          {/* NEXT / PREV */}
+          {mediaList.length > 1 && (
+            <>
+              <button
+                onClick={prevMedia}
+                className="absolute left-5 text-white p-3 bg-black/40 rounded-full hover:bg-black"
+              >
+                <ArrowLeft size={32} />
+              </button>
+
+              <button
+                onClick={nextMedia}
+                className="absolute right-5 text-white p-3 bg-black/40 rounded-full hover:bg-black"
+              >
+                <ArrowRight size={32} />
+              </button>
+            </>
+          )}
+        </div>
+      )}
+
+      {/* CHAT SIDEBAR GIỮ NGUYÊN */}
       {chatOpen && (
         <div className="fixed top-0 right-0 w-80 h-full bg-white shadow-lg border-l flex flex-col z-50">
           <div className="flex justify-between items-center p-3 border-b">

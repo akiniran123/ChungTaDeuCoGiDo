@@ -115,7 +115,7 @@ export default function SmallCard({
         {/* MAIN */}
         <div className="flex-1 min-w-0">
 
-          {/* 🔥 USER + TIME — HÀNG TRÊN CÙNG */}
+          {/* 🔥 USER + TIME */}
           <div className="mb-1 text-sm flex items-center gap-3 flex-wrap">
             <Link
               href={`/profile/${product.user_id}`}
@@ -157,7 +157,7 @@ export default function SmallCard({
             )}
           </div>
 
-          {/* META giữ nguyên 100%, trừ Community đã di chuyển */}
+          {/* META */}
           <div className="mt-2 text-sm text-gray-500 flex items-center gap-3 flex-wrap">
             {product.category && (
               <span className="whitespace-nowrap">{product.category}</span>
@@ -173,7 +173,7 @@ export default function SmallCard({
           </div>
         </div>
 
-        {/* TAGS + COMMUNITY DƯỚI TAG */}
+        {/* TAGS + COMMUNITY */}
         <div className="flex-shrink-0 hidden lg:flex flex-col gap-1 ml-2">
           {product.tags && product.tags.length > 0 && (
             <div className="flex items-center gap-1">
@@ -214,11 +214,13 @@ export default function SmallCard({
           )}
         </div>
 
-        {/* ACTIONS */}
+        {/* ⭐ ACTIONS — THÊM cursor-pointer CHO 3 ICON */}
         <div className="flex items-center gap-3 ml-3 flex-shrink-0">
+
+          {/* ❤️ LIKE */}
           <button
             onClick={toggleLike}
-            className="flex items-center gap-1 text-gray-600 hover:text-pink-500 transition"
+            className="flex items-center gap-1 text-gray-600 hover:text-pink-500 transition cursor-pointer"
           >
             <HeartIcon
               size={20}
@@ -227,16 +229,18 @@ export default function SmallCard({
             <span className="text-sm">{likesCount}</span>
           </button>
 
+          {/* 🔗 SHARE */}
           <button
             onClick={share}
-            className="text-gray-600 hover:text-gray-800 transition"
+            className="text-gray-600 hover:text-gray-800 transition cursor-pointer"
           >
             <Share2 size={20} />
           </button>
 
+          {/* 🔖 SAVE */}
           <button
             onClick={() => toggleSave(product.id)}
-            className="text-gray-600 hover:text-pink-500 transition"
+            className="text-gray-600 hover:text-pink-500 transition cursor-pointer"
           >
             {saved.includes(product.id) ? (
               <BookmarkCheck size={20} />
@@ -244,6 +248,7 @@ export default function SmallCard({
               <Bookmark size={20} />
             )}
           </button>
+
         </div>
       </div>
     </motion.div>

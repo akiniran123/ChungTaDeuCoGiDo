@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useEffect } from "react";
+import { useEffect, useState } from "react";
 import Link from "next/link";
 import {
   Home,
@@ -15,11 +15,15 @@ import { supabase } from "@/lib/supabase/client";
 type SidebarMainNavProps = {
   setOpenMessages: React.Dispatch<React.SetStateAction<boolean>>;
   setOpenNews: React.Dispatch<React.SetStateAction<boolean>>;
+  activePanel: string | null;
+  setActivePanel: React.Dispatch<React.SetStateAction<string | null>>;
 };
 
 export default function SidebarMainNav({
   setOpenMessages,
   setOpenNews,
+  activePanel,
+  setActivePanel,
 }: SidebarMainNavProps) {
   const [userId, setUserId] = useState<string | null>(null);
   const router = useRouter();
@@ -37,6 +41,7 @@ export default function SidebarMainNav({
 
   return (
     <nav className="mt-4 space-y-1">
+      {/* Trang chủ */}
       <Link
         href="/"
         className="flex items-center gap-4 px-5 py-3 mx-2 rounded-xl hover:bg-gray-100 text-gray-900"
@@ -45,6 +50,7 @@ export default function SidebarMainNav({
         <span className="text-gray-900">Trang chủ</span>
       </Link>
 
+      {/* Khám phá — NÚT BẠN ĐANG TÌM */}
       <Link
         href="/communities"
         className="flex items-center gap-4 px-5 py-3 mx-2 rounded-xl hover:bg-gray-100 text-gray-900"
@@ -53,14 +59,20 @@ export default function SidebarMainNav({
         <span className="text-gray-900">Khám phá</span>
       </Link>
 
+      {/* Tin nhắn */}
       <div
-        onClick={() => setOpenMessages((v) => !v)}
+        onClick={() => {
+          setOpenMessages((v) => !v);
+          setOpenNews(false);
+          setActivePanel("messages");
+        }}
         className="flex items-center gap-4 px-5 py-3 mx-2 rounded-xl hover:bg-gray-100 cursor-pointer text-gray-900"
       >
         <MessageSquare className="w-6 h-6 text-gray-900" />
         <span className="text-gray-900">Tin nhắn</span>
       </div>
 
+      {/* Bán hàng */}
       <div
         onClick={handleStartSelling}
         className="flex items-center gap-4 px-5 py-3 mx-2 rounded-xl hover:bg-gray-100 cursor-pointer text-gray-900"
@@ -69,9 +81,13 @@ export default function SidebarMainNav({
         <span className="text-gray-900">Bán hàng</span>
       </div>
 
-      {/* Chỉnh toggle ở đây */}
+      {/* Thông báo */}
       <div
-        onClick={() => setOpenNews((prev) => !prev)}
+        onClick={() => {
+          setOpenNews((v) => !v);
+          setOpenMessages(false);
+          setActivePanel("news");
+        }}
         className="flex items-center gap-4 px-5 py-3 mx-2 rounded-xl hover:bg-gray-100 cursor-pointer text-gray-900"
       >
         <Newspaper className="w-6 h-6 text-gray-900" />

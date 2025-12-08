@@ -27,7 +27,9 @@ export default function SidebarLeft() {
   const [userId, setUserId] = useState<string | null>(null);
   const [isClient, setIsClient] = useState(false);
 
-  // Lấy user hiện tại
+  // State chung quản lý panel đang mở
+  const [activePanel, setActivePanel] = useState<string | null>(null);
+
   useEffect(() => {
     setIsClient(true);
     supabase.auth.getUser().then(({ data }) => {
@@ -35,7 +37,6 @@ export default function SidebarLeft() {
     });
   }, []);
 
-  // Load conversations khi userId có
   useEffect(() => {
     if (!userId) return;
     loadConversations();
@@ -53,8 +54,7 @@ export default function SidebarLeft() {
     const map = new Map<string, { last_message: string; last_time: string }>();
 
     data.forEach((msg) => {
-      const partner =
-        msg.sender_id === userId ? msg.receiver_id : msg.sender_id;
+      const partner = msg.sender_id === userId ? msg.receiver_id : msg.sender_id;
 
       if (!map.has(partner)) {
         map.set(partner, {
@@ -92,15 +92,19 @@ export default function SidebarLeft() {
     <>
       {/* Sidebar chính */}
       <aside className="fixed left-0 top-0 w-64 h-screen bg-white border-gray-200 shadow-sm z-40 flex flex-col overflow-y-auto">
-  <div className="mt-6 mb-2 px-4">
-    <Logo />
-  </div>
-  <SidebarMainNav
-    setOpenMessages={setOpenMessages}
-    setOpenNews={setOpenNews}
-  />
-  <SidebarCommunity />
-</aside>
+        <div className="mt-6 mb-2 px-4">
+          <Logo />
+        </div>
+
+        <SidebarMainNav
+          setOpenMessages={setOpenMessages}
+          setOpenNews={setOpenNews}
+          activePanel={activePanel}
+          setActivePanel={setActivePanel}
+        />
+
+        <SidebarCommunity />
+      </aside>
 
       {/* Panel tin nhắn */}
       {isClient && (
@@ -112,14 +116,18 @@ export default function SidebarLeft() {
             setSelectedPartner(id);
             setOpenMiniChat(true);
           }}
+          activePanel={activePanel}
+          setActivePanel={setActivePanel}
         />
       )}
 
-      {/* Panel thông báo, chỉ hiện khi nhấn nút */}
+      {/* Panel thông báo */}
       {isClient && (
         <NewsPanel
           open={openNews}
           setOpen={setOpenNews}
+          activePanel={activePanel}
+          setActivePanel={setActivePanel}
         />
       )}
 

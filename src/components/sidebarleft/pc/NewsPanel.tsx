@@ -17,14 +17,21 @@ export type Notification = {
 type NewsPanelProps = {
   open: boolean;
   setOpen: Dispatch<SetStateAction<boolean>>;
+  activePanel: string | null;
+  setActivePanel: Dispatch<SetStateAction<string | null>>;
 };
 
-export default function NewsPanel({ open, setOpen }: NewsPanelProps) {
+export default function NewsPanel({
+  open,
+  setOpen,
+  activePanel,
+  setActivePanel,
+}: NewsPanelProps) {
   const [notifications, setNotifications] = useState<Notification[]>([]);
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
-    if (!open) return; // Chỉ fetch khi panel mở
+    if (!open) return;
 
     async function fetchNotifications() {
       setLoading(true);
@@ -34,10 +41,9 @@ export default function NewsPanel({ open, setOpen }: NewsPanelProps) {
           .select("id, title, body, data, read, created_at")
           .order("created_at", { ascending: false });
 
-        if (error) {
-          console.error("Lỗi khi fetch notifications:", error);
+        if (error || !data) {
           setNotifications([]);
-        } else if (data) {
+        } else {
           setNotifications(
             data.map((n) => ({
               id: n.id,
@@ -48,12 +54,7 @@ export default function NewsPanel({ open, setOpen }: NewsPanelProps) {
               created_at: n.created_at ?? new Date().toISOString(),
             }))
           );
-        } else {
-          setNotifications([]);
         }
-      } catch (err) {
-        console.error(err);
-        setNotifications([]);
       } finally {
         setLoading(false);
       }
@@ -61,6 +62,8 @@ export default function NewsPanel({ open, setOpen }: NewsPanelProps) {
 
     fetchNotifications();
   }, [open]);
+
+  const zClass = activePanel === "news" ? "z-[999999]" : "z-[90000]";
 
   return createPortal(
     <div
@@ -70,18 +73,22 @@ export default function NewsPanel({ open, setOpen }: NewsPanelProps) {
         bg-white border-r border-gray-200 shadow-lg
         transition-all duration-300
         ${open ? "opacity-100 translate-x-0" : "opacity-0 -translate-x-10 pointer-events-none"}
-        z-[999999]
+        ${zClass}
       `}
+      onMouseDown={() => setActivePanel("news")}
     >
-      {/* Header */}
       <div className="p-4 font-semibold flex justify-between">
         Thông báo
-        <button onClick={() => setOpen(false)}>
+        <button
+          onClick={() => {
+            setOpen(false);
+            setActivePanel(null);
+          }}
+        >
           <X className="w-5 h-5 text-gray-700" />
         </button>
       </div>
 
-      {/* Nội dung */}
       <div className="overflow-y-auto h-full">
         {loading ? (
           <p className="text-sm text-gray-500 p-4">Đang tải...</p>

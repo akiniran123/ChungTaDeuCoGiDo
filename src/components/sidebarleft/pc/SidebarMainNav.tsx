@@ -46,7 +46,7 @@ export default function SidebarMainNav({
       </Link>
 
       <Link
-        href="/communities"
+        href="/discovery"
         className="flex items-center gap-4 px-5 py-3 mx-2 rounded-xl hover:bg-gray-100 text-gray-900"
       >
         <Compass className="w-6 h-6 text-gray-900" />

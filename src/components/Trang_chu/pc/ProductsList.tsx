@@ -76,7 +76,6 @@ export default function ProductsList({
   };
 
   const categories = [
-   
     "Saved",
     "Electronics",
     "Motors",
@@ -104,16 +103,16 @@ export default function ProductsList({
             <div className="flex items-center text-[12px] overflow-x-auto no-scrollbar px-2 py-2 ">
               {categories.map((cat) => (
                 <button
-  key={cat}
-  onClick={() => setSelectedCategory(cat)}
- className={`whitespace-nowrap px-4 py-2 rounded-full text-sm font-medium transition cursor-pointer ${
-  selectedCategory === cat
-    ? "bg-red-100 text-red-700 shadow-sm underline"
-    : "text-gray-700 hover:underline"
-}`}
->
-  {cat}
-</button>
+                  key={cat}
+                  onClick={() => setSelectedCategory(cat)}
+                  className={`whitespace-nowrap px-4 py-2 rounded-full text-sm font-medium transition cursor-pointer ${
+                    selectedCategory === cat
+                      ? "bg-red-100 text-red-700 shadow-sm underline"
+                      : "text-gray-700 hover:underline"
+                  }`}
+                >
+                  {cat}
+                </button>
               ))}
             </div>
 
@@ -144,14 +143,14 @@ export default function ProductsList({
               {/* Toggle grid */}
               <button
                 onClick={toggleGrid}
-                className={`flex items-center gap-1 px-3 py-1.5 text-sm font-medium rounded-md ${
+                className={`flex items-center gap-1 px-3 py-1.5 text-sm font-medium rounded-md cursor-pointer ${
                   biggerGrid
                     ? "bg-pink-100 text-pink-600 border-pink-300"
                     : "bg-white text-gray-700 border-gray-300 hover:bg-gray-100"
                 }`}
               >
                 {biggerGrid ? <Grid size={16} /> : <LayoutGrid size={16} />}
-                View
+                Chế độ xem
               </button>
             </div>
           </motion.div>

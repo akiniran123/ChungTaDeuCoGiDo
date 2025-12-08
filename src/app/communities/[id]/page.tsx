@@ -7,7 +7,6 @@ import CommunityHeader from "./components/CommunityHeader";
 import EmptyState from "./components/EmptyState";
 import JoinLeaveButton from "./components/JoinLeaveButtons";
 import LoadingState from "./components/LoadingState";
-import MembersSidebar from "./components/MembersRightSidebar";
 import ProductList from "./components/ProductList";
 import CreateTagButton from "./components/CreateTagButton";
 import { useRouter } from "next/navigation";
@@ -96,7 +95,6 @@ const CommunityDetailPage: React.FC<CommunityDetailPageProps> = ({ params }) => 
     fetchAll();
   }, [id]);
 
-  // ⭐ Khôi phục vị trí scroll khi quay lại
   useEffect(() => {
     const savedScroll = sessionStorage.getItem("scrollPosition");
     if (savedScroll) {
@@ -110,40 +108,35 @@ const CommunityDetailPage: React.FC<CommunityDetailPageProps> = ({ params }) => 
   if (!community) return <EmptyState />;
 
   return (
-    <div className="min-h-screen w-full bg-gray-50 flex">
-      {/* MAIN */}
-      <div className="flex-1 bg-white p-6 rounded-l-2xl">
-        <CommunityHeader community={community} />
+ 
+    <div className="w-full max-w-screen-xl mx-auto bg-white p-6 rounded-2xl">
+      <CommunityHeader community={community} />
 
-        {/* ⭐ NÚT BACK */}
-        <button
-          onClick={() => {
-            sessionStorage.setItem("scrollPosition", window.scrollY.toString());
-            router.back();
-          }}
-          className="mt-2 mb-4 px-4 py-2 bg-gray-200 hover:bg-gray-300 rounded-lg text-sm"
-        >
-          ← Quay lại
-        </button>
+      {/* NÚT BACK */}
+      <button
+        onClick={() => {
+          sessionStorage.setItem("scrollPosition", window.scrollY.toString());
+          router.back();
+        }}
+        className="mt-2 mb-4 px-4 py-2 bg-gray-200 hover:bg-gray-300 rounded-lg text-sm"
+      >
+        ← Quay lại
+      </button>
 
-        <div className="flex gap-3 items-center mt-4">
-          <JoinLeaveButton communityId={id!} />
-          <CreateTagButton communityId={id!} />
-        </div>
+      <div className="flex gap-3 items-center mt-4">
+        <JoinLeaveButton communityId={id!} />
+        <CreateTagButton communityId={id!} />
+      </div>
 
-        {products.length > 0 ? (
+      {products.length > 0 ? (
+        <div className="mt-6">
           <ProductList products={products} />
-        ) : (
-          <EmptyState message="Chưa có bài đăng nào trong cộng đồng này." />
-        )}
-      </div>
-
-      {/* RIGHT SIDEBAR */}
-      <div className="hidden lg:flex flex-col flex-shrink-0 bg-white p-6 rounded-r-2xl overflow-hidden">
-        <MembersSidebar communityId={id!} />
-      </div>
+        </div>
+      ) : (
+        <EmptyState message="Chưa có bài đăng nào trong cộng đồng này." />
+      )}
     </div>
-  );
-};
+  
+);};
 
 export default CommunityDetailPage;

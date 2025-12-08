@@ -220,9 +220,9 @@ export default function DealDetailPage() {
 
   if (loading)
     return (
-      <div className="min-h-screen flex items-center justify-center bg-gray-50">
-        ⏳ Đang tải sản phẩm...
-      </div>
+      <div className="min-h-screen bg-gray-50 flex justify-center py-20">
+  <div className="text-center">⏳ Đang tải sản phẩm...</div>
+</div>
     );
 
   if (!product)

@@ -80,13 +80,13 @@ const MembersSidebar: React.FC<CommunityMemberSidebarProps> = ({ communityId }) 
   }, [communityId]);
 
   return (
-    <div className="fixed top-[115px] right-0 bottom-0 w-72 bg-white  border-gray-200 ">
-      <h2 className="text-lg font-semibold p-4 sticky top-0 bg-white z-10">
+    <aside className="hidden lg:flex flex-col w-[300px] bg-white border-l border-gray-200 rounded-r-2xl">
+      <h2 className="text-lg font-semibold p-4 border-b border-gray-100">
         Thành viên
       </h2>
 
       {loading ? (
-        <p className="px-4">Đang tải...</p>
+        <p className="px-4 py-2 text-sm text-gray-500">Đang tải...</p>
       ) : (
         <div className="flex-1 overflow-y-auto px-4 pb-4">
           <div className="flex flex-col gap-3">
@@ -125,7 +125,7 @@ const MembersSidebar: React.FC<CommunityMemberSidebarProps> = ({ communityId }) 
           </div>
         </div>
       )}
-    </div>
+    </aside>
   );
 };
 

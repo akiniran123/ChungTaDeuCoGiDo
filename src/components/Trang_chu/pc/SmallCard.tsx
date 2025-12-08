@@ -87,17 +87,17 @@ export default function SmallCard({
       initial={{ opacity: 0, y: 6 }}
       animate={{ opacity: 1, y: 0 }}
       className="
-        w-full px-4 py-3 bg-white
+        w-full px-1 py-1 bg-white
         transition 
         hover:bg-gray-50
       "
     >
       {/* ROW */}
-      <div className="flex items-center gap-4 min-h-[135px]">
+      <div className="flex items-center gap-4 min-h-[200px]">
         {/* IMAGE */}
         <Link
           href={`/deal/${product.id}`}
-          className="flex-shrink-0 overflow-hidden w-[150px] h-[110px] bg-gray-100 rounded-lg"
+          className="flex-shrink-0 overflow-hidden w-[195px] h-[195px] bg-gray-100 rounded-lg"
         >
           {product.image_url ? (
             <img

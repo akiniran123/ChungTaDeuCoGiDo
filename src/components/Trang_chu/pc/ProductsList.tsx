@@ -182,7 +182,7 @@ export default function ProductsList({
           animate={{ opacity: 1, x: 0 }}
           exit={{ opacity: 0, x: biggerGrid ? -100 : 100 }}
           transition={{ duration: 0.45 }}
-          className="grid gap-6 grid-cols-1"
+          className="grid grid-cols-1"
         >
           {visibleProducts.map((p) =>
             biggerGrid ? (

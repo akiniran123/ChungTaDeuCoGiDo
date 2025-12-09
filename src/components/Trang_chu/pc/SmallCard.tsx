@@ -45,6 +45,9 @@ export default function SmallCard({
 }: SmallCardProps) {
   const [saved, setSaved] = useState<string[]>([]);
 
+  // ⭐ NEW: Like count cập nhật trực tiếp
+  const [localLikes, setLocalLikes] = useState(likesCount);
+
   const toggleSave = (id: string) => {
     setSaved((prev) =>
       prev.includes(id) ? prev.filter((x) => x !== id) : [...prev, id]
@@ -64,13 +67,18 @@ export default function SmallCard({
         .eq("product_id", product.id)
         .eq("user_id", auth.user.id);
 
+      // ❗ Update UI ngay
       setLikedIds((prev) => prev.filter((x) => x !== product.id));
+      setLocalLikes((prev) => Math.max(prev - 1, 0));
     } else {
       await supabase.from("product_likes").insert({
         product_id: product.id,
         user_id: auth.user.id,
       });
+
+      // ❗ Update UI ngay
       setLikedIds((prev) => [...prev, product.id]);
+      setLocalLikes((prev) => prev + 1);
     }
   };
 
@@ -92,7 +100,6 @@ export default function SmallCard({
         hover:bg-gray-50
       "
     >
-      {/* ROW */}
       <div className="flex items-center gap-4 min-h-[200px]">
         {/* IMAGE */}
         <Link
@@ -114,8 +121,7 @@ export default function SmallCard({
 
         {/* MAIN */}
         <div className="flex-1 min-w-0">
-
-          {/* 🔥 USER + TIME */}
+          {/* USER + TIME */}
           <div className="mb-1 text-sm flex items-center gap-3 flex-wrap">
             <Link
               href={`/profile/${product.user_id}`}
@@ -214,7 +220,7 @@ export default function SmallCard({
           )}
         </div>
 
-        {/* ⭐ ACTIONS — THÊM cursor-pointer CHO 3 ICON */}
+        {/* ACTIONS */}
         <div className="flex items-center gap-3 ml-3 flex-shrink-0">
 
           {/* ❤️ LIKE */}
@@ -226,10 +232,10 @@ export default function SmallCard({
               size={20}
               fill={likedIds.includes(product.id) ? "currentColor" : "none"}
             />
-            <span className="text-sm">{likesCount}</span>
+            <span className="text-sm">{localLikes}</span>
           </button>
 
-          {/* 🔗 SHARE */}
+          {/* SHARE */}
           <button
             onClick={share}
             className="text-gray-600 hover:text-gray-800 transition cursor-pointer"
@@ -237,7 +243,7 @@ export default function SmallCard({
             <Share2 size={20} />
           </button>
 
-          {/* 🔖 SAVE */}
+          {/* SAVE */}
           <button
             onClick={() => toggleSave(product.id)}
             className="text-gray-600 hover:text-pink-500 transition cursor-pointer"

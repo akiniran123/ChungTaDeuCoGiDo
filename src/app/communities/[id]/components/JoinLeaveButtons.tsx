@@ -66,7 +66,6 @@ const JoinLeaveButton: React.FC<JoinLeaveButtonProps> = ({
 
     setLoading(true);
 
-    // Kiểm tra community tồn tại
     const { data: community } = await supabase
       .from("communities")
       .select("id")
@@ -209,17 +208,7 @@ const JoinLeaveButton: React.FC<JoinLeaveButtonProps> = ({
         </button>
       ) : (
         <>
-          {/* ĐÃ THAM GIA */}
-          <button
-            type="button"
-            disabled
-            className="inline-flex items-center gap-2 px-4 py-2 rounded-lg text-sm font-medium 
-              bg-gray-100 text-gray-800 cursor-default"
-          >
-            ✓ Đã tham gia
-          </button>
-
-          {/* RỜI CỘNG ĐỒNG — TRUNG TÍNH + CURSOR-POINTER */}
+          {/* CHỈ CÒN NÚT RỜI CỘNG ĐỒNG */}
           <button
             type="button"
             onClick={handleLeave}
@@ -240,7 +229,7 @@ const JoinLeaveButton: React.FC<JoinLeaveButtonProps> = ({
         </>
       )}
 
-      {/* XÓA CỘNG ĐỒNG — TRUNG TÍNH + CURSOR-POINTER */}
+      {/* XÓA CỘNG ĐỒNG (OWNER) */}
       {isOwner && (
         <button
           type="button"

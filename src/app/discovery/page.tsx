@@ -72,9 +72,12 @@ export default function CommunitiesPage() {
   }, [communities, query, selectedCategory]);
 
   return (
-    <div className="min-h-screen bg-gray-50 pt-24 pb-10 px-4">
+    <div className="min-h-screen bg-gray-50 pt-8 pb-10 px-4">
+      {/* ⬆️ Giảm pt-16 → pt-8 để đẩy nội dung lên cao hơn */}
+
       <div className="max-w-6xl mx-auto">
-        <header className="mb-8">
+        <header className="mb-6">
+          {/* ⬆️ Giảm margin-bottom từ mb-8 → mb-6 để header gần nội dung hơn */}
           <h1 className="text-3xl font-extrabold text-gray-900 mb-2">
             Cộng đồng
           </h1>
@@ -140,7 +143,7 @@ export default function CommunitiesPage() {
                 >
                   <div className="flex items-start gap-4">
 
-                    {/* ✅ Avatar cộng đồng */}
+                    {/* Avatar cộng đồng */}
                     <div className="w-12 h-12 rounded-lg bg-blue-50 flex items-center justify-center overflow-hidden">
                       {c.avatar_url ? (
                         <img
@@ -155,7 +158,6 @@ export default function CommunitiesPage() {
                       )}
                     </div>
 
-                    {/* Text */}
                     <div className="flex-1">
                       <h3 className="text-lg font-semibold text-gray-800">
                         {c.title || "Không tên"}

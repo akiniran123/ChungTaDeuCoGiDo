@@ -15,6 +15,8 @@ type MessagesPanelProps = {
   setOpen: React.Dispatch<React.SetStateAction<boolean>>;
   conversations: Conversation[];
   onSelect: (partnerId: string) => void;
+  activePanel: string | null; // ✅ bổ sung
+  setActivePanel: React.Dispatch<React.SetStateAction<string | null>>; // ✅ bổ sung
 };
 
 export default function MessagesPanel({
@@ -22,6 +24,8 @@ export default function MessagesPanel({
   setOpen,
   conversations,
   onSelect,
+  activePanel,
+  setActivePanel,
 }: MessagesPanelProps) {
   return createPortal(
     <div
@@ -36,7 +40,14 @@ export default function MessagesPanel({
     >
       <div className="p-4 font-semibold flex justify-between">
         Tin nhắn
-        <button onClick={() => setOpen(false)}>✕</button>
+        <button
+          onClick={() => {
+            setOpen(false);
+            setActivePanel(null); // ✅ reset panel khi đóng
+          }}
+        >
+          ✕
+        </button>
       </div>
 
       <div className="overflow-y-auto h-full">
@@ -49,7 +60,10 @@ export default function MessagesPanel({
             <div
               key={c.partner_id}
               className="flex items-center gap-3 p-4 hover:bg-gray-50 cursor-pointer"
-              onClick={() => onSelect(c.partner_id)}
+              onClick={() => {
+                onSelect(c.partner_id);
+                setActivePanel("messages"); // ✅ đánh dấu panel đang mở
+              }}
             >
               <img src={c.avatar_url} className="w-10 h-10 rounded-full" />
 

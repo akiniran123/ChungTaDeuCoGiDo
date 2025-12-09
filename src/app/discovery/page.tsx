@@ -29,6 +29,7 @@ export default function CommunitiesPage() {
 
         if (error) throw error;
         if (!mounted) return;
+
         setCommunities(data ?? []);
       } catch (err: any) {
         console.error("Load communities error:", err);
@@ -57,6 +58,7 @@ export default function CommunitiesPage() {
     const arr = communities.filter((c) => {
       const matchCategory =
         selectedCategory === "All" || c.category === selectedCategory;
+
       const matchQuery =
         q === "" ||
         (c.title && c.title.toLowerCase().includes(q)) ||
@@ -65,6 +67,7 @@ export default function CommunitiesPage() {
 
       return matchCategory && matchQuery;
     });
+
     setFiltered(arr);
   }, [communities, query, selectedCategory]);
 
@@ -80,8 +83,10 @@ export default function CommunitiesPage() {
           </p>
         </header>
 
+        {/* Search + Filter */}
         <section className="bg-white rounded-2xl p-6 shadow-sm border border-gray-100 mb-6">
           <div className="flex flex-col sm:flex-row sm:items-center gap-3">
+            {/* Search */}
             <div className="flex items-center gap-2 flex-1">
               <Search className="w-5 h-5 text-gray-400" />
               <input
@@ -92,6 +97,7 @@ export default function CommunitiesPage() {
               />
             </div>
 
+            {/* Filter */}
             <div className="flex items-center gap-3">
               <div className="flex items-center gap-2 px-3 py-2 rounded-lg bg-gray-50">
                 <Filter className="w-4 h-4 text-gray-500" />
@@ -111,6 +117,7 @@ export default function CommunitiesPage() {
           </div>
         </section>
 
+        {/* Communities List */}
         <main>
           {loading ? (
             <div className="bg-white rounded-2xl p-8 shadow-sm border border-gray-100 flex items-center justify-center">
@@ -132,10 +139,23 @@ export default function CommunitiesPage() {
                   className="bg-white rounded-xl p-5 border border-gray-100 shadow-sm hover:shadow-md transition block"
                 >
                   <div className="flex items-start gap-4">
-                    <div className="w-12 h-12 rounded-lg bg-blue-50 flex items-center justify-center text-blue-600 font-bold">
-                      {c.title ? c.title.charAt(0).toUpperCase() : "C"}
+
+                    {/* ✅ Avatar cộng đồng */}
+                    <div className="w-12 h-12 rounded-lg bg-blue-50 flex items-center justify-center overflow-hidden">
+                      {c.avatar_url ? (
+                        <img
+                          src={c.avatar_url}
+                          alt={c.title || "Community Avatar"}
+                          className="w-full h-full object-cover"
+                        />
+                      ) : (
+                        <span className="text-blue-600 font-bold text-lg">
+                          {c.title ? c.title.charAt(0).toUpperCase() : "C"}
+                        </span>
+                      )}
                     </div>
 
+                    {/* Text */}
                     <div className="flex-1">
                       <h3 className="text-lg font-semibold text-gray-800">
                         {c.title || "Không tên"}

@@ -29,38 +29,17 @@ export default function CommunitySelector({
   const [tagsLoading, setTagsLoading] = useState(false);
 
   // ==========================
-  // 🔥 Lấy danh sách community user đã tham gia
+  // 🔥 Lấy tất cả cộng đồng (không cần user tham gia)
   // ==========================
   useEffect(() => {
-    if (!userId) return;
-
     const fetchCommunities = async () => {
       try {
         setLoading(true);
 
-        const { data: joined, error: joinErr } = await supabase
-          .from("community_members")
-          .select("community_id")
-          .eq("user_id", userId);
-
-        if (joinErr) {
-          console.error("❌ Lỗi lấy cộng đồng user tham gia:", joinErr.message);
-          setLoading(false);
-          return;
-        }
-
-        if (!joined || joined.length === 0) {
-          setCommunities([]);
-          setLoading(false);
-          return;
-        }
-
-        const communityIds = joined.map((x) => x.community_id);
-
         const { data: communityData, error: commErr } = await supabase
           .from("communities")
           .select("*")
-          .in("id", communityIds);
+          .order("created_at", { ascending: false });
 
         if (commErr) {
           console.error("❌ Lỗi lấy danh sách communities:", commErr.message);
@@ -75,7 +54,7 @@ export default function CommunitySelector({
     };
 
     fetchCommunities();
-  }, [userId]);
+  }, []);
 
   // ==========================
   // 🔥 Khi chọn community → load tags
@@ -115,8 +94,7 @@ export default function CommunitySelector({
   if (communities.length === 0)
     return (
       <div className="p-3 bg-red-50 border border-red-200 text-red-600 rounded-lg">
-        Bạn chưa tham gia cộng đồng nào — hãy tham gia ít nhất 1 cộng đồng để
-        đăng bán sản phẩm.
+        Hiện tại chưa có cộng đồng nào.
       </div>
     );
 
@@ -143,7 +121,7 @@ export default function CommunitySelector({
         </select>
 
         <p className="text-xs text-gray-500">
-          Chỉ hiển thị các cộng đồng bạn đã tham gia.
+          Bạn có thể chọn bất kỳ cộng đồng nào.
         </p>
       </div>
 

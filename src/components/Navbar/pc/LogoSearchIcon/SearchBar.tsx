@@ -118,24 +118,23 @@ export default function SearchBar({ userId, onSearch }: SearchBarProps) {
       );
     }
 
-    // ⭐ 3️⃣ TÌM TAG SẢN PHẨM — CHỈ CHỈNH MỤC NÀY
-    const { data: allProducts } = await supabase
+    // 3️⃣ TAG SẢN PHẨM
+    const { data: tagProducts } = await supabase
       .from("products")
       .select("id, tags")
-      .limit(1000); // đảm bảo có đủ tags để lọc
+      .ilike("tags", `%${query}%`)
+      .limit(10);
 
-    if (allProducts) {
-      const searchLower = query.toLowerCase();
+    if (tagProducts) {
       const tagSet = new Set<string>();
 
-      allProducts.forEach((p) => {
+      tagProducts.forEach((p) => {
         if (!p.tags) return;
-
         p.tags
           .split(",")
-          .map((t) => t.trim())
-          .filter((t) => t.toLowerCase().includes(searchLower)) // lọc partial trong tag
-          .forEach((t) => tagSet.add(t));
+          .map((s) => s.trim())
+          .filter((s) => s.toLowerCase().includes(query.toLowerCase()))
+          .forEach((tag) => tagSet.add(tag));
       });
 
       const tagResults = Array.from(tagSet)
@@ -196,20 +195,21 @@ export default function SearchBar({ userId, onSearch }: SearchBarProps) {
     }
   };
 
+  // Navigate
   const goToItem = (item: SuggestionItem) => {
     setShowDropdown(false);
 
     if (item.type === "product") return router.push(`/deal/${item.id}`);
     if (item.type === "user") return router.push(`/profile/${item.id}`);
 
-    // ⭐ ROUTE TAG
+    // ⭐ ROUTE TAG –> lọc đúng tag đó
     if (item.type === "tag") return router.push(`/tag/${item.title}`);
 
     if (item.type === "community") return router.push(`/communities/${item.id}`);
   };
 
   return (
-    <div className="relative w-full">
+    <div className="relative w-full max-w-xl mx-auto">
       <form
         onSubmit={handleSearch}
         className="flex w-full items-center bg-white rounded-full shadow-sm border border-gray-200 px-2 h-12"

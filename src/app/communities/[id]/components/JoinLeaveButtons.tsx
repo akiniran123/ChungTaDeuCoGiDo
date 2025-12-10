@@ -194,8 +194,8 @@ const JoinLeaveButton: React.FC<JoinLeaveButtonProps> = ({
           onClick={handleJoin}
           disabled={loading}
           className="inline-flex items-center gap-2 px-4 py-2 rounded-lg text-sm font-medium
-            bg-blue-600 text-white hover:bg-blue-700
-            disabled:opacity-60 disabled:cursor-not-allowed"
+            bg-blue-600 text-white hover:bg-blue-700 
+            cursor-pointer disabled:opacity-60 disabled:cursor-not-allowed"
         >
           {loading ? (
             <>
@@ -203,19 +203,19 @@ const JoinLeaveButton: React.FC<JoinLeaveButtonProps> = ({
               <span>Đang xử lý...</span>
             </>
           ) : (
-            "Tham gia cộng đồng"
+            "Tham gia"   // ← ĐÃ ĐỔI TÊN
           )}
         </button>
       ) : (
         <>
-          {/* CHỈ CÒN NÚT RỜI CỘNG ĐỒNG */}
+          {/* NÚT RỜI CỘNG ĐỒNG */}
           <button
             type="button"
             onClick={handleLeave}
             disabled={loading}
             className="inline-flex items-center gap-2 px-4 py-2 rounded-lg text-sm font-medium 
-              bg-gray-100 text-gray-900 hover:bg-gray-200 cursor-pointer
-              disabled:opacity-60 disabled:cursor-not-allowed"
+              bg-gray-100 text-gray-900 hover:bg-gray-200 
+              cursor-pointer disabled:opacity-60 disabled:cursor-not-allowed"
           >
             {loading ? (
               <>
@@ -229,15 +229,15 @@ const JoinLeaveButton: React.FC<JoinLeaveButtonProps> = ({
         </>
       )}
 
-      {/* XÓA CỘNG ĐỒNG (OWNER) */}
+      {/* XÓA CỘNG ĐỒNG – OWNER */}
       {isOwner && (
         <button
           type="button"
           onClick={handleDeleteCommunity}
           disabled={loading}
           className="inline-flex items-center gap-2 px-3 py-2 rounded-lg text-sm 
-            bg-gray-100 text-gray-900 hover:bg-gray-200 cursor-pointer
-            disabled:opacity-60 disabled:cursor-not-allowed"
+            bg-gray-100 text-gray-900 hover:bg-gray-200 
+            cursor-pointer disabled:opacity-60 disabled:cursor-not-allowed"
         >
           {loading ? (
             <>

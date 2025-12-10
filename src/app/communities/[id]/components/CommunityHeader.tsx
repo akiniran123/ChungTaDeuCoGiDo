@@ -89,9 +89,6 @@ export default function CommunityHeader({ community }: { community: Community })
   const [localAvatar, setLocalAvatar] = useState(avatar_url);
   const [localBanner, setLocalBanner] = useState(banner_url);
 
-  // ⭐ THÊM: State modal xem ảnh
-  const [previewImage, setPreviewImage] = useState<string | null>(null);
-
   // 🔥 CHECK OWNER
   const [isOwner, setIsOwner] = useState(false);
 
@@ -180,11 +177,8 @@ export default function CommunityHeader({ community }: { community: Community })
     <>
       <header className="bg-white rounded-2xl overflow-hidden border border-gray-100 shadow-sm">
 
-        {/* BANNER */}
-        <div
-          className="relative w-full h-36 bg-gray-200 cursor-zoom-in"
-          onClick={() => localBanner && setPreviewImage(localBanner)}
-        >
+        {/* BANNER — đã xoá zoom */}
+        <div className="relative w-full h-36 bg-gray-200">
           {localBanner ? (
             <img src={localBanner} className="w-full h-full object-cover" />
           ) : (
@@ -218,13 +212,12 @@ export default function CommunityHeader({ community }: { community: Community })
         {/* CONTENT */}
         <div className="p-6 md:p-8 flex flex-col md:flex-row md:items-center gap-4">
 
-          {/* AVATAR */}
+          {/* AVATAR — đã xoá zoom */}
           <div className="relative flex flex-col items-start">
             {localAvatar ? (
               <img
                 src={localAvatar}
-                className="w-20 h-20 md:w-24 md:h-24 rounded-xl object-cover border cursor-zoom-in"
-                onClick={() => setPreviewImage(localAvatar)}
+                className="w-20 h-20 md:w-24 md:h-24 rounded-xl object-cover border"
               />
             ) : (
               <div className="w-20 h-20 md:w-24 md:h-24 rounded-xl bg-blue-50 flex items-center justify-center text-blue-600 text-3xl font-bold">
@@ -304,31 +297,6 @@ export default function CommunityHeader({ community }: { community: Community })
           </div>
         </div>
       </header>
-
-      {/* ⭐ MODAL XEM ẢNH PHÓNG TO */}
-      {previewImage && (
-        <div
-          className="fixed inset-0 bg-black/70 flex items-center justify-center z-[9999]"
-          onClick={() => setPreviewImage(null)}
-        >
-          <div
-            className="relative max-w-4xl max-h-[90vh]"
-            onClick={(e) => e.stopPropagation()}
-          >
-            <button
-              className="absolute -top-10 right-0 text-white text-3xl"
-              onClick={() => setPreviewImage(null)}
-            >
-              ×
-            </button>
-
-            <img
-              src={previewImage}
-              className="w-full h-full object-contain rounded-xl shadow-lg"
-            />
-          </div>
-        </div>
-      )}
     </>
   );
 }

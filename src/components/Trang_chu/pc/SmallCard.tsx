@@ -1,6 +1,7 @@
 "use client";
 
 import Link from "next/link";
+import Image from "next/image"; // ⭐ THÊM
 import { motion } from "framer-motion";
 import {
   Bookmark,
@@ -44,8 +45,6 @@ export default function SmallCard({
   onTagClick,
 }: SmallCardProps) {
   const [saved, setSaved] = useState<string[]>([]);
-
-  // ⭐ NEW: Like count cập nhật trực tiếp
   const [localLikes, setLocalLikes] = useState(likesCount);
 
   const toggleSave = (id: string) => {
@@ -67,7 +66,6 @@ export default function SmallCard({
         .eq("product_id", product.id)
         .eq("user_id", auth.user.id);
 
-      // ❗ Update UI ngay
       setLikedIds((prev) => prev.filter((x) => x !== product.id));
       setLocalLikes((prev) => Math.max(prev - 1, 0));
     } else {
@@ -76,7 +74,6 @@ export default function SmallCard({
         user_id: auth.user.id,
       });
 
-      // ❗ Update UI ngay
       setLikedIds((prev) => [...prev, product.id]);
       setLocalLikes((prev) => prev + 1);
     }
@@ -101,16 +98,19 @@ export default function SmallCard({
       "
     >
       <div className="flex items-center gap-4 min-h-[200px]">
+
         {/* IMAGE */}
         <Link
           href={`/deal/${product.id}`}
-          className="flex-shrink-0 overflow-hidden w-[195px] h-[195px] bg-gray-100 rounded-lg"
+          className="flex-shrink-0 overflow-hidden w-[195px] h-[195px] bg-gray-100 rounded-lg relative"
         >
           {product.image_url ? (
-            <img
+            <Image
               src={product.image_url}
               alt={product.title}
-              className="w-full h-full object-cover"
+              fill
+              className="object-cover"
+              sizes="195px"
             />
           ) : (
             <div className="w-full h-full flex items-center justify-center text-gray-500">
@@ -121,17 +121,21 @@ export default function SmallCard({
 
         {/* MAIN */}
         <div className="flex-1 min-w-0">
+
           {/* USER + TIME */}
           <div className="mb-1 text-sm flex items-center gap-3 flex-wrap">
             <Link
               href={`/profile/${product.user_id}`}
               className="flex items-center gap-2 whitespace-nowrap hover:opacity-80 cursor-pointer"
             >
-              <img
+              <Image
                 src={product.avatar_url || "/default-avatar.png"}
-                className="w-6 h-6 rounded-full object-cover"
                 alt="avatar"
+                width={24}
+                height={24}
+                className="rounded-full object-cover"
               />
+
               <span className="truncate max-w-[150px] text-gray-900">
                 {product.author || "Người dùng"}
               </span>
@@ -181,6 +185,7 @@ export default function SmallCard({
 
         {/* TAGS + COMMUNITY */}
         <div className="flex-shrink-0 hidden lg:flex flex-col gap-1 ml-2">
+
           {product.tags && product.tags.length > 0 && (
             <div className="flex items-center gap-1">
               {product.tags.slice(0, 4).map((t, i) => (
@@ -207,12 +212,16 @@ export default function SmallCard({
               className="flex items-center gap-2 hover:opacity-80 whitespace-nowrap cursor-pointer mt-1"
             >
               {product.communityIcon && (
-                <img
-                  src={product.communityIcon}
-                  className="w-6 h-6 rounded-full object-cover"
-                  alt="community"
-                />
+                <div className="w-6 h-6 rounded-full overflow-hidden relative flex-shrink-0">
+                  <Image
+                    src={product.communityIcon}
+                    alt="community"
+                    fill
+                    className="object-cover"
+                  />
+                </div>
               )}
+
               <span className="truncate max-w-[140px] text-gray-900">
                 {product.communityName}
               </span>
@@ -254,7 +263,6 @@ export default function SmallCard({
               <Bookmark size={20} />
             )}
           </button>
-
         </div>
       </div>
     </motion.div>

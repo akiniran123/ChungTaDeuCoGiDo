@@ -1,19 +1,41 @@
+// ProductCard.tsx — Component thẻ nhỏ (đầy đủ, sạch, đúng props)
+
 "use client";
 
 import Link from "next/link";
 import { motion } from "framer-motion";
 import { Bookmark, BookmarkCheck, Heart as HeartIcon, Share2 } from "lucide-react";
-import { Database } from "@/types/supabase";
-type ProductWithUser = Database["public"]["Tables"]["products"]["Row"] & { users?: { username: string | null; avatar_url: string | null; id?: string; } | null; tags?: string[]; communityNames?: string[]; communityName?: string | null; communityIcon?: string | null; mainTag?: string | null; };
+import type { Database } from "@/types/supabase";
+
+// ======================
+// Type
+// ======================
+export type ProductWithUser = Database["public"]["Tables"]["products"]["Row"] & {
+  users?: {
+    username: string | null;
+    avatar_url: string | null;
+    id?: string;
+  } | null;
+
+  tags?: string[];
+  communityNames?: string[];
+
+  communityName?: string | null;
+  communityIcon?: string | null;
+  mainTag?: string | null;
+};
 
 interface ProductCardProps {
   p: ProductWithUser;
   saved: string[];
   toggleSave: (id: string) => void;
+
   likedIds: string[];
   toggleLike: (id: string) => void;
+
   localLikesCount: Record<string, number>;
   commentsCount: Record<string, number>;
+
   setActiveTag: (tag: string) => void;
   shareProduct: (product: ProductWithUser) => void;
 }
@@ -37,6 +59,7 @@ export default function ProductCard({
       transition={{ duration: 0.35 }}
       className="relative rounded-2xl shadow hover:shadow-lg transition bg-white overflow-hidden"
     >
+      {/* Image */}
       <Link href={`/deal/${p.id}`}>
         {p.image_url ? (
           <img
@@ -95,7 +118,7 @@ export default function ProductCard({
         </Link>
       </div>
 
-      {/* CATEGORY / TAGS */}
+      {/* CATEGORY / PRICE / TAGS */}
       <div className="p-4 pt-2">
         <div className="flex justify-between items-start">
           <div className="flex-1">
@@ -105,17 +128,15 @@ export default function ProductCard({
               {p.price ? `${p.price.toLocaleString()}₫` : "Liên hệ"}
             </p>
 
-            {p.users && (
-              <p className="text-xs text-gray-500 mt-1">
-                {commentsCount[p.id] ?? 0} bình luận
-              </p>
-            )}
+            <p className="text-xs text-gray-500 mt-1">
+              {commentsCount[p.id] ?? 0} bình luận
+            </p>
           </div>
 
           <div className="flex flex-col items-end gap-2 ml-4 w-32">
-            {/* TAGS */}
             {(p.tags?.length || p.communityNames?.length) && (
               <div className="flex flex-wrap justify-end gap-2 max-w-32">
+                {/* CLICK TAG → FILTER */}
                 {p.tags?.map((tag, i) => (
                   <button
                     key={i}

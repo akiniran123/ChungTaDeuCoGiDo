@@ -3,9 +3,9 @@ import { useState, useEffect, useRef } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import { LayoutGrid, Grid } from "lucide-react";
 import SmallCard from "@/components/Trang_chu/pc/SmallCard";
-import DealCard from "@/components/Trang_chu/pc/DealCard";
 import SearchBar from "@/components/Navbar/pc/LogoSearchIcon/SearchBar";
 import type { Database } from "@/types/supabase";
+import ProductCard from "@/components/Trang_chu/pc/ProductCard";
 
 type ProductWithUser = Database["public"]["Tables"]["products"]["Row"] & {
   users?: {
@@ -176,70 +176,101 @@ export default function ProductsList({
 
       {/* ⭐ PRODUCT GRID */}
       <AnimatePresence mode="wait">
-        <motion.div
-          key={biggerGrid ? "large" : "small"}
-          initial={{ opacity: 0, x: biggerGrid ? 100 : -100 }}
-          animate={{ opacity: 1, x: 0 }}
-          exit={{ opacity: 0, x: biggerGrid ? -100 : 100 }}
-          transition={{ duration: 0.45 }}
-          className="grid grid-cols-1"
-        >
-          {visibleProducts.map((p) =>
-            biggerGrid ? (
-              <DealCard
-                key={p.id}
-                bigger
-                deal={{
-                  id: p.id,
-                  title: p.title,
-                  content: p.description ?? undefined,
-                  category: p.category ?? undefined,
-                  media: p.image_url ? [p.image_url] : [],
-                  votes: likesCount[p.id] ?? 0,
-                  comments: commentsCount[p.id] ?? 0,
-                  author: p.users?.username ?? undefined,
-                  author_id: p.users?.id ?? undefined,
-                  avatar: p.users?.avatar_url ?? undefined,
-                  createdAt: p.created_at ?? undefined,
-                  community_title: p.communityName ?? null,
-                  community_avatar_url: p.communityIcon ?? null,
-                  community_id: p.community_id ?? null,
-                  tags: p.tags ?? [],
-                  product_tags: p.tags ?? [],
-                }}
-                onTagClick={(tag) => setActiveTag(tag)}
-                vote={() => {}}
-                setSelectedDeal={() => {}}
-              />
-            ) : (
-              <SmallCard
-                key={p.id}
-                product={{
-                  id: p.id,
-                  title: p.title,
-                  image_url: p.image_url ?? undefined,
-                  tags: p.tags ?? [],
-                  author: p.users?.username ?? null,
-                  avatar_url: p.users?.avatar_url ?? null,
-                  created_at: p.created_at ?? null,
-                  category: p.category ?? null,
-                  price: p.price ?? null,
-                  views: p.views ?? null,
-                  community_id: p.community_id ?? null,
-                  communityName: p.communityName ?? null,
-                  communityIcon: p.communityIcon ?? null,
-                  user_id: p.users?.id ?? "",
-                }}
-                likesCount={likesCount[p.id] ?? 0}
-                commentsCount={commentsCount[p.id] ?? 0}
-                likedIds={likedIds}
-                setLikedIds={setLikedIds}
-                onTagClick={(tag) => setActiveTag(tag)}
-              />
-            )
-          )}
-        </motion.div>
-      </AnimatePresence>
+  <motion.div
+    key={biggerGrid ? "large" : "small"}
+    initial={{ opacity: 0, x: biggerGrid ? 100 : -100 }}
+    animate={{ opacity: 1, x: 0 }}
+    exit={{ opacity: 0, x: biggerGrid ? -100 : 100 }}
+    transition={{ duration: 0.45 }}
+    className={`grid gap-4 ${
+  biggerGrid ? "grid-cols-4" : "grid-cols-1"
+}`}
+
+  >
+    {visibleProducts.map((p) =>
+      biggerGrid ? (
+        <ProductCard
+  key={p.id}
+  p={{
+    id: p.id,
+    title: p.title,
+    description: p.description ?? null,
+    media: p.image_url ? [p.image_url] : [],
+    price: p.price ?? null,
+    category: p.category ?? null,
+
+    // USER
+    username: p.users?.username ?? null,
+    avatar_url: p.users?.avatar_url ?? null,
+    user_id: p.users?.id || "",
+
+    // COMMUNITY
+    communityName: p.communityName ?? null,
+    communityIcon: p.communityIcon ?? null,
+    community_id: p.community_id ?? null,
+
+    // EXTRA
+    tags: p.tags ?? [],
+    created_at: p.created_at ?? null,
+    views: p.views ?? 0,
+  }}
+  saved={likedIds}                              // ✔ MUST BE ARRAY
+  toggleSave={() => {
+    if (likedIds.includes(p.id)) {
+      setLikedIds((prev) => prev.filter((id) => id !== p.id));
+    } else {
+      setLikedIds((prev) => [...prev, p.id]);
+    }
+  }}
+  likedIds={likedIds}
+  toggleLike={() => {
+    if (likedIds.includes(p.id)) {
+      setLikedIds((prev) => prev.filter((id) => id !== p.id));
+    } else {
+      setLikedIds((prev) => [...prev, p.id]);
+    }
+  }}
+  localLikesCount={likesCount}                  // ✔ MUST BE OBJECT
+  commentsCount={commentsCount}                 // ✔ MUST BE OBJECT
+  setActiveTag={setActiveTag}
+  shareProduct={() => {
+    navigator.share?.({
+      title: p.title,
+      url: `/deal/${p.id}`,
+    });
+  }}
+/>
+
+      ) : (
+        <SmallCard
+          key={p.id}
+          product={{
+            id: p.id,
+            title: p.title,
+            image_url: p.image_url ?? undefined,
+            tags: p.tags ?? [],
+            author: p.users?.username ?? null,
+            avatar_url: p.users?.avatar_url ?? null,
+            created_at: p.created_at ?? null,
+            category: p.category ?? null,
+            price: p.price ?? null,
+            views: p.views ?? null,
+            community_id: p.community_id ?? null,
+            communityName: p.communityName ?? null,
+            communityIcon: p.communityIcon ?? null,
+            user_id: p.users?.id ?? "",
+          }}
+          likesCount={likesCount[p.id] ?? 0}
+          commentsCount={commentsCount[p.id] ?? 0}
+          likedIds={likedIds}
+          setLikedIds={setLikedIds}
+          onTagClick={(tag) => setActiveTag(tag)}
+        />
+      )
+    )}
+  </motion.div>
+</AnimatePresence>
+
     </div>
   );
 }

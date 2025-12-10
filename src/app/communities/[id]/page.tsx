@@ -108,7 +108,6 @@ const CommunityDetailPage: React.FC<CommunityDetailPageProps> = ({ params }) => 
   if (!community) return <EmptyState />;
 
   return (
- 
     <div className="w-full max-w-screen-xl mx-auto bg-white p-6 rounded-2xl">
       <CommunityHeader community={community} />
 
@@ -118,7 +117,7 @@ const CommunityDetailPage: React.FC<CommunityDetailPageProps> = ({ params }) => 
           sessionStorage.setItem("scrollPosition", window.scrollY.toString());
           router.back();
         }}
-        className="mt-2 mb-4 px-4 py-2 bg-gray-200 hover:bg-gray-300 rounded-lg text-sm"
+        className="mt-2 mb-4 px-4 py-2 bg-gray-200 hover:bg-gray-300 rounded-lg text-sm cursor-pointer"
       >
         ← Quay lại
       </button>
@@ -136,7 +135,7 @@ const CommunityDetailPage: React.FC<CommunityDetailPageProps> = ({ params }) => 
         <EmptyState message="Chưa có bài đăng nào trong cộng đồng này." />
       )}
     </div>
-  
-);};
+  );
+};
 
 export default CommunityDetailPage;

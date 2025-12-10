@@ -1,6 +1,5 @@
 "use client";
 import { useState, useEffect, useRef } from "react";
-import { motion, AnimatePresence } from "framer-motion";
 import { LayoutGrid, Grid } from "lucide-react";
 import SmallCard from "@/components/Trang_chu/pc/SmallCard";
 import DealCard from "@/components/Trang_chu/pc/DealCard";
@@ -41,7 +40,8 @@ export default function ProductsList({
 }: ProductsListProps) {
   const [biggerGrid, setBiggerGrid] = useState(false);
   const [activeTag, setActiveTag] = useState<string | null>(null);
-  const [selectedCategory, setSelectedCategory] = useState<string | null>(null);
+  const [selectedCategory, setSelectedCategory] =
+    useState<string | null>(null);
   const scrollPosition = useRef(0);
   const [showHeader, setShowHeader] = useState(true);
   const lastScrollY = useRef(0);
@@ -50,24 +50,30 @@ export default function ProductsList({
     ? products.filter((p) => p.tags?.includes(activeTag))
     : products;
 
+  // ⭐ FIX HEADER MƯỢT KHÔNG GIẬT
   useEffect(() => {
     const handleScroll = () => {
-      const currentScrollY = window.scrollY;
-      if (currentScrollY > lastScrollY.current && currentScrollY > 80) {
+      const current = window.scrollY;
+
+      if (current > lastScrollY.current && current > 80) {
         setShowHeader(false);
       } else {
         setShowHeader(true);
       }
-      lastScrollY.current = currentScrollY;
-      scrollPosition.current = currentScrollY;
+
+      lastScrollY.current = current;
     };
 
     window.addEventListener("scroll", handleScroll);
     return () => window.removeEventListener("scroll", handleScroll);
   }, []);
 
+  // ⭐ FIX GIẬT KHI ĐỔI GRID (KHÔNG UNMOUNT GRID)
   useEffect(() => {
-    window.scrollTo({ top: scrollPosition.current, behavior: "instant" });
+    window.scrollTo({
+      top: scrollPosition.current,
+      behavior: "instant",
+    });
   }, [biggerGrid]);
 
   const toggleGrid = () => {
@@ -89,76 +95,67 @@ export default function ProductsList({
 
   return (
     <div className="px-6 pb-6">
-      {/* ⭐ HEADER (CATEGORY + SEARCHBAR + FILTERBAR) */}
-      <AnimatePresence>
-        {showHeader && (
-          <motion.div
-            initial={{ y: -100, opacity: 0 }}
-            animate={{ y: 0, opacity: 1 }}
-            exit={{ y: -100, opacity: 0 }}
-            transition={{ duration: 0.3 }}
-            className="sticky top-0 z-30 bg-white"
+      {/* ⭐ HEADER MƯỢT (KHÔNG DÙNG AnimatePresence) */}
+      <div
+        className={`sticky top-0 z-30 bg-white transition-transform duration-300 ${
+          showHeader ? "translate-y-0" : "-translate-y-full"
+        }`}
+      >
+        {/* CATEGORY LIST */}
+        <div className="flex items-center justify-center text-[12px] overflow-x-auto no-scrollbar px-2 py-2">
+          {categories.map((cat) => (
+            <button
+              key={cat}
+              onClick={() => setSelectedCategory(cat)}
+              className={`whitespace-nowrap px-4 py-2 rounded-full text-sm font-medium transition cursor-pointer ${
+                selectedCategory === cat
+                  ? "bg-red-100 text-red-700 shadow-sm "
+                  : "text-gray-700 "
+              }`}
+            >
+              {cat}
+            </button>
+          ))}
+        </div>
+
+        {/* SEARCH BAR */}
+        <div className="mb-2 py-2 px-2">
+          <SearchBar
+            userId={"demo-user"}
+            onSearch={(q) => console.log("Searching:", q)}
+          />
+        </div>
+
+        {/* FILTER BAR */}
+        <div className="pb-2 flex items-center gap-2 px-2">
+          <button className="flex items-center gap-1 px-3 py-1.5 text-sm font-medium text-gray-700 hover:bg-gray-100 rounded-md">
+            <span>Best</span>
+            <svg
+              className="w-4 h-4 text-gray-500"
+              fill="none"
+              stroke="currentColor"
+              strokeWidth="2"
+              viewBox="0 0 24 24"
+            >
+              <path d="M19 9l-7 7-7-7" />
+            </svg>
+          </button>
+
+          <button
+            onClick={toggleGrid}
+            className={`flex items-center gap-1 px-3 py-1.5 text-sm font-medium rounded-md cursor-pointer ${
+              biggerGrid
+                ? "bg-pink-100 text-pink-600 border-pink-300"
+                : "bg-white text-gray-700 border-gray-300 hover:bg-gray-100"
+            }`}
           >
-            {/* CATEGORY LIST */}
-            <div className="flex items-center justify-center text-[12px] overflow-x-auto no-scrollbar px-2 py-2">
-              {categories.map((cat) => (
-                <button
-                  key={cat}
-                  onClick={() => setSelectedCategory(cat)}
-                  className={`whitespace-nowrap px-4 py-2 rounded-full text-sm font-medium transition cursor-pointer ${
-                    selectedCategory === cat
-                      ? "bg-red-100 text-red-700 shadow-sm "
-                      : "text-gray-700 "
-                  }`}
-                >
-                  {cat}
-                </button>
-              ))}
-            </div>
+            {biggerGrid ? <Grid size={16} /> : <LayoutGrid size={16} />}
+            Chế độ xem
+          </button>
+        </div>
+      </div>
 
-            {/* SEARCH BAR */}
-            <div className="mb-2 py-2 px-2">
-              <SearchBar
-                userId={"demo-user"}
-                onSearch={(q) => console.log("Searching:", q)}
-              />
-            </div>
-
-            {/* FILTER BAR */}
-            <div className="pb-2 flex items-center gap-2 px-2">
-              {/* Sort dropdown */}
-              <button className="flex items-center gap-1 px-3 py-1.5 text-sm font-medium text-gray-700 hover:bg-gray-100 rounded-md">
-                <span>Best</span>
-                <svg
-                  className="w-4 h-4 text-gray-500"
-                  fill="none"
-                  stroke="currentColor"
-                  strokeWidth="2"
-                  viewBox="0 0 24 24"
-                >
-                  <path d="M19 9l-7 7-7-7" />
-                </svg>
-              </button>
-
-              {/* ⭐ Toggle grid → CHỈNH CHỮ & THÊM cursor-pointer */}
-              <button
-                onClick={toggleGrid}
-                className={`flex items-center gap-1 px-3 py-1.5 text-sm font-medium rounded-md cursor-pointer ${
-                  biggerGrid
-                    ? "bg-pink-100 text-pink-600 border-pink-300"
-                    : "bg-white text-gray-700 border-gray-300 hover:bg-gray-100"
-                }`}
-              >
-                {biggerGrid ? <Grid size={16} /> : <LayoutGrid size={16} />}
-                {/* ⭐ Đổi từ View → Xem dạng */}
-                Chế độ xem
-              </button>
-            </div>
-          </motion.div>
-        )}
-      </AnimatePresence>
-
-      {/* ⭐ TAG FILTER IF ACTIVE */}
+      {/* TAG FILTER */}
       {activeTag && (
         <div className="mb-4 flex items-center gap-3">
           <span className="text-sm cursor-pointer select-none">
@@ -174,72 +171,63 @@ export default function ProductsList({
         </div>
       )}
 
-      {/* ⭐ PRODUCT GRID */}
-      <AnimatePresence mode="wait">
-        <motion.div
-          key={biggerGrid ? "large" : "small"}
-          initial={{ opacity: 0, x: biggerGrid ? 100 : -100 }}
-          animate={{ opacity: 1, x: 0 }}
-          exit={{ opacity: 0, x: biggerGrid ? -100 : 100 }}
-          transition={{ duration: 0.45 }}
-          className="grid grid-cols-1"
-        >
-          {visibleProducts.map((p) =>
-            biggerGrid ? (
-              <DealCard
-                key={p.id}
-                bigger
-                deal={{
-                  id: p.id,
-                  title: p.title,
-                  content: p.description ?? undefined,
-                  category: p.category ?? undefined,
-                  media: p.image_url ? [p.image_url] : [],
-                  votes: likesCount[p.id] ?? 0,
-                  comments: commentsCount[p.id] ?? 0,
-                  author: p.users?.username ?? undefined,
-                  author_id: p.users?.id ?? undefined,
-                  avatar: p.users?.avatar_url ?? undefined,
-                  createdAt: p.created_at ?? undefined,
-                  community_title: p.communityName ?? null,
-                  community_avatar_url: p.communityIcon ?? null,
-                  community_id: p.community_id ?? null,
-                  tags: p.tags ?? [],
-                  product_tags: p.tags ?? [],
-                }}
-                onTagClick={(tag) => setActiveTag(tag)}
-                vote={() => {}}
-                setSelectedDeal={() => {}}
-              />
-            ) : (
-              <SmallCard
-                key={p.id}
-                product={{
-                  id: p.id,
-                  title: p.title,
-                  image_url: p.image_url ?? undefined,
-                  tags: p.tags ?? [],
-                  author: p.users?.username ?? null,
-                  avatar_url: p.users?.avatar_url ?? null,
-                  created_at: p.created_at ?? null,
-                  category: p.category ?? null,
-                  price: p.price ?? null,
-                  views: p.views ?? null,
-                  community_id: p.community_id ?? null,
-                  communityName: p.communityName ?? null,
-                  communityIcon: p.communityIcon ?? null,
-                  user_id: p.users?.id ?? "",
-                }}
-                likesCount={likesCount[p.id] ?? 0}
-                commentsCount={commentsCount[p.id] ?? 0}
-                likedIds={likedIds}
-                setLikedIds={setLikedIds}
-                onTagClick={(tag) => setActiveTag(tag)}
-              />
-            )
-          )}
-        </motion.div>
-      </AnimatePresence>
+      {/* ⭐ PRODUCT GRID MƯỢT KHÔNG GIẬT */}
+      <div className="grid grid-cols-1 transition-opacity duration-200">
+        {visibleProducts.map((p) =>
+          biggerGrid ? (
+            <DealCard
+              key={p.id}
+              bigger
+              deal={{
+                id: p.id,
+                title: p.title,
+                content: p.description ?? undefined,
+                category: p.category ?? undefined,
+                media: p.image_url ? [p.image_url] : [],
+                votes: likesCount[p.id] ?? 0,
+                comments: commentsCount[p.id] ?? 0,
+                author: p.users?.username ?? undefined,
+                author_id: p.users?.id ?? undefined,
+                avatar: p.users?.avatar_url ?? undefined,
+                createdAt: p.created_at ?? undefined,
+                community_title: p.communityName ?? null,
+                community_avatar_url: p.communityIcon ?? null,
+                community_id: p.community_id ?? null,
+                tags: p.tags ?? [],
+                product_tags: p.tags ?? [],
+              }}
+              onTagClick={(tag) => setActiveTag(tag)}
+              vote={() => {}}
+              setSelectedDeal={() => {}}
+            />
+          ) : (
+            <SmallCard
+              key={p.id}
+              product={{
+                id: p.id,
+                title: p.title,
+                image_url: p.image_url ?? undefined,
+                tags: p.tags ?? [],
+                author: p.users?.username ?? null,
+                avatar_url: p.users?.avatar_url ?? null,
+                created_at: p.created_at ?? null,
+                category: p.category ?? null,
+                price: p.price ?? null,
+                views: p.views ?? null,
+                community_id: p.community_id ?? null,
+                communityName: p.communityName ?? null,
+                communityIcon: p.communityIcon ?? null,
+                user_id: p.users?.id ?? "",
+              }}
+              likesCount={likesCount[p.id] ?? 0}
+              commentsCount={commentsCount[p.id] ?? 0}
+              likedIds={likedIds}
+              setLikedIds={setLikedIds}
+              onTagClick={(tag) => setActiveTag(tag)}
+            />
+          )
+        )}
+      </div>
     </div>
   );
 }

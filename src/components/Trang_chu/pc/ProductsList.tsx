@@ -50,24 +50,38 @@ export default function ProductsList({
     ? products.filter((p) => p.tags?.includes(activeTag))
     : products;
 
+  // ⭐ Header ẩn/hiện mượt mà hơn (không giật)
   useEffect(() => {
+    let ticking = false;
+
     const handleScroll = () => {
-      const currentScrollY = window.scrollY;
-      if (currentScrollY > lastScrollY.current && currentScrollY > 80) {
-        setShowHeader(false);
-      } else {
-        setShowHeader(true);
+      if (!ticking) {
+        window.requestAnimationFrame(() => {
+          const currentScrollY = window.scrollY;
+
+          if (currentScrollY > lastScrollY.current && currentScrollY > 80) {
+            setShowHeader(false);
+          } else {
+            setShowHeader(true);
+          }
+
+          lastScrollY.current = currentScrollY;
+          scrollPosition.current = currentScrollY;
+
+          ticking = false;
+        });
+
+        ticking = true;
       }
-      lastScrollY.current = currentScrollY;
-      scrollPosition.current = currentScrollY;
     };
 
     window.addEventListener("scroll", handleScroll);
     return () => window.removeEventListener("scroll", handleScroll);
   }, []);
 
+  // ⭐ Không dùng "instant" để tránh giật scroll
   useEffect(() => {
-    window.scrollTo({ top: scrollPosition.current, behavior: "instant" });
+    window.scrollTo({ top: scrollPosition.current, behavior: "auto" });
   }, [biggerGrid]);
 
   const toggleGrid = () => {
@@ -89,17 +103,18 @@ export default function ProductsList({
 
   return (
     <div className="px-6 pb-6">
-      {/* ⭐ HEADER (CATEGORY + SEARCHBAR + FILTERBAR) */}
+      {/* ⭐ HEADER */}
       <AnimatePresence>
         {showHeader && (
           <motion.div
-            initial={{ y: -100, opacity: 0 }}
+            initial={{ y: -40, opacity: 0 }}
             animate={{ y: 0, opacity: 1 }}
-            exit={{ y: -100, opacity: 0 }}
-            transition={{ duration: 0.3 }}
+            exit={{ y: -40, opacity: 0 }}
+            transition={{ duration: 0.25 }}
             className="sticky top-0 z-30 bg-white"
+            style={{ willChange: "transform, opacity" }}
           >
-            {/* CATEGORY LIST */}
+            {/* CATEGORY */}
             <div className="flex items-center justify-center text-[12px] overflow-x-auto no-scrollbar px-2 py-2">
               {categories.map((cat) => (
                 <button
@@ -116,7 +131,7 @@ export default function ProductsList({
               ))}
             </div>
 
-            {/* SEARCH BAR */}
+            {/* SEARCH */}
             <div className="mb-2 py-2 px-2">
               <SearchBar
                 userId={"demo-user"}
@@ -126,7 +141,6 @@ export default function ProductsList({
 
             {/* FILTER BAR */}
             <div className="pb-2 flex items-center gap-2 px-2">
-              {/* Sort dropdown */}
               <button className="flex items-center gap-1 px-3 py-1.5 text-sm font-medium text-gray-700 hover:bg-gray-100 rounded-md">
                 <span>Best</span>
                 <svg
@@ -140,7 +154,7 @@ export default function ProductsList({
                 </svg>
               </button>
 
-              {/* ⭐ Toggle grid → CHỈNH CHỮ & THÊM cursor-pointer */}
+              {/* TOGGLE GRID */}
               <button
                 onClick={toggleGrid}
                 className={`flex items-center gap-1 px-3 py-1.5 text-sm font-medium rounded-md cursor-pointer ${
@@ -150,7 +164,6 @@ export default function ProductsList({
                 }`}
               >
                 {biggerGrid ? <Grid size={16} /> : <LayoutGrid size={16} />}
-                {/* ⭐ Đổi từ View → Xem dạng */}
                 Chế độ xem
               </button>
             </div>
@@ -158,7 +171,7 @@ export default function ProductsList({
         )}
       </AnimatePresence>
 
-      {/* ⭐ TAG FILTER IF ACTIVE */}
+      {/* TAG FILTER */}
       {activeTag && (
         <div className="mb-4 flex items-center gap-3">
           <span className="text-sm cursor-pointer select-none">
@@ -174,103 +187,96 @@ export default function ProductsList({
         </div>
       )}
 
-      {/* ⭐ PRODUCT GRID */}
+      {/* ⭐ PRODUCT GRID — chuyển kiểu fade + scale để mượt tuyệt đối */}
       <AnimatePresence mode="wait">
-  <motion.div
-    key={biggerGrid ? "large" : "small"}
-    initial={{ opacity: 0, x: biggerGrid ? 100 : -100 }}
-    animate={{ opacity: 1, x: 0 }}
-    exit={{ opacity: 0, x: biggerGrid ? -100 : 100 }}
-    transition={{ duration: 0.45 }}
-    className={`grid gap-4 ${
-  biggerGrid ? "grid-cols-4" : "grid-cols-1"
-}`}
-
-  >
-    {visibleProducts.map((p) =>
-      biggerGrid ? (
-        <ProductCard
-  key={p.id}
-  p={{
-    id: p.id,
-    title: p.title,
-    description: p.description ?? null,
-    media: p.image_url ? [p.image_url] : [],
-    price: p.price ?? null,
-    category: p.category ?? null,
-
-    // USER
-    username: p.users?.username ?? null,
-    avatar_url: p.users?.avatar_url ?? null,
-    user_id: p.users?.id || "",
-
-    // COMMUNITY
-    communityName: p.communityName ?? null,
-    communityIcon: p.communityIcon ?? null,
-    community_id: p.community_id ?? null,
-
-    // EXTRA
-    tags: p.tags ?? [],
-    created_at: p.created_at ?? null,
-    views: p.views ?? 0,
-  }}
-  saved={likedIds}                              // ✔ MUST BE ARRAY
-  toggleSave={() => {
-    if (likedIds.includes(p.id)) {
-      setLikedIds((prev) => prev.filter((id) => id !== p.id));
-    } else {
-      setLikedIds((prev) => [...prev, p.id]);
-    }
-  }}
-  likedIds={likedIds}
-  toggleLike={() => {
-    if (likedIds.includes(p.id)) {
-      setLikedIds((prev) => prev.filter((id) => id !== p.id));
-    } else {
-      setLikedIds((prev) => [...prev, p.id]);
-    }
-  }}
-  localLikesCount={likesCount}                  // ✔ MUST BE OBJECT
-  commentsCount={commentsCount}                 // ✔ MUST BE OBJECT
-  setActiveTag={setActiveTag}
-  shareProduct={() => {
-    navigator.share?.({
-      title: p.title,
-      url: `/deal/${p.id}`,
-    });
-  }}
-/>
-
-      ) : (
-        <SmallCard
-          key={p.id}
-          product={{
-            id: p.id,
-            title: p.title,
-            image_url: p.image_url ?? undefined,
-            tags: p.tags ?? [],
-            author: p.users?.username ?? null,
-            avatar_url: p.users?.avatar_url ?? null,
-            created_at: p.created_at ?? null,
-            category: p.category ?? null,
-            price: p.price ?? null,
-            views: p.views ?? null,
-            community_id: p.community_id ?? null,
-            communityName: p.communityName ?? null,
-            communityIcon: p.communityIcon ?? null,
-            user_id: p.users?.id ?? "",
-          }}
-          likesCount={likesCount[p.id] ?? 0}
-          commentsCount={commentsCount[p.id] ?? 0}
-          likedIds={likedIds}
-          setLikedIds={setLikedIds}
-          onTagClick={(tag) => setActiveTag(tag)}
-        />
-      )
-    )}
-  </motion.div>
-</AnimatePresence>
-
+        <motion.div
+          key={biggerGrid ? "large" : "small"}
+          initial={{ opacity: 0, scale: 0.96 }}
+          animate={{ opacity: 1, scale: 1 }}
+          exit={{ opacity: 0, scale: 0.96 }}
+          transition={{ duration: 0.25, ease: "easeOut" }}
+          style={{ willChange: "transform, opacity" }}
+          className={`grid gap-4 ${
+            biggerGrid ? "grid-cols-4" : "grid-cols-1"
+          }`}
+        >
+          {visibleProducts.map((p) =>
+            biggerGrid ? (
+              <ProductCard
+                key={p.id}
+                p={{
+                  ...p,
+                  users: p.users
+                    ? {
+                        username: p.users.username,
+                        avatar_url: p.users.avatar_url,
+                        id: p.users.id,
+                      }
+                    : null,
+                  image_url: p.image_url ?? null,
+                  tags: p.tags ?? [],
+                  communityNames: p.communityNames ?? [],
+                  communityName: p.communityName ?? null,
+                  communityIcon: p.communityIcon ?? null,
+                  community_id: p.community_id ?? null,
+                  mainTag: p.mainTag ?? null,
+                  views: p.views ?? 0,
+                }}
+                saved={likedIds}
+                toggleSave={() => {
+                  if (likedIds.includes(p.id)) {
+                    setLikedIds((prev) => prev.filter((id) => id !== p.id));
+                  } else {
+                    setLikedIds((prev) => [...prev, p.id]);
+                  }
+                }}
+                likedIds={likedIds}
+                toggleLike={() => {
+                  if (likedIds.includes(p.id)) {
+                    setLikedIds((prev) => prev.filter((id) => id !== p.id));
+                  } else {
+                    setLikedIds((prev) => [...prev, p.id]);
+                  }
+                }}
+                localLikesCount={likesCount}
+                commentsCount={commentsCount}
+                setActiveTag={setActiveTag}
+                shareProduct={() => {
+                  navigator.share?.({
+                    title: p.title,
+                    url: `/deal/${p.id}`,
+                  });
+                }}
+              />
+            ) : (
+              <SmallCard
+                key={p.id}
+                product={{
+                  id: p.id,
+                  title: p.title,
+                  image_url: p.image_url ?? undefined,
+                  tags: p.tags ?? [],
+                  author: p.users?.username ?? null,
+                  avatar_url: p.users?.avatar_url ?? null,
+                  created_at: p.created_at ?? null,
+                  category: p.category ?? null,
+                  price: p.price ?? null,
+                  views: p.views ?? null,
+                  community_id: p.community_id ?? null,
+                  communityName: p.communityName ?? null,
+                  communityIcon: p.communityIcon ?? null,
+                  user_id: p.users?.id ?? "",
+                }}
+                likesCount={likesCount[p.id] ?? 0}
+                commentsCount={commentsCount[p.id] ?? 0}
+                likedIds={likedIds}
+                setLikedIds={setLikedIds}
+                onTagClick={(tag) => setActiveTag(tag)}
+              />
+            )
+          )}
+        </motion.div>
+      </AnimatePresence>
     </div>
   );
 }

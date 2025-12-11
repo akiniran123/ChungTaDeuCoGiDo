@@ -37,11 +37,32 @@ const CommunityDetailPage: React.FC<CommunityDetailPageProps> = ({ params }) => 
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
 
+  // 🔥 Thêm state kiểm tra owner
+  const [isOwner, setIsOwner] = useState(false);
+
   useEffect(() => {
     supabase.auth.getUser().then(({ data }) => {
       if (data?.user) setUser(data.user);
     });
   }, []);
+
+  // 🔥 Kiểm tra user có phải chủ cộng đồng không
+  useEffect(() => {
+    if (!id || !user) return;
+
+    const checkRole = async () => {
+      const { data } = await supabase
+        .from("community_members")
+        .select("role")
+        .eq("community_id", id)
+        .eq("user_id", user.id)
+        .single();
+
+      if (data?.role === "owner") setIsOwner(true);
+    };
+
+    checkRole();
+  }, [id, user]);
 
   useEffect(() => {
     if (!id) return;
@@ -124,7 +145,9 @@ const CommunityDetailPage: React.FC<CommunityDetailPageProps> = ({ params }) => 
 
       <div className="flex gap-3 items-center mt-4">
         <JoinLeaveButton communityId={id!} />
-        <CreateTagButton communityId={id!} />
+
+        {/* 🔥 Chỉ chủ cộng đồng mới thấy nút tạo tag */}
+        {isOwner && <CreateTagButton communityId={id!} />}
       </div>
 
       {products.length > 0 ? (

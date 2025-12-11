@@ -84,7 +84,7 @@ export default function SearchBar({ userId, onSearch }: SearchBarProps) {
     // 1️⃣ Products
     const { data: productData } = await supabase
       .from("products")
-      .select("id, title, image_url, price, tags")
+      .select("id, title, image_url, price")
       .ilike("title", `%${query}%`)
       .limit(5);
 
@@ -118,35 +118,23 @@ export default function SearchBar({ userId, onSearch }: SearchBarProps) {
       );
     }
 
-    // ⭐ 3️⃣ TÌM TAG SẢN PHẨM — CHỈ CHỈNH MỤC NÀY
-    const { data: allProducts } = await supabase
-      .from("products")
-      .select("id, tags")
-      .limit(1000); // đảm bảo có đủ tags để lọc
+    // ⭐⭐⭐ 3️⃣ TÌM TAG TỪ BẢNG product_tags (chuẩn 100%)
+    const { data: tagData } = await supabase
+      .from("product_tags")
+      .select("tag_id")
+      .ilike("tag_id", `%${query}%`)
+      .limit(10);
 
-    if (allProducts) {
-      const searchLower = query.toLowerCase();
-      const tagSet = new Set<string>();
+    if (tagData) {
+      const uniqueTags = Array.from(new Set(tagData.map((t) => t.tag_id)));
 
-      allProducts.forEach((p) => {
-        if (!p.tags) return;
-
-        p.tags
-          .split(",")
-          .map((t) => t.trim())
-          .filter((t) => t.toLowerCase().includes(searchLower)) // lọc partial trong tag
-          .forEach((t) => tagSet.add(t));
-      });
-
-      const tagResults = Array.from(tagSet)
-        .slice(0, 5)
-        .map((tag) => ({
+      finalResults.push(
+        ...uniqueTags.map((tag) => ({
           type: "tag" as const,
           id: tag,
           title: tag,
-        }));
-
-      finalResults.push(...tagResults);
+        }))
+      );
     }
 
     // 4️⃣ Communities
@@ -176,7 +164,6 @@ export default function SearchBar({ userId, onSearch }: SearchBarProps) {
     return () => clearTimeout(handler);
   }, [fetchSuggestions]);
 
-  // Search submit
   const handleSearch = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!query.trim()) return;
@@ -202,8 +189,8 @@ export default function SearchBar({ userId, onSearch }: SearchBarProps) {
     if (item.type === "product") return router.push(`/deal/${item.id}`);
     if (item.type === "user") return router.push(`/profile/${item.id}`);
 
-    // ⭐ ROUTE TAG
-    if (item.type === "tag") return router.push(`/tag/${item.title}`);
+    // ⭐ ROUTE TAG THEO ID
+    if (item.type === "tag") return router.push(`/tag/${item.id}`);
 
     if (item.type === "community") return router.push(`/communities/${item.id}`);
   };

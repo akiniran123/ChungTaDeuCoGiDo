@@ -22,6 +22,14 @@ const CommunityDetailPage: React.FC<CommunityDetailPageProps> = ({ params }) => 
   const [id, setId] = useState<string | null>(null);
   const router = useRouter();
 
+  const [community, setCommunity] = useState<Community | null>(null);
+  const [products, setProducts] = useState<Product[]>([]);
+  const [user, setUser] = useState<any>(null);
+
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
+  const [isOwner, setIsOwner] = useState(false);
+
   useEffect(() => {
     async function unwrap() {
       const resolved = await params;
@@ -30,23 +38,12 @@ const CommunityDetailPage: React.FC<CommunityDetailPageProps> = ({ params }) => 
     unwrap();
   }, [params]);
 
-  const [community, setCommunity] = useState<Community | null>(null);
-  const [products, setProducts] = useState<Product[]>([]);
-  const [user, setUser] = useState<any>(null);
-
-  const [loading, setLoading] = useState(true);
-  const [error, setError] = useState<string | null>(null);
-
-  // 🔥 Thêm state kiểm tra owner
-  const [isOwner, setIsOwner] = useState(false);
-
   useEffect(() => {
     supabase.auth.getUser().then(({ data }) => {
       if (data?.user) setUser(data.user);
     });
   }, []);
 
-  // 🔥 Kiểm tra user có phải chủ cộng đồng không
   useEffect(() => {
     if (!id || !user) return;
 
@@ -79,26 +76,10 @@ const CommunityDetailPage: React.FC<CommunityDetailPageProps> = ({ params }) => 
 
         if (communityErr) throw communityErr;
 
-        const { data: members, error: membersErr } = await supabase
-          .from("community_members")
-          .select("user_id")
-          .eq("community_id", id);
-
-        if (membersErr) throw membersErr;
-
-        const memberIds = members.map((m) => m.user_id);
-
-        if (memberIds.length === 0) {
-          setCommunity(communityData);
-          setProducts([]);
-          setLoading(false);
-          return;
-        }
-
         const { data: productData, error: productErr } = await supabase
           .from("products")
           .select("*")
-          .in("user_id", memberIds)
+          .eq("community_id", id)
           .order("created_at", { ascending: false });
 
         if (productErr) throw productErr;
@@ -132,7 +113,6 @@ const CommunityDetailPage: React.FC<CommunityDetailPageProps> = ({ params }) => 
     <div className="w-full max-w-screen-xl mx-auto bg-white p-6 rounded-2xl">
       <CommunityHeader community={community} />
 
-      {/* NÚT BACK */}
       <button
         onClick={() => {
           sessionStorage.setItem("scrollPosition", window.scrollY.toString());
@@ -145,8 +125,6 @@ const CommunityDetailPage: React.FC<CommunityDetailPageProps> = ({ params }) => 
 
       <div className="flex gap-3 items-center mt-4">
         <JoinLeaveButton communityId={id!} />
-
-        {/* 🔥 Chỉ chủ cộng đồng mới thấy nút tạo tag */}
         {isOwner && <CreateTagButton communityId={id!} />}
       </div>
 

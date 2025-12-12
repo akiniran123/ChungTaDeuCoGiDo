@@ -2,6 +2,7 @@
 
 import React, { useEffect, useMemo, useState } from "react";
 import Link from "next/link";
+import Image from "next/image";
 import { supabase } from "@/lib/supabase/client";
 import { Loader2, Search, Filter } from "lucide-react";
 import type { Database } from "@/types/supabase";
@@ -22,18 +23,25 @@ export default function CommunitiesPage() {
       setLoading(true);
       setError(null);
       try {
-        const { data, error } = await supabase
-          .from("communities")
-          .select("*")
-          .order("created_at", { ascending: false });
+        // dùng generic để supabase trả về đúng kiểu
+const { data, error } = await supabase
+  .from("communities")
+  .select("*")
+  .order("created_at", { ascending: false });
 
-        if (error) throw error;
-        if (!mounted) return;
+if (error) throw error;
+if (!mounted) return;
 
-        setCommunities(data ?? []);
-      } catch (err: any) {
+// ép kiểu rõ ràng, an toàn hơn là ép thẳng sang any
+const communitiesData = (data ?? []) as Community[];
+setCommunities(communitiesData);
+      } catch (err: unknown) {
         console.error("Load communities error:", err);
-        setError(err?.message ?? "Lỗi khi tải danh sách cộng đồng");
+        if (err instanceof Error) {
+          setError(err.message);
+        } else {
+          setError(String(err) || "Lỗi khi tải danh sách cộng đồng");
+        }
       } finally {
         if (mounted) setLoading(false);
       }
@@ -73,23 +81,14 @@ export default function CommunitiesPage() {
 
   return (
     <div className="min-h-screen bg-gray-50 pt-8 pb-10 px-4">
-      {/* ⬆️ Giảm pt-16 → pt-8 để đẩy nội dung lên cao hơn */}
-
       <div className="max-w-6xl mx-auto">
         <header className="mb-6">
-          {/* ⬆️ Giảm margin-bottom từ mb-8 → mb-6 để header gần nội dung hơn */}
-          <h1 className="text-3xl font-extrabold text-gray-900 mb-2">
-            Cộng đồng
-          </h1>
-          <p className="text-gray-600">
-            Khám phá các cộng đồng, tham gia hoặc tạo mới.
-          </p>
+          <h1 className="text-3xl font-extrabold text-gray-900 mb-2">Cộng đồng</h1>
+          <p className="text-gray-600">Khám phá các cộng đồng, tham gia hoặc tạo mới.</p>
         </header>
 
-        {/* Search + Filter */}
         <section className="bg-white rounded-2xl p-6 shadow-sm border border-gray-100 mb-6">
           <div className="flex flex-col sm:flex-row sm:items-center gap-3">
-            {/* Search */}
             <div className="flex items-center gap-2 flex-1">
               <Search className="w-5 h-5 text-gray-400" />
               <input
@@ -100,7 +99,6 @@ export default function CommunitiesPage() {
               />
             </div>
 
-            {/* Filter */}
             <div className="flex items-center gap-3">
               <div className="flex items-center gap-2 px-3 py-2 rounded-lg bg-gray-50">
                 <Filter className="w-4 h-4 text-gray-500" />
@@ -120,7 +118,6 @@ export default function CommunitiesPage() {
           </div>
         </section>
 
-        {/* Communities List */}
         <main>
           {loading ? (
             <div className="bg-white rounded-2xl p-8 shadow-sm border border-gray-100 flex items-center justify-center">
@@ -142,14 +139,14 @@ export default function CommunitiesPage() {
                   className="bg-white rounded-xl p-5 border border-gray-100 shadow-sm hover:shadow-md transition block"
                 >
                   <div className="flex items-start gap-4">
-
-                    {/* Avatar cộng đồng */}
                     <div className="w-12 h-12 rounded-lg bg-blue-50 flex items-center justify-center overflow-hidden">
                       {c.avatar_url ? (
-                        <img
+                        <Image
                           src={c.avatar_url}
                           alt={c.title || "Community Avatar"}
-                          className="w-full h-full object-cover"
+                          width={48}
+                          height={48}
+                          className="object-cover"
                         />
                       ) : (
                         <span className="text-blue-600 font-bold text-lg">

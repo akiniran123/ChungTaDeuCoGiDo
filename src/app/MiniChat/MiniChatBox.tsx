@@ -91,15 +91,25 @@ export default function MiniChatBox({
         .or(`sender_id.eq.${currentUserId},receiver_id.eq.${currentUserId}`)
         .order("created_at", { ascending: true });
 
-      const filtered = data?.filter(
-        (msg: Message) =>
-          (msg.sender_id === currentUserId &&
-            msg.receiver_id === partnerId) ||
-          (msg.sender_id === partnerId &&
-            msg.receiver_id === currentUserId)
-      );
+     // inside the useEffect that loads messages
+const fetchMessages = async () => {
+  const res = await supabase
+    .from("messages")
+    .select("*")
+    .or(`sender_id.eq.${currentUserId},receiver_id.eq.${currentUserId}`)
+    .order("created_at", { ascending: true });
 
-      if (filtered) setMessages(filtered);
+  // cast Supabase response to the Message[] type
+  const data = res.data as Message[] | null;
+
+  const filtered = data?.filter(
+    (msg) =>
+      (msg.sender_id === currentUserId && msg.receiver_id === partnerId) ||
+      (msg.sender_id === partnerId && msg.receiver_id === currentUserId)
+  );
+
+  if (filtered) setMessages(filtered);
+};
     };
 
     fetchMessages();

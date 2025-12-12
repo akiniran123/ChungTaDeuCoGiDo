@@ -3,6 +3,7 @@
 
 import React, { useMemo } from "react";
 import { createPortal } from "react-dom";
+import Image from "next/image";
 
 export type Conversation = {
   partner_id: string;
@@ -36,19 +37,20 @@ const ConversationItem = React.memo(function ConversationItem({
       className="flex items-center gap-3 p-4 hover:bg-gray-50 cursor-pointer"
       onClick={() => onSelect(c.partner_id)}
     >
-      <img
-        loading="lazy"
-        src={c.avatar_url}
-        alt={c.username}
-        className="w-10 h-10 rounded-full object-cover"
-      />
+      <div className="w-10 h-10 relative">
+        <Image
+          src={c.avatar_url || "/default-avatar.png"}
+          alt={c.username}
+          fill
+          className="rounded-full object-cover"
+          sizes="40px"
+        />
+      </div>
       <div className="flex-1">
         <p
-          className={`${
-            c.is_read === false
-              ? "text-black font-medium"
-              : "text-gray-500"
-          }`}
+          className={
+            c.is_read === false ? "text-black font-medium" : "text-gray-500"
+          }
         >
           {c.username}
         </p>
@@ -61,10 +63,7 @@ const ConversationItem = React.memo(function ConversationItem({
         </p>
       </div>
       <span className="text-[11px] text-gray-400 whitespace-nowrap">
-        {new Date(c.last_time).toLocaleTimeString("vi-VN", {
-          hour: "2-digit",
-          minute: "2-digit",
-        })}
+        {c.formatted_time}
       </span>
     </div>
   );
@@ -79,8 +78,7 @@ export default function MessagesPanel({
   setActivePanel,
   clearUnread,
 }: MessagesPanelProps) {
-  if (typeof document === "undefined") return null;
-
+  // luôn gọi hook trước khi return
   const formattedConversations = useMemo(
     () =>
       conversations.map((c) => ({
@@ -92,6 +90,8 @@ export default function MessagesPanel({
       })),
     [conversations]
   );
+
+  if (typeof document === "undefined") return null;
 
   const baseClasses = [
     "fixed",

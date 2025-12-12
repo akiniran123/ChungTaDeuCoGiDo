@@ -43,11 +43,14 @@ export default function CommunitySelector({
 
         if (commErr) {
           console.error("❌ Lỗi lấy danh sách communities:", commErr.message);
+          setCommunities([]);
+        } else {
+          // Cast an toàn về Community[]
+          setCommunities((communityData ?? []) as Community[]);
         }
-
-        setCommunities(communityData || []);
       } catch (err) {
         console.error("❌ Lỗi không mong muốn:", err);
+        setCommunities([]);
       } finally {
         setLoading(false);
       }
@@ -77,9 +80,10 @@ export default function CommunitySelector({
 
       if (error) {
         console.error("❌ Lỗi tải tag:", error.message);
+        setCommunityTags([]);
+      } else {
+        setCommunityTags((data ?? []) as CommunityTag[]);
       }
-
-      setCommunityTags(data || []);
       setTagsLoading(false);
     };
 
@@ -120,24 +124,18 @@ export default function CommunitySelector({
           ))}
         </select>
 
-        <p className="text-xs text-gray-500">
-          Bạn có thể chọn bất kỳ cộng đồng nào.
-        </p>
+        <p className="text-xs text-gray-500">Bạn có thể chọn bất kỳ cộng đồng nào.</p>
       </div>
 
       {/* TAG SELECTOR */}
       {value && (
         <div className="flex flex-col gap-2">
-          <label className="text-sm font-medium text-gray-700">
-            Chọn tag của cộng đồng
-          </label>
+          <label className="text-sm font-medium text-gray-700">Chọn tag của cộng đồng</label>
 
           {tagsLoading ? (
             <p className="text-gray-400 text-sm">Đang tải tag...</p>
           ) : communityTags.length === 0 ? (
-            <p className="text-gray-500 text-sm">
-              Cộng đồng này chưa có tag nào.
-            </p>
+            <p className="text-gray-500 text-sm">Cộng đồng này chưa có tag nào.</p>
           ) : (
             <select
               value={selectedTag ?? ""}

@@ -120,11 +120,23 @@ export default function OtherUserProfile() {
   return (
     <div className="max-w-3xl mx-auto p-6">
       <div className="flex items-center gap-4 mb-6">
-        <img
-          src={user.avatar_url || "/default-avatar.png"}
-          className="w-20 h-20 rounded-full object-cover"
-          alt={user.username}
-        />
+        {user.avatar_url ? (
+          <img
+            src={user.avatar_url}
+            className="w-20 h-20 rounded-full object-cover"
+            alt={user.username}
+          />
+        ) : (
+          <div className="w-20 h-20 rounded-full border border-white bg-gray-300 flex items-center justify-center">
+            <svg
+              className="w-10 h-10 text-gray-500"
+              fill="currentColor"
+              viewBox="0 0 24 24"
+            >
+              <path d="M12 12c2.7 0 4.8-2.1 4.8-4.8S14.7 2.4 12 2.4 7.2 4.5 7.2 7.2 9.3 12 12 12zm0 2.4c-3.2 0-9.6 1.6-9.6 4.8v2.4h19.2v-2.4c0-3.2-6.4-4.8-9.6-4.8z" />
+            </svg>
+          </div>
+        )}
         <div className="flex-1 flex items-center justify-between">
           <div>
             <h1 className="text-2xl font-bold">{user.username}</h1>
@@ -167,11 +179,23 @@ export default function OtherUserProfile() {
 
                 {p.users && (
                   <div className="mt-2 flex items-center gap-2 text-sm text-gray-600">
-                    <img
-                      src={p.users.avatar_url ?? "/default-avatar.png"}
-                      className="w-6 h-6 rounded-full object-cover"
-                      alt={p.users.username ?? "user"}
-                    />
+                    {p.users.avatar_url ? (
+                      <img
+                        src={p.users.avatar_url}
+                        className="w-6 h-6 rounded-full object-cover"
+                        alt={p.users.username ?? "user"}
+                      />
+                    ) : (
+                      <div className="w-6 h-6 rounded-full border border-white bg-gray-300 flex items-center justify-center">
+                        <svg
+                          className="w-4 h-4 text-gray-500"
+                          fill="currentColor"
+                          viewBox="0 0 24 24"
+                        >
+                          <path d="M12 12c2.7 0 4.8-2.1 4.8-4.8S14.7 2.4 12 2.4 7.2 4.5 7.2 7.2 9.3 12 12 12zm0 2.4c-3.2 0-9.6 1.6-9.6 4.8v2.4h19.2v-2.4c0-3.2-6.4-4.8-9.6-4.8z" />
+                        </svg>
+                      </div>
+                    )}
                     <span>{p.users.username}</span>
                   </div>
                 )}

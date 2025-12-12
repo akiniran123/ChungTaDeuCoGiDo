@@ -15,6 +15,8 @@ import PrivateToggle from "@/components/sell/pc//PrivateToggle";
 import ReturnPolicies from "@/components/sell/pc//ReturnPolicies";
 import CommunitySelector from "@/components/sell/pc/CommunitySelector";
 
+import type { ProductFormData } from "@/types/form"; // dùng type mà các component con mong đợi
+
 type Spec = {
   key: string;
   value: string | number | boolean | null;
@@ -160,12 +162,14 @@ export default function SellPage() {
       >
         <ListingTitleInput error={errors.title} />
 
-        {/* If child components expect a different Control generic, cast at the boundary.
-            Casting is localized here to avoid spreading incompatible Control types. */}
-        <DescriptionEditor
-          control={methods.control as unknown as Control<any>}
-          error={errors.description as FieldErrors<any> | undefined}
-        />
+        {/* Cast cục bộ sang kiểu mà component con mong đợi (ProductFormData).
+            Ép qua unknown để tránh lỗi tương thích nội bộ Control<T> */}
+       <DescriptionEditor
+  control={methods.control as unknown as Control<ProductFormData>}
+
+  error={errors.description}
+/>
+
 
         <ConditionSelector error={errors.condition} />
 
@@ -184,11 +188,15 @@ export default function SellPage() {
           }}
         />
 
-        <ImageUploader error={errors.images as FieldErrors<any> | undefined} />
+        <ImageUploader
+          error={errors.images as FieldErrors<ProductFormData> | undefined}
+        />
 
         <PriceAndOffers />
 
-        <TechSpecsEditor control={methods.control as unknown as Control<any>} />
+        <TechSpecsEditor
+          control={methods.control as unknown as Control<ProductFormData>}
+        />
 
         <PrivateToggle />
 

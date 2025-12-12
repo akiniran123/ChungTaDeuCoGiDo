@@ -3,26 +3,7 @@ import { useEffect, useState, useCallback } from "react";
 import { supabase } from "@/lib/supabase/client";
 import { Search, User, Tag, Users } from "lucide-react";
 import { useRouter } from "next/navigation";
-
-interface Product {
-  id: string;
-  title: string;
-  image_url: string | null;
-  price: number | null;
-  tags: string | null;
-}
-
-interface UserItem {
-  id: string;
-  username: string | null;
-  avatar_url: string | null;
-}
-
-interface Community {
-  id: string;
-  title: string;
-  banner_url: string | null;
-}
+import Image from "next/image";
 
 interface HistoryItem {
   query: string;
@@ -79,7 +60,7 @@ export default function SearchBar({ userId, onSearch }: SearchBarProps) {
     }
 
     setLoading(true);
-    let finalResults: SuggestionItem[] = [];
+    const finalResults: SuggestionItem[] = [];
 
     // 1️⃣ Products
     const { data: productData } = await supabase
@@ -195,6 +176,13 @@ export default function SearchBar({ userId, onSearch }: SearchBarProps) {
     if (item.type === "community") return router.push(`/communities/${item.id}`);
   };
 
+  const handleOptionKeyDown = (e: React.KeyboardEvent, item: SuggestionItem) => {
+    if (e.key === "Enter" || e.key === " ") {
+      e.preventDefault();
+      goToItem(item);
+    }
+  };
+
   return (
     <div className="relative w-full">
       <form
@@ -225,15 +213,22 @@ export default function SearchBar({ userId, onSearch }: SearchBarProps) {
                 <li
                   key={`${item.type}-${item.id}`}
                   role="option"
+                  aria-selected={false}
+                  tabIndex={0}
+                  onKeyDown={(e) => handleOptionKeyDown(e, item)}
                   onClick={() => goToItem(item)}
                   className="flex items-center gap-2 p-2 hover:bg-blue-50 cursor-pointer transition-colors rounded-md"
                 >
                   {item.image ? (
-                    <img
-                      src={item.image}
-                      alt={item.title}
-                      className="w-8 h-8 rounded-md object-cover"
-                    />
+                    <div className="w-8 h-8 relative rounded-md overflow-hidden">
+                      <Image
+                        src={item.image}
+                        alt={item.title}
+                        fill
+                        sizes="32px"
+                        className="object-cover"
+                      />
+                    </div>
                   ) : (
                     <>
                       {item.type === "user" && <User size={16} />}
@@ -243,26 +238,16 @@ export default function SearchBar({ userId, onSearch }: SearchBarProps) {
                   )}
 
                   <div className="flex-1">
-                    <p className="text-xs font-medium text-gray-800">
-                      {item.title}
-                    </p>
+                    <p className="text-xs font-medium text-gray-800">{item.title}</p>
 
                     {item.type === "product" && (
                       <p className="text-[10px] text-gray-500">
-                        {item.price
-                          ? `${item.price.toLocaleString()}₫`
-                          : "Liên hệ"}
+                        {item.price ? `${item.price.toLocaleString()}₫` : "Liên hệ"}
                       </p>
                     )}
 
-                    {item.type === "user" && (
-                      <p className="text-[10px] text-gray-500">Người dùng</p>
-                    )}
-
-                    {item.type === "tag" && (
-                      <p className="text-[10px] text-gray-500">Tag sản phẩm</p>
-                    )}
-
+                    {item.type === "user" && <p className="text-[10px] text-gray-500">Người dùng</p>}
+                    {item.type === "tag" && <p className="text-[10px] text-gray-500">Tag sản phẩm</p>}
                     {item.type === "community" && (
                       <p className="text-[10px] text-gray-500">Cộng đồng</p>
                     )}
@@ -273,16 +258,12 @@ export default function SearchBar({ userId, onSearch }: SearchBarProps) {
           )}
 
           {query && !loading && results.length === 0 && (
-            <p className="text-xs text-gray-500 p-2 text-center">
-              Không tìm thấy kết quả
-            </p>
+            <p className="text-xs text-gray-500 p-2 text-center">Không tìm thấy kết quả</p>
           )}
 
           {!query && history.length > 0 && (
             <div className="p-2">
-              <p className="text-[10px] text-gray-400 mb-1 uppercase tracking-wider">
-                Tìm kiếm gần đây
-              </p>
+              <p className="text-[10px] text-gray-400 mb-1 uppercase tracking-wider">Tìm kiếm gần đây</p>
               {history.map((h, i) => (
                 <button
                   key={i}

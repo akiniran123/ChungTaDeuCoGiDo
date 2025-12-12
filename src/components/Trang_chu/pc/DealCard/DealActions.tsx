@@ -9,6 +9,11 @@ import {
   Heart as HeartIcon,
 } from "lucide-react";
 
+type Deal = {
+  id: string | number;
+  title?: string | null;
+} & Record<string, unknown>;
+
 interface DealActionsProps {
   liked: boolean;
   likesCount: number;
@@ -17,7 +22,7 @@ interface DealActionsProps {
   handleLike: () => void;
   handleSave: () => void;
   toggleChat: () => void;
-  deal: any;
+  deal: Deal;
 }
 
 const DealActions: React.FC<DealActionsProps> = ({
@@ -33,12 +38,12 @@ const DealActions: React.FC<DealActionsProps> = ({
   const handleShare = () => {
     if (!deal?.id) return alert("Không tìm thấy sản phẩm để chia sẻ!");
 
-    const url = `${window.location.origin}/#deal-${deal.id}`;
+    const url = `${window.location.origin}/#deal-${String(deal.id)}`;
 
     if (navigator.share) {
       navigator
         .share({
-          title: deal?.title || "Chia sẻ sản phẩm",
+          title: (deal?.title as string) || "Chia sẻ sản phẩm",
           url,
         })
         .catch((err) => console.log("Lỗi khi chia sẻ:", err));
@@ -52,7 +57,6 @@ const DealActions: React.FC<DealActionsProps> = ({
     <div className="flex items-center justify-between gap-3 mt-3 text-sm text-gray-700 pl-3 mb-3">
       {/* ===== LEFT ACTIONS ===== */}
       <div className="flex items-center gap-4">
-
         {/* ❤️ LIKE */}
         <motion.div className="flex items-center gap-1 relative">
           <motion.button
@@ -72,10 +76,7 @@ const DealActions: React.FC<DealActionsProps> = ({
 
         {/* 💬 COMMENT */}
         <div className="flex items-center gap-1">
-          <button
-            onClick={toggleChat}
-            className="p-1 text-gray-700 hover:text-pink-600"
-          >
+          <button onClick={toggleChat} className="p-1 text-gray-700 hover:text-pink-600">
             <MessageSquare size={20} />
           </button>
 

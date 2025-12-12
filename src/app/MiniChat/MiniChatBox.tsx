@@ -185,7 +185,8 @@ export default function MiniChatBox({
           />
           <div className="font-semibold text-sm">{partner.username}</div>
         </div>
-        <button onClick={onClose}>
+        {/* ✅ Thêm cursor-pointer */}
+        <button onClick={onClose} className="cursor-pointer">
           <X size={18} />
         </button>
       </div>
@@ -228,7 +229,11 @@ export default function MiniChatBox({
           placeholder="Nhập tin nhắn..."
           className="flex-1 px-3 py-1.5 text-sm border rounded-full"
         />
-        <button type="submit" className="p-2 hover:bg-gray-100 rounded-full">
+        {/* ✅ Thêm cursor-pointer */}
+        <button
+          type="submit"
+          className="p-2 hover:bg-gray-100 rounded-full cursor-pointer"
+        >
           <Send size={16} />
         </button>
       </form>

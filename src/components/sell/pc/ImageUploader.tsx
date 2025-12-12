@@ -1,7 +1,7 @@
 "use client";
 
 import { useFormContext, Controller } from "react-hook-form";
-import { supabase } from "@/lib/supabase/client";
+import { getSupabaseClientOrNull } from "@/lib/supabase/client";
 import { uploadImageFromUrl } from "@/lib/supabase/uploadImageFromUrl";
 import { useState, useEffect } from "react";
 import Image from "next/image";
@@ -28,11 +28,28 @@ export default function ImageUploader({ error }: ImageUploaderProps) {
   const [loading, setLoading] = useState(false);
 
   useEffect(() => {
+    let mounted = true;
+    const supabase = getSupabaseClientOrNull();
+    if (!supabase) {
+      if (mounted) setUserId(null);
+      return;
+    }
+
     const fetchUser = async () => {
-      const { data } = await supabase.auth.getUser();
-      if (data?.user) setUserId(data.user.id);
+      try {
+        const { data } = await supabase.auth.getUser();
+        if (!mounted) return;
+        if (data?.user) setUserId(data.user.id);
+      } catch (err) {
+        console.warn("Failed to get user:", err);
+        if (mounted) setUserId(null);
+      }
     };
     fetchUser();
+
+    return () => {
+      mounted = false;
+    };
   }, []);
 
   useEffect(() => {
@@ -47,34 +64,54 @@ export default function ImageUploader({ error }: ImageUploaderProps) {
   ) => {
     const file = e.target.files?.[0];
     if (!file) return;
+
     if (!userId) {
       alert("⚠️ Vui lòng đợi hệ thống xác định tài khoản trước khi tải ảnh.");
       return;
     }
 
+    // Revoke previous blob preview if any
+    if (preview?.startsWith("blob:")) {
+      URL.revokeObjectURL(preview);
+    }
+
     const previewUrl = URL.createObjectURL(file);
     setPreview(previewUrl);
 
-    const fileName = `product-${Date.now()}-${file.name}`;
-    const filePath = `user_${userId}/${fileName}`;
-
-    const { error } = await supabase.storage
-      .from("images")
-      .upload(filePath, file, { upsert: true });
-
-    if (error) {
-      console.error("❌ Lỗi upload ảnh:", error.message);
-      alert("Tải ảnh thất bại!");
+    const supabase = getSupabaseClientOrNull();
+    if (!supabase) {
+      alert("Supabase chưa được cấu hình. Không thể tải ảnh.");
       return;
     }
 
-    const { data: publicUrlData } = supabase.storage
-      .from("images")
-      .getPublicUrl(filePath);
+    const fileName = `product-${Date.now()}-${file.name.replace(/\s+/g, "_")}`;
+    const filePath = `user_${userId}/${fileName}`;
 
-    const publicUrl = publicUrlData.publicUrl;
-    setPreview(publicUrl);
-    onChange([publicUrl]);
+    try {
+      // upload returns { data, error } in supabase client
+      const uploadRes = await supabase.storage.from("images").upload(filePath, file, { upsert: true });
+      if (uploadRes.error) {
+        console.error("❌ Lỗi upload ảnh:", uploadRes.error.message);
+        alert("Tải ảnh thất bại!");
+        return;
+      }
+
+      // getPublicUrl does not return an error field; it returns { data: { publicUrl } }
+      const publicUrlRes = supabase.storage.from("images").getPublicUrl(filePath);
+      const publicUrl = publicUrlRes?.data?.publicUrl ?? null;
+
+      if (!publicUrl) {
+        console.warn("Không lấy được public URL, dùng preview tạm thời");
+        onChange([previewUrl]);
+        return;
+      }
+
+      setPreview(publicUrl);
+      onChange([publicUrl]);
+    } catch (err) {
+      console.error("Unexpected upload error:", err);
+      alert("Tải ảnh thất bại!");
+    }
   };
 
   const handleLinkPaste = async (
@@ -86,13 +123,24 @@ export default function ImageUploader({ error }: ImageUploaderProps) {
     onChange([cleanValue]);
     setPreview(cleanValue);
 
-    if (cleanValue.startsWith("http") && userId) {
+    if (cleanValue.startsWith("http")) {
+      const supabase = getSupabaseClientOrNull();
+      if (!supabase || !userId) {
+        // If no supabase or no user, just set preview and return
+        return;
+      }
+
       setLoading(true);
-      const uploaded = await uploadImageFromUrl(cleanValue, userId);
-      setLoading(false);
-      if (uploaded) {
-        setPreview(uploaded);
-        onChange([uploaded]);
+      try {
+        const uploaded = await uploadImageFromUrl(cleanValue, userId);
+        if (uploaded) {
+          setPreview(uploaded);
+          onChange([uploaded]);
+        }
+      } catch (err) {
+        console.error("Error uploading image from URL:", err);
+      } finally {
+        setLoading(false);
       }
     }
   };

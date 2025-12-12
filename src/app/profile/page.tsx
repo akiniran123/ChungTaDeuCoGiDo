@@ -74,24 +74,28 @@ export default function ProfilePage() {
 
       setCurrentUser(userSession);
 
-      const { data: userData } = await supabase
-  .from("users")
-  .select("*")
-  .eq("id", userSession.id)
-  .maybeSingle();
+      const { data, error } = await supabase
+        .from("users")
+        .select("*")
+        .eq("id", userSession.id)
+        .maybeSingle();
 
-if (!userData) return;
+      if (error) console.error(error);
+      if (!data) {
+        setLoading(false);
+        return;
+      }
 
-setUser(userData as UserData);
+      const userData = data as UserData;
+      setUser(userData);
 
-setFormData({
-  username: (userData as UserData).username ?? "",
-  avatar_url: (userData as UserData).avatar_url ?? "",
-  address: (userData as UserData).address ?? "",
-  phone: (userData as UserData).phone?.toString() ?? "",
-  birth: (userData as UserData).birth ?? "",
-});
-
+      setFormData({
+        username: userData.username ?? "",
+        avatar_url: userData.avatar_url ?? "",
+        address: userData.address ?? "",
+        phone: userData.phone?.toString() ?? "",
+        birth: userData.birth ?? "",
+      });
 
       setLoading(false);
     };
@@ -109,33 +113,33 @@ setFormData({
       setLoadingProducts(true);
 
       const { data, error } = await supabase
-        .from("products") // ✅ Bỏ generic để fix lỗi
+        .from("products")
         .select("*")
         .eq("user_id", user.id)
         .order("created_at", { ascending: false });
 
       if (error) console.error(error);
-
-      if (data) {
-        const normalized = data.map((p: any) => {
-          let images: string[] = [];
-
-          if (Array.isArray(p.images)) images = p.images;
-          else if (typeof p.images === "string") {
-            try {
-              const parsed = JSON.parse(p.images);
-              images = Array.isArray(parsed) ? parsed : [p.images];
-            } catch {
-              images = [p.images];
-            }
-          }
-
-          return { ...p, images } as Product;
-        });
-
-        setUserProducts(normalized);
+      if (!data) {
+        setLoadingProducts(false);
+        return;
       }
 
+      const products = data as Product[];
+      const normalized = products.map((p) => {
+        let images: string[] = [];
+        if (Array.isArray(p.images)) images = p.images;
+        else if (typeof p.images === "string") {
+          try {
+            const parsed = JSON.parse(p.images);
+            images = Array.isArray(parsed) ? parsed : [p.images];
+          } catch {
+            images = [p.images];
+          }
+        }
+        return { ...p, images };
+      });
+
+      setUserProducts(normalized);
       setLoadingProducts(false);
     };
 
@@ -206,8 +210,7 @@ setFormData({
       </div>
     );
 
-  if (!user)
-    return <p className="text-center py-20">Chưa đăng nhập</p>;
+  if (!user) return <p className="text-center py-20">Chưa đăng nhập</p>;
 
   return (
     <div className="min-h-screen bg-gray-50 py-10">
@@ -266,7 +269,6 @@ setFormData({
                 birth: "Ngày sinh",
               }).map(([key, label]) => {
                 const typedKey = key as keyof ProfileForm;
-
                 return (
                   <div key={key}>
                     <label className="block text-sm mb-1 text-gray-600">{label}</label>
@@ -274,7 +276,7 @@ setFormData({
                       type={key === "birth" ? "date" : "text"}
                       value={formData[typedKey]}
                       onChange={(e) =>
-                        setFormData({ ...formData, [typedKey]: e.target.value })
+                        setFormData((prev) => ({ ...prev, [typedKey]: e.target.value }))
                       }
                       className="w-full border rounded-md p-2 text-sm"
                     />
@@ -284,9 +286,15 @@ setFormData({
             </>
           ) : (
             <div className="text-sm text-gray-700 space-y-2">
-              <p><strong>Địa chỉ:</strong> {user.address || "Chưa cập nhật"}</p>
-              <p><strong>Số điện thoại:</strong> {user.phone || "Chưa có"}</p>
-              <p><strong>Ngày sinh:</strong> {user.birth || "Chưa cập nhật"}</p>
+              <p>
+                <strong>Địa chỉ:</strong> {user.address || "Chưa cập nhật"}
+              </p>
+              <p>
+                <strong>Số điện thoại:</strong> {user.phone || "Chưa có"}
+              </p>
+              <p>
+                <strong>Ngày sinh:</strong> {user.birth || "Chưa cập nhật"}
+              </p>
             </div>
           )}
         </div>

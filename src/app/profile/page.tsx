@@ -6,6 +6,7 @@ import Image from "next/image";
 import { supabase } from "@/lib/supabase/client";
 import { Loader2, Edit3, Save, X } from "lucide-react";
 import type { Product } from "@/types";
+import type { User } from "@supabase/supabase-js";
 
 // ==========================
 // 📌 Kiểu dữ liệu User
@@ -24,6 +25,17 @@ export type UserData = {
   birth: string | null;
 };
 
+// ==========================
+// 📌 Form type
+// ==========================
+type ProfileForm = {
+  username: string;
+  avatar_url: string;
+  address: string;
+  phone: string;
+  birth: string;
+};
+
 export default function ProfilePage() {
   const router = useRouter();
 
@@ -31,7 +43,7 @@ export default function ProfilePage() {
   const [loading, setLoading] = useState(true);
   const [isEditing, setIsEditing] = useState(false);
 
-  const [formData, setFormData] = useState({
+  const [formData, setFormData] = useState<ProfileForm>({
     username: "",
     avatar_url: "",
     address: "",
@@ -39,8 +51,8 @@ export default function ProfilePage() {
     birth: "",
   });
 
-  // 🔥 Thêm từ file 2
-  const [currentUser, setCurrentUser] = useState<any>(null);
+  // 🔥 Không dùng any: dùng User | null
+  const [currentUser, setCurrentUser] = useState<User | null>(null);
   const [userProducts, setUserProducts] = useState<Product[]>([]);
   const [loadingProducts, setLoadingProducts] = useState(true);
   const [deleting, setDeleting] = useState<string | null>(null);
@@ -167,7 +179,6 @@ export default function ProfilePage() {
     setDeleting(productId);
 
     try {
-      // Xóa ảnh trong storage
       if (imageUrl) {
         const parts = imageUrl.split("/images/");
         if (parts.length === 2) {
@@ -175,7 +186,6 @@ export default function ProfilePage() {
         }
       }
 
-      // Xóa product
       await supabase
         .from("products")
         .delete()
@@ -264,21 +274,25 @@ export default function ProfilePage() {
                 address: "Địa chỉ",
                 phone: "Số điện thoại",
                 birth: "Ngày sinh",
-              }).map(([key, label]) => (
-                <div key={key}>
-                  <label className="block text-sm mb-1 text-gray-600">
-                    {label}
-                  </label>
-                  <input
-                    type={key === "birth" ? "date" : "text"}
-                    value={(formData as any)[key]}
-                    onChange={(e) =>
-                      setFormData({ ...formData, [key]: e.target.value })
-                    }
-                    className="w-full border rounded-md p-2 text-sm"
-                  />
-                </div>
-              ))}
+              }).map(([key, label]) => {
+                const typedKey = key as keyof ProfileForm;
+
+                return (
+                  <div key={key}>
+                    <label className="block text-sm mb-1 text-gray-600">
+                      {label}
+                    </label>
+                    <input
+                      type={key === "birth" ? "date" : "text"}
+                      value={formData[typedKey]}
+                      onChange={(e) =>
+                        setFormData({ ...formData, [typedKey]: e.target.value })
+                      }
+                      className="w-full border rounded-md p-2 text-sm"
+                    />
+                  </div>
+                );
+              })}
             </>
           ) : (
             <div className="text-sm text-gray-700 space-y-2">
@@ -339,11 +353,10 @@ export default function ProfilePage() {
                     )}
                   </div>
 
-                  {/* 🔥 nút xóa y như file 2 */}
                   {currentUser?.id === user.id && (
                     <button
                       onClick={(e) => {
-                        e.stopPropagation(); // ⚡ ngăn click div cha
+                        e.stopPropagation();
                         handleDelete(p.id, imageUrl);
                       }}
                       disabled={deleting === p.id}

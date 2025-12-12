@@ -2,6 +2,7 @@
 
 import { useState, useEffect } from "react";
 import { useForm, FormProvider } from "react-hook-form";
+import type { Control, FieldErrors } from "react-hook-form";
 import { supabase } from "@/lib/supabase/client";
 
 import ListingTitleInput from "@/components/sell/pc//ListingTitleInput";
@@ -14,6 +15,11 @@ import PrivateToggle from "@/components/sell/pc//PrivateToggle";
 import ReturnPolicies from "@/components/sell/pc//ReturnPolicies";
 import CommunitySelector from "@/components/sell/pc/CommunitySelector";
 
+type Spec = {
+  key: string;
+  value: string | number | boolean | null;
+};
+
 type SellForm = {
   title: string;
   description: string;
@@ -25,7 +31,7 @@ type SellForm = {
   enable_offers: boolean;
   min_offer: string | null;
   quantity: number;
-  specs: any[];
+  specs: Spec[];
   is_private: boolean;
   return_policy: string | null;
   community_id: string | null;
@@ -154,9 +160,11 @@ export default function SellPage() {
       >
         <ListingTitleInput error={errors.title} />
 
+        {/* If child components expect a different Control generic, cast at the boundary.
+            Casting is localized here to avoid spreading incompatible Control types. */}
         <DescriptionEditor
-          control={methods.control as any}
-          error={errors.description}
+          control={methods.control as unknown as Control<any>}
+          error={errors.description as FieldErrors<any> | undefined}
         />
 
         <ConditionSelector error={errors.condition} />
@@ -176,11 +184,11 @@ export default function SellPage() {
           }}
         />
 
-        <ImageUploader error={errors.images} />
+        <ImageUploader error={errors.images as FieldErrors<any> | undefined} />
 
         <PriceAndOffers />
 
-        <TechSpecsEditor control={methods.control as any} />
+        <TechSpecsEditor control={methods.control as unknown as Control<any>} />
 
         <PrivateToggle />
 

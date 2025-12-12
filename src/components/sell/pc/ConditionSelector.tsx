@@ -1,7 +1,12 @@
 import { useFormContext, Controller } from "react-hook-form";
+import type { FieldValues } from "react-hook-form";
 
-export default function ConditionSelector({ error }: any) {
-  const { control } = useFormContext(); // ✅ Lấy control từ context
+interface ConditionSelectorProps {
+  error?: boolean | string;
+}
+
+export default function ConditionSelector({ error }: ConditionSelectorProps) {
+  const { control } = useFormContext<FieldValues>(); // Lấy control từ context
 
   const conditions = [
     { value: "brand_new", label: "Mới 100%" },

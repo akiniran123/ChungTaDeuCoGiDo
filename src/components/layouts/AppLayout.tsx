@@ -1,6 +1,5 @@
 "use client";
 
-import Navbar from "@/components/Navbar/pc/Navbar";
 import SidebarLeft from "@/components/sidebarleft/pc/SidebarLeft";
 import SidebarRight from "@/components/Trang_chu/pc/SidebarRight";
 import BottomNav from "@/components/sidebarleft/mobile/BottomNav";
@@ -15,9 +14,6 @@ export default function AppLayout({
 
   return (
     <div className="bg-white text-black min-h-screen flex flex-col">
-      {/* Navbar luôn hiển thị */}
-    
-
       {/* Layout chính */}
       <div className="flex flex-1 relative">
         {/* Sidebar trái */}
@@ -41,7 +37,7 @@ export default function AppLayout({
             zIndex: 30,
           }}
         >
-          <SidebarRight selectedCategory={null}/>
+          <SidebarRight selectedCategory={null} />
         </div>
 
         {/* Nội dung chính */}

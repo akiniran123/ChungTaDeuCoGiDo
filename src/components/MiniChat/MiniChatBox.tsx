@@ -49,12 +49,14 @@ export default function MiniChatBox({
   const [newMessage, setNewMessage] = useState("");
   const scrollRef = useRef<HTMLDivElement | null>(null);
 
+  // ⭐ Lấy user ID hiện tại
   useEffect(() => {
     supabase.auth.getUser().then(({ data }) => {
       if (data.user) setCurrentUserId(data.user.id);
     });
   }, []);
 
+  // ⭐ Đánh dấu đã đọc khi mở MiniChat
   useEffect(() => {
     if (!partnerId || !currentUserId) return;
 
@@ -72,6 +74,7 @@ export default function MiniChatBox({
     markRead();
   }, [partnerId, currentUserId, onReadMessages]);
 
+  // ⭐ Lấy thông tin partner
   useEffect(() => {
     const fetchPartner = async () => {
       const { data } = await supabase
@@ -86,15 +89,17 @@ export default function MiniChatBox({
     fetchPartner();
   }, [partnerId]);
 
+  // ⭐ Load tin nhắn + realtime
   useEffect(() => {
     if (!currentUserId || !partnerId) return;
 
+    // --- Fetch tin nhắn cũ
     const fetchMessages = async () => {
       const { data } = await supabase
         .from("messages")
         .select("*")
         .or(
-          `(sender_id.eq.${currentUserId},receiver_id.eq.${partnerId}),(sender_id.eq.${partnerId},receiver_id.eq.${currentUserId})`
+          `and(sender_id.eq.${currentUserId},receiver_id.eq.${partnerId}),and(sender_id.eq.${partnerId},receiver_id.eq.${currentUserId})`
         )
         .order("created_at", { ascending: true });
 
@@ -103,6 +108,7 @@ export default function MiniChatBox({
 
     fetchMessages();
 
+    // --- Realtime listener riêng cho cuộc trò chuyện này
     const channel = supabase
       .channel(`mini-chat-${currentUserId}-${partnerId}`)
       .on(
@@ -110,19 +116,21 @@ export default function MiniChatBox({
         { event: "INSERT", schema: "public", table: "messages" },
         async (payload) => {
           const msg = payload.new as Message;
+
           const isRelated =
             (msg.sender_id === currentUserId && msg.receiver_id === partnerId) ||
             (msg.sender_id === partnerId && msg.receiver_id === currentUserId);
+
           if (!isRelated) return;
 
           setMessages((prev) => [...prev, msg]);
 
+          // đánh dấu đã đọc nếu là tin nhắn từ partner
           if (msg.sender_id === partnerId) {
             await supabase
               .from("messages")
               .update({ is_read: true })
               .eq("id", msg.id);
-
             onReadMessages();
           }
         }
@@ -134,10 +142,12 @@ export default function MiniChatBox({
     };
   }, [currentUserId, partnerId, onReadMessages]);
 
+  // ⭐ Auto scroll khi có tin nhắn mới
   useEffect(() => {
     scrollRef.current?.scrollIntoView({ behavior: "smooth" });
   }, [messages]);
 
+  // ⭐ Gửi tin nhắn
   const sendMessage = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!newMessage.trim() || !currentUserId) return;
@@ -179,6 +189,7 @@ export default function MiniChatBox({
       className="fixed bottom-4 w-80 h-[420px] bg-white shadow-2xl rounded-xl flex flex-col z-[999]"
       style={{ right: 4 + index * 340 + "px" }} // ✅ offset
     >
+      {/* HEADER */}
       <div className="flex items-center justify-between px-3 py-2 border-b bg-white">
         <div className="flex items-center gap-2">
           <Image
@@ -195,6 +206,7 @@ export default function MiniChatBox({
         </button>
       </div>
 
+      {/* CHAT */}
       <div className="flex-1 overflow-y-auto px-3 py-3 bg-gray-50 space-y-3">
         {messages?.map((msg) => (
           <div
@@ -220,6 +232,7 @@ export default function MiniChatBox({
         <div ref={scrollRef} />
       </div>
 
+      {/* INPUT */}
       <form
         onSubmit={sendMessage}
         className="flex items-center gap-2 px-3 py-2 bg-white"

@@ -1,7 +1,7 @@
 // SidebarLeft.tsx
 "use client";
 
-import { useState, useEffect, useCallback } from "react";
+import { useState, useEffect } from "react";
 import SidebarMainNav from "./SidebarMainNav";
 import SidebarCommunity from "./SidebarCommunity";
 import MessagesPanel from "./MessagesPanel";
@@ -28,12 +28,6 @@ type MessageRow = {
   is_read: boolean | null;
   created_at: string | null;
   type?: string | null;
-};
-
-type UserRow = {
-  id: string;
-  username: string | null;
-  avatar_url: string | null;
 };
 
 export default function SidebarLeft() {
@@ -116,10 +110,6 @@ export default function SidebarLeft() {
   }, [userId]);
 
   const loadUnreadCount = async () => {
-  // -------------------------
-  // COUNT UNREAD
-  // -------------------------
-  const loadUnreadCount = useCallback(async () => {
     if (!userId) return;
     const { data } = await supabase
       .from("messages")
@@ -161,12 +151,6 @@ export default function SidebarLeft() {
   };
 
   const loadConversations = async () => {
-  }, [userId]);
-
-  // -------------------------
-  // LOAD LAST MESSAGE FOR EACH PARTNER
-  // -------------------------
-  const loadConversations = useCallback(async () => {
     if (!userId) return;
     const { data, error } = await supabase
       .from("messages")
@@ -200,9 +184,8 @@ export default function SidebarLeft() {
       .in("id", partnerIds);
 
     const final: Conversation[] = partnerIds.map((pid) => {
-      const u = usersList?.find((x: UserRow) => x.id === pid);
+      const u = usersList?.find((x: any) => x.id === pid);
       const info = map.get(pid)!;
-
       const hasUnread = (data as MessageRow[]).some(
         (msg) =>
           msg.sender_id === pid &&
@@ -221,111 +204,6 @@ export default function SidebarLeft() {
     });
 
     setConversations(final);
-  };
-  }, [userId]);
-
-  // -------------------------
-  // LOAD INITIAL DATA
-  // -------------------------
-  useEffect(() => {
-    if (!userId) return;
-    loadConversations();
-    loadUnreadCount();
-  }, [userId, loadConversations, loadUnreadCount]);
-
-  // -------------------------
-  // REALTIME LISTENER
-  // -------------------------
-  useEffect(() => {
-    if (!userId) return;
-
-    const channel = supabase
-      .channel("messages-realtime")
-      .on(
-        "postgres_changes",
-        {
-          event: "INSERT",
-          schema: "public",
-          table: "messages",
-          filter: `receiver_id=eq.${userId}`,
-        },
-        (payload) => {
-          const newMsg = payload.new as MessageRow;
-
-          setUnreadCount((prev) => prev + 1);
-
-          setConversations((prev) => {
-            const partnerId = newMsg.sender_id;
-            const index = prev.findIndex((c) => c.partner_id === partnerId);
-
-            if (index >= 0) {
-              const updated = [...prev];
-              updated[index] = {
-                ...updated[index],
-                last_message: newMsg.content,
-                last_time: newMsg.created_at || new Date().toISOString(),
-                is_read: false,
-              };
-              return updated;
-            } else {
-              return [
-                ...prev,
-                {
-                  partner_id: partnerId,
-                  username: "Unknown",
-                  avatar_url: "/default-avatar.png",
-                  last_message: newMsg.content,
-                  last_time: newMsg.created_at || new Date().toISOString(),
-                  is_read: false,
-                },
-              ];
-            }
-          });
-        }
-      )
-      .subscribe();
-
-    return () => {
-      supabase.removeChannel(channel);
-    };
-  }, [userId]);
-
-  // -------------------------
-  // CLEAR ALL UNREAD
-  // -------------------------
-  const clearAllUnread = async () => {
-    if (!userId) return;
-
-    await supabase
-      .from("messages")
-      .update({ is_read: true })
-      .eq("receiver_id", userId)
-      .eq("is_read", false);
-
-    setUnreadCount(0);
-    setConversations((prev) => prev.map((c) => ({ ...c, is_read: true })));
-  };
-
-  // -------------------------
-  // CLEAR UNREAD FOR 1 PARTNER
-  // -------------------------
-  const clearUnreadFromPartner = async (partnerId: string) => {
-    if (!userId || !partnerId) return;
-
-    await supabase
-      .from("messages")
-      .update({ is_read: true })
-      .eq("sender_id", partnerId)
-      .eq("receiver_id", userId)
-      .eq("is_read", false);
-
-    loadUnreadCount();
-
-    setConversations((prev) =>
-      prev.map((c) =>
-        c.partner_id === partnerId ? { ...c, is_read: true } : c
-      )
-    );
   };
 
   return (
@@ -376,15 +254,17 @@ export default function SidebarLeft() {
           onClose={() => setOpenMiniChat(false)}
           onReadMessages={() => clearUnread(selectedPartner)}
           onNewConversation={() => {
-            // Thêm partner mới vào conversation nếu chưa có
+            // ✅ Thêm partner mới vào conversation nếu chưa có
             setConversations((prev) => {
-              const exists = prev.find((c) => c.partner_id === selectedPartner);
+              const exists = prev.find(
+                (c) => c.partner_id === selectedPartner
+              );
               if (exists) return prev;
 
               return [
                 ...prev,
                 {
-                  partner_id: selectedPartner,
+                  partner_id: selectedPartner!,
                   username: "Unknown",
                   avatar_url: "/default-avatar.png",
                   last_message: "",

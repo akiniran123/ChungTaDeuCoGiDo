@@ -9,7 +9,14 @@ type MiniChatProps = {
   partnerId: string;
   onClose: () => void;
   onReadMessages: () => void; // callback cập nhật SidebarLeft
-  onNewConversation: () => void; // callback thêm vào MessengerPanel
+  onNewConversation: (conversation: {
+    partner_id: string;
+    username: string;
+    avatar_url: string;
+    last_message: string;
+    last_time: string;
+    is_read: boolean;
+  }) => void; // callback thêm vào MessengerPanel
 };
 
 interface User {
@@ -91,25 +98,13 @@ export default function MiniChatBox({
         .or(`sender_id.eq.${currentUserId},receiver_id.eq.${currentUserId}`)
         .order("created_at", { ascending: true });
 
-     // inside the useEffect that loads messages
-const fetchMessages = async () => {
-  const res = await supabase
-    .from("messages")
-    .select("*")
-    .or(`sender_id.eq.${currentUserId},receiver_id.eq.${currentUserId}`)
-    .order("created_at", { ascending: true });
+      const filtered = data?.filter(
+        (msg: Message) =>
+          (msg.sender_id === currentUserId && msg.receiver_id === partnerId) ||
+          (msg.sender_id === partnerId && msg.receiver_id === currentUserId)
+      );
 
-  // cast Supabase response to the Message[] type
-  const data = res.data as Message[] | null;
-
-  const filtered = data?.filter(
-    (msg) =>
-      (msg.sender_id === currentUserId && msg.receiver_id === partnerId) ||
-      (msg.sender_id === partnerId && msg.receiver_id === currentUserId)
-  );
-
-  if (filtered) setMessages(filtered);
-};
+      if (filtered) setMessages(filtered);
     };
 
     fetchMessages();
@@ -124,10 +119,8 @@ const fetchMessages = async () => {
           const msg = payload.new as Message;
 
           const isRelated =
-            (msg.sender_id === currentUserId &&
-              msg.receiver_id === partnerId) ||
-            (msg.sender_id === partnerId &&
-              msg.receiver_id === currentUserId);
+            (msg.sender_id === currentUserId && msg.receiver_id === partnerId) ||
+            (msg.sender_id === partnerId && msg.receiver_id === currentUserId);
 
           if (!isRelated) return;
 
@@ -146,7 +139,6 @@ const fetchMessages = async () => {
       )
       .subscribe();
 
-    // ❗ CLEANUP CHUẨN (KHÔNG ASYNC)
     return () => {
       supabase.removeChannel(channel);
     };
@@ -169,12 +161,19 @@ const fetchMessages = async () => {
       is_read: false,
     });
 
-    setNewMessage("");
-
     // ✅ Nếu đây là tin nhắn đầu tiên → gọi callback thêm vào MessengerPanel
-    if (messages.length === 0) {
-      onNewConversation();
+    if (messages.length === 0 && partner) {
+      onNewConversation({
+        partner_id: partner.id,
+        username: partner.username || "Unknown",
+        avatar_url: partner.avatar_url || "/default-avatar.png",
+        last_message: newMessage.trim(),
+        last_time: new Date().toISOString(),
+        is_read: true,
+      });
     }
+
+    setNewMessage("");
   };
 
   const formatTime = (t: string | null) => {
@@ -230,7 +229,6 @@ const fetchMessages = async () => {
             </span>
           </div>
         ))}
-
         <div ref={scrollRef} />
       </div>
 

@@ -5,9 +5,10 @@ import { supabase } from "@/lib/supabase/client";
 import { uploadImageFromUrl } from "@/lib/supabase/uploadImageFromUrl";
 import { useState, useEffect } from "react";
 import Image from "next/image";
+import type { FieldErrors } from "react-hook-form";
 
 interface ImageUploaderProps {
-  error?: boolean | string;
+  error?: FieldErrors | boolean | string;
 }
 
 export default function ImageUploader({ error }: ImageUploaderProps) {
@@ -16,7 +17,6 @@ export default function ImageUploader({ error }: ImageUploaderProps) {
   const [userId, setUserId] = useState<string | null>(null);
   const [loading, setLoading] = useState(false);
 
-  // ✅ Lấy user hiện tại
   useEffect(() => {
     const fetchUser = async () => {
       const { data } = await supabase.auth.getUser();
@@ -25,14 +25,12 @@ export default function ImageUploader({ error }: ImageUploaderProps) {
     fetchUser();
   }, []);
 
-  // ✅ Dọn URL blob khi component unmount
   useEffect(() => {
     return () => {
       if (preview?.startsWith("blob:")) URL.revokeObjectURL(preview);
     };
   }, [preview]);
 
-  // onChange callbacks expect an array of image URLs
   const handleFileSelect = async (
     e: React.ChangeEvent<HTMLInputElement>,
     onChange: (val: string[]) => void
@@ -69,7 +67,6 @@ export default function ImageUploader({ error }: ImageUploaderProps) {
     onChange([publicUrl]);
   };
 
-  // ✅ Upload từ link ảnh
   const handleLinkPaste = async (
     e: React.ChangeEvent<HTMLInputElement>,
     onChange: (val: string[]) => void
@@ -98,7 +95,8 @@ export default function ImageUploader({ error }: ImageUploaderProps) {
         name="images"
         control={control}
         render={({ field }) => {
-          const currentValue = (field.value && Array.isArray(field.value) ? field.value[0] : "") as string;
+          const currentValue =
+            field.value && Array.isArray(field.value) ? field.value[0] : "";
           const previewSrc = ((preview || currentValue) || "").replace(/"/g, "");
 
           return (
@@ -111,7 +109,6 @@ export default function ImageUploader({ error }: ImageUploaderProps) {
                   onChange={(e) => handleLinkPaste(e, field.onChange as (val: string[]) => void)}
                 />
 
-                {/* ⭐ Nút chọn ảnh trung tính (không màu, hover hơi tối) */}
                 <label
                   className={`px-3 py-2 rounded border cursor-pointer transition duration-150
                   ${
@@ -136,7 +133,6 @@ export default function ImageUploader({ error }: ImageUploaderProps) {
               )}
 
               {previewSrc ? (
-                // Use next/image for better LCP and optimization
                 <div className="w-32 h-32 relative rounded border overflow-hidden">
                   <Image
                     src={previewSrc}
@@ -144,10 +140,7 @@ export default function ImageUploader({ error }: ImageUploaderProps) {
                     fill
                     sizes="128px"
                     className="object-cover"
-                    onError={() => {
-                      // fallback to placeholder if image fails to load
-                      setPreview("/placeholder.png");
-                    }}
+                    onError={() => setPreview("/placeholder.png")}
                   />
                 </div>
               ) : null}
@@ -156,7 +149,13 @@ export default function ImageUploader({ error }: ImageUploaderProps) {
         }}
       />
 
-      {error && <p className="text-red-500 text-sm mt-1">Ảnh là bắt buộc</p>}
+      {error && (
+        <p className="text-red-500 text-sm mt-1">
+          {typeof error === "object" && "message" in error && (error as any).message
+            ? (error as any).message
+            : "Ảnh là bắt buộc"}
+        </p>
+      )}
     </div>
   );
 }

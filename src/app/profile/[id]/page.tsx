@@ -22,11 +22,13 @@ interface ProductWithUser extends Product {
 
 // NOTE: declare params inline to avoid type conflict with Next generated PageProps
 export default function OtherUserProfile({
-  params,
+ params: { id: userId },
 }: {
   params: { id: string };
 }) {
-  const { id } = params;
+  // dùng userId thay vì id
+  const id = userId;
+
 
   const [user, setUser] = useState<User | null>(null);
   const [products, setProducts] = useState<ProductWithUser[]>([]);

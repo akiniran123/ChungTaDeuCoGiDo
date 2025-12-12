@@ -243,14 +243,28 @@ export default function ProfilePage() {
           )}
         </div>
 
+        {/* === AVATAR MẶC ĐỊNH VỚI HÌNH NGƯỜI XÁM & KHUNG TRẮNG === */}
         <div className="flex flex-col items-center mt-6">
-          <Image
-            src={formData.avatar_url || "/default-avatar.png"}
-            alt="avatar"
-            width={120}
-            height={120}
-            className="rounded-full border shadow-md"
-          />
+          <div className="w-32 h-32 rounded-full border-4 border-white overflow-hidden flex items-center justify-center bg-gray-200 shadow-md">
+            {formData.avatar_url ? (
+              <Image
+                src={formData.avatar_url}
+                alt="avatar"
+                width={128}
+                height={128}
+                className="object-cover w-full h-full"
+              />
+            ) : (
+              <svg
+                className="w-16 h-16 text-gray-500"
+                fill="currentColor"
+                viewBox="0 0 24 24"
+              >
+                <path d="M12 12c2.7 0 4.8-2.1 4.8-4.8S14.7 2.4 12 2.4 7.2 4.5 7.2 7.2 9.3 12 12 12zm0 2.4c-3.2 0-9.6 1.6-9.6 4.8v2.4h19.2v-2.4c0-3.2-6.4-4.8-9.6-4.8z" />
+              </svg>
+            )}
+          </div>
+
           <h2 className="text-xl font-semibold text-gray-800 mt-2">
             {user.username || "Người dùng"}
           </h2>

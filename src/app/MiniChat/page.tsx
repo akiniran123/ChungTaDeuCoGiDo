@@ -5,22 +5,27 @@ import { supabase } from "@/lib/supabase/client";
 import { Send, X } from "lucide-react";
 import Image from "next/image";
 
-export default function MiniChatBox({ partnerId, onClose }: { partnerId: string; onClose: () => void }) {
-  type User = {
-    id: string;
-    username: string;
-    avatar_url?: string | null;
-  };
+export type MiniChatProps = {
+  partnerId: string;
+  onClose: () => void;
+};
 
-  type Message = {
-    id: string;
-    sender_id: string;
-    receiver_id: string;
-    content: string;
-    is_read: boolean;
-    created_at: string;
-  };
+export type User = {
+  id: string;
+  username: string;
+  avatar_url?: string | null;
+};
 
+export type Message = {
+  id: string;
+  sender_id: string;
+  receiver_id: string;
+  content: string;
+  is_read: boolean;
+  created_at: string;
+};
+
+export default function MiniChatBox({ partnerId, onClose }: MiniChatProps) {
   const [currentUserId, setCurrentUserId] = useState<string | null>(null);
   const [messages, setMessages] = useState<Message[]>([]);
   const [partner, setPartner] = useState<User | null>(null);
@@ -40,11 +45,18 @@ export default function MiniChatBox({ partnerId, onClose }: { partnerId: string;
   useEffect(() => {
     if (!partnerId) return;
     const fetchPartner = async () => {
-      const { data } = await supabase
+      const { data, error } = await supabase
         .from("users")
         .select("id, username, avatar_url")
         .eq("id", partnerId)
         .single();
+
+      if (error) {
+        console.error("fetchPartner error:", error);
+        setPartner(null);
+        return;
+      }
+
       setPartner((data as User) ?? null);
     };
     fetchPartner();
@@ -53,32 +65,47 @@ export default function MiniChatBox({ partnerId, onClose }: { partnerId: string;
   // LOAD MESSAGES + REALTIME
   useEffect(() => {
     if (!currentUserId || !partnerId) return;
+
+    let mounted = true;
+
     const fetchMessages = async () => {
-      const { data } = await supabase
+      const { data, error } = await supabase
         .from("messages")
         .select("*")
         .or(
           `and(sender_id.eq.${currentUserId},receiver_id.eq.${partnerId}),and(sender_id.eq.${partnerId},receiver_id.eq.${currentUserId})`
         )
         .order("created_at", { ascending: true });
-      setMessages((data as Message[]) ?? []);
+
+      if (error) {
+        console.error("fetchMessages error:", error);
+        return;
+      }
+
+      if (mounted) setMessages((data as Message[]) ?? []);
     };
+
     fetchMessages();
 
     const channel = supabase
       .channel("mini-chat")
-      .on("postgres_changes", { event: "INSERT", schema: "public", table: "messages" }, (payload) => {
-        const msg = payload.new as Message;
-        if (
-          (msg.sender_id === currentUserId && msg.receiver_id === partnerId) ||
-          (msg.sender_id === partnerId && msg.receiver_id === currentUserId)
-        ) {
-          setMessages((prev) => [...prev, msg]);
+      .on(
+        "postgres_changes",
+        { event: "INSERT", schema: "public", table: "messages" },
+        (payload) => {
+          const msg = payload.new as Message;
+          if (
+            (msg.sender_id === currentUserId && msg.receiver_id === partnerId) ||
+            (msg.sender_id === partnerId && msg.receiver_id === currentUserId)
+          ) {
+            setMessages((prev) => [...prev, msg]);
+          }
         }
-      })
+      )
       .subscribe();
 
     return () => {
+      mounted = false;
       supabase.removeChannel(channel);
     };
   }, [currentUserId, partnerId]);
@@ -92,12 +119,21 @@ export default function MiniChatBox({ partnerId, onClose }: { partnerId: string;
   const sendMessage = async (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
     if (!newMessage.trim() || !currentUserId) return;
-    await supabase.from("messages").insert({
+
+    const content = newMessage.trim();
+
+    const { error } = await supabase.from("messages").insert({
       sender_id: currentUserId,
       receiver_id: partnerId,
-      content: newMessage.trim(),
+      content,
       is_read: false,
     });
+
+    if (error) {
+      console.error("sendMessage error:", error);
+      return;
+    }
+
     setNewMessage("");
   };
 
@@ -122,7 +158,7 @@ export default function MiniChatBox({ partnerId, onClose }: { partnerId: string;
           />
           <div className="font-semibold text-sm">{partner.username}</div>
         </div>
-        <button onClick={onClose}>
+        <button onClick={onClose} aria-label="Close chat" className="p-1">
           <X size={18} />
         </button>
       </div>
@@ -146,7 +182,7 @@ export default function MiniChatBox({ partnerId, onClose }: { partnerId: string;
             <span className="text-[10px] text-gray-400 mt-1">{formatTime(msg.created_at)}</span>
           </div>
         ))}
-        <div ref={scrollRef}></div>
+        <div ref={scrollRef} />
       </div>
 
       {/* INPUT */}
@@ -156,8 +192,13 @@ export default function MiniChatBox({ partnerId, onClose }: { partnerId: string;
           onChange={(e) => setNewMessage(e.target.value)}
           placeholder="Nhập tin nhắn..."
           className="flex-1 px-3 py-1.5 text-sm border rounded-full focus:ring-1 focus:ring-pink-500 focus:outline-none"
+          aria-label="Message input"
         />
-        <button type="submit" className="p-2 bg-pink-600 text-white rounded-full hover:bg-pink-700">
+        <button
+          type="submit"
+          className="p-2 bg-pink-600 text-white rounded-full hover:bg-pink-700"
+          aria-label="Send message"
+        >
           <Send size={16} />
         </button>
       </form>

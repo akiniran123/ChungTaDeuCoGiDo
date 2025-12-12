@@ -9,12 +9,25 @@ import NewsPanel from "./NewsPanel";
 import { supabase } from "@/lib/supabase/client";
 import Logo from "@/components/Navbar/pc/LogoSearchIcon/logo";
 
+// -------------------------
+// TYPE
+// -------------------------
 type Conversation = {
   partner_id: string;
   username: string;
   avatar_url: string;
   last_message: string;
   last_time: string;
+};
+
+type MessageRow = {
+  id: string;
+  sender_id: string;
+  receiver_id: string;
+  content: string;
+  is_read: boolean | null;
+  created_at: string | null;
+  type?: string | null;
 };
 
 export default function SidebarLeft() {
@@ -27,22 +40,123 @@ export default function SidebarLeft() {
   const [userId, setUserId] = useState<string | null>(null);
   const [isClient, setIsClient] = useState(false);
 
-  // State chung quản lý panel đang mở
   const [activePanel, setActivePanel] = useState<string | null>(null);
+  const [unreadCount, setUnreadCount] = useState(0);
 
+  // -------------------------
+  // INIT USER
+  // -------------------------
   useEffect(() => {
     setIsClient(true);
+
     supabase.auth.getUser().then(({ data }) => {
       if (data.user?.id) setUserId(data.user.id);
     });
   }, []);
 
+  // -------------------------
+  // LOAD INITIAL DATA
+  // -------------------------
   useEffect(() => {
     if (!userId) return;
     loadConversations();
+    loadUnreadCount();
   }, [userId]);
 
+  // -------------------------
+  // REALTIME LISTENER (FIXED CLEANUP)
+  // -------------------------
+  useEffect(() => {
+    if (!userId) return;
+
+    const channel = supabase
+      .channel("messages-realtime-clean")
+      .on(
+        "postgres_changes",
+        {
+          event: "INSERT",
+          schema: "public",
+          table: "messages",
+          filter: `receiver_id=eq.${userId}`,
+        },
+        () => {
+          loadUnreadCount();
+          loadConversations();
+        }
+      )
+      .on(
+        "postgres_changes",
+        {
+          event: "UPDATE",
+          schema: "public",
+          table: "messages",
+          filter: `receiver_id=eq.${userId}`,
+        },
+        () => {
+          loadUnreadCount();
+          loadConversations();
+        }
+      )
+      .subscribe();
+
+    // 🔥 FIX: cleanup phải là sync!
+    return () => {
+      supabase.removeChannel(channel);
+    };
+  }, [userId]);
+
+  // -------------------------
+  // COUNT UNREAD
+  // -------------------------
+  async function loadUnreadCount() {
+    if (!userId) return;
+
+    const { data } = await supabase
+      .from("messages")
+      .select("id")
+      .eq("receiver_id", userId)
+      .eq("is_read", false);
+
+    setUnreadCount(data?.length || 0);
+  }
+
+  // -------------------------
+  // CLEAR ALL UNREAD (MESSAGES PANEL)
+  // -------------------------
+  const clearAllUnread = async () => {
+    if (!userId) return;
+
+    await supabase
+      .from("messages")
+      .update({ is_read: true })
+      .eq("receiver_id", userId)
+      .eq("is_read", false);
+
+    loadUnreadCount();
+  };
+
+  // -------------------------
+  // CLEAR UNREAD FOR 1 PARTNER (MINI CHAT BOX)
+  // -------------------------
+  const clearUnreadFromPartner = async (partnerId: string) => {
+    if (!userId || !partnerId) return;
+
+    await supabase
+      .from("messages")
+      .update({ is_read: true })
+      .eq("sender_id", partnerId)
+      .eq("receiver_id", userId)
+      .eq("is_read", false);
+
+    loadUnreadCount();
+  };
+
+  // -------------------------
+  // LOAD LAST MESSAGE FOR EACH PARTNER
+  // -------------------------
   async function loadConversations() {
+    if (!userId) return;
+
     const { data, error } = await supabase
       .from("messages")
       .select("*")
@@ -51,15 +165,23 @@ export default function SidebarLeft() {
 
     if (error || !data) return;
 
-    const map = new Map<string, { last_message: string; last_time: string }>();
+    const map = new Map<
+      string,
+      { last_message: string; last_time: string }
+    >();
 
-    data.forEach((msg) => {
-      const partner = msg.sender_id === userId ? msg.receiver_id : msg.sender_id;
+    (data as Partial<MessageRow>[]).forEach((msg) => {
+      if (!msg) return;
+      const sender = msg.sender_id as string;
+      const receiver = msg.receiver_id as string;
+      const partner = sender === userId ? receiver : sender;
+
+      if (!partner) return;
 
       if (!map.has(partner)) {
         map.set(partner, {
-          last_message: msg.content || "",
-          last_time: msg.created_at || "",
+          last_message: (msg.content as string) || "",
+          last_time: (msg.created_at as string) || "",
         });
       }
     });
@@ -73,7 +195,7 @@ export default function SidebarLeft() {
       .in("id", partnerIds);
 
     const final: Conversation[] = partnerIds.map((pid) => {
-      const u = usersList?.find((x) => x.id === pid);
+      const u = usersList?.find((x: any) => x.id === pid);
       const info = map.get(pid)!;
 
       return {
@@ -88,10 +210,12 @@ export default function SidebarLeft() {
     setConversations(final);
   }
 
+  // -------------------------
+  // RENDER
+  // -------------------------
   return (
     <>
-      {/* Sidebar chính */}
-      <aside className="fixed left-0 top-0 w-64 h-screen bg-white border-gray-200 shadow-sm z-40 flex flex-col overflow-y-auto">
+      <aside className="fixed left-0 top-0 w-64 h-screen bg-white shadow-sm flex flex-col overflow-y-auto z-40">
         <div className="mt-6 mb-2 px-4">
           <Logo />
         </div>
@@ -101,12 +225,13 @@ export default function SidebarLeft() {
           setOpenNews={setOpenNews}
           activePanel={activePanel}
           setActivePanel={setActivePanel}
+          unreadCount={unreadCount}
         />
 
         <SidebarCommunity />
       </aside>
 
-      {/* Panel tin nhắn */}
+      {/* PANEL MESSAGES */}
       {isClient && (
         <MessagesPanel
           open={openMessages}
@@ -118,10 +243,11 @@ export default function SidebarLeft() {
           }}
           activePanel={activePanel}
           setActivePanel={setActivePanel}
+          clearUnread={clearAllUnread}
         />
       )}
 
-      {/* Panel thông báo */}
+      {/* PANEL NEWS */}
       {isClient && (
         <NewsPanel
           open={openNews}
@@ -131,11 +257,12 @@ export default function SidebarLeft() {
         />
       )}
 
-      {/* Mini chat */}
+      {/* MINI CHAT BOX */}
       {openMiniChat && selectedPartner && (
         <MiniChatBox
           partnerId={selectedPartner}
           onClose={() => setOpenMiniChat(false)}
+          onReadMessages={() => clearUnreadFromPartner(selectedPartner)}
         />
       )}
     </>

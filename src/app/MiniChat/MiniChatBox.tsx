@@ -5,7 +5,6 @@ import { supabase } from "@/lib/supabase/client";
 import { Send, X } from "lucide-react";
 import Image from "next/image";
 
-
 type MiniChatProps = {
   partnerId: string;
   onClose: () => void;
@@ -123,12 +122,12 @@ export default function MiniChatBox({ partnerId, onClose }: MiniChatProps) {
   };
 
   const formatTime = (t: string | null) => {
-  if (!t) return "--:--"; // fallback if timestamp is missing
-  const d = new Date(t);
-  return `${String(d.getHours()).padStart(2, "0")}:${String(
-    d.getMinutes()
-  ).padStart(2, "0")}`;
-};
+    if (!t) return "--:--";
+    const d = new Date(t);
+    return `${String(d.getHours()).padStart(2, "0")}:${String(
+      d.getMinutes()
+    ).padStart(2, "0")}`;
+  };
 
   if (!partner) return null;
 
@@ -147,7 +146,8 @@ export default function MiniChatBox({ partnerId, onClose }: MiniChatProps) {
           <div className="font-semibold text-sm">{partner.username}</div>
         </div>
 
-        <button onClick={onClose}>
+        {/*  CHỈ THÊM cursor-pointer TẠI ĐÂY  */}
+        <button onClick={onClose} className="cursor-pointer">
           <X size={18} />
         </button>
       </div>

@@ -64,13 +64,13 @@ export default function SidebarLeft() {
   }, [userId]);
 
   // -------------------------
-  // REALTIME LISTENER (FIXED CLEANUP)
+  // REALTIME LISTENER (CẬP NHẬT NGAY UNREAD + CONVERSATION)
   // -------------------------
   useEffect(() => {
     if (!userId) return;
 
     const channel = supabase
-      .channel("messages-realtime-clean")
+      .channel("messages-realtime")
       .on(
         "postgres_changes",
         {
@@ -79,27 +79,43 @@ export default function SidebarLeft() {
           table: "messages",
           filter: `receiver_id=eq.${userId}`,
         },
-        () => {
-          loadUnreadCount();
-          loadConversations();
-        }
-      )
-      .on(
-        "postgres_changes",
-        {
-          event: "UPDATE",
-          schema: "public",
-          table: "messages",
-          filter: `receiver_id=eq.${userId}`,
-        },
-        () => {
-          loadUnreadCount();
-          loadConversations();
+        (payload) => {
+          const newMsg = payload.new;
+
+          // ✅ Cập nhật số lượng chưa đọc ngay
+          setUnreadCount((prev) => prev + 1);
+
+          // ✅ Cập nhật conversation
+          setConversations((prev) => {
+            const partnerId = newMsg.sender_id;
+            const index = prev.findIndex((c) => c.partner_id === partnerId);
+
+            if (index >= 0) {
+              const updated = [...prev];
+              updated[index] = {
+                ...updated[index],
+                last_message: newMsg.content,
+                last_time: newMsg.created_at || new Date().toISOString(),
+              };
+              return updated;
+            } else {
+              // Nếu chưa có conversation, thêm mới
+              return [
+                ...prev,
+                {
+                  partner_id: partnerId,
+                  username: "Unknown", // hoặc lấy từ cache user nếu có
+                  avatar_url: "/default-avatar.png",
+                  last_message: newMsg.content,
+                  last_time: newMsg.created_at || new Date().toISOString(),
+                },
+              ];
+            }
+          });
         }
       )
       .subscribe();
 
-    // 🔥 FIX: cleanup phải là sync!
     return () => {
       supabase.removeChannel(channel);
     };
@@ -132,7 +148,7 @@ export default function SidebarLeft() {
       .eq("receiver_id", userId)
       .eq("is_read", false);
 
-    loadUnreadCount();
+    setUnreadCount(0); // cập nhật ngay
   };
 
   // -------------------------
@@ -148,6 +164,7 @@ export default function SidebarLeft() {
       .eq("receiver_id", userId)
       .eq("is_read", false);
 
+    // Cập nhật ngay unreadCount và conversation nếu muốn
     loadUnreadCount();
   };
 
@@ -165,10 +182,7 @@ export default function SidebarLeft() {
 
     if (error || !data) return;
 
-    const map = new Map<
-      string,
-      { last_message: string; last_time: string }
-    >();
+    const map = new Map<string, { last_message: string; last_time: string }>();
 
     (data as Partial<MessageRow>[]).forEach((msg) => {
       if (!msg) return;

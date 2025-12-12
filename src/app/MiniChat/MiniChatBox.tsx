@@ -9,6 +9,7 @@ type MiniChatProps = {
   partnerId: string;
   onClose: () => void;
   onReadMessages: () => void; // callback cập nhật SidebarLeft
+  onNewConversation: () => void; // callback thêm vào MessengerPanel
 };
 
 interface User {
@@ -31,6 +32,7 @@ export default function MiniChatBox({
   partnerId,
   onClose,
   onReadMessages,
+  onNewConversation,
 }: MiniChatProps) {
   const [currentUserId, setCurrentUserId] = useState<string | null>(null);
   const [messages, setMessages] = useState<Message[]>([]);
@@ -158,6 +160,11 @@ export default function MiniChatBox({
     });
 
     setNewMessage("");
+
+    // ✅ Nếu đây là tin nhắn đầu tiên → gọi callback thêm vào MessengerPanel
+    if (messages.length === 0) {
+      onNewConversation();
+    }
   };
 
   const formatTime = (t: string | null) => {
@@ -185,7 +192,6 @@ export default function MiniChatBox({
           />
           <div className="font-semibold text-sm">{partner.username}</div>
         </div>
-        {/* ✅ Thêm cursor-pointer */}
         <button onClick={onClose} className="cursor-pointer">
           <X size={18} />
         </button>
@@ -229,7 +235,6 @@ export default function MiniChatBox({
           placeholder="Nhập tin nhắn..."
           className="flex-1 px-3 py-1.5 text-sm border rounded-full"
         />
-        {/* ✅ Thêm cursor-pointer */}
         <button
           type="submit"
           className="p-2 hover:bg-gray-100 rounded-full cursor-pointer"

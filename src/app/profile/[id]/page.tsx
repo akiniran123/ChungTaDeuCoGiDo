@@ -4,6 +4,7 @@ import React, { useEffect, useState } from "react";
 import { supabase } from "@/lib/supabase/client";
 import Link from "next/link";
 import { Product } from "@/types";
+import MiniChatBox from "@/app/MiniChat/MiniChatBox"; // import MiniChatBox
 
 interface User {
   id: string;
@@ -32,6 +33,17 @@ export default function OtherUserProfile(props: PageProps) {
   const [user, setUser] = useState<User | null>(null);
   const [products, setProducts] = useState<ProductWithUser[]>([]);
   const [loading, setLoading] = useState(true);
+
+  // state MiniChatBox
+  const [openMiniChat, setOpenMiniChat] = useState(false);
+  const [currentUserId, setCurrentUserId] = useState<string | null>(null);
+
+  // Lấy current user ID
+  useEffect(() => {
+    supabase.auth.getUser().then(({ data }) => {
+      if (data.user) setCurrentUserId(data.user.id);
+    });
+  }, []);
 
   useEffect(() => {
     if (!id) return;
@@ -76,6 +88,8 @@ export default function OtherUserProfile(props: PageProps) {
       </div>
     );
 
+  const isOtherUser = currentUserId !== null && currentUserId !== user.id;
+
   return (
     <div className="max-w-3xl mx-auto p-6">
       {/* -------- USER INFO -------- */}
@@ -85,9 +99,21 @@ export default function OtherUserProfile(props: PageProps) {
           className="w-20 h-20 rounded-full object-cover"
           alt={user.username}
         />
-        <div>
-          <h1 className="text-2xl font-bold">{user.username}</h1>
-          <p className="text-gray-500">{user.email}</p>
+        <div className="flex-1 flex items-center justify-between">
+          <div>
+            <h1 className="text-2xl font-bold">{user.username}</h1>
+            <p className="text-gray-500">{user.email}</p>
+          </div>
+
+          {/* Nút nhắn tin chỉ hiện với người khác */}
+          {isOtherUser && (
+            <button
+              className="px-4 py-2 border border-gray-300 text-gray-900 rounded-lg hover:bg-gray-100 transition cursor-pointer"
+              onClick={() => setOpenMiniChat(true)}
+            >
+              Nhắn tin
+            </button>
+          )}
         </div>
       </div>
 
@@ -130,6 +156,21 @@ export default function OtherUserProfile(props: PageProps) {
             </Link>
           ))}
         </div>
+      )}
+
+      {/* MiniChatBox */}
+      {openMiniChat && user && (
+        <MiniChatBox
+          partnerId={user.id}
+          onClose={() => setOpenMiniChat(false)}
+          onReadMessages={() => {
+            console.log("Đã đọc tin nhắn với", user.id);
+          }}
+          onNewConversation={() => {
+            // Khi nhắn tin lần đầu, thêm người này vào MessengerPanel
+            console.log("Thêm người này vào MessengerPanel:", user.id);
+          }}
+        />
       )}
     </div>
   );

@@ -7,8 +7,9 @@ import Image from "next/image";
 
 type MiniChatProps = {
   partnerId: string;
+  index?: number; // thêm index để offset
   onClose: () => void;
-  onReadMessages: () => void; // callback cập nhật SidebarLeft
+  onReadMessages: () => void;
   onNewConversation: (conversation: {
     partner_id: string;
     username: string;
@@ -16,7 +17,7 @@ type MiniChatProps = {
     last_message: string;
     last_time: string;
     is_read: boolean;
-  }) => void; // callback thêm vào MessengerPanel
+  }) => void;
 };
 
 interface User {
@@ -37,6 +38,7 @@ interface Message {
 
 export default function MiniChatBox({
   partnerId,
+  index = 0,
   onClose,
   onReadMessages,
   onNewConversation,
@@ -66,7 +68,7 @@ export default function MiniChatBox({
         .eq("receiver_id", currentUserId)
         .eq("is_read", false);
 
-      onReadMessages(); // cập nhật SidebarLeft
+      onReadMessages();
     };
 
     markRead();
@@ -87,7 +89,7 @@ export default function MiniChatBox({
     fetchPartner();
   }, [partnerId]);
 
-  // ⭐ Load tin nhắn + Realtime
+  // ⭐ Load tin nhắn + Realtime riêng cho partner
   useEffect(() => {
     if (!currentUserId || !partnerId) return;
 
@@ -95,38 +97,30 @@ export default function MiniChatBox({
       const { data } = await supabase
         .from("messages")
         .select("*")
-        .or(`sender_id.eq.${currentUserId},receiver_id.eq.${currentUserId}`)
+        .or(
+          `(sender_id.eq.${currentUserId},receiver_id.eq.${partnerId}),(sender_id.eq.${partnerId},receiver_id.eq.${currentUserId})`
+        )
         .order("created_at", { ascending: true });
 
-      const filtered = data?.filter(
-        (msg: Message) =>
-          (msg.sender_id === currentUserId && msg.receiver_id === partnerId) ||
-          (msg.sender_id === partnerId && msg.receiver_id === currentUserId)
-      );
-
-      if (filtered) setMessages(filtered);
+      setMessages(data ? (data as Message[]) : []);
     };
 
     fetchMessages();
 
-    // ⭐ Realtime CHUẨN
     const channel = supabase
-      .channel(`mini-chat-realtime-${currentUserId}-${partnerId}`)
+      .channel(`mini-chat-${currentUserId}-${partnerId}`)
       .on(
         "postgres_changes",
         { event: "INSERT", schema: "public", table: "messages" },
         async (payload) => {
           const msg = payload.new as Message;
-
           const isRelated =
             (msg.sender_id === currentUserId && msg.receiver_id === partnerId) ||
             (msg.sender_id === partnerId && msg.receiver_id === currentUserId);
-
           if (!isRelated) return;
 
           setMessages((prev) => [...prev, msg]);
 
-          // Nếu đối phương gửi → đánh dấu đã đọc
           if (msg.sender_id === partnerId) {
             await supabase
               .from("messages")
@@ -161,8 +155,7 @@ export default function MiniChatBox({
       is_read: false,
     });
 
-    // ✅ Nếu đây là tin nhắn đầu tiên → gọi callback thêm vào MessengerPanel
-    if (messages.length === 0 && partner) {
+    if ((messages?.length ?? 0) === 0 && partner) {
       onNewConversation({
         partner_id: partner.id,
         username: partner.username || "Unknown",
@@ -188,7 +181,10 @@ export default function MiniChatBox({
   if (!partner) return null;
 
   return (
-    <div className="fixed bottom-4 right-4 w-80 h-[420px] bg-white shadow-2xl rounded-xl flex flex-col z-[999]">
+    <div
+      className="fixed bottom-4 w-80 h-[420px] bg-white shadow-2xl rounded-xl flex flex-col z-[999]"
+      style={{ right: 4 + index * 340 + "px" }} // offset để chat box không chồng
+    >
       {/* HEADER */}
       <div className="flex items-center justify-between px-3 py-2 border-b bg-white">
         <div className="flex items-center gap-2">
@@ -208,7 +204,7 @@ export default function MiniChatBox({
 
       {/* CHAT */}
       <div className="flex-1 overflow-y-auto px-3 py-3 bg-gray-50 space-y-3">
-        {messages.map((msg) => (
+        {messages?.map((msg) => (
           <div
             key={msg.id}
             className={`flex flex-col ${

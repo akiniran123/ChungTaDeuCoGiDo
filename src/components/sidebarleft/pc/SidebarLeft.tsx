@@ -1,4 +1,3 @@
-// SidebarLeft.tsx
 "use client";
 
 import { useState, useEffect } from "react";
@@ -32,8 +31,6 @@ type MessageRow = {
 
 export default function SidebarLeft() {
   const [openMessages, setOpenMessages] = useState(false);
-  const [openMiniChat, setOpenMiniChat] = useState(false);
-  const [selectedPartner, setSelectedPartner] = useState<string | null>(null);
   const [openNews, setOpenNews] = useState(false);
 
   const [conversations, setConversations] = useState<Conversation[]>([]);
@@ -42,6 +39,9 @@ export default function SidebarLeft() {
 
   const [activePanel, setActivePanel] = useState<string | null>(null);
   const [unreadCount, setUnreadCount] = useState(0);
+
+  // ✅ Mở nhiều chat cùng lúc
+  const [openChats, setOpenChats] = useState<string[]>([]);
 
   useEffect(() => {
     setIsClient(true);
@@ -123,7 +123,6 @@ export default function SidebarLeft() {
     if (!userId) return;
 
     if (partnerId) {
-      // Clear unread for this partner only
       await supabase
         .from("messages")
         .update({ is_read: true })
@@ -137,7 +136,6 @@ export default function SidebarLeft() {
         )
       );
     } else {
-      // Clear all
       await supabase
         .from("messages")
         .update({ is_read: true })
@@ -230,8 +228,7 @@ export default function SidebarLeft() {
           setOpen={setOpenMessages}
           conversations={conversations}
           onSelect={(id) => {
-            setSelectedPartner(id);
-            setOpenMiniChat(true);
+            setOpenChats((prev) => (prev.includes(id) ? prev : [...prev, id]));
           }}
           activePanel={activePanel}
           setActivePanel={setActivePanel}
@@ -248,23 +245,24 @@ export default function SidebarLeft() {
         />
       )}
 
-      {openMiniChat && selectedPartner && (
+      {/* Render tất cả MiniChatBox đang mở */}
+      {openChats.map((partnerId) => (
         <MiniChatBox
-          partnerId={selectedPartner}
-          onClose={() => setOpenMiniChat(false)}
-          onReadMessages={() => clearUnread(selectedPartner)}
+          key={partnerId}
+          partnerId={partnerId}
+          onClose={() =>
+            setOpenChats((prev) => prev.filter((id) => id !== partnerId))
+          }
+          onReadMessages={() => clearUnread(partnerId)}
           onNewConversation={() => {
-            // ✅ Thêm partner mới vào conversation nếu chưa có
             setConversations((prev) => {
-              const exists = prev.find(
-                (c) => c.partner_id === selectedPartner
-              );
+              const exists = prev.find((c) => c.partner_id === partnerId);
               if (exists) return prev;
 
               return [
                 ...prev,
                 {
-                  partner_id: selectedPartner!,
+                  partner_id: partnerId,
                   username: "Unknown",
                   avatar_url: "/default-avatar.png",
                   last_message: "",
@@ -275,7 +273,7 @@ export default function SidebarLeft() {
             });
           }}
         />
-      )}
+      ))}
     </>
   );
 }

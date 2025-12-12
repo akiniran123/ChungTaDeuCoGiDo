@@ -18,6 +18,30 @@ const loginSchema = z.object({
 
 type LoginFormSchema = z.infer<typeof loginSchema>;
 
+/** Minimal shape of the auth user object we use here */
+type AuthUser = {
+  id: string;
+  email: string | null;
+  user_metadata?: {
+    username?: string | null;
+    avatar_url?: string | null;
+  } | null;
+};
+
+function extractErrorMessage(err: unknown): string | null {
+  if (!err) return null;
+  if (typeof err === "string") return err;
+  if (typeof err === "object" && err !== null && "message" in err) {
+    const maybeMessage = (err as { message?: unknown }).message;
+    return typeof maybeMessage === "string" ? maybeMessage : null;
+  }
+  try {
+    return String(err);
+  } catch {
+    return null;
+  }
+}
+
 export default function LoginModal({
   onLoginSuccess,
   redirectTo,
@@ -39,7 +63,7 @@ export default function LoginModal({
     formState: { errors },
   } = useForm<LoginFormSchema>({ resolver: zodResolver(loginSchema) });
 
-  const createUserProfile = async (user: any) => {
+  const createUserProfile = async (user: AuthUser) => {
     try {
       const { data: existingUser, error: fetchError } = await supabase
         .from("users")
@@ -52,16 +76,15 @@ export default function LoginModal({
       if (!existingUser) {
         const newUser: Database["public"]["Tables"]["users"]["Insert"] = {
           id: user.id,
-          username: user.user_metadata?.username || user.email.split("@")[0],
+          username:
+            user.user_metadata?.username || (user.email ? user.email.split("@")[0] : ""),
           email: user.email,
           created_at: new Date().toISOString(),
           avatar_url: user.user_metadata?.avatar_url || null,
           is_online: true,
         };
 
-        const { error: insertError } = await supabase
-          .from("users")
-          .insert([newUser]);
+        const { error: insertError } = await supabase.from("users").insert([newUser]);
 
         if (insertError) throw insertError;
       } else {
@@ -72,7 +95,7 @@ export default function LoginModal({
 
         if (updateError) throw updateError;
       }
-    } catch (err) {
+    } catch (err: unknown) {
       console.error("❌ Lỗi xử lý hồ sơ người dùng:", err);
     }
   };
@@ -90,17 +113,26 @@ export default function LoginModal({
       if (error) throw error;
 
       const user = res.user;
-      if (user) await createUserProfile(user);
+      if (user) {
+        // map supabase user to our AuthUser shape
+        const authUser: AuthUser = {
+  id: user.id,
+  email: user.email ?? null,
+  user_metadata: (user.user_metadata as AuthUser["user_metadata"]) || null,
+};
+        await createUserProfile(authUser);
+      }
 
       router.refresh();
       onLoginSuccess?.();
 
       if (redirectTo) router.push(redirectTo);
-      else window.location.href = "/";
+      else (window.location.href = "/");
 
       onClose();
-    } catch (err: any) {
-      setErrorMsg(err.message || "Đăng nhập thất bại");
+    } catch (err: unknown) {
+      const msg = extractErrorMessage(err) || "Đăng nhập thất bại";
+      setErrorMsg(msg);
     } finally {
       setLoading(false);
     }
@@ -120,8 +152,9 @@ export default function LoginModal({
       });
 
       if (error) throw error;
-    } catch (err: any) {
-      setErrorMsg(err.message || "Đăng nhập Google thất bại");
+    } catch (err: unknown) {
+      const msg = extractErrorMessage(err) || "Đăng nhập Google thất bại";
+      setErrorMsg(msg);
     } finally {
       setLoading(false);
     }
@@ -131,9 +164,7 @@ export default function LoginModal({
     <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50">
       <div className="bg-white dark:bg-gray-900 p-6 rounded-2xl shadow-xl w-full max-w-sm">
         <form onSubmit={handleSubmit(onSubmit)} className="space-y-4">
-          {errorMsg && (
-            <p className="text-red-500 text-sm text-center">{errorMsg}</p>
-          )}
+          {errorMsg && <p className="text-red-500 text-sm text-center">{errorMsg}</p>}
 
           <div>
             <label className="block text-sm text-gray-700 dark:text-gray-300 mb-1">
@@ -144,11 +175,7 @@ export default function LoginModal({
               {...register("email")}
               className="w-full px-3 py-2 border rounded-md bg-gray-50 dark:bg-gray-800 dark:border-gray-700 text-sm"
             />
-            {errors.email && (
-              <p className="text-red-500 text-xs mt-1">
-                {errors.email.message}
-              </p>
-            )}
+            {errors.email && <p className="text-red-500 text-xs mt-1">{errors.email.message}</p>}
           </div>
 
           <div>
@@ -161,9 +188,7 @@ export default function LoginModal({
               className="w-full px-3 py-2 border rounded-md bg-gray-50 dark:bg-gray-800 dark:border-gray-700 text-sm"
             />
             {errors.password && (
-              <p className="text-red-500 text-xs mt-1">
-                {errors.password.message}
-              </p>
+              <p className="text-red-500 text-xs mt-1">{errors.password.message}</p>
             )}
           </div>
 
@@ -178,9 +203,7 @@ export default function LoginModal({
 
           <div className="relative text-center my-3">
             <span className="absolute left-0 top-1/2 w-full border-t border-gray-300 dark:border-gray-700" />
-            <span className="relative bg-white dark:bg-gray-900 px-2 text-sm text-gray-500">
-              hoặc
-            </span>
+            <span className="relative bg-white dark:bg-gray-900 px-2 text-sm text-gray-500">hoặc</span>
           </div>
 
           {/* Tiếp tục với Google */}
@@ -189,15 +212,10 @@ export default function LoginModal({
             onClick={handleGoogleLogin}
             disabled={loading}
             className={`w-full border px-4 py-2 rounded-md flex items-center justify-center gap-2 text-sm font-medium transition-all duration-200
-              ${loading
-                ? "opacity-70 cursor-not-allowed"
-                : "bg-white dark:bg-gray-800 hover:bg-gray-100 dark:hover:bg-gray-700 active:scale-[0.98] cursor-pointer"
-              }`}
+              ${loading ? "opacity-70 cursor-not-allowed" : "bg-white dark:bg-gray-800 hover:bg-gray-100 dark:hover:bg-gray-700 active:scale-[0.98] cursor-pointer"}`}
           >
             <FcGoogle className="w-5 h-5" />
-            <span className="text-gray-800 dark:text-gray-100">
-              Tiếp tục với Google
-            </span>
+            <span className="text-gray-800 dark:text-gray-100">Tiếp tục với Google</span>
           </button>
 
           <div className="flex justify-between text-sm mt-4">
@@ -220,13 +238,9 @@ export default function LoginModal({
           </div>
         </form>
 
-        {showSignUpModal && (
-          <SignUpModal onClose={() => setShowSignUpModal(false)} />
-        )}
+        {showSignUpModal && <SignUpModal onClose={() => setShowSignUpModal(false)} />}
         {showForgotPasswordModal && (
-          <ForgotPasswordModal
-            onClose={() => setShowForgotPasswordModal(false)}
-          />
+          <ForgotPasswordModal onClose={() => setShowForgotPasswordModal(false)} />
         )}
       </div>
     </div>

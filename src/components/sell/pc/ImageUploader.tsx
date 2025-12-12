@@ -11,6 +11,16 @@ interface ImageUploaderProps {
   error?: FieldErrors | boolean | string;
 }
 
+function getErrorMessage(err?: FieldErrors | boolean | string) {
+  if (!err) return null;
+  if (typeof err === "string") return err;
+  if (typeof err === "object" && err !== null && "message" in err) {
+    const maybeMessage = (err as { message?: unknown }).message;
+    return typeof maybeMessage === "string" ? maybeMessage : "Ảnh là bắt buộc";
+  }
+  return "Ảnh là bắt buộc";
+}
+
 export default function ImageUploader({ error }: ImageUploaderProps) {
   const { control } = useFormContext();
   const [preview, setPreview] = useState<string | null>(null);
@@ -149,11 +159,9 @@ export default function ImageUploader({ error }: ImageUploaderProps) {
         }}
       />
 
-      {error && (
+      {getErrorMessage(error) && (
         <p className="text-red-500 text-sm mt-1">
-          {typeof error === "object" && "message" in error && (error as any).message
-            ? (error as any).message
-            : "Ảnh là bắt buộc"}
+          {getErrorMessage(error)}
         </p>
       )}
     </div>

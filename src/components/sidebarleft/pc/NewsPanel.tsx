@@ -31,39 +31,46 @@ export default function NewsMenu({
 
   // Fetch + realtime
   useEffect(() => {
-    const fetchNotifications = async () => {
-      const { data } = await supabase
-        .from("notifications")
-        .select("*")
-        .order("created_at", { ascending: false });
+  const fetchNotifications = async () => {
+    const { data, error } = await supabase
+      .from("notifications")
+      .select("*")
+      .order("created_at", { ascending: false });
 
-      if (data) setNotifications(data);
-    };
+    if (error) {
+      console.error("Lỗi khi lấy notifications:", error);
+      setNotifications([]); // fallback an toàn
+      return;
+    }
 
-    fetchNotifications();
+    // Cast an toàn về Notification[]
+    setNotifications((data ?? []) as Notification[]);
+  };
 
-    const channel = supabase
-      .channel("realtime:notifications")
-      .on(
-        "postgres_changes",
-        { event: "*", schema: "public", table: "notifications" },
-        (payload) => {
-          const newNotification = payload.new as Notification | null;
+  fetchNotifications();
 
-          setNotifications((prev) => {
-            if (!newNotification || prev.some((n) => n.id === newNotification.id))
-              return prev;
+  const channel = supabase
+    .channel("realtime:notifications")
+    .on(
+      "postgres_changes",
+      { event: "*", schema: "public", table: "notifications" },
+      (payload) => {
+        const newNotification = payload.new as Notification | null;
 
-            return [newNotification, ...prev];
-          });
-        }
-      )
-      .subscribe();
+        setNotifications((prev) => {
+          if (!newNotification || prev.some((n) => n.id === newNotification.id))
+            return prev;
 
-    return () => {
-      supabase.removeChannel(channel);
-    };
-  }, []);
+          return [newNotification, ...prev];
+        });
+      }
+    )
+    .subscribe();
+
+  return () => {
+    supabase.removeChannel(channel);
+  };
+}, []);
 
   if (!isClient) return null;
 

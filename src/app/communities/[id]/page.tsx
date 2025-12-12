@@ -33,15 +33,23 @@ const CommunityDetailPage: React.FC<CommunityDetailPageProps> = ({ params }) => 
 
   useEffect(() => {
     async function unwrap() {
-      const resolved = await params;
-      setId(resolved.id);
+      try {
+        const resolved = await params;
+        setId(resolved.id);
+      } catch (err: unknown) {
+        console.error("Failed to resolve params:", err);
+      }
     }
     unwrap();
   }, [params]);
 
   useEffect(() => {
-    supabase.auth.getUser().then(({ data }) => {
+    supabase.auth.getUser().then((res) => {
+      // res.data may be undefined; guard and cast safely
+      const data = res.data;
       if (data?.user) setUser(data.user);
+    }).catch((err: unknown) => {
+      console.error("Auth getUser error:", err);
     });
   }, []);
 
@@ -49,14 +57,19 @@ const CommunityDetailPage: React.FC<CommunityDetailPageProps> = ({ params }) => 
     if (!id || !user) return;
 
     const checkRole = async () => {
-      const { data } = await supabase
-        .from("community_members")
-        .select("role")
-        .eq("community_id", id)
-        .eq("user_id", user.id)
-        .single();
+      try {
+        const res = await supabase
+          .from("community_members")
+          .select("role")
+          .eq("community_id", id)
+          .eq("user_id", user.id)
+          .single();
 
-      if (data?.role === "owner") setIsOwner(true);
+        const row = res.data as { role?: string } | null;
+        if (row?.role === "owner") setIsOwner(true);
+      } catch (err: unknown) {
+        console.error("Error checking role:", err);
+      }
     };
 
     checkRole();
@@ -67,33 +80,36 @@ const CommunityDetailPage: React.FC<CommunityDetailPageProps> = ({ params }) => 
 
     const fetchAll = async () => {
       setLoading(true);
+      setError(null);
 
       try {
-        const { data: communityData, error: communityErr } = await supabase
+        const communityRes = await supabase
           .from("communities")
           .select("*")
           .eq("id", id)
           .single();
 
-        if (communityErr) throw communityErr;
+        if (communityRes.error) throw communityRes.error;
+        const communityData = communityRes.data as Community | null;
 
-        const { data: productData, error: productErr } = await supabase
+        const productRes = await supabase
           .from("products")
           .select("*")
           .eq("community_id", id)
           .order("created_at", { ascending: false });
 
-        if (productErr) throw productErr;
+        if (productRes.error) throw productRes.error;
+        const productData = (productRes.data as Product[] | null) ?? [];
 
-        setCommunity(communityData || null);
-        setProducts(productData || []);
+        setCommunity(communityData);
+        setProducts(productData);
       } catch (err: unknown) {
-        console.error(err);
+        console.error("Fetch community error:", err);
         const message = err instanceof Error ? err.message : String(err ?? "Không xác định");
         setError(message);
+      } finally {
+        setLoading(false);
       }
-
-      setLoading(false);
     };
 
     fetchAll();
@@ -117,7 +133,11 @@ const CommunityDetailPage: React.FC<CommunityDetailPageProps> = ({ params }) => 
 
       <button
         onClick={() => {
-          sessionStorage.setItem("scrollPosition", window.scrollY.toString());
+          try {
+            sessionStorage.setItem("scrollPosition", window.scrollY.toString());
+          } catch (e) {
+            // ignore sessionStorage errors in some environments
+          }
           router.back();
         }}
         className="mt-2 mb-4 px-4 py-2 bg-gray-200 hover:bg-gray-300 rounded-lg text-sm cursor-pointer"
@@ -126,6 +146,7 @@ const CommunityDetailPage: React.FC<CommunityDetailPageProps> = ({ params }) => 
       </button>
 
       <div className="flex gap-3 items-center mt-4">
+        {/* Guard id with non-null assertion only after we've confirmed community exists */}
         <JoinLeaveButton communityId={id!} />
         {isOwner && <CreateTagButton communityId={id!} />}
       </div>

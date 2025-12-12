@@ -4,6 +4,7 @@ import React, { use, useEffect, useState } from "react";
 import { supabase } from "@/lib/supabase/client";
 import { useRouter } from "next/navigation";
 import { Loader2, ArrowLeft } from "lucide-react";
+import Image from "next/image";
 import type { Database } from "@/types/supabase";
 
 type Product = Database["public"]["Tables"]["products"]["Row"];
@@ -32,30 +33,36 @@ export default function ProductDetailPage({
 
         // 🔹 Lấy dữ liệu sản phẩm
         const { data: prod, error: prodErr } = await supabase
-          .from("products")
-          .select("*")
-          .eq("id", id)
-          .single();
+  .from("products")
+  .select("*")
+  .eq("id", id)
+  .single();
 
-        if (prodErr) throw prodErr;
-        setProduct(prod);
+if (prodErr) throw prodErr;
 
-        // 🔹 Lấy thông tin người đăng (đầy đủ field để khớp kiểu User)
-        if (prod?.user_id) {
-          const { data: usr, error: usrErr } = await supabase
-            .from("users")
-            .select(
-              "id, username, email, created_at, updated_at, avatar_url, karma, is_online, address, identity, phone, birth"
-            )
-            .eq("id", prod.user_id)
-            .single();
+// ép kiểu rõ ràng
+setProduct(prod as Product | null);
 
-          if (usrErr) console.warn("User fetch error:", usrErr.message);
-          else setSeller(usr);
-        }
-      } catch (err: any) {
+// 🔹 Lấy thông tin người đăng
+if ((prod as Product)?.user_id) {
+  const { data: usr, error: usrErr } = await supabase
+    .from("users")
+    .select(
+      "id, username, email, created_at, updated_at, avatar_url, karma, is_online, address, identity, phone, birth"
+    )
+    .eq("id", (prod as Product).user_id)
+    .single();
+
+  if (usrErr) console.warn("User fetch error:", usrErr.message);
+  else setSeller(usr as User | null);
+}
+      } catch (err: unknown) {
         console.error("Fetch error:", err);
-        setError(err.message || "Không thể tải dữ liệu bài đăng");
+        if (err instanceof Error) {
+          setError(err.message);
+        } else {
+          setError("Không thể tải dữ liệu bài đăng");
+        }
       } finally {
         setLoading(false);
       }
@@ -109,11 +116,13 @@ export default function ProductDetailPage({
         </button>
 
         {/* Ảnh sản phẩm */}
-        <div className="w-full h-80 overflow-hidden rounded-xl mb-6">
-          <img
+        <div className="w-full h-80 overflow-hidden rounded-xl mb-6 relative">
+          <Image
             src={product.image_url || "/placeholder.png"}
             alt={product.title}
-            className="w-full h-full object-cover"
+            fill
+            className="object-cover"
+            priority
           />
         </div>
 
@@ -132,9 +141,11 @@ export default function ProductDetailPage({
         {/* Thông tin người đăng */}
         {seller && (
           <div className="flex items-center gap-3 mt-8 border-t pt-6">
-            <img
+            <Image
               src={seller.avatar_url || "/default-avatar.png"}
               alt={seller.username || "Người đăng"}
+              width={48}
+              height={48}
               className="w-12 h-12 rounded-full object-cover"
             />
             <div>

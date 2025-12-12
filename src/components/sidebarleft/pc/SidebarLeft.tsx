@@ -63,7 +63,7 @@ export default function SidebarLeft() {
   }, []);
 
   // -------------------------
-  // loadUnreadCount (useCallback so it can be a dependency)
+  // loadUnreadCount
   // -------------------------
   const loadUnreadCount = useCallback(async () => {
     if (!userId) return;
@@ -77,7 +77,7 @@ export default function SidebarLeft() {
   }, [userId]);
 
   // -------------------------
-  // loadConversations (useCallback so it can be a dependency)
+  // loadConversations
   // -------------------------
   const loadConversations = useCallback(async () => {
     if (!userId) return;
@@ -134,7 +134,7 @@ export default function SidebarLeft() {
   }, [userId]);
 
   // -------------------------
-  // LOAD INITIAL DATA (include callbacks in deps)
+  // LOAD INITIAL DATA
   // -------------------------
   useEffect(() => {
     if (!userId) return;
@@ -198,7 +198,7 @@ export default function SidebarLeft() {
   }, [userId]);
 
   // -------------------------
-  // CLEAR UNREAD (single or all)
+  // CLEAR UNREAD
   // -------------------------
   const clearUnread = async (partnerId?: string) => {
     if (!userId) return;
@@ -265,10 +265,11 @@ export default function SidebarLeft() {
       )}
 
       {/* Render tất cả MiniChatBox đang mở */}
-      {openChats.map((partnerId) => (
+      {openChats.map((partnerId, i) => (
         <MiniChatBox
           key={partnerId}
           partnerId={partnerId}
+          index={i} // ✅ truyền index để offset
           onClose={() => setOpenChats((prev) => prev.filter((id) => id !== partnerId))}
           onReadMessages={() => clearUnread(partnerId)}
           onNewConversation={() => {

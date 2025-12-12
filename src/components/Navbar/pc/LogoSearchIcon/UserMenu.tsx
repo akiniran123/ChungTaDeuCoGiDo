@@ -12,6 +12,7 @@ import LoginModal from "@/components/auth/pc/LoginModal"
 
 export default function UserMenu() {
   const [user, setUser] = useState<User | null>(null)
+  const [userData, setUserData] = useState<{ username: string; avatar_url?: string } | null>(null)
   const [loadingUser, setLoadingUser] = useState(true)
   const [showLogin, setShowLogin] = useState(false)
 
@@ -22,6 +23,24 @@ export default function UserMenu() {
     const getUser = async () => {
       const { data } = await supabase.auth.getUser()
       setUser(data.user)
+
+      if (data.user) {
+        // Lấy thông tin từ bảng users
+        const { data: profile } = await supabase
+          .from('users')
+          .select('username, avatar_url')
+          .eq('id', data.user.id)
+          .single()
+
+        // ✅ Sửa lỗi TypeScript: ép username không null, avatar_url optional
+        if (profile) {
+          setUserData({
+            username: profile.username || 'Người dùng',
+            avatar_url: profile.avatar_url || undefined,
+          })
+        }
+      }
+
       setLoadingUser(false)
     }
     getUser()
@@ -60,9 +79,8 @@ export default function UserMenu() {
   }
 
   // --- USER ĐÃ ĐĂNG NHẬP → Dropdown menu ---
-  const avatar = user.user_metadata?.avatar_url || '/default-avatar.png'
-  const username = user.user_metadata?.username || ''
-  const fullName = user.user_metadata?.full_name || ''
+  const avatar = userData?.avatar_url || '/default-avatar.png'
+  const username = userData?.username || ''
 
   return (
     <>
@@ -74,10 +92,7 @@ export default function UserMenu() {
             alt="User Avatar"
             className="w-8 h-8 rounded-full object-cover border border-gray-300"
           />
-          <div className="flex flex-col text-left">
-            <span className="font-semibold text-sm text-gray-800">{username}</span>
-            <span className="text-xs text-gray-500">{fullName}</span>
-          </div>
+          <span className="font-semibold text-sm text-gray-800">{username}</span>
           <ChevronDown className="w-4 h-4 text-gray-400 ml-1" />
         </HeadlessMenu.Button>
 
@@ -106,6 +121,7 @@ export default function UserMenu() {
                 onClick={async () => {
                   await supabase.auth.signOut()
                   setUser(null)
+                  setUserData(null)
                   router.refresh()
                 }}
                 className={`block w-full px-4 py-2 text-left text-red-500 cursor-pointer ${

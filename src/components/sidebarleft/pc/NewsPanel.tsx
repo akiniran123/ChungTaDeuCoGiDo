@@ -90,7 +90,7 @@ export default function NewsMenu({
             setOpen(false);
             setActivePanel(null);
           }}
-          className="text-gray-500 hover:text-black"
+          className="text-gray-500 hover:text-black cursor-pointer"
         >
           ✕
         </button>

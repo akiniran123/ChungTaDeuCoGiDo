@@ -114,12 +114,15 @@ export default function MessagesPanel({
     >
       <div className="p-4 font-semibold flex justify-between">
         <span>Tin nhắn</span>
+
+        {/* ✅ Chỉ thêm cursor-pointer ở đây */}
         <button
           onClick={() => {
             setOpen(false);
             setActivePanel(null);
           }}
           aria-label="Đóng panel tin nhắn"
+          className="cursor-pointer"
         >
           ✕
         </button>

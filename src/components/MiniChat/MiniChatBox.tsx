@@ -49,14 +49,12 @@ export default function MiniChatBox({
   const [newMessage, setNewMessage] = useState("");
   const scrollRef = useRef<HTMLDivElement | null>(null);
 
-  // ⭐ Lấy user ID
   useEffect(() => {
     supabase.auth.getUser().then(({ data }) => {
       if (data.user) setCurrentUserId(data.user.id);
     });
   }, []);
 
-  // ⭐ Đánh dấu đã đọc khi mở MiniChat
   useEffect(() => {
     if (!partnerId || !currentUserId) return;
 
@@ -74,7 +72,6 @@ export default function MiniChatBox({
     markRead();
   }, [partnerId, currentUserId, onReadMessages]);
 
-  // ⭐ Load thông tin user đối phương
   useEffect(() => {
     const fetchPartner = async () => {
       const { data } = await supabase
@@ -89,7 +86,6 @@ export default function MiniChatBox({
     fetchPartner();
   }, [partnerId]);
 
-  // ⭐ Load tin nhắn + Realtime riêng cho partner
   useEffect(() => {
     if (!currentUserId || !partnerId) return;
 
@@ -138,12 +134,10 @@ export default function MiniChatBox({
     };
   }, [currentUserId, partnerId, onReadMessages]);
 
-  // ⭐ Auto scroll
   useEffect(() => {
     scrollRef.current?.scrollIntoView({ behavior: "smooth" });
   }, [messages]);
 
-  // ⭐ Gửi tin nhắn
   const sendMessage = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!newMessage.trim() || !currentUserId) return;
@@ -183,9 +177,8 @@ export default function MiniChatBox({
   return (
     <div
       className="fixed bottom-4 w-80 h-[420px] bg-white shadow-2xl rounded-xl flex flex-col z-[999]"
-      style={{ right: 4 + index * 340 + "px" }} // offset để chat box không chồng
+      style={{ right: 4 + index * 340 + "px" }} // ✅ offset
     >
-      {/* HEADER */}
       <div className="flex items-center justify-between px-3 py-2 border-b bg-white">
         <div className="flex items-center gap-2">
           <Image
@@ -202,7 +195,6 @@ export default function MiniChatBox({
         </button>
       </div>
 
-      {/* CHAT */}
       <div className="flex-1 overflow-y-auto px-3 py-3 bg-gray-50 space-y-3">
         {messages?.map((msg) => (
           <div
@@ -228,7 +220,6 @@ export default function MiniChatBox({
         <div ref={scrollRef} />
       </div>
 
-      {/* INPUT */}
       <form
         onSubmit={sendMessage}
         className="flex items-center gap-2 px-3 py-2 bg-white"

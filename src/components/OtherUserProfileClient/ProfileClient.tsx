@@ -1,11 +1,15 @@
+// components/OtherUserProfileClient.tsx
 "use client";
 
 import React, { useEffect, useState } from "react";
-import { useParams } from "next/navigation";
 import { supabase } from "@/lib/supabase/client";
 import Link from "next/link";
 import { Product } from "@/types";
 import MiniChatBox from "@/components/MiniChat/MiniChatBox";
+
+interface Props {
+  userId: string;
+}
 
 interface User {
   id: string;
@@ -21,10 +25,8 @@ interface ProductWithUser extends Product {
   };
 }
 
-export default function OtherUserProfile() {
-  const params = useParams();
-  const rawId = params?.id; // string | string[] | undefined
-  const id = Array.isArray(rawId) ? rawId[0] : rawId; // chuẩn hóa thành string | undefined
+export default function OtherUserProfileClient({ userId }: Props) {
+  const id = userId;
 
   const [user, setUser] = useState<User | null>(null);
   const [products, setProducts] = useState<ProductWithUser[]>([]);
@@ -40,74 +42,35 @@ export default function OtherUserProfile() {
   }, []);
 
   useEffect(() => {
-    // Nếu id chưa có, không fetch; giữ loading false để hiển thị thông báo phù hợp
-    if (!id) {
-      setLoading(false);
-      setUser(null);
-      setProducts([]);
-      return;
-    }
+    if (!id) return;
 
-    let mounted = true;
     const fetchData = async () => {
       setLoading(true);
 
-      try {
-        const { data: userData, error: userError } = await supabase
-          .from("users")
-          .select("*")
-          .eq("id", id)
-          .single<User>();
+      const { data: userData } = await supabase
+        .from("users")
+        .select("*")
+        .eq("id", id)
+        .single<User>();
 
-        if (!mounted) return;
+      setUser(userData || null);
 
-        if (userError) {
-          console.error("Fetch user error:", userError);
-          setUser(null);
-        } else {
-          setUser(userData || null);
-        }
+      const { data: productData } = await supabase
+        .from("products")
+        .select("*, users!inner(username, avatar_url)")
+        .eq("user_id", id);
 
-        const { data: productData, error: productError } = await supabase
-          .from("products")
-          .select("*, users!inner(username, avatar_url)")
-          .eq("user_id", id);
+      setProducts((productData as ProductWithUser[]) || []);
 
-        if (!mounted) return;
-
-        if (productError) {
-          console.error("Fetch products error:", productError);
-          setProducts([]);
-        } else {
-          setProducts((productData as ProductWithUser[]) || []);
-        }
-      } catch (err) {
-        console.error("Unexpected fetch error:", err);
-        if (!mounted) return;
-        setUser(null);
-        setProducts([]);
-      } finally {
-        if (mounted) setLoading(false);
-      }
+      setLoading(false);
     };
 
     fetchData();
-
-    return () => {
-      mounted = false;
-    };
   }, [id]);
 
   if (loading)
     return (
       <div className="p-6 text-center text-gray-500">Đang tải trang cá nhân...</div>
-    );
-
-  if (!id)
-    return (
-      <div className="p-6 text-center text-gray-500">
-        Không tìm thấy id người dùng trong URL.
-      </div>
     );
 
   if (!user)

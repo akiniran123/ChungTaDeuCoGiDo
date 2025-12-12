@@ -4,8 +4,13 @@ import { useFormContext, Controller } from "react-hook-form";
 import { supabase } from "@/lib/supabase/client";
 import { uploadImageFromUrl } from "@/lib/supabase/uploadImageFromUrl";
 import { useState, useEffect } from "react";
+import Image from "next/image";
 
-export default function ImageUploader({ error }: any) {
+interface ImageUploaderProps {
+  error?: boolean | string;
+}
+
+export default function ImageUploader({ error }: ImageUploaderProps) {
   const { control } = useFormContext();
   const [preview, setPreview] = useState<string | null>(null);
   const [userId, setUserId] = useState<string | null>(null);
@@ -27,10 +32,10 @@ export default function ImageUploader({ error }: any) {
     };
   }, [preview]);
 
-  // ✅ Upload ảnh từ máy
+  // onChange callbacks expect an array of image URLs
   const handleFileSelect = async (
     e: React.ChangeEvent<HTMLInputElement>,
-    onChange: (val: any) => void
+    onChange: (val: string[]) => void
   ) => {
     const file = e.target.files?.[0];
     if (!file) return;
@@ -67,7 +72,7 @@ export default function ImageUploader({ error }: any) {
   // ✅ Upload từ link ảnh
   const handleLinkPaste = async (
     e: React.ChangeEvent<HTMLInputElement>,
-    onChange: (val: any) => void
+    onChange: (val: string[]) => void
   ) => {
     const rawValue = e.target.value.trim();
     const cleanValue = rawValue.replace(/"/g, "");
@@ -92,53 +97,63 @@ export default function ImageUploader({ error }: any) {
       <Controller
         name="images"
         control={control}
-        render={({ field }) => (
-          <div className="flex flex-col gap-3">
-            <div className="flex items-center gap-2">
-              <input
-                className="flex-1 border rounded p-2"
-                placeholder="Dán link ảnh hoặc chọn ảnh..."
-                value={field.value?.[0] || ""}
-                onChange={(e) => handleLinkPaste(e, field.onChange)}
-              />
+        render={({ field }) => {
+          const currentValue = (field.value && Array.isArray(field.value) ? field.value[0] : "") as string;
+          const previewSrc = ((preview || currentValue) || "").replace(/"/g, "");
 
-              {/* ⭐ Nút chọn ảnh trung tính (không màu, hover hơi tối) */}
-              <label
-                className={`px-3 py-2 rounded border cursor-pointer transition duration-150
-                ${
-                  userId
-                    ? "bg-transparent hover:bg-gray-100 active:bg-gray-200"
-                    : "bg-gray-200 cursor-not-allowed"
-                }`}
-              >
-                {userId ? "Chọn ảnh" : "Đang tải user..."}
+          return (
+            <div className="flex flex-col gap-3">
+              <div className="flex items-center gap-2">
                 <input
-                  type="file"
-                  accept="image/*"
-                  className="hidden"
-                  disabled={!userId}
-                  onChange={(e) => handleFileSelect(e, field.onChange)}
+                  className="flex-1 border rounded p-2"
+                  placeholder="Dán link ảnh hoặc chọn ảnh..."
+                  value={currentValue || ""}
+                  onChange={(e) => handleLinkPaste(e, field.onChange as (val: string[]) => void)}
                 />
-              </label>
+
+                {/* ⭐ Nút chọn ảnh trung tính (không màu, hover hơi tối) */}
+                <label
+                  className={`px-3 py-2 rounded border cursor-pointer transition duration-150
+                  ${
+                    userId
+                      ? "bg-transparent hover:bg-gray-100 active:bg-gray-200"
+                      : "bg-gray-200 cursor-not-allowed"
+                  }`}
+                >
+                  {userId ? "Chọn ảnh" : "Đang tải user..."}
+                  <input
+                    type="file"
+                    accept="image/*"
+                    className="hidden"
+                    disabled={!userId}
+                    onChange={(e) => handleFileSelect(e, field.onChange as (val: string[]) => void)}
+                  />
+                </label>
+              </div>
+
+              {loading && (
+                <p className="text-gray-500 text-sm">Đang tải ảnh từ URL...</p>
+              )}
+
+              {previewSrc ? (
+                // Use next/image for better LCP and optimization
+                <div className="w-32 h-32 relative rounded border overflow-hidden">
+                  <Image
+                    src={previewSrc}
+                    alt="Preview"
+                    fill
+                    sizes="128px"
+                    className="object-cover"
+                    onError={() => {
+                      // fallback to placeholder if image fails to load
+                      setPreview("/placeholder.png");
+                    }}
+                  />
+                </div>
+              ) : null}
             </div>
-
-            {loading && (
-              <p className="text-gray-500 text-sm">Đang tải ảnh từ URL...</p>
-            )}
-
-            {(preview || field.value?.[0]) && (
-              <img
-                src={(preview || field.value[0]).replace(/"/g, "")}
-                alt="Preview"
-                className="w-32 h-32 object-cover rounded border"
-                loading="lazy"
-                onError={(e) =>
-                  ((e.target as HTMLImageElement).src = "/placeholder.png")
-                }
-              />
-            )}
-          </div>
-        )}
+          );
+        }}
       />
 
       {error && <p className="text-red-500 text-sm mt-1">Ảnh là bắt buộc</p>}

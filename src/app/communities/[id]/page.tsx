@@ -3,6 +3,7 @@
 import React, { useEffect, useState } from "react";
 import { supabase } from "@/lib/supabase/client";
 import type { Database } from "@/types/supabase";
+import type { User } from "@supabase/supabase-js";
 import CommunityHeader from "./components/CommunityHeader";
 import EmptyState from "./components/EmptyState";
 import JoinLeaveButton from "./components/JoinLeaveButtons";
@@ -24,7 +25,7 @@ const CommunityDetailPage: React.FC<CommunityDetailPageProps> = ({ params }) => 
 
   const [community, setCommunity] = useState<Community | null>(null);
   const [products, setProducts] = useState<Product[]>([]);
-  const [user, setUser] = useState<any>(null);
+  const [user, setUser] = useState<User | null>(null);
 
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
@@ -86,9 +87,10 @@ const CommunityDetailPage: React.FC<CommunityDetailPageProps> = ({ params }) => 
 
         setCommunity(communityData || null);
         setProducts(productData || []);
-      } catch (err: any) {
+      } catch (err: unknown) {
         console.error(err);
-        setError(err.message);
+        const message = err instanceof Error ? err.message : String(err ?? "Không xác định");
+        setError(message);
       }
 
       setLoading(false);

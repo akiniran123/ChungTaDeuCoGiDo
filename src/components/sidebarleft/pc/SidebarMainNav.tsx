@@ -17,6 +17,7 @@ type SidebarMainNavProps = {
   setOpenNews: React.Dispatch<React.SetStateAction<boolean>>;
   activePanel: string | null;
   setActivePanel: React.Dispatch<React.SetStateAction<string | null>>;
+  unreadCount?: number; // đã thêm
 };
 
 export default function SidebarMainNav({
@@ -24,6 +25,7 @@ export default function SidebarMainNav({
   setOpenNews,
   activePanel,
   setActivePanel,
+  unreadCount = 0, // nhận giá trị
 }: SidebarMainNavProps) {
   const [userId, setUserId] = useState<string | null>(null);
   const router = useRouter();
@@ -50,7 +52,7 @@ export default function SidebarMainNav({
         <span className="text-gray-900">Trang chủ</span>
       </Link>
 
-      {/* Khám phá — NÚT BẠN ĐANG TÌM */}
+      {/* Khám phá */}
       <Link
         href="/discovery"
         className="flex items-center gap-4 px-5 py-3 mx-2 rounded-xl hover:bg-gray-100 text-gray-900"
@@ -66,10 +68,24 @@ export default function SidebarMainNav({
           setOpenNews(false);
           setActivePanel("messages");
         }}
-        className="flex items-center gap-4 px-5 py-3 mx-2 rounded-xl hover:bg-gray-100 cursor-pointer text-gray-900"
+        className="relative flex items-center gap-4 px-5 py-3 mx-2 rounded-xl hover:bg-gray-100 cursor-pointer text-gray-900"
       >
         <MessageSquare className="w-6 h-6 text-gray-900" />
+
         <span className="text-gray-900">Tin nhắn</span>
+
+        {/* --- BADGE HIỂN THỊ SỐ TIN CHƯA ĐỌC --- */}
+        {unreadCount > 0 && (
+          <span
+            className="
+              absolute right-4
+              bg-red-500 text-white text-xs font-semibold
+              px-2 py-0.5 rounded-full
+            "
+          >
+            {unreadCount}
+          </span>
+        )}
       </div>
 
       {/* Bán hàng */}

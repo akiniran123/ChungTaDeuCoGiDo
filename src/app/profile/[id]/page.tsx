@@ -1,21 +1,36 @@
 "use client";
 
-import React, { use, useEffect, useState } from "react";
+import React, { useEffect, useState } from "react";
 import { supabase } from "@/lib/supabase/client";
 import Link from "next/link";
+import { Product } from "@/types";
+
+interface User {
+  id: string;
+  username: string;
+  email: string;
+  avatar_url: string | null;
+}
+
+// Product có thêm thông tin user từ join
+interface ProductWithUser extends Product {
+  users: {
+    username: string | null;
+    avatar_url: string | null;
+  };
+}
 
 type PageProps = {
-  params: Promise<{
+  params: {
     id: string;
-  }>;
+  };
 };
 
 export default function OtherUserProfile(props: PageProps) {
-  // ⭐ FIX: unwrap params + có kiểu đầy đủ
-  const { id } = use(props.params);
+  const { id } = props.params;
 
-  const [user, setUser] = useState<any>(null);
-  const [products, setProducts] = useState<any[]>([]);
+  const [user, setUser] = useState<User | null>(null);
+  const [products, setProducts] = useState<ProductWithUser[]>([]);
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
@@ -29,17 +44,17 @@ export default function OtherUserProfile(props: PageProps) {
         .from("users")
         .select("*")
         .eq("id", id)
-        .single();
+        .single<User>();
 
       setUser(userData);
 
-      // Lấy sản phẩm của user này
+      // Lấy sản phẩm của user này (có join với bảng users)
       const { data: productData } = await supabase
         .from("products")
         .select("*, users!inner(username, avatar_url)")
         .eq("user_id", id);
 
-      setProducts(productData || []);
+      setProducts((productData as ProductWithUser[]) || []);
 
       setLoading(false);
     };
@@ -68,6 +83,7 @@ export default function OtherUserProfile(props: PageProps) {
         <img
           src={user.avatar_url || "/default-avatar.png"}
           className="w-20 h-20 rounded-full object-cover"
+          alt={user.username}
         />
         <div>
           <h1 className="text-2xl font-bold">{user.username}</h1>
@@ -91,13 +107,25 @@ export default function OtherUserProfile(props: PageProps) {
               className="rounded-xl overflow-hidden shadow hover:shadow-lg transition bg-white"
             >
               <img
-                src={p.image_url}
+                src={p.image_url ?? "/default-product.png"}
                 className="w-full h-40 object-cover"
                 alt={p.title}
               />
               <div className="p-3">
                 <h3 className="font-semibold text-lg">{p.title}</h3>
                 <p className="text-sm text-gray-500">{p.category}</p>
+
+                {/* Hiển thị thêm thông tin user từ join */}
+                {p.users && (
+                  <div className="mt-2 flex items-center gap-2 text-sm text-gray-600">
+                    <img
+                      src={p.users.avatar_url ?? "/default-avatar.png"}
+                      className="w-6 h-6 rounded-full object-cover"
+                      alt={p.users.username ?? "user"}
+                    />
+                    <span>{p.users.username}</span>
+                  </div>
+                )}
               </div>
             </Link>
           ))}

@@ -61,8 +61,8 @@ export default function UserMenu() {
 
   // --- USER ĐÃ ĐĂNG NHẬP → Dropdown menu ---
   const avatar = user.user_metadata?.avatar_url || '/default-avatar.png'
-  const username = user.user_metadata?.username || 'aki_photozz'
-  const fullName = user.user_metadata?.full_name || 'Hà Song Phương'
+  const username = user.user_metadata?.username || ''
+  const fullName = user.user_metadata?.full_name || ''
 
   return (
     <>

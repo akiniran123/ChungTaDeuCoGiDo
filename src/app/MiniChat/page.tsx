@@ -5,27 +5,22 @@ import { supabase } from "@/lib/supabase/client";
 import { Send, X } from "lucide-react";
 import Image from "next/image";
 
-type MiniChatProps = {
-  partnerId: string;
-  onClose: () => void;
-};
+export default function MiniChatBox({ partnerId, onClose }: { partnerId: string; onClose: () => void }) {
+  type User = {
+    id: string;
+    username: string;
+    avatar_url?: string | null;
+  };
 
-type User = {
-  id: string;
-  username: string;
-  avatar_url?: string | null;
-};
+  type Message = {
+    id: string;
+    sender_id: string;
+    receiver_id: string;
+    content: string;
+    is_read: boolean;
+    created_at: string;
+  };
 
-type Message = {
-  id: string;
-  sender_id: string;
-  receiver_id: string;
-  content: string;
-  is_read: boolean;
-  created_at: string;
-};
-
-export default function MiniChatBox({ partnerId, onClose }: MiniChatProps) {
   const [currentUserId, setCurrentUserId] = useState<string | null>(null);
   const [messages, setMessages] = useState<Message[]>([]);
   const [partner, setPartner] = useState<User | null>(null);
@@ -44,25 +39,20 @@ export default function MiniChatBox({ partnerId, onClose }: MiniChatProps) {
   // LOAD PARTNER INFO
   useEffect(() => {
     if (!partnerId) return;
-
     const fetchPartner = async () => {
       const { data } = await supabase
         .from("users")
         .select("id, username, avatar_url")
         .eq("id", partnerId)
         .single();
-
-      // supabase returns `any`-shaped data; assert to User
       setPartner((data as User) ?? null);
     };
-
     fetchPartner();
   }, [partnerId]);
 
   // LOAD MESSAGES + REALTIME
   useEffect(() => {
     if (!currentUserId || !partnerId) return;
-
     const fetchMessages = async () => {
       const { data } = await supabase
         .from("messages")
@@ -71,32 +61,23 @@ export default function MiniChatBox({ partnerId, onClose }: MiniChatProps) {
           `and(sender_id.eq.${currentUserId},receiver_id.eq.${partnerId}),and(sender_id.eq.${partnerId},receiver_id.eq.${currentUserId})`
         )
         .order("created_at", { ascending: true });
-
       setMessages((data as Message[]) ?? []);
     };
-
     fetchMessages();
 
-    // Realtime
     const channel = supabase
       .channel("mini-chat")
-      .on(
-        "postgres_changes",
-        { event: "INSERT", schema: "public", table: "messages" },
-        (payload) => {
-          const msg = payload.new as Message;
-
-          if (
-            (msg.sender_id === currentUserId && msg.receiver_id === partnerId) ||
-            (msg.sender_id === partnerId && msg.receiver_id === currentUserId)
-          ) {
-            setMessages((prev) => [...prev, msg]);
-          }
+      .on("postgres_changes", { event: "INSERT", schema: "public", table: "messages" }, (payload) => {
+        const msg = payload.new as Message;
+        if (
+          (msg.sender_id === currentUserId && msg.receiver_id === partnerId) ||
+          (msg.sender_id === partnerId && msg.receiver_id === currentUserId)
+        ) {
+          setMessages((prev) => [...prev, msg]);
         }
-      )
+      })
       .subscribe();
 
-    // Cleanup
     return () => {
       supabase.removeChannel(channel);
     };
@@ -111,15 +92,12 @@ export default function MiniChatBox({ partnerId, onClose }: MiniChatProps) {
   const sendMessage = async (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
     if (!newMessage.trim() || !currentUserId) return;
-
-    // Insert without using a generic constrained to string; assert result if needed
     await supabase.from("messages").insert({
       sender_id: currentUserId,
       receiver_id: partnerId,
       content: newMessage.trim(),
       is_read: false,
     });
-
     setNewMessage("");
   };
 
@@ -144,7 +122,6 @@ export default function MiniChatBox({ partnerId, onClose }: MiniChatProps) {
           />
           <div className="font-semibold text-sm">{partner.username}</div>
         </div>
-
         <button onClick={onClose}>
           <X size={18} />
         </button>
@@ -166,11 +143,9 @@ export default function MiniChatBox({ partnerId, onClose }: MiniChatProps) {
             >
               {msg.content}
             </div>
-
             <span className="text-[10px] text-gray-400 mt-1">{formatTime(msg.created_at)}</span>
           </div>
         ))}
-
         <div ref={scrollRef}></div>
       </div>
 
@@ -182,7 +157,6 @@ export default function MiniChatBox({ partnerId, onClose }: MiniChatProps) {
           placeholder="Nhập tin nhắn..."
           className="flex-1 px-3 py-1.5 text-sm border rounded-full focus:ring-1 focus:ring-pink-500 focus:outline-none"
         />
-
         <button type="submit" className="p-2 bg-pink-600 text-white rounded-full hover:bg-pink-700">
           <Send size={16} />
         </button>

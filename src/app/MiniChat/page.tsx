@@ -10,10 +10,25 @@ type MiniChatProps = {
   onClose: () => void;
 };
 
+type User = {
+  id: string;
+  username: string;
+  avatar_url?: string | null;
+};
+
+type Message = {
+  id: string;
+  sender_id: string;
+  receiver_id: string;
+  content: string;
+  is_read: boolean;
+  created_at: string;
+};
+
 export default function MiniChatBox({ partnerId, onClose }: MiniChatProps) {
   const [currentUserId, setCurrentUserId] = useState<string | null>(null);
-  const [messages, setMessages] = useState<any[]>([]);
-  const [partner, setPartner] = useState<any>(null);
+  const [messages, setMessages] = useState<Message[]>([]);
+  const [partner, setPartner] = useState<User | null>(null);
   const [newMessage, setNewMessage] = useState("");
   const scrollRef = useRef<HTMLDivElement | null>(null);
 
@@ -21,7 +36,7 @@ export default function MiniChatBox({ partnerId, onClose }: MiniChatProps) {
   useEffect(() => {
     const getUser = async () => {
       const { data } = await supabase.auth.getUser();
-      if (data.user) setCurrentUserId(data.user.id);
+      if (data?.user) setCurrentUserId(data.user.id);
     };
     getUser();
   }, []);
@@ -37,7 +52,8 @@ export default function MiniChatBox({ partnerId, onClose }: MiniChatProps) {
         .eq("id", partnerId)
         .single();
 
-      setPartner(data);
+      // supabase returns `any`-shaped data; assert to User
+      setPartner((data as User) ?? null);
     };
 
     fetchPartner();
@@ -52,12 +68,11 @@ export default function MiniChatBox({ partnerId, onClose }: MiniChatProps) {
         .from("messages")
         .select("*")
         .or(
-          `and(sender_id.eq.${currentUserId},receiver_id.eq.${partnerId}),
-           and(sender_id.eq.${partnerId},receiver_id.eq.${currentUserId})`
+          `and(sender_id.eq.${currentUserId},receiver_id.eq.${partnerId}),and(sender_id.eq.${partnerId},receiver_id.eq.${currentUserId})`
         )
         .order("created_at", { ascending: true });
 
-      if (data) setMessages(data);
+      setMessages((data as Message[]) ?? []);
     };
 
     fetchMessages();
@@ -69,13 +84,11 @@ export default function MiniChatBox({ partnerId, onClose }: MiniChatProps) {
         "postgres_changes",
         { event: "INSERT", schema: "public", table: "messages" },
         (payload) => {
-          const msg = payload.new;
+          const msg = payload.new as Message;
 
           if (
-            (msg.sender_id === currentUserId &&
-              msg.receiver_id === partnerId) ||
-            (msg.sender_id === partnerId &&
-              msg.receiver_id === currentUserId)
+            (msg.sender_id === currentUserId && msg.receiver_id === partnerId) ||
+            (msg.sender_id === partnerId && msg.receiver_id === currentUserId)
           ) {
             setMessages((prev) => [...prev, msg]);
           }
@@ -83,7 +96,7 @@ export default function MiniChatBox({ partnerId, onClose }: MiniChatProps) {
       )
       .subscribe();
 
-    // 🟢 FIXED: Cleanup synchronous, not async
+    // Cleanup
     return () => {
       supabase.removeChannel(channel);
     };
@@ -95,10 +108,11 @@ export default function MiniChatBox({ partnerId, onClose }: MiniChatProps) {
   }, [messages]);
 
   // SEND MESSAGE
-  const sendMessage = async (e: any) => {
+  const sendMessage = async (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
     if (!newMessage.trim() || !currentUserId) return;
 
+    // Insert without using a generic constrained to string; assert result if needed
     await supabase.from("messages").insert({
       sender_id: currentUserId,
       receiver_id: partnerId,
@@ -111,16 +125,13 @@ export default function MiniChatBox({ partnerId, onClose }: MiniChatProps) {
 
   const formatTime = (t: string) => {
     const d = new Date(t);
-    return `${String(d.getHours()).padStart(2, "0")}:${String(
-      d.getMinutes()
-    ).padStart(2, "0")}`;
+    return `${String(d.getHours()).padStart(2, "0")}:${String(d.getMinutes()).padStart(2, "0")}`;
   };
 
   if (!partner) return null;
 
   return (
     <div className="fixed bottom-4 right-4 w-80 h-[420px] bg-white shadow-2xl rounded-xl border flex flex-col z-[999]">
-
       {/* HEADER */}
       <div className="flex items-center justify-between px-3 py-2 border-b bg-white rounded-t-xl">
         <div className="flex items-center gap-2">
@@ -144,9 +155,7 @@ export default function MiniChatBox({ partnerId, onClose }: MiniChatProps) {
         {messages.map((msg) => (
           <div
             key={msg.id}
-            className={`flex flex-col ${
-              msg.sender_id === currentUserId ? "items-end" : "items-start"
-            }`}
+            className={`flex flex-col ${msg.sender_id === currentUserId ? "items-end" : "items-start"}`}
           >
             <div
               className={`px-3 py-2 rounded-2xl max-w-[70%] text-sm shadow-sm ${
@@ -158,9 +167,7 @@ export default function MiniChatBox({ partnerId, onClose }: MiniChatProps) {
               {msg.content}
             </div>
 
-            <span className="text-[10px] text-gray-400 mt-1">
-              {formatTime(msg.created_at)}
-            </span>
+            <span className="text-[10px] text-gray-400 mt-1">{formatTime(msg.created_at)}</span>
           </div>
         ))}
 
@@ -168,10 +175,7 @@ export default function MiniChatBox({ partnerId, onClose }: MiniChatProps) {
       </div>
 
       {/* INPUT */}
-      <form
-        onSubmit={sendMessage}
-        className="flex items-center gap-2 px-3 py-2 border-t bg-white"
-      >
+      <form onSubmit={sendMessage} className="flex items-center gap-2 px-3 py-2 border-t bg-white">
         <input
           value={newMessage}
           onChange={(e) => setNewMessage(e.target.value)}
@@ -179,10 +183,7 @@ export default function MiniChatBox({ partnerId, onClose }: MiniChatProps) {
           className="flex-1 px-3 py-1.5 text-sm border rounded-full focus:ring-1 focus:ring-pink-500 focus:outline-none"
         />
 
-        <button
-          type="submit"
-          className="p-2 bg-pink-600 text-white rounded-full hover:bg-pink-700"
-        >
+        <button type="submit" className="p-2 bg-pink-600 text-white rounded-full hover:bg-pink-700">
           <Send size={16} />
         </button>
       </form>

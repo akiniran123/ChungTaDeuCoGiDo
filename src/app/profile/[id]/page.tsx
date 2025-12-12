@@ -4,7 +4,7 @@ import React, { useEffect, useState } from "react";
 import { supabase } from "@/lib/supabase/client";
 import Link from "next/link";
 import { Product } from "@/types";
-import MiniChatBox from "@/components/MiniChat/MiniChatBox"; // import MiniChatBox
+import MiniChatBox from "@/components/MiniChat/MiniChatBox";
 
 interface User {
   id: string;
@@ -13,7 +13,6 @@ interface User {
   avatar_url: string | null;
 }
 
-// Product có thêm thông tin user từ join
 interface ProductWithUser extends Product {
   users: {
     username: string | null;
@@ -21,24 +20,21 @@ interface ProductWithUser extends Product {
   };
 }
 
-type PageProps = {
-  params: {
-    id: string;
-  };
-};
-
-export default function OtherUserProfile(props: PageProps) {
-  const { id } = props.params;
+// NOTE: declare params inline to avoid type conflict with Next generated PageProps
+export default function OtherUserProfile({
+  params,
+}: {
+  params: { id: string };
+}) {
+  const { id } = params;
 
   const [user, setUser] = useState<User | null>(null);
   const [products, setProducts] = useState<ProductWithUser[]>([]);
   const [loading, setLoading] = useState(true);
 
-  // state MiniChatBox
   const [openMiniChat, setOpenMiniChat] = useState(false);
   const [currentUserId, setCurrentUserId] = useState<string | null>(null);
 
-  // Lấy current user ID
   useEffect(() => {
     supabase.auth.getUser().then(({ data }) => {
       if (data.user) setCurrentUserId(data.user.id);
@@ -51,7 +47,6 @@ export default function OtherUserProfile(props: PageProps) {
     const fetchData = async () => {
       setLoading(true);
 
-      // Lấy user
       const { data: userData } = await supabase
         .from("users")
         .select("*")
@@ -60,7 +55,6 @@ export default function OtherUserProfile(props: PageProps) {
 
       setUser(userData);
 
-      // Lấy sản phẩm của user này (có join với bảng users)
       const { data: productData } = await supabase
         .from("products")
         .select("*, users!inner(username, avatar_url)")
@@ -76,23 +70,18 @@ export default function OtherUserProfile(props: PageProps) {
 
   if (loading)
     return (
-      <div className="p-6 text-center text-gray-500">
-        Đang tải trang cá nhân...
-      </div>
+      <div className="p-6 text-center text-gray-500">Đang tải trang cá nhân...</div>
     );
 
   if (!user)
     return (
-      <div className="p-6 text-center text-gray-500">
-        Không tìm thấy người dùng.
-      </div>
+      <div className="p-6 text-center text-gray-500">Không tìm thấy người dùng.</div>
     );
 
   const isOtherUser = currentUserId !== null && currentUserId !== user.id;
 
   return (
     <div className="max-w-3xl mx-auto p-6">
-      {/* -------- USER INFO -------- */}
       <div className="flex items-center gap-4 mb-6">
         <img
           src={user.avatar_url || "/default-avatar.png"}
@@ -105,7 +94,6 @@ export default function OtherUserProfile(props: PageProps) {
             <p className="text-gray-500">{user.email}</p>
           </div>
 
-          {/* Nút nhắn tin chỉ hiện với người khác */}
           {isOtherUser && (
             <button
               className="px-4 py-2 border border-gray-300 text-gray-900 rounded-lg hover:bg-gray-100 transition cursor-pointer"
@@ -119,7 +107,6 @@ export default function OtherUserProfile(props: PageProps) {
 
       <hr className="my-6" />
 
-      {/* -------- USER PRODUCTS -------- */}
       <h2 className="text-xl font-bold mb-4">Bài đăng của người này</h2>
 
       {products.length === 0 ? (
@@ -141,7 +128,6 @@ export default function OtherUserProfile(props: PageProps) {
                 <h3 className="font-semibold text-lg">{p.title}</h3>
                 <p className="text-sm text-gray-500">{p.category}</p>
 
-                {/* Hiển thị thêm thông tin user từ join */}
                 {p.users && (
                   <div className="mt-2 flex items-center gap-2 text-sm text-gray-600">
                     <img
@@ -158,7 +144,6 @@ export default function OtherUserProfile(props: PageProps) {
         </div>
       )}
 
-      {/* MiniChatBox */}
       {openMiniChat && user && (
         <MiniChatBox
           partnerId={user.id}
@@ -167,7 +152,6 @@ export default function OtherUserProfile(props: PageProps) {
             console.log("Đã đọc tin nhắn với", user.id);
           }}
           onNewConversation={() => {
-            // Khi nhắn tin lần đầu, thêm người này vào MessengerPanel
             console.log("Thêm người này vào MessengerPanel:", user.id);
           }}
         />

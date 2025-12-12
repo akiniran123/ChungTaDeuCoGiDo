@@ -2,6 +2,7 @@
 
 import { useParams } from "next/navigation";
 import { useEffect, useState, useRef } from "react";
+import Image from "next/image";
 import { supabase } from "@/lib/supabase/client";
 import type { Database } from "@/types/supabase";
 
@@ -11,6 +12,11 @@ import { SendHorizontal } from "lucide-react";
 type Product = Database["public"]["Tables"]["products"]["Row"];
 type UserRow = Database["public"]["Tables"]["users"]["Row"];
 type CommentRow = Database["public"]["Tables"]["comments"]["Row"];
+
+// Kiểu cho row trả về khi join users relation từ Supabase (nhỏ gọn, không dùng generic supabase)
+type CommentWithUsersRow = CommentRow & {
+  users?: { username?: string | null; avatar_url?: string | null } | null;
+};
 
 interface CommentWithUser extends CommentRow {
   user: { username: string; avatar_url?: string };
@@ -48,27 +54,35 @@ export default function DealDetailPage() {
 
       try {
         // PRODUCT
-        const { data: productData } = await supabase
+        const productRes = await supabase
           .from("products")
           .select("*")
           .eq("id", idParam)
           .single();
 
-        setProduct(productData);
+        const productData = productRes.data as Product | null;
+        if (productRes.error) {
+          console.error("Error fetching product:", productRes.error);
+        }
+        setProduct(productData ?? null);
 
         // AUTHOR
         if (productData?.user_id) {
-          const { data: userData } = await supabase
+          const userRes = await supabase
             .from("users")
             .select("*")
             .eq("id", productData.user_id)
             .single();
 
-          setAuthor(userData);
+          const userData = userRes.data as UserRow | null;
+          if (userRes.error) {
+            console.error("Error fetching author:", userRes.error);
+          }
+          setAuthor(userData ?? null);
         }
 
-        // COMMENTS + USER
-        const { data: commentsData } = await supabase
+        // COMMENTS + USER (ép kiểu kết quả)
+        const commentsRes = await supabase
           .from("comments")
           .select(`
             *,
@@ -77,39 +91,61 @@ export default function DealDetailPage() {
           .eq("product_id", idParam)
           .order("created_at", { ascending: true });
 
-        const mapped = (commentsData || []).map((c: any) => ({
+        if (commentsRes.error) {
+          console.error("Error fetching comments:", commentsRes.error);
+        }
+
+        const commentsData = commentsRes.data as CommentWithUsersRow[] | null;
+        const mapped: CommentWithUser[] = (commentsData ?? []).map((c) => ({
           ...c,
           user: {
-            username: c.users?.username || "Người dùng",
-            avatar_url: c.users?.avatar_url || "/default-avatar.png",
+            username: c.users?.username ?? "Người dùng",
+            avatar_url: c.users?.avatar_url ?? "/default-avatar.png",
           },
         }));
 
         setComments(mapped);
         setCommentCount(mapped.length);
 
-        // LIKES COUNT
-        const { count } = await supabase
+        // LIKES COUNT (head select returns count)
+        const likesRes = await supabase
           .from("product_likes")
           .select("*", { count: "exact", head: true })
           .eq("product_id", idParam);
 
-        setLikesCount(count || 0);
+        if (likesRes.error) {
+          console.error("Error fetching likes count:", likesRes.error);
+        }
+        const count = (likesRes.count as number) ?? 0;
+        setLikesCount(count);
 
         // CHECK USER LIKE
-        const { data: currentUser } = await supabase.auth.getUser();
-
-        if (currentUser.user) {
-          const { data: likedData } = await supabase
+        const authRes = await supabase.auth.getUser();
+        if (authRes.error) {
+          console.error("Auth getUser error:", authRes.error);
+        }
+        const currentUser = authRes.data?.user;
+        if (currentUser) {
+          const likedRes = await supabase
             .from("product_likes")
             .select("*")
             .eq("product_id", idParam)
-            .eq("user_id", currentUser.user.id)
+            .eq("user_id", currentUser.id)
             .maybeSingle();
 
-          setLiked(!!likedData);
+          if (likedRes.error) {
+            console.error("Error checking liked:", likedRes.error);
+          }
+          setLiked(!!likedRes.data);
         }
-      } finally {
+      } catch (err: unknown) {
+  if (err instanceof Error) {
+    console.error("fetchDetail unexpected error:", err.message, err.stack);
+  } else {
+    console.error("fetchDetail unexpected error:", JSON.stringify(err));
+  }
+}
+ finally {
         setLoading(false);
       }
     }
@@ -119,8 +155,11 @@ export default function DealDetailPage() {
 
   // HANDLE LIKE
   const handleLike = async () => {
-    const { data: auth } = await supabase.auth.getUser();
-    const user = auth.user;
+    const authRes = await supabase.auth.getUser();
+    if (authRes.error) {
+      console.error("Auth error:", authRes.error);
+    }
+    const user = authRes.data?.user;
 
     if (!user) {
       alert("Bạn cần đăng nhập để thả tim.");
@@ -130,25 +169,29 @@ export default function DealDetailPage() {
     if (!product) return;
 
     if (!liked) {
-      const { error } = await supabase.from("product_likes").insert({
+      const insertRes = await supabase.from("product_likes").insert({
         product_id: product.id,
         user_id: user.id,
       });
 
-      if (!error) {
+      if (!insertRes.error) {
         setLiked(true);
         setLikesCount((c) => c + 1);
+      } else {
+        console.error("Error inserting like:", insertRes.error);
       }
     } else {
-      const { error } = await supabase
+      const deleteRes = await supabase
         .from("product_likes")
         .delete()
         .eq("product_id", product.id)
         .eq("user_id", user.id);
 
-      if (!error) {
+      if (!deleteRes.error) {
         setLiked(false);
         setLikesCount((c) => c - 1);
+      } else {
+        console.error("Error deleting like:", deleteRes.error);
       }
     }
   };
@@ -168,8 +211,13 @@ export default function DealDetailPage() {
         console.log("Share canceled", e);
       }
     } else {
-      await navigator.clipboard.writeText(url);
-      alert("Đã copy liên kết vào clipboard!");
+      try {
+        await navigator.clipboard.writeText(url);
+        alert("Đã copy liên kết vào clipboard!");
+      } catch (e) {
+        console.error("Clipboard write failed:", e);
+        alert("Không thể copy liên kết.");
+      }
     }
   };
 
@@ -178,15 +226,18 @@ export default function DealDetailPage() {
     const content = newComment.trim();
     if (!content || !idParam) return;
 
-    const { data: userData } = await supabase.auth.getUser();
-    const user = userData.user;
+    const authRes = await supabase.auth.getUser();
+    if (authRes.error) {
+      console.error("Auth error:", authRes.error);
+    }
+    const user = authRes.data?.user;
 
     if (!user) {
       alert("Bạn cần đăng nhập để bình luận.");
       return;
     }
 
-    const { data: inserted } = await supabase
+    const insertRes = await supabase
       .from("comments")
       .insert({
         product_id: idParam,
@@ -199,13 +250,19 @@ export default function DealDetailPage() {
       `)
       .single();
 
+    if (insertRes.error) {
+      console.error("Error inserting comment:", insertRes.error);
+      return;
+    }
+
+    const inserted = insertRes.data as CommentWithUsersRow | null;
     if (!inserted) return;
 
-    const formatted = {
+    const formatted: CommentWithUser = {
       ...inserted,
       user: {
-        username: inserted.users?.username || "Người dùng",
-        avatar_url: inserted.users?.avatar_url || "/default-avatar.png",
+        username: inserted.users?.username ?? "Người dùng",
+        avatar_url: inserted.users?.avatar_url ?? "/default-avatar.png",
       },
     };
 
@@ -221,8 +278,8 @@ export default function DealDetailPage() {
   if (loading)
     return (
       <div className="min-h-screen bg-gray-50 flex justify-center py-20">
-  <div className="text-center">⏳ Đang tải sản phẩm...</div>
-</div>
+        <div className="text-center">⏳ Đang tải sản phẩm...</div>
+      </div>
     );
 
   if (!product)
@@ -245,7 +302,7 @@ export default function DealDetailPage() {
               likesCount={likesCount}
               commentCount={commentCount}
               onLike={handleLike}
-              onShare={handleShare}   // 👉 THÊM SHARE Ở ĐÂY
+              onShare={handleShare}
             />
 
             {/* COMMENTS */}
@@ -270,26 +327,27 @@ export default function DealDetailPage() {
 
               <div className="space-y-4">
                 {comments.length === 0 && (
-                  <div className="italic text-gray-600">
-                    Chưa có bình luận nào.
-                  </div>
+                  <div className="italic text-gray-600">Chưa có bình luận nào.</div>
                 )}
 
                 {comments.map((c) => (
                   <div key={c.id} className="flex items-start gap-3">
-                    <img
-                      src={c.user.avatar_url}
-                      className="w-10 h-10 rounded-full border object-cover"
-                    />
+                    <div className="w-10 h-10 relative rounded-full overflow-hidden border">
+                      <Image
+                        src={c.user.avatar_url ?? "/default-avatar.png"}
+                        alt={`${c.user.username} avatar`}
+                        fill
+                        className="object-cover"
+                        unoptimized
+                      />
+                    </div>
 
                     <div>
                       <p className="font-semibold">{c.user.username}</p>
                       <p>{c.content}</p>
 
                       <p className="text-gray-400 text-xs">
-                        {c.created_at
-                          ? new Date(c.created_at).toLocaleString()
-                          : "Không rõ thời gian"}
+                        {c.created_at ? new Date(c.created_at).toLocaleString() : "Không rõ thời gian"}
                       </p>
                     </div>
                   </div>

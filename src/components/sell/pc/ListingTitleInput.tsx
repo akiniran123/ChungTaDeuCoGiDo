@@ -1,8 +1,12 @@
 // components/sell/ListingTitleInput.tsx
 "use client";
-import { useFormContext } from "react-hook-form";
+import { useFormContext, FieldError } from "react-hook-form";
 
-export default function ListingTitleInput({ error }: any) {
+interface Props {
+  error?: FieldError;
+}
+
+export default function ListingTitleInput({ error }: Props) {
   const { register } = useFormContext();
 
   return (

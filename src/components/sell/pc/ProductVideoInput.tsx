@@ -1,4 +1,4 @@
-import { UseFormRegister } from 'react-hook-form'
+import { UseFormRegister, FieldError } from 'react-hook-form'
 import { ProductFormData } from '@/types/form'
 
 export default function ProductVideoInput({
@@ -6,7 +6,7 @@ export default function ProductVideoInput({
   error,
 }: {
   register: UseFormRegister<ProductFormData>
-  error?: any
+  error?: FieldError
 }) {
   return (
     <div className="space-y-1">

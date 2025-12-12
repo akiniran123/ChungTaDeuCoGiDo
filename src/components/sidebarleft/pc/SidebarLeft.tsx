@@ -18,6 +18,7 @@ type Conversation = {
   avatar_url: string;
   last_message: string;
   last_time: string;
+  is_read?: boolean; // ⭐ Thêm để đánh dấu chưa đọc
 };
 
 type MessageRow = {
@@ -96,6 +97,7 @@ export default function SidebarLeft() {
                 ...updated[index],
                 last_message: newMsg.content,
                 last_time: newMsg.created_at || new Date().toISOString(),
+                is_read: false, // ⭐ đánh dấu chưa đọc
               };
               return updated;
             } else {
@@ -108,6 +110,7 @@ export default function SidebarLeft() {
                   avatar_url: "/default-avatar.png",
                   last_message: newMsg.content,
                   last_time: newMsg.created_at || new Date().toISOString(),
+                  is_read: false, // ⭐ đánh dấu chưa đọc
                 },
               ];
             }
@@ -149,6 +152,9 @@ export default function SidebarLeft() {
       .eq("is_read", false);
 
     setUnreadCount(0); // cập nhật ngay
+    setConversations((prev) =>
+      prev.map((c) => ({ ...c, is_read: true }))
+    ); // ⭐ tất cả conversation đánh dấu đã đọc
   };
 
   // -------------------------
@@ -164,8 +170,15 @@ export default function SidebarLeft() {
       .eq("receiver_id", userId)
       .eq("is_read", false);
 
-    // Cập nhật ngay unreadCount và conversation nếu muốn
+    // Cập nhật ngay unreadCount
     loadUnreadCount();
+
+    // ⭐ đánh dấu conversation đã đọc
+    setConversations((prev) =>
+      prev.map((c) =>
+        c.partner_id === partnerId ? { ...c, is_read: true } : c
+      )
+    );
   };
 
   // -------------------------
@@ -212,12 +225,21 @@ export default function SidebarLeft() {
       const u = usersList?.find((x: any) => x.id === pid);
       const info = map.get(pid)!;
 
+      // ⭐ Kiểm tra xem còn tin nhắn chưa đọc
+      const hasUnread = (data as MessageRow[]).some(
+        (msg) =>
+          msg.sender_id === pid &&
+          msg.receiver_id === userId &&
+          msg.is_read === false
+      );
+
       return {
         partner_id: pid,
         username: u?.username || "Unknown",
         avatar_url: u?.avatar_url || "/default-avatar.png",
         last_message: info.last_message,
         last_time: info.last_time,
+        is_read: !hasUnread, // true nếu tất cả đã đọc, false nếu còn chưa đọc
       };
     });
 

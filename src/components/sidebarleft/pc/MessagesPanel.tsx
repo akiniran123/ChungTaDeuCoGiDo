@@ -1,3 +1,4 @@
+// MessagesPanel.tsx
 "use client";
 
 import React, { useMemo } from "react";
@@ -9,6 +10,7 @@ export type Conversation = {
   avatar_url: string;
   last_message: string;
   last_time: string;
+  is_read?: boolean;
 };
 
 type MessagesPanelProps = {
@@ -16,14 +18,11 @@ type MessagesPanelProps = {
   setOpen: React.Dispatch<React.SetStateAction<boolean>>;
   conversations: Conversation[];
   onSelect: (partnerId: string) => void;
-
   activePanel: string | null;
   setActivePanel: React.Dispatch<React.SetStateAction<string | null>>;
+  clearUnread: (partnerId?: string) => void;
 };
 
-// ==============================
-// ⚡ Tối ưu từng item bằng memo
-// ==============================
 const ConversationItem = React.memo(function ConversationItem({
   c,
   onSelect,
@@ -43,16 +42,29 @@ const ConversationItem = React.memo(function ConversationItem({
         alt={c.username}
         className="w-10 h-10 rounded-full object-cover"
       />
-
       <div className="flex-1">
-        <p className="font-medium">{c.username}</p>
-        <p className="text-sm text-gray-500 line-clamp-2">
+        <p
+          className={`${
+            c.is_read === false
+              ? "text-black font-medium"
+              : "text-gray-500"
+          }`}
+        >
+          {c.username}
+        </p>
+        <p
+          className={`text-sm line-clamp-2 ${
+            c.is_read === false ? "text-black font-medium" : "text-gray-500"
+          }`}
+        >
           {c.last_message}
         </p>
       </div>
-
       <span className="text-[11px] text-gray-400 whitespace-nowrap">
-        {c.formatted_time}
+        {new Date(c.last_time).toLocaleTimeString("vi-VN", {
+          hour: "2-digit",
+          minute: "2-digit",
+        })}
       </span>
     </div>
   );
@@ -65,12 +77,10 @@ export default function MessagesPanel({
   onSelect,
   activePanel,
   setActivePanel,
+  clearUnread,
 }: MessagesPanelProps) {
   if (typeof document === "undefined") return null;
 
-  // ==============================
-  // ⏱️ Tính formatted_time 1 lần duy nhất
-  // ==============================
   const formattedConversations = useMemo(
     () =>
       conversations.map((c) => ({
@@ -106,22 +116,14 @@ export default function MessagesPanel({
   const panelClass = [...baseClasses, ...openClasses, zClass].join(" ");
 
   const panelJSX = (
-    <div
-      className={panelClass}
-      onMouseDown={() => setActivePanel("messages")}
-      role="dialog"
-      aria-hidden={!open}
-    >
+    <div className={panelClass} onMouseDown={() => setActivePanel("messages")}>
       <div className="p-4 font-semibold flex justify-between">
         <span>Tin nhắn</span>
-
-        {/* ✅ Chỉ thêm cursor-pointer ở đây */}
         <button
           onClick={() => {
             setOpen(false);
             setActivePanel(null);
           }}
-          aria-label="Đóng panel tin nhắn"
           className="cursor-pointer"
         >
           ✕
@@ -135,7 +137,14 @@ export default function MessagesPanel({
           </p>
         ) : (
           formattedConversations.map((c) => (
-            <ConversationItem key={c.partner_id} c={c} onSelect={onSelect} />
+            <ConversationItem
+              key={c.partner_id}
+              c={c}
+              onSelect={(id) => {
+                onSelect(id);
+                clearUnread(id);
+              }}
+            />
           ))
         )}
       </div>

@@ -5,6 +5,9 @@ import { supabase } from "@/lib/supabase/client";
 import { Loader2, Users } from "lucide-react";
 import { useRouter } from "next/navigation";
 import { v4 as uuidv4 } from "uuid";
+import type { Database } from "@/types/supabase";
+
+type Community = Database["public"]["Tables"]["communities"]["Row"];
 
 export default function CreateCommunityPage() {
   const router = useRouter();
@@ -20,7 +23,7 @@ export default function CreateCommunityPage() {
 
   const [loading, setLoading] = useState(false);
   const [message, setMessage] = useState("");
-  const [communities, setCommunities] = useState<any[]>([]);
+  const [communities, setCommunities] = useState<Community[]>([]);
 
   // Lấy danh sách cộng đồng từ Supabase
   useEffect(() => {
@@ -33,7 +36,8 @@ export default function CreateCommunityPage() {
       if (error) {
         console.error("Lỗi tải danh sách cộng đồng:", error);
       } else {
-        setCommunities(data || []);
+        // cast về Community[]
+        setCommunities((data as Community[] | null) || []);
       }
     };
 
@@ -44,6 +48,17 @@ export default function CreateCommunityPage() {
     e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>
   ) => {
     const { name, value } = e.target;
+
+    // Nếu là trường số, chuyển về number
+    if (name === "members_count" || name === "online_count") {
+      const numeric = value === "" ? 0 : parseInt(value, 10);
+      setFormData((prev) => ({
+        ...prev,
+        [name]: Number.isNaN(numeric) ? 0 : numeric,
+      }));
+      return;
+    }
+
     setFormData((prev) => ({ ...prev, [name]: value }));
   };
 
@@ -72,7 +87,7 @@ export default function CreateCommunityPage() {
       return;
     }
 
-    // ⭐⭐⭐ THÊM BẠN VÀO COMMUNITY_MEMBERS VỚI ROLE OWNER ⭐⭐⭐
+    // Lấy user hiện tại
     const {
       data: { user },
     } = await supabase.auth.getUser();
@@ -82,13 +97,12 @@ export default function CreateCommunityPage() {
         {
           id: uuidv4(),
           user_id: user.id,
-          community_id: data[0].id,
+          community_id: (data[0] as Community).id,
           role: "owner",
           joined_at: new Date().toISOString(),
         },
       ]);
     }
-    // ⭐⭐⭐ END ⭐⭐⭐
 
     setMessage("✅ Tạo cộng đồng thành công!");
     setFormData({
@@ -100,7 +114,10 @@ export default function CreateCommunityPage() {
       online_count: 0,
     });
 
-    setCommunities((prev) => [data[0], ...prev]);
+    // Cast data[0] về Community trước khi thêm vào state
+    if (data && data[0]) {
+      setCommunities((prev) => [(data[0] as Community), ...prev]);
+    }
 
     setLoading(false);
   };

@@ -3,7 +3,7 @@
 import { useState, useEffect } from "react";
 import { useForm, FormProvider } from "react-hook-form";
 import type { Control, FieldErrors } from "react-hook-form";
-import { getSupabaseClientOrNull } from "@/lib/supabase/client";
+import { supabase } from "@/lib/supabase/client";
 
 import ListingTitleInput from "@/components/sell/pc//ListingTitleInput";
 import DescriptionEditor from "@/components/sell/pc//DescriptionEditor";
@@ -73,30 +73,13 @@ export default function SellPage() {
   const [communityTagId, setCommunityTagId] = useState<string | null>(null);
   const [authUserId, setAuthUserId] = useState("");
 
-  // Lấy user id (client-only, safe)
+  // Lấy user id
   useEffect(() => {
-    let mounted = true;
-    const supabase = getSupabaseClientOrNull();
-    if (!supabase) {
-      if (mounted) setAuthUserId("");
-      return;
-    }
-
     async function fetchUser() {
-      try {
-        const { data } = await supabase!.auth.getUser();
-        if (!mounted) return;
-        setAuthUserId(data?.user?.id || "");
-      } catch (err) {
-        console.warn("Failed to get user:", err);
-        if (mounted) setAuthUserId("");
-      }
+      const { data } = await supabase.auth.getUser();
+      setAuthUserId(data?.user?.id || "");
     }
     fetchUser();
-
-    return () => {
-      mounted = false;
-    };
   }, []);
 
   // ==========================
@@ -105,13 +88,6 @@ export default function SellPage() {
   const onSubmit = async (data: SellForm) => {
     setLoading(true);
     setMessage(null);
-
-    const supabase = getSupabaseClientOrNull();
-    if (!supabase) {
-      setMessage("⚠️ Supabase chưa được cấu hình cho môi trường này.");
-      setLoading(false);
-      return;
-    }
 
     const { data: auth } = await supabase.auth.getUser();
     if (!auth?.user) {
@@ -150,53 +126,53 @@ export default function SellPage() {
       tags: null,
     };
 
-    try {
-      const { data: insertedProduct, error: insertErr } = await supabase
-        .from("products")
-        .insert(payload)
-        .select("id")
-        .single();
+    const { data: insertedProduct, error: insertErr } = await supabase
+      .from("products")
+      .insert(payload)
+      .select("id")
+      .single();
 
-      if (insertErr || !insertedProduct) {
-        console.error("Insert error:", insertErr);
-        setMessage("🚨 Đăng sản phẩm thất bại!");
-        setLoading(false);
-        return;
-      }
-
-      const productId = insertedProduct.id;
-
-      if (data.community_tag_id) {
-        await supabase.from("product_tags").insert({
-          product_id: productId,
-          tag_id: data.community_tag_id,
-        });
-      }
-
-      setMessage("✅ Đăng sản phẩm thành công!");
-      reset();
-      setCommunityTagId(null);
-    } catch (err) {
-      console.error("Insert unexpected error:", err);
-      setMessage("🚨 Đã xảy ra lỗi khi đăng sản phẩm.");
-    } finally {
+    if (insertErr || !insertedProduct) {
+      console.error("Insert error:", insertErr);
+      setMessage("🚨 Đăng sản phẩm thất bại!");
       setLoading(false);
+      return;
     }
+
+    const productId = insertedProduct.id;
+
+    if (data.community_tag_id) {
+      await supabase.from("product_tags").insert({
+        product_id: productId,
+        tag_id: data.community_tag_id,
+      });
+    }
+
+    setMessage("✅ Đăng sản phẩm thành công!");
+    reset();
+    setCommunityTagId(null);
+    setLoading(false);
   };
 
   return (
     <FormProvider {...methods}>
-      <form onSubmit={handleSubmit(onSubmit)} className="space-y-6 p-5 max-w-2xl mx-auto">
+      <form
+        onSubmit={handleSubmit(onSubmit)}
+        className="space-y-6 p-5 max-w-2xl mx-auto"
+      >
         <ListingTitleInput error={errors.title} />
 
         {/* Cast cục bộ sang kiểu mà component con mong đợi (ProductFormData).
             Ép qua unknown để tránh lỗi tương thích nội bộ Control<T> */}
-        <DescriptionEditor
-          control={methods.control as unknown as Control<ProductFormData>}
-          error={errors.description}
-        />
+       <DescriptionEditor
+  control={methods.control as unknown as Control<ProductFormData>}
+
+  error={errors.description}
+/>
+
 
         <ConditionSelector error={errors.condition?.message} />
+
 
         <CommunitySelector
           userId={authUserId}
@@ -213,11 +189,15 @@ export default function SellPage() {
           }}
         />
 
-        <ImageUploader error={errors.images as FieldErrors<ProductFormData> | undefined} />
+        <ImageUploader
+          error={errors.images as FieldErrors<ProductFormData> | undefined}
+        />
 
         <PriceAndOffers />
 
-        <TechSpecsEditor control={methods.control as unknown as Control<ProductFormData>} />
+        <TechSpecsEditor
+          control={methods.control as unknown as Control<ProductFormData>}
+        />
 
         <PrivateToggle />
 
@@ -234,7 +214,11 @@ export default function SellPage() {
           </button>
         </div>
 
-        {message && <p className="text-center text-sm mt-2">{message}</p>}
+        {message && (
+          <p className="text-center text-sm mt-2">
+            {message}
+          </p>
+        )}
       </form>
     </FormProvider>
   );

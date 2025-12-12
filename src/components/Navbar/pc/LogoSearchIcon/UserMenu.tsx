@@ -32,19 +32,14 @@ export default function UserMenu() {
     return <Loader2 className="w-5 h-5 animate-spin text-gray-500" />
   }
 
-  // --- USER CHƯA LOGIN → Hiện nút đăng nhập ---
+  // --- USER CHƯA LOGIN → Hiện nút đăng nhập (không có avatar) ---
   if (!user) {
     return (
       <>
         <div
-          className="flex items-center gap-2 cursor-pointer"
+          className="flex items-center cursor-pointer px-3 py-1 rounded-md hover:bg-gray-50"
           onClick={() => setShowLogin(true)}
         >
-          <img
-            src="/default-avatar.png"
-            alt="Guest Avatar"
-            className="w-8 h-8 rounded-full object-cover"
-          />
           <span className="text-sm text-gray-700 hover:text-[#9b4de0]">
             Đăng nhập
           </span>

@@ -16,12 +16,20 @@ export default function SidebarRightCard({ selectedCategory }: SidebarRightCardP
   useEffect(() => {
     const loadCommunities = async () => {
       if (!selectedCategory) return;
-      const { data } = await supabase
+
+      const { data, error } = await supabase
         .from("communities")
         .select("*")
         .eq("category", selectedCategory)
         .limit(5);
-      setCommunities(data ?? []);
+
+      if (error) {
+        console.error("Load communities error:", error);
+        setCommunities([]);
+        return;
+      }
+
+      setCommunities((data ?? []) as Community[]);
     };
     loadCommunities();
   }, [selectedCategory]);
@@ -29,13 +37,10 @@ export default function SidebarRightCard({ selectedCategory }: SidebarRightCardP
   return (
     <aside className="fixed top-[10px] right-[10px] z-30 w-[260px] h-[calc(100vh-20px)]">
       <div className="h-full rounded-4xl bg-white border border-gray-200 shadow-sm overflow-hidden flex flex-col">
-
-        {/* UserMenu */}
         <div className="p-4 border-b border-gray-200">
           <UserMenu />
         </div>
 
-        {/* Gợi ý cộng đồng */}
         <div className="flex-1 p-4">
           <h3 className="text-sm font-semibold mb-2">Cộng đồng liên quan</h3>
           {selectedCategory ? (
@@ -44,9 +49,7 @@ export default function SidebarRightCard({ selectedCategory }: SidebarRightCardP
                 {communities.map((c) => (
                   <li key={c.id} className="p-2 rounded-md hover:bg-gray-50 cursor-pointer">
                     <div className="font-medium text-gray-800">{c.title}</div>
-                    <div className="text-xs text-gray-500">
-                      👥 {c.members_count ?? 0} thành viên
-                    </div>
+                    <div className="text-xs text-gray-500">👥 {c.members_count ?? 0} thành viên</div>
                   </li>
                 ))}
               </ul>

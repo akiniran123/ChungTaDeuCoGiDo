@@ -4,7 +4,7 @@ import React, { useEffect, useState } from "react";
 import { supabase } from "@/lib/supabase/client";
 import Link from "next/link";
 import { Product } from "@/types";
-import MiniChatBox from "@/app/MiniChat/MiniChatBox"; // import MiniChatBox
+import MiniChatBox from "@/components/MiniChat/MiniChatBox"; // import MiniChatBox
 
 interface User {
   id: string;

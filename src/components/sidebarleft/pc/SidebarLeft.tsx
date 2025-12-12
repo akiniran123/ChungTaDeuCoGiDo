@@ -4,7 +4,7 @@ import { useState, useEffect, useCallback } from "react";
 import SidebarMainNav from "./SidebarMainNav";
 import SidebarCommunity from "./SidebarCommunity";
 import MessagesPanel from "./MessagesPanel";
-import MiniChatBox from "@/app/MiniChat/MiniChatBox";
+import MiniChatBox from "@/components/MiniChat/MiniChatBox";
 import NewsPanel from "./NewsPanel";
 import { supabase } from "@/lib/supabase/client";
 import Logo from "@/components/Navbar/pc/LogoSearchIcon/logo";

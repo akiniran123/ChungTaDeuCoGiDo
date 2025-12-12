@@ -171,7 +171,8 @@ export default function SellPage() {
 />
 
 
-        <ConditionSelector error={errors.condition} />
+        <ConditionSelector error={errors.condition?.message} />
+
 
         <CommunitySelector
           userId={authUserId}

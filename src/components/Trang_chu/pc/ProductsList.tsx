@@ -1,4 +1,5 @@
 "use client";
+
 import { useState, useEffect, useRef } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import { LayoutGrid, Grid } from "lucide-react";
@@ -7,7 +8,7 @@ import SearchBar from "@/components/Navbar/pc/LogoSearchIcon/SearchBar";
 import type { Database } from "@/types/supabase";
 import ProductCard from "@/components/Trang_chu/pc/ProductCard";
 
-type ProductWithUser = Database["public"]["Tables"]["products"]["Row"] & {
+export type ProductWithUser = Database["public"]["Tables"]["products"]["Row"] & {
   users?: {
     username: string | null;
     avatar_url: string | null;
@@ -19,18 +20,19 @@ type ProductWithUser = Database["public"]["Tables"]["products"]["Row"] & {
   communityIcon?: string | null;
   mainTag?: string | null;
   community_id?: string | null;
+  views?: number | null;
 };
 
-type Badge = Database["public"]["Tables"]["badges"]["Row"];
+export type Badge = Database["public"]["Tables"]["badges"]["Row"];
 
-interface ProductsListProps {
+export type ProductsListProps = {
   products: ProductWithUser[];
   likesCount: Record<string, number>;
   commentsCount: Record<string, number>;
   likedIds: string[];
   setLikedIds: React.Dispatch<React.SetStateAction<string[]>>;
-  userBadges: Record<string, Badge[]>;
-}
+  userBadges?: Record<string, Badge[]>;
+};
 
 export default function ProductsList({
   products,
@@ -50,7 +52,7 @@ export default function ProductsList({
     ? products.filter((p) => p.tags?.includes(activeTag))
     : products;
 
-  // ⭐ Header ẩn/hiện mượt mà hơn (không giật)
+  // Header show/hide with requestAnimationFrame to avoid jank
   useEffect(() => {
     let ticking = false;
 
@@ -79,7 +81,7 @@ export default function ProductsList({
     return () => window.removeEventListener("scroll", handleScroll);
   }, []);
 
-  // ⭐ Không dùng "instant" để tránh giật scroll
+  // Restore scroll position when toggling grid to avoid jump
   useEffect(() => {
     window.scrollTo({ top: scrollPosition.current, behavior: "auto" });
   }, [biggerGrid]);
@@ -103,7 +105,6 @@ export default function ProductsList({
 
   return (
     <div className="px-6 pb-6">
-      {/* ⭐ HEADER */}
       <AnimatePresence>
         {showHeader && (
           <motion.div
@@ -114,7 +115,6 @@ export default function ProductsList({
             className="sticky top-0 z-30 bg-white"
             style={{ willChange: "transform, opacity" }}
           >
-            {/* CATEGORY */}
             <div className="flex items-center justify-center text-[12px] overflow-x-auto no-scrollbar px-2 py-2">
               {categories.map((cat) => (
                 <button
@@ -131,15 +131,10 @@ export default function ProductsList({
               ))}
             </div>
 
-            {/* SEARCH */}
             <div className="mb-2 py-2 px-2">
-              <SearchBar
-                userId={"demo-user"}
-                onSearch={(q) => console.log("Searching:", q)}
-              />
+              <SearchBar userId={"demo-user"} onSearch={(q) => console.log("Searching:", q)} />
             </div>
 
-            {/* FILTER BAR */}
             <div className="pb-2 flex items-center gap-2 px-2">
               <button className="flex items-center gap-1 px-3 py-1.5 text-sm font-medium text-gray-700 hover:bg-gray-100 rounded-md">
                 <span>Best</span>
@@ -154,7 +149,6 @@ export default function ProductsList({
                 </svg>
               </button>
 
-              {/* TOGGLE GRID */}
               <button
                 onClick={toggleGrid}
                 className={`flex items-center gap-1 px-3 py-1.5 text-sm font-medium rounded-md cursor-pointer ${
@@ -171,7 +165,6 @@ export default function ProductsList({
         )}
       </AnimatePresence>
 
-      {/* TAG FILTER */}
       {activeTag && (
         <div className="mb-4 flex items-center gap-3">
           <span className="text-sm cursor-pointer select-none">
@@ -187,7 +180,6 @@ export default function ProductsList({
         </div>
       )}
 
-      {/* ⭐ PRODUCT GRID — chuyển kiểu fade + scale để mượt tuyệt đối */}
       <AnimatePresence mode="wait">
         <motion.div
           key={biggerGrid ? "large" : "small"}
@@ -196,9 +188,7 @@ export default function ProductsList({
           exit={{ opacity: 0, scale: 0.96 }}
           transition={{ duration: 0.25, ease: "easeOut" }}
           style={{ willChange: "transform, opacity" }}
-          className={`grid gap-4 ${
-            biggerGrid ? "grid-cols-4" : "grid-cols-1"
-          }`}
+          className={`grid gap-4 ${biggerGrid ? "grid-cols-4" : "grid-cols-1"}`}
         >
           {visibleProducts.map((p) =>
             biggerGrid ? (
@@ -243,7 +233,7 @@ export default function ProductsList({
                 setActiveTag={setActiveTag}
                 shareProduct={() => {
                   navigator.share?.({
-                    title: p.title,
+                    title: p.title ?? undefined,
                     url: `/deal/${p.id}`,
                   });
                 }}

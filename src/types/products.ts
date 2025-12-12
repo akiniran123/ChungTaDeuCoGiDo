@@ -1,28 +1,21 @@
-// src/types/products.ts
-import type { Database } from "@/types/supabase";
-
-export type ProductWithUser = Database["public"]["Tables"]["products"]["Row"] & {
-  users?: {
-    username: string | null;
-    avatar_url: string | null;
-    id?: string;
-  } | null;
-  tags?: string[];
-  communityNames?: string[];
+// src/types/ui.ts
+export type ProductWithUser = {
+  id: string;
+  title: string;
+  category: string | null;
+  is_private: boolean | null;
+  condition: string | null;
+  description: string | null;
+  specs: unknown; // hoặc Json nếu bạn có type Json
+  images: string | null;
+  video_url: string | null;
+  price?: number | null;
+  created_at?: string | null;
+  user_id?: string | null;
+  tags: string | null; // nếu ProductsList expects string
+  author?: string | null;
+  avatar?: string | null;
   communityName?: string | null;
   communityIcon?: string | null;
-  mainTag?: string | null;
-  community_id?: string | null;
-  [k: string]: unknown;
+  // thêm các trường khác mà ProductsList dùng
 };
-
-export type Badge = Database["public"]["Tables"]["badges"]["Row"];
-
-export interface ProductsListProps {
-  products: ProductWithUser[];
-  likesCount: Record<string, number>;
-  commentsCount: Record<string, number>;
-  likedIds: string[];
-  setLikedIds: React.Dispatch<React.SetStateAction<string[]>>;
-  userBadges: Record<string, Badge[]>;
-}

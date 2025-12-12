@@ -1,12 +1,12 @@
-import { Control, Controller, FieldErrors } from 'react-hook-form'
-import { ProductFormData } from '@/types/form'
+import { Control, Controller, FieldError } from "react-hook-form";
+import { ProductFormData } from "@/types/form";
 
 export default function DescriptionEditorSection({
   control,
   error,
 }: {
-  control: Control<ProductFormData>
-  error?: FieldErrors['description']
+  control: Control<ProductFormData>;
+  error?: FieldError;
 }) {
   return (
     <div className="space-y-1">
@@ -23,7 +23,7 @@ export default function DescriptionEditorSection({
           />
         )}
       />
-      {error && <p className="text-sm text-red-500">{error.message as string}</p>}
+      {error && <p className="text-sm text-red-500">{String(error.message)}</p>}
     </div>
-  )
+  );
 }

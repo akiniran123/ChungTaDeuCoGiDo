@@ -146,6 +146,7 @@ const JoinLeaveButton: React.FC<JoinLeaveButtonProps> = ({
   };
 
   // XÓA CỘNG ĐỒNG – CHỈ OWNER
+    // XÓA CỘNG ĐỒNG – CHỈ OWNER
   const handleDeleteCommunity = async () => {
     if (
       !confirm(
@@ -177,8 +178,10 @@ const JoinLeaveButton: React.FC<JoinLeaveButtonProps> = ({
 
       alert("Cộng đồng đã được xóa hoàn toàn.");
       window.location.href = "/communities";
-    } catch (err: any) {
-      alert("Lỗi khi xóa cộng đồng: " + err.message);
+    } catch (err: unknown) {
+      const message =
+        err instanceof Error ? err.message : String(err ?? "Không xác định");
+      alert("Lỗi khi xóa cộng đồng: " + message);
     }
 
     setLoading(false);

@@ -5,15 +5,32 @@ import { supabase } from "@/lib/supabase/client";
 import { Send, X } from "lucide-react";
 import Image from "next/image";
 
+
 type MiniChatProps = {
   partnerId: string;
   onClose: () => void;
 };
 
+interface User {
+  id: string;
+  username: string;
+  avatar_url: string | null;
+}
+
+interface Message {
+  id: string;
+  sender_id: string;
+  receiver_id: string;
+  content: string;
+  created_at: string | null;
+  type: string | null;
+  is_read: boolean | null;
+}
+
 export default function MiniChatBox({ partnerId, onClose }: MiniChatProps) {
   const [currentUserId, setCurrentUserId] = useState<string | null>(null);
-  const [messages, setMessages] = useState<any[]>([]);
-  const [partner, setPartner] = useState<any>(null);
+  const [messages, setMessages] = useState<Message[]>([]);
+  const [partner, setPartner] = useState<User | null>(null);
   const [newMessage, setNewMessage] = useState("");
   const scrollRef = useRef<HTMLDivElement | null>(null);
 
@@ -35,7 +52,7 @@ export default function MiniChatBox({ partnerId, onClose }: MiniChatProps) {
         .eq("id", partnerId)
         .single();
 
-      setPartner(data);
+      if (data) setPartner(data as User);
     };
 
     fetchPartner();
@@ -52,11 +69,9 @@ export default function MiniChatBox({ partnerId, onClose }: MiniChatProps) {
         .order("created_at", { ascending: true });
 
       const filtered = data?.filter(
-        (msg) =>
-          (msg.sender_id === currentUserId &&
-            msg.receiver_id === partnerId) ||
-          (msg.sender_id === partnerId &&
-            msg.receiver_id === currentUserId)
+        (msg: Message) =>
+          (msg.sender_id === currentUserId && msg.receiver_id === partnerId) ||
+          (msg.sender_id === partnerId && msg.receiver_id === currentUserId)
       );
 
       if (filtered) setMessages(filtered);
@@ -70,7 +85,7 @@ export default function MiniChatBox({ partnerId, onClose }: MiniChatProps) {
         "postgres_changes",
         { event: "INSERT", schema: "public", table: "messages" },
         (payload) => {
-          const msg = payload.new;
+          const msg = payload.new as Message;
 
           if (
             (msg.sender_id === currentUserId &&
@@ -93,7 +108,7 @@ export default function MiniChatBox({ partnerId, onClose }: MiniChatProps) {
     scrollRef.current?.scrollIntoView({ behavior: "smooth" });
   }, [messages]);
 
-  const sendMessage = async (e: any) => {
+  const sendMessage = async (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
     if (!newMessage.trim() || !currentUserId) return;
 
@@ -107,18 +122,18 @@ export default function MiniChatBox({ partnerId, onClose }: MiniChatProps) {
     setNewMessage("");
   };
 
-  const formatTime = (t: string) => {
-    const d = new Date(t);
-    return `${String(d.getHours()).padStart(2, "0")}:${String(
-      d.getMinutes()
-    ).padStart(2, "0")}`;
-  };
+  const formatTime = (t: string | null) => {
+  if (!t) return "--:--"; // fallback if timestamp is missing
+  const d = new Date(t);
+  return `${String(d.getHours()).padStart(2, "0")}:${String(
+    d.getMinutes()
+  ).padStart(2, "0")}`;
+};
 
   if (!partner) return null;
 
   return (
     <div className="fixed bottom-4 right-4 w-80 h-[420px] bg-white shadow-2xl rounded-xl flex flex-col z-[999]">
-
       {/* HEADER */}
       <div className="flex items-center justify-between px-3 py-2 border-b border-gray-200 bg-white rounded-t-xl">
         <div className="flex items-center gap-2">
@@ -177,7 +192,6 @@ export default function MiniChatBox({ partnerId, onClose }: MiniChatProps) {
           className="flex-1 px-3 py-1.5 text-sm border rounded-full focus:ring-1 focus:ring-pink-500 focus:outline-none"
         />
 
-        {/* Nút gửi thêm cursor-pointer */}
         <button
           type="submit"
           className="p-2 bg-white text-gray-700 rounded-full hover:bg-gray-100 cursor-pointer"

@@ -251,8 +251,11 @@ export default function SidebarLeft() {
           open={openMessages}
           setOpen={setOpenMessages}
           conversations={conversations}
+          // ✅ TOGGLE MiniChatBox khi click conversation
           onSelect={(id) => {
-            setOpenChats((prev) => (prev.includes(id) ? prev : [...prev, id]));
+            setOpenChats((prev) =>
+              prev.includes(id) ? prev.filter((x) => x !== id) : [...prev, id]
+            );
           }}
           activePanel={activePanel}
           setActivePanel={setActivePanel}

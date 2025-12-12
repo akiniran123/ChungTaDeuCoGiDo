@@ -14,8 +14,8 @@ export interface Product {
   is_private: boolean | null;
   condition: string | null;
   description: string | null;
-  specs: Record<string, any> | null;
-  images: string[] | null; // ✅ Đã sửa
+  specs: Record<string, Json> | null; // ✅ fixed
+  images: string[] | null;
   image_url: string | null;
   video_url: string | null;
   price: number | null;

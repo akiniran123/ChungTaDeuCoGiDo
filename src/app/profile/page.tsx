@@ -23,6 +23,7 @@ export type UserData = {
   identity: number | null;
   phone: number | null;
   birth: string | null;
+  updated_at?: string | null;
 };
 
 // ==========================
@@ -51,7 +52,6 @@ export default function ProfilePage() {
     birth: "",
   });
 
-  // 🔥 Không dùng any: dùng User | null
   const [currentUser, setCurrentUser] = useState<User | null>(null);
   const [userProducts, setUserProducts] = useState<Product[]>([]);
   const [loadingProducts, setLoadingProducts] = useState(true);
@@ -75,25 +75,23 @@ export default function ProfilePage() {
       setCurrentUser(userSession);
 
       const { data: userData } = await supabase
-        .from("users")
-        .select("*")
-        .eq("id", userSession.id)
-        .maybeSingle();
+  .from("users")
+  .select("*")
+  .eq("id", userSession.id)
+  .maybeSingle();
 
-      if (!userData) {
-        setLoading(false);
-        return;
-      }
+if (!userData) return;
 
-      setUser(userData);
+setUser(userData as UserData);
 
-      setFormData({
-        username: userData.username ?? "",
-        avatar_url: userData.avatar_url ?? "",
-        address: userData.address ?? "",
-        phone: userData.phone?.toString() ?? "",
-        birth: userData.birth ?? "",
-      });
+setFormData({
+  username: (userData as UserData).username ?? "",
+  avatar_url: (userData as UserData).avatar_url ?? "",
+  address: (userData as UserData).address ?? "",
+  phone: (userData as UserData).phone?.toString() ?? "",
+  birth: (userData as UserData).birth ?? "",
+});
+
 
       setLoading(false);
     };
@@ -102,7 +100,7 @@ export default function ProfilePage() {
   }, []);
 
   // ==========================
-  // 📌 Load Sản Phẩm của User
+  // 📌 Load Products của User
   // ==========================
   useEffect(() => {
     if (!user) return;
@@ -111,7 +109,7 @@ export default function ProfilePage() {
       setLoadingProducts(true);
 
       const { data, error } = await supabase
-        .from("products")
+        .from("products") // ✅ Bỏ generic để fix lỗi
         .select("*")
         .eq("user_id", user.id)
         .order("created_at", { ascending: false });
@@ -119,7 +117,7 @@ export default function ProfilePage() {
       if (error) console.error(error);
 
       if (data) {
-        const normalized = data.map((p) => {
+        const normalized = data.map((p: any) => {
           let images: string[] = [];
 
           if (Array.isArray(p.images)) images = p.images;
@@ -150,8 +148,8 @@ export default function ProfilePage() {
   const handleSave = async () => {
     if (!user) return;
 
-    const updates = {
-      username: formData.username.trim(),
+    const updates: Partial<UserData> = {
+      username: formData.username.trim() || null,
       avatar_url: formData.avatar_url.trim() || null,
       address: formData.address.trim() || null,
       phone: formData.phone ? parseInt(formData.phone) : null,
@@ -159,7 +157,8 @@ export default function ProfilePage() {
       updated_at: new Date().toISOString(),
     };
 
-    await supabase.from("users").update(updates).eq("id", user.id);
+    const { error } = await supabase.from("users").update(updates).eq("id", user.id);
+    if (error) console.error(error);
 
     setUser({ ...user, ...updates });
     setIsEditing(false);
@@ -186,11 +185,13 @@ export default function ProfilePage() {
         }
       }
 
-      await supabase
+      const { error } = await supabase
         .from("products")
         .delete()
         .eq("id", productId)
         .eq("user_id", currentUser.id);
+
+      if (error) console.error(error);
 
       setUserProducts((prev) => prev.filter((p) => p.id !== productId));
     } finally {
@@ -198,9 +199,6 @@ export default function ProfilePage() {
     }
   };
 
-  // ==========================
-  // 📌 UI Loading
-  // ==========================
   if (loading)
     return (
       <div className="flex justify-center items-center h-80">
@@ -211,19 +209,12 @@ export default function ProfilePage() {
   if (!user)
     return <p className="text-center py-20">Chưa đăng nhập</p>;
 
-  // ==========================
-  // 📌 UI
-  // ==========================
   return (
     <div className="min-h-screen bg-gray-50 py-10">
       <div className="max-w-3xl mx-auto bg-white rounded-2xl shadow-lg p-8">
-        
-        {/* ================= USER INFO ================ */}
+        {/* USER INFO */}
         <div className="flex justify-between">
-          <h2 className="text-2xl font-semibold text-gray-800">
-            Hồ sơ cá nhân
-          </h2>
-
+          <h2 className="text-2xl font-semibold text-gray-800">Hồ sơ cá nhân</h2>
           {isEditing ? (
             <div className="flex gap-2">
               <button
@@ -257,7 +248,6 @@ export default function ProfilePage() {
             height={120}
             className="rounded-full border shadow-md"
           />
-
           <h2 className="text-xl font-semibold text-gray-800 mt-2">
             {user.username || "Người dùng"}
           </h2>
@@ -279,9 +269,7 @@ export default function ProfilePage() {
 
                 return (
                   <div key={key}>
-                    <label className="block text-sm mb-1 text-gray-600">
-                      {label}
-                    </label>
+                    <label className="block text-sm mb-1 text-gray-600">{label}</label>
                     <input
                       type={key === "birth" ? "date" : "text"}
                       value={formData[typedKey]}
@@ -303,10 +291,7 @@ export default function ProfilePage() {
           )}
         </div>
 
-        {/* ======================================= */}
-        {/* 🔥 DANH SÁCH SẢN PHẨM CỦA USER  */}
-        {/* ======================================= */}
-
+        {/* USER PRODUCTS */}
         <h3 className="text-xl font-semibold text-gray-800 mt-10 mb-4">
           Sản phẩm đã đăng
         </h3>
@@ -336,20 +321,13 @@ export default function ProfilePage() {
                     height={300}
                     className="object-cover w-full h-40"
                   />
-
                   <div className="p-3">
-                    <h3 className="font-semibold text-gray-800 text-sm">
-                      {p.title}
-                    </h3>
-
+                    <h3 className="font-semibold text-gray-800 text-sm">{p.title}</h3>
                     <p className="text-gray-600 text-sm mt-1">
                       {p.price ? p.price.toLocaleString() + "₫" : "Chưa có giá"}
                     </p>
-
                     {p.description && (
-                      <p className="text-gray-500 text-xs mt-1 line-clamp-2">
-                        {p.description}
-                      </p>
+                      <p className="text-gray-500 text-xs mt-1 line-clamp-2">{p.description}</p>
                     )}
                   </div>
 
@@ -361,9 +339,7 @@ export default function ProfilePage() {
                       }}
                       disabled={deleting === p.id}
                       className={`absolute top-2 right-2 px-3 py-1 rounded text-white text-xs cursor-pointer ${
-                        deleting === p.id
-                          ? "bg-gray-400"
-                          : "bg-red-500 hover:bg-red-600"
+                        deleting === p.id ? "bg-gray-400" : "bg-red-500 hover:bg-red-600"
                       }`}
                     >
                       {deleting === p.id ? "Đang xoá..." : "Xoá"}

@@ -8,6 +8,7 @@ import Image from "next/image";
 type MiniChatProps = {
   partnerId: string;
   onClose: () => void;
+  onReadMessages: () => void; // callback cập nhật SidebarLeft
 };
 
 interface User {
@@ -26,24 +27,44 @@ interface Message {
   is_read: boolean | null;
 }
 
-export default function MiniChatBox({ partnerId, onClose }: MiniChatProps) {
+export default function MiniChatBox({
+  partnerId,
+  onClose,
+  onReadMessages,
+}: MiniChatProps) {
   const [currentUserId, setCurrentUserId] = useState<string | null>(null);
   const [messages, setMessages] = useState<Message[]>([]);
   const [partner, setPartner] = useState<User | null>(null);
   const [newMessage, setNewMessage] = useState("");
   const scrollRef = useRef<HTMLDivElement | null>(null);
 
+  // ⭐ Lấy user ID
   useEffect(() => {
-    const getUser = async () => {
-      const { data } = await supabase.auth.getUser();
+    supabase.auth.getUser().then(({ data }) => {
       if (data.user) setCurrentUserId(data.user.id);
-    };
-    getUser();
+    });
   }, []);
 
+  // ⭐ Đánh dấu đã đọc khi mở MiniChat
   useEffect(() => {
-    if (!partnerId) return;
+    if (!partnerId || !currentUserId) return;
 
+    const markRead = async () => {
+      await supabase
+        .from("messages")
+        .update({ is_read: true })
+        .eq("sender_id", partnerId)
+        .eq("receiver_id", currentUserId)
+        .eq("is_read", false);
+
+      onReadMessages(); // cập nhật SidebarLeft
+    };
+
+    markRead();
+  }, [partnerId, currentUserId, onReadMessages]);
+
+  // ⭐ Load thông tin user đối phương
+  useEffect(() => {
     const fetchPartner = async () => {
       const { data } = await supabase
         .from("users")
@@ -57,6 +78,7 @@ export default function MiniChatBox({ partnerId, onClose }: MiniChatProps) {
     fetchPartner();
   }, [partnerId]);
 
+  // ⭐ Load tin nhắn + Realtime
   useEffect(() => {
     if (!currentUserId || !partnerId) return;
 
@@ -69,8 +91,10 @@ export default function MiniChatBox({ partnerId, onClose }: MiniChatProps) {
 
       const filtered = data?.filter(
         (msg: Message) =>
-          (msg.sender_id === currentUserId && msg.receiver_id === partnerId) ||
-          (msg.sender_id === partnerId && msg.receiver_id === currentUserId)
+          (msg.sender_id === currentUserId &&
+            msg.receiver_id === partnerId) ||
+          (msg.sender_id === partnerId &&
+            msg.receiver_id === currentUserId)
       );
 
       if (filtered) setMessages(filtered);
@@ -78,36 +102,51 @@ export default function MiniChatBox({ partnerId, onClose }: MiniChatProps) {
 
     fetchMessages();
 
+    // ⭐ Realtime CHUẨN
     const channel = supabase
-      .channel("mini-chat-realtime")
+      .channel(`mini-chat-realtime-${currentUserId}-${partnerId}`)
       .on(
         "postgres_changes",
         { event: "INSERT", schema: "public", table: "messages" },
-        (payload) => {
+        async (payload) => {
           const msg = payload.new as Message;
 
-          if (
+          const isRelated =
             (msg.sender_id === currentUserId &&
               msg.receiver_id === partnerId) ||
             (msg.sender_id === partnerId &&
-              msg.receiver_id === currentUserId)
-          ) {
-            setMessages((prev) => [...prev, msg]);
+              msg.receiver_id === currentUserId);
+
+          if (!isRelated) return;
+
+          setMessages((prev) => [...prev, msg]);
+
+          // Nếu đối phương gửi → đánh dấu đã đọc
+          if (msg.sender_id === partnerId) {
+            await supabase
+              .from("messages")
+              .update({ is_read: true })
+              .eq("id", msg.id);
+
+            onReadMessages();
           }
         }
       )
       .subscribe();
 
+    // ❗ CLEANUP CHUẨN (KHÔNG ASYNC)
     return () => {
       supabase.removeChannel(channel);
     };
-  }, [currentUserId, partnerId]);
+  }, [currentUserId, partnerId, onReadMessages]);
 
+  // ⭐ Auto scroll
   useEffect(() => {
     scrollRef.current?.scrollIntoView({ behavior: "smooth" });
   }, [messages]);
 
-  const sendMessage = async (e: React.FormEvent<HTMLFormElement>) => {
+  // ⭐ Gửi tin nhắn
+  const sendMessage = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!newMessage.trim() || !currentUserId) return;
 
@@ -124,9 +163,10 @@ export default function MiniChatBox({ partnerId, onClose }: MiniChatProps) {
   const formatTime = (t: string | null) => {
     if (!t) return "--:--";
     const d = new Date(t);
-    return `${String(d.getHours()).padStart(2, "0")}:${String(
-      d.getMinutes()
-    ).padStart(2, "0")}`;
+    return `${d.getHours().toString().padStart(2, "0")}:${d
+      .getMinutes()
+      .toString()
+      .padStart(2, "0")}`;
   };
 
   if (!partner) return null;
@@ -134,7 +174,7 @@ export default function MiniChatBox({ partnerId, onClose }: MiniChatProps) {
   return (
     <div className="fixed bottom-4 right-4 w-80 h-[420px] bg-white shadow-2xl rounded-xl flex flex-col z-[999]">
       {/* HEADER */}
-      <div className="flex items-center justify-between px-3 py-2 border-b border-gray-200 bg-white rounded-t-xl">
+      <div className="flex items-center justify-between px-3 py-2 border-b bg-white">
         <div className="flex items-center gap-2">
           <Image
             src={partner.avatar_url || "/default-avatar.png"}
@@ -145,15 +185,13 @@ export default function MiniChatBox({ partnerId, onClose }: MiniChatProps) {
           />
           <div className="font-semibold text-sm">{partner.username}</div>
         </div>
-
-        {/*  CHỈ THÊM cursor-pointer TẠI ĐÂY  */}
-        <button onClick={onClose} className="cursor-pointer">
+        <button onClick={onClose}>
           <X size={18} />
         </button>
       </div>
 
-      {/* CHAT AREA */}
-      <div className="flex-1 overflow-y-auto px-3 py-3 space-y-3 bg-gray-50">
+      {/* CHAT */}
+      <div className="flex-1 overflow-y-auto px-3 py-3 bg-gray-50 space-y-3">
         {messages.map((msg) => (
           <div
             key={msg.id}
@@ -170,14 +208,13 @@ export default function MiniChatBox({ partnerId, onClose }: MiniChatProps) {
             >
               {msg.content}
             </div>
-
             <span className="text-[10px] text-gray-400 mt-1">
               {formatTime(msg.created_at)}
             </span>
           </div>
         ))}
 
-        <div ref={scrollRef}></div>
+        <div ref={scrollRef} />
       </div>
 
       {/* INPUT */}
@@ -189,13 +226,9 @@ export default function MiniChatBox({ partnerId, onClose }: MiniChatProps) {
           value={newMessage}
           onChange={(e) => setNewMessage(e.target.value)}
           placeholder="Nhập tin nhắn..."
-          className="flex-1 px-3 py-1.5 text-sm border rounded-full focus:ring-1 focus:ring-pink-500 focus:outline-none"
+          className="flex-1 px-3 py-1.5 text-sm border rounded-full"
         />
-
-        <button
-          type="submit"
-          className="p-2 bg-white text-gray-700 rounded-full hover:bg-gray-100 cursor-pointer"
-        >
+        <button type="submit" className="p-2 hover:bg-gray-100 rounded-full">
           <Send size={16} />
         </button>
       </form>

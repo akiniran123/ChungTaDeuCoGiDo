@@ -5,21 +5,60 @@ import { supabase } from "@/lib/supabase/client";
 import type { Database } from "@/types/supabase";
 import ProductsList from "@/components/Trang_chu/pc/ProductsList";
 
-type ProductWithUser = Database["public"]["Tables"]["products"]["Row"] & {
-  users?: {
-    id?: string;
-    username: string | null;
-    avatar_url: string | null;
-  } | null;
-  tags: string[];
-  communityName?: string | null;
-  communityIcon?: string | null;
+type Badge = Database["public"]["Tables"]["badges"]["Row"];
+
+type ProductWithUser = {
+  id: string;
+  title?: string | null;
+  price?: number | null;
+  image_url?: string | null;
+  created_at?: string | null;
+  category?: string | null;
+  user_id?: string | null;
   author_id?: string | null;
   author?: string | null;
   avatar?: string | null;
+  tags: string[];
+  communityName?: string | null;
+  communityIcon?: string | null;
+  [k: string]: unknown;
 };
 
-type Badge = Database["public"]["Tables"]["badges"]["Row"];
+type RawTagRow = { id?: string; name?: string | null; title?: string | null };
+type RawProductTag = {
+  tag_id?: string;
+  tag?: RawTagRow | { Row?: RawTagRow } | { row?: RawTagRow } | null;
+  name?: string | null;
+};
+type RawProductRow = {
+  id: string;
+  title?: string | null;
+  price?: number | null;
+  image_url?: string | null;
+  created_at?: string | null;
+  category?: string | null;
+  user_id?: string | null;
+  users?: { id?: string; username?: string | null; avatar_url?: string | null } | null;
+  communities?: { id?: string; title?: string | null; avatar_url?: string | null } | null;
+  product_tags?: RawProductTag[] | null;
+  [k: string]: unknown;
+};
+type LikeRow = { product_id: string; user_id: string };
+type UserBadgeRow = { badge_id: string; badges?: Badge | null };
+
+function extractTagName(pt: RawProductTag | undefined): string | undefined {
+  if (!pt) return undefined;
+  if (pt.tag && typeof pt.tag === "object") {
+    const t = pt.tag as RawTagRow | { Row?: RawTagRow } | { row?: RawTagRow };
+    if ("name" in t && t.name) return t.name!;
+    if ("title" in t && t.title) return t.title!;
+    const rowCandidate = (t as { Row?: RawTagRow }).Row ?? (t as { row?: RawTagRow }).row;
+    if (rowCandidate?.name) return rowCandidate.name;
+    if (rowCandidate?.title) return rowCandidate.title;
+  }
+  if (pt.name) return pt.name;
+  return undefined;
+}
 
 export default function ProductsPage() {
   const [products, setProducts] = useState<ProductWithUser[]>([]);
@@ -32,7 +71,7 @@ export default function ProductsPage() {
   useEffect(() => {
     const fetchProducts = async () => {
       try {
-        const { data, error } = await supabase
+        const res = await supabase
           .from("products")
           .select(
             `
@@ -49,93 +88,87 @@ export default function ProductsPage() {
             ),
             product_tags (
               tag_id,
-              tags:tag_id (
-                id,
-                name
-              )
+              tag:tag_id ( id, name )
             )
           `
           )
           .order("created_at", { ascending: false });
 
-        if (error) throw error;
+        if (res.error) throw res.error;
 
-        const raw = (data || []) as any[];
+        const raw = res.data as RawProductRow[] | null;
+        const rows: RawProductRow[] = Array.isArray(raw) ? raw : [];
 
-        const formatted: ProductWithUser[] = raw.map((p) => ({
-          ...p,
-          author_id: p.users?.id ?? null,
-          author: p.users?.username ?? "Người dùng",
-          avatar:
-            p.users?.avatar_url && p.users?.avatar_url !== ""
-              ? p.users.avatar_url
-              : null,
-          users: p.users
-            ? {
-                id: p.users.id,
-                username: p.users.username,
-                avatar_url:
-                  p.users.avatar_url && p.users.avatar_url !== ""
-                    ? p.users.avatar_url
-                    : null,
-              }
-            : null,
-          tags:
-            (p.product_tags || [])
-              .map((pt: any) => pt.tags?.name)
-              .filter(Boolean) || [],
-          communityName: p.communities?.title || null,
-          communityIcon: p.communities?.avatar_url || null,
-        }));
+        const formatted: ProductWithUser[] = rows.map((p) => {
+          const tagNames = (p.product_tags ?? [])
+            .map((pt) => extractTagName(pt))
+            .filter((n): n is string => typeof n === "string");
+
+          return {
+            id: p.id,
+            title: p.title ?? null,
+            price: typeof p.price === "number" ? p.price : Number(p.price ?? 0),
+            image_url: p.image_url ?? null,
+            created_at: p.created_at ?? null,
+            category: p.category ?? null,
+            user_id: p.user_id ?? null,
+            author_id: p.users?.id ?? null,
+            author: p.users?.username ?? "Người dùng",
+            avatar: p.users?.avatar_url || null,
+            tags: tagNames,
+            communityName: p.communities?.title ?? null,
+            communityIcon: p.communities?.avatar_url ?? null,
+          };
+        });
 
         setProducts(formatted);
 
         const commentMap: Record<string, number> = {};
         await Promise.all(
           formatted.map(async (prod) => {
-            const { count } = await supabase
+            const cRes = await supabase
               .from("comments")
-              .select("*", { count: "exact" })
+              .select("*", { count: "exact", head: false })
               .eq("product_id", prod.id);
-            commentMap[prod.id] = count || 0;
+            const cnt =
+              typeof cRes.count === "number"
+                ? cRes.count
+                : Array.isArray(cRes.data)
+                ? cRes.data.length
+                : 0;
+            commentMap[prod.id] = cnt;
           })
         );
         setCommentsCount(commentMap);
 
-        const { data: likesData } = await supabase
-          .from("product_likes")
-          .select("product_id, user_id");
-
+        const likesRes = await supabase.from("product_likes").select("product_id, user_id");
+        const likesArr: LikeRow[] | null = Array.isArray(likesRes.data)
+          ? (likesRes.data as LikeRow[])
+          : null;
         const likeMap: Record<string, number> = {};
         const liked: string[] = [];
 
-        likesData?.forEach((l) => {
-          likeMap[l.product_id] = (likeMap[l.product_id] || 0) + 1;
-        });
+        if (likesArr) {
+          for (const row of likesArr) {
+            likeMap[row.product_id] = (likeMap[row.product_id] || 0) + 1;
+          }
+        }
 
-        const { data: authData } = await supabase.auth.getUser();
-        const user = authData.user;
-
-        if (user && likesData) {
-          liked.push(
-            ...likesData
-              .filter((l) => l.user_id === user.id)
-              .map((l) => l.product_id)
-          );
+        const authRes = await supabase.auth.getUser();
+        const user = authRes.data?.user ?? null;
+        if (user && likesArr) {
+          liked.push(...likesArr.filter((l) => l.user_id === user.id).map((l) => l.product_id));
         }
 
         setLikesCount(likeMap);
         setLikedIds(liked);
 
-        const userIds = [
-          ...new Set(formatted.map((p) => p.users?.id).filter(Boolean)),
-        ] as string[];
-
+        const userIds = [...new Set(formatted.map((p) => p.author_id).filter(Boolean))] as string[];
         const badgeMap: Record<string, Badge[]> = {};
 
         await Promise.all(
           userIds.map(async (uid) => {
-            const { data: bData } = await supabase
+            const bRes = await supabase
               .from("user_badges")
               .select(
                 `
@@ -151,9 +184,12 @@ export default function ProductsPage() {
               )
               .eq("user_id", uid);
 
-            badgeMap[uid] = (bData || [])
-              .map((b) => b.badges)
-              .filter(Boolean);
+            const arr: UserBadgeRow[] | null = Array.isArray(bRes.data)
+              ? (bRes.data as UserBadgeRow[])
+              : null;
+            badgeMap[uid] = arr
+              ? arr.map((b) => b.badges).filter((x): x is Badge => Boolean(x))
+              : [];
           })
         );
 

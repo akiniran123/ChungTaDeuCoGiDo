@@ -29,9 +29,10 @@ export default function SidebarRightCard({ selectedCategory }: SidebarRightCardP
   return (
     <aside className="fixed top-[10px] right-[10px] z-30 w-[260px] h-[calc(100vh-20px)]">
       <div className="h-full rounded-4xl bg-white border border-gray-200 shadow-sm overflow-hidden flex flex-col">
+
         {/* UserMenu */}
         <div className="p-4 border-b border-gray-200">
-          <UserMenu onLoginClick={() => console.log("Login clicked")} />
+          <UserMenu />
         </div>
 
         {/* Gợi ý cộng đồng */}

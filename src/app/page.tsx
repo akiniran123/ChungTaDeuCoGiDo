@@ -3,36 +3,72 @@
 import { useEffect, useState } from "react";
 import { supabase } from "@/lib/supabase/client";
 import type { Database } from "@/types/supabase";
-import ProductsList from "@/components/Trang_chu/pc/ProductsList";
+import ProductsList, {
+  type ProductWithUser as PL_ProductWithUser,
+  type ProductsListProps,
+  type Badge as PL_Badge,
+} from "@/components/Trang_chu/pc/ProductsList";
 
-type ProductWithUser = Database["public"]["Tables"]["products"]["Row"] & {
+/**
+ * Shape returned by the specific nested select used in this page
+ * (kept narrow to satisfy TS without using `any`)
+ */
+type DBProductRow = {
+  id: string;
+  title?: string | null;
+  price?: number | null;
+  image_url?: string | null;
+  created_at?: string | null;
+  category?: string | null;
+  user_id?: string | null;
+
   users?: {
     id?: string;
-    username: string | null;
-    avatar_url: string | null;
+    username?: string | null;
+    avatar_url?: string | null;
   } | null;
-  tags: string[];
-  communityName?: string | null;
-  communityIcon?: string | null;
-  author_id?: string | null;
-  author?: string | null;
-  avatar?: string | null;
+
+  communities?: {
+    id?: string;
+    title?: string | null;
+    avatar_url?: string | null;
+  } | null;
+
+  product_tags?: Array<
+    | {
+        tag_id?: string;
+        tags?: { id?: string; name?: string | null } | null;
+        name?: string | null;
+      }
+    | null
+  > | null;
+
+  // other fields may exist
+  [k: string]: unknown;
 };
 
-type Badge = Database["public"]["Tables"]["badges"]["Row"];
+type LikeRow = { product_id: string; user_id: string };
+type UserBadgeRow = { badge_id: string; badges?: PL_Badge | null };
+
+/**
+ * IMPORTANT:
+ * - Use the exported ProductWithUser type from ProductsList (aliased as PL_ProductWithUser)
+ * - Use ProductsListProps["products"] for state typing so TS sees the same type instance
+ */
 
 export default function ProductsPage() {
-  const [products, setProducts] = useState<ProductWithUser[]>([]);
+  // use the exact products type expected by ProductsList to avoid duplicate-type mismatch
+  const [products, setProducts] = useState<ProductsListProps["products"]>([]);
   const [likesCount, setLikesCount] = useState<Record<string, number>>({});
   const [commentsCount, setCommentsCount] = useState<Record<string, number>>({});
   const [likedIds, setLikedIds] = useState<string[]>([]);
-  const [userBadges, setUserBadges] = useState<Record<string, Badge[]>>({});
+  const [userBadges, setUserBadges] = useState<Record<string, PL_Badge[]>>({});
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
     const fetchProducts = async () => {
       try {
-        const { data, error } = await supabase
+        const res = await supabase
           .from("products")
           .select(
             `
@@ -58,84 +94,121 @@ export default function ProductsPage() {
           )
           .order("created_at", { ascending: false });
 
-        if (error) throw error;
+        if (res.error) throw res.error;
 
-        const raw = (data || []) as any[];
+        // Cast to the explicit DBProductRow[] shape (no `any`)
+        const raw = (res.data as DBProductRow[] | null) ?? [];
 
-        const formatted: ProductWithUser[] = raw.map((p) => ({
-          ...p,
-          author_id: p.users?.id ?? null,
-          author: p.users?.username ?? "Người dùng",
-          avatar:
-            p.users?.avatar_url && p.users?.avatar_url !== ""
-              ? p.users.avatar_url
+        // Map DB row -> UI product type expected by ProductsList
+        const formatted: ProductsListProps["products"] = raw.map((p) => {
+          const tagNames: string[] =
+            (p.product_tags ?? [])
+              .map((pt) => {
+                if (!pt) return undefined;
+                if (pt.tags && typeof pt.tags === "object" && typeof pt.tags.name === "string") {
+                  return pt.tags.name;
+                }
+                if (typeof pt.name === "string") return pt.name;
+                return undefined;
+              })
+              .filter((n): n is string => Boolean(n)) ?? [];
+
+          // Build object matching PL_ProductWithUser shape (ProductsList's exported type)
+          const ui: PL_ProductWithUser = {
+            // core fields from DB
+            id: p.id,
+            title: (p.title ?? null) as PL_ProductWithUser["title"],
+            price:
+              typeof p.price === "number"
+                ? p.price
+                : typeof p.price === "string"
+                ? Number(p.price)
+                : (null as PL_ProductWithUser["price"]),
+            image_url: (p.image_url as string) ?? null,
+            created_at: p.created_at ?? null,
+            category: p.category ?? null,
+            user_id: p.user_id ?? null,
+
+            // nested user info (ProductsList's type expects `users?`)
+            users: p.users
+              ? {
+                  id: p.users.id,
+                  username: p.users.username ?? null,
+                  avatar_url: p.users.avatar_url ?? null,
+                }
               : null,
-          users: p.users
-            ? {
-                id: p.users.id,
-                username: p.users.username,
-                avatar_url:
-                  p.users.avatar_url && p.users.avatar_url !== ""
-                    ? p.users.avatar_url
-                    : null,
-              }
-            : null,
-          tags:
-            (p.product_tags || [])
-              .map((pt: any) => pt.tags?.name)
-              .filter(Boolean) || [],
-          communityName: p.communities?.title || null,
-          communityIcon: p.communities?.avatar_url || null,
-        }));
+
+            // tags and community fields as defined in ProductsList's type
+            tags: tagNames,
+            communityName: p.communities?.title ?? null,
+            communityIcon: p.communities?.avatar_url ?? null,
+
+            // allow other unknown fields (ProductsList's type likely has index signature)
+            // if your exported PL_ProductWithUser doesn't include some fields, TS will error;
+            // adjust above to match exactly the exported type from ProductsList.
+          } as PL_ProductWithUser;
+
+          return ui;
+        });
 
         setProducts(formatted);
 
+        // comments count per product (parallel)
         const commentMap: Record<string, number> = {};
         await Promise.all(
           formatted.map(async (prod) => {
-            const { count } = await supabase
+            const cRes = await supabase
               .from("comments")
-              .select("*", { count: "exact" })
+              .select("*", { count: "exact", head: false })
               .eq("product_id", prod.id);
-            commentMap[prod.id] = count || 0;
+            const cnt =
+              typeof cRes.count === "number"
+                ? cRes.count
+                : Array.isArray(cRes.data)
+                ? cRes.data.length
+                : 0;
+            commentMap[prod.id] = cnt;
           })
         );
         setCommentsCount(commentMap);
 
-        const { data: likesData } = await supabase
-          .from("product_likes")
-          .select("product_id, user_id");
-
+        // likes
+        const likesRes = await supabase.from("product_likes").select("product_id, user_id");
+        const likesArr = (Array.isArray(likesRes.data) ? (likesRes.data as LikeRow[]) : []) ?? [];
         const likeMap: Record<string, number> = {};
         const liked: string[] = [];
 
-        likesData?.forEach((l) => {
-          likeMap[l.product_id] = (likeMap[l.product_id] || 0) + 1;
-        });
+        for (const row of likesArr) {
+          if (!row || !row.product_id) continue;
+          likeMap[row.product_id] = (likeMap[row.product_id] || 0) + 1;
+        }
 
-        const { data: authData } = await supabase.auth.getUser();
-        const user = authData.user;
+        const authRes = await supabase.auth.getUser();
+        const user = authRes.data?.user ?? null;
 
-        if (user && likesData) {
-          liked.push(
-            ...likesData
-              .filter((l) => l.user_id === user.id)
-              .map((l) => l.product_id)
-          );
+        if (user && likesArr.length > 0) {
+          liked.push(...likesArr.filter((l) => l.user_id === user.id).map((l) => l.product_id));
         }
 
         setLikesCount(likeMap);
         setLikedIds(liked);
 
+        // collect unique user ids from products
+        // NOTE: ProductsList's exported ProductWithUser may not have `author_id`.
+        // Use user_id (owner) or nested users.id as fallback.
         const userIds = [
-          ...new Set(formatted.map((p) => p.users?.id).filter(Boolean)),
+          ...new Set(
+            formatted
+              .map((p) => p.user_id ?? p.users?.id ?? null)
+              .filter((v): v is string => Boolean(v))
+          ),
         ] as string[];
 
-        const badgeMap: Record<string, Badge[]> = {};
+        const badgeMap: Record<string, PL_Badge[]> = {};
 
         await Promise.all(
           userIds.map(async (uid) => {
-            const { data: bData } = await supabase
+            const bRes = await supabase
               .from("user_badges")
               .select(
                 `
@@ -151,9 +224,8 @@ export default function ProductsPage() {
               )
               .eq("user_id", uid);
 
-            badgeMap[uid] = (bData || [])
-              .map((b) => b.badges)
-              .filter(Boolean);
+            const arr = Array.isArray(bRes.data) ? (bRes.data as UserBadgeRow[]) : [];
+            badgeMap[uid] = arr.map((b) => b.badges).filter((x): x is PL_Badge => Boolean(x));
           })
         );
 

@@ -49,8 +49,11 @@ const JoinLeaveButton: React.FC<JoinLeaveButtonProps> = ({
         .eq("user_id", userId)
         .maybeSingle();
 
-      setIsMember(!!data);
-      setIsOwner(data?.role === "owner");
+      // Quick cast so TypeScript knows `role` may exist
+      const member = data as { role?: string } | null;
+
+      setIsMember(!!member);
+      setIsOwner(member?.role === "owner");
       setLoading(false);
     };
 
@@ -66,24 +69,31 @@ const JoinLeaveButton: React.FC<JoinLeaveButtonProps> = ({
 
     setLoading(true);
 
-    const { data: community } = await supabase
+    // Thay thế phần lấy community
+    const communityRes = await supabase
       .from("communities")
       .select("id")
       .eq("id", communityId)
       .maybeSingle();
 
-    if (!community) {
+    // cast nhẹ để VS Code biết shape
+    const community = communityRes.data as { id?: string } | null;
+
+    if (!community?.id) {
       alert("Cộng đồng không tồn tại.");
       setLoading(false);
       return;
     }
 
-    const { data: existed } = await supabase
+    // Thay thế phần kiểm tra existed
+    const existedRes = await supabase
       .from("community_members")
       .select("*")
       .eq("community_id", communityId)
       .eq("user_id", userId)
       .maybeSingle();
+
+    const existed = existedRes.data as { role?: string } | null;
 
     if (!existed) {
       const { error } = await supabase.from("community_members").insert({
@@ -146,7 +156,6 @@ const JoinLeaveButton: React.FC<JoinLeaveButtonProps> = ({
   };
 
   // XÓA CỘNG ĐỒNG – CHỈ OWNER
-    // XÓA CỘNG ĐỒNG – CHỈ OWNER
   const handleDeleteCommunity = async () => {
     if (
       !confirm(
@@ -189,8 +198,6 @@ const JoinLeaveButton: React.FC<JoinLeaveButtonProps> = ({
 
   return (
     <div className="flex items-center gap-3">
-
-      {/* NÚT THAM GIA */}
       {!isMember ? (
         <button
           type="button"
@@ -206,12 +213,11 @@ const JoinLeaveButton: React.FC<JoinLeaveButtonProps> = ({
               <span>Đang xử lý...</span>
             </>
           ) : (
-            "Tham gia"   // ← ĐÃ ĐỔI TÊN
+            "Tham gia"
           )}
         </button>
       ) : (
         <>
-          {/* NÚT RỜI CỘNG ĐỒNG */}
           <button
             type="button"
             onClick={handleLeave}
@@ -232,7 +238,6 @@ const JoinLeaveButton: React.FC<JoinLeaveButtonProps> = ({
         </>
       )}
 
-      {/* XÓA CỘNG ĐỒNG – OWNER */}
       {isOwner && (
         <button
           type="button"

@@ -110,7 +110,7 @@ products: {
     upvotes: number | null;
     views: number | null;
     is_completed: boolean | null;   // ← CÓ TRONG BẢNG
-    tags: string | null;           // ← CÓ TRONG BẢNG
+    tags: string[];           // ← CÓ TRONG BẢNG
   };
   Insert: Omit<Database["public"]["Tables"]["products"]["Row"], 
     "id" | "created_at"

@@ -5,7 +5,6 @@ import { useState } from "react";
 import SidebarLeft from "@/components/sidebarleft/pc/SidebarLeft";
 import SidebarRight from "@/components/Trang_chu/pc/SidebarRight";
 import BottomNav from "@/components/sidebarleft/mobile/BottomNav";
-import NavBar from "@/components/Widgets/NavBar";
 
 export default function AppLayout({
   children,
@@ -14,7 +13,6 @@ export default function AppLayout({
 }) {
   const SIDEBAR_LEFT_WIDTH = 290; // px
   const SIDEBAR_RIGHT_WIDTH = 300; // px
-  const NAVBAR_HEIGHT = 110; // điều chỉnh nếu navbar cao hơn
 
   const [biggerGrid, setBiggerGrid] = useState(false);
   const toggleGrid = () => setBiggerGrid((s) => !s);
@@ -41,32 +39,12 @@ export default function AppLayout({
           className="hidden xl:block fixed right-0 bg-white px-4 py-6 overflow-y-auto"
           style={{
             width: SIDEBAR_RIGHT_WIDTH,
-            height: `calc(100vh - ${NAVBAR_HEIGHT}px)`,
-            top: `${NAVBAR_HEIGHT}px`,
+            height: "100vh",
+            top: 0,
             zIndex: 30,
           }}
         >
           <SidebarRight selectedCategory={selectedCategory} />
-        </div>
-
-        {/* Navbar nằm giữa hai sidebar, fixed top (Cách A) */}
-        <div
-          className="hidden md:block fixed"
-          style={{
-            left: SIDEBAR_LEFT_WIDTH,
-            right: SIDEBAR_RIGHT_WIDTH,
-            top: 0,
-            zIndex: 50,
-            height: NAVBAR_HEIGHT,
-          }}
-        >
-          <div className="w-full max-w-[1200px] mx-auto px-4">
-            <NavBar
-              selectedCategory={selectedCategory}
-              setSelectedCategory={setSelectedCategory}
-   
-            />
-          </div>
         </div>
 
         {/* Nội dung chính */}
@@ -75,7 +53,6 @@ export default function AppLayout({
           style={{
             paddingLeft: SIDEBAR_LEFT_WIDTH,
             paddingRight: SIDEBAR_RIGHT_WIDTH,
-            paddingTop: NAVBAR_HEIGHT, // tránh bị navbar che
           }}
         >
           {children}

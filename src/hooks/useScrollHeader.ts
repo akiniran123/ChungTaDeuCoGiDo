@@ -1,7 +1,7 @@
 // hooks/useScrollHeader.ts
 import { useEffect, useRef, useState } from "react";
 
-export function useScrollNavBar() {
+export function useScrollHeader() {
   const [showHeader, setShowHeader] = useState(true);
   const lastScrollY = useRef(0);
   const scrollPosition = useRef(0);

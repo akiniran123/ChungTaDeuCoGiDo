@@ -103,28 +103,28 @@ export default function SellPage() {
     }
 
     const payload = {
-      user_id: auth.user.id,
-      title: data.title,
-      description: data.description,
-      price: Number(data.price),
-      category: data.category,
-      is_private: data.is_private,
-      condition: data.condition,
-      specs: data.specs || [],
-      images: JSON.stringify(data.images || []),
-      image_url: data.images?.[0] ?? null,
-      video_url: data.video_url,
-      enable_offers: data.enable_offers,
-      min_offer: data.min_offer ? Number(data.min_offer) : null,
-      quantity: Number(data.quantity),
-      return_policy: data.return_policy,
-      sku: null,
-      community_id: data.community_id,
-      upvotes: 0,
-      views: 0,
-      is_completed: false,
-      tags: null,
-    };
+  user_id: auth.user.id,
+  title: data.title,
+  description: data.description,
+  price: Number(data.price),
+  category: data.category,
+  is_private: data.is_private,
+  condition: data.condition,
+  specs: data.specs, // or JSON.stringify(data.specs) depending on your column
+  images: JSON.stringify(data.images || []),
+  image_url: data.images?.[0] ?? null,
+  video_url: data.video_url,
+  enable_offers: data.enable_offers,
+  min_offer: data.min_offer ? Number(data.min_offer) : null,
+  quantity: Number(data.quantity),
+  return_policy: data.return_policy,
+  sku: null,
+  community_id: data.community_id,
+  upvotes: 0,
+  views: 0,
+  is_completed: false,
+  tags: [] as string[], // <- fix: use empty array instead of null
+};
 
     const { data: insertedProduct, error: insertErr } = await supabase
       .from("products")
@@ -140,7 +140,7 @@ export default function SellPage() {
     }
 
     const productId = insertedProduct.id;
-
+432
     if (data.community_tag_id) {
       await supabase.from("product_tags").insert({
         product_id: productId,

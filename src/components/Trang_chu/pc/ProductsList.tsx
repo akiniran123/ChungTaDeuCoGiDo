@@ -4,7 +4,6 @@ import { useState, useEffect, useRef } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import { LayoutGrid, Grid } from "lucide-react";
 import SmallCard from "@/components/Trang_chu/pc/SmallCard";
-import SearchBar from "@/components/Navbar/pc/LogoSearchIcon/SearchBar";
 import type { Database } from "@/types/supabase";
 import ProductCard from "@/components/Trang_chu/pc/ProductCard";
 
@@ -43,7 +42,6 @@ export default function ProductsList({
 }: ProductsListProps) {
   const [biggerGrid, setBiggerGrid] = useState(false);
   const [activeTag, setActiveTag] = useState<string | null>(null);
-  const [selectedCategory, setSelectedCategory] = useState<string | null>(null);
   const scrollPosition = useRef(0);
   const [showHeader, setShowHeader] = useState(true);
   const lastScrollY = useRef(0);
@@ -91,18 +89,6 @@ export default function ProductsList({
     setBiggerGrid((prev) => !prev);
   };
 
-  const categories = [
-    "Saved",
-    "Electronics",
-    "Motors",
-    "Fashion",
-    "Collectibles & Art",
-    "Sports",
-    "Health & Beauty",
-    "Industrial equipment",
-    "Home & Garden",
-  ];
-
   return (
     <div className="px-6 pb-6">
       <AnimatePresence>
@@ -115,26 +101,7 @@ export default function ProductsList({
             className="sticky top-0 z-30 bg-white"
             style={{ willChange: "transform, opacity" }}
           >
-            <div className="flex items-center justify-center text-[12px] overflow-x-auto no-scrollbar px-2 py-2">
-              {categories.map((cat) => (
-                <button
-                  key={cat}
-                  onClick={() => setSelectedCategory(cat)}
-                  className={`whitespace-nowrap px-4 py-2 rounded-full text-sm font-medium transition cursor-pointer ${
-                    selectedCategory === cat
-                      ? "bg-red-100 text-red-700 shadow-sm "
-                      : "text-gray-700 "
-                  }`}
-                >
-                  {cat}
-                </button>
-              ))}
-            </div>
-
-            <div className="mb-2 py-2 px-2">
-              <SearchBar userId={"demo-user"} onSearch={(q) => console.log("Searching:", q)} />
-            </div>
-
+            {/* Removed categories and SearchBar per request */}
             <div className="pb-2 flex items-center gap-2 px-2">
               <button className="flex items-center gap-1 px-3 py-1.5 text-sm font-medium text-gray-700 hover:bg-gray-100 rounded-md">
                 <span>Best</span>

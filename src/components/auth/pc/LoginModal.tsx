@@ -65,10 +65,20 @@ export default function LoginModal({
   useEffect(() => {
     setMounted(true);
     document.body.style.overflow = "hidden";
+
+    // ⭐ ESC key listener
+    const handleEsc = (event: KeyboardEvent) => {
+      if (event.key === "Escape") {
+        onClose();
+      }
+    };
+    window.addEventListener("keydown", handleEsc);
+
     return () => {
       document.body.style.overflow = "";
+      window.removeEventListener("keydown", handleEsc);
     };
-  }, []);
+  }, [onClose]);
 
   const {
     register,
@@ -186,7 +196,7 @@ export default function LoginModal({
             {/* ⬇️ NÚT ĐÓNG X TO HƠN */}
             <button
               onClick={onClose}
-              className="absolute top-3 right-3 text-gray-500 hover:text-gray-700 dark:hover:text-gray-200 text-3xl font-bold cursor-pointer"
+              className="absolute top-3 right-3 w-12 h-12 flex items-center justify-center text-gray-500 hover:text-gray-700 dark:hover:text-gray-200 text-5xl font-bold cursor-pointer"
             >
               ×
             </button>

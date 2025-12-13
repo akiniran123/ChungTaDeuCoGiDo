@@ -57,9 +57,9 @@ export default function LoginModal({
   const [loading, setLoading] = useState(false);
 
   // ⭐ Modal stack
-  const [activeModal, setActiveModal] = useState<
-    "login" | "signup" | "forgot"
-  >("login");
+  const [activeModal, setActiveModal] = useState<"login" | "signup" | "forgot">(
+    "login"
+  );
 
   // ⭐ QUAN TRỌNG: chỉ render khi client + khóa scroll
   useEffect(() => {
@@ -196,7 +196,7 @@ export default function LoginModal({
                 <input
                   type="email"
                   {...register("email")}
-                  className="w-full px-3 py-2 border rounded-md bg-gray-50 dark:bg-gray-800 dark:border-gray-700 text-sm"
+                  className="w-full px-3 py-2 border rounded-md bg-gray-50 dark:bg-gray-800 dark:border-gray-700 text-sm dark:text-white"
                 />
                 {errors.email && (
                   <p className="text-red-500 text-xs mt-1">
@@ -212,7 +212,7 @@ export default function LoginModal({
                 <input
                   type="password"
                   {...register("password")}
-                  className="w-full px-3 py-2 border rounded-md bg-gray-50 dark:bg-gray-800 dark:border-gray-700 text-sm"
+                  className="w-full px-3 py-2 border rounded-md bg-gray-50 dark:bg-gray-800 dark:border-gray-700 text-sm dark:text-white"
                 />
                 {errors.password && (
                   <p className="text-red-500 text-xs mt-1">
@@ -224,7 +224,7 @@ export default function LoginModal({
               <button
                 type="submit"
                 disabled={loading}
-                className="w-full bg-indigo-600 hover:bg-indigo-700 text-white py-2 rounded-md text-sm font-medium disabled:opacity-60"
+                className="w-full bg-indigo-600 hover:bg-indigo-700 text-white py-2 rounded-md text-sm font-medium disabled:opacity-60 cursor-pointer"
               >
                 {loading ? "Đang đăng nhập..." : "Đăng nhập"}
               </button>
@@ -240,7 +240,7 @@ export default function LoginModal({
                 type="button"
                 onClick={handleGoogleLogin}
                 disabled={loading}
-                className="w-full border px-4 py-2 rounded-md flex items-center justify-center gap-2 text-sm font-medium bg-white dark:bg-gray-800 hover:bg-gray-100 dark:hover:bg-gray-700"
+                className="w-full border px-4 py-2 rounded-md flex items-center justify-center gap-2 text-sm font-medium bg-white dark:bg-gray-800 hover:bg-gray-100 dark:hover:bg-gray-700 dark:text-white cursor-pointer"
               >
                 <FcGoogle className="w-5 h-5" />
                 <span className="text-gray-800 dark:text-gray-100">
@@ -251,14 +251,14 @@ export default function LoginModal({
               <div className="flex justify-between text-sm mt-4">
                 <button
                   type="button"
-                  className="text-indigo-600 hover:underline"
+                  className="text-indigo-600 hover:underline cursor-pointer"
                   onClick={() => setActiveModal("signup")}
                 >
                   Đăng ký
                 </button>
                 <button
                   type="button"
-                  className="text-gray-500 hover:underline"
+                  className="text-gray-500 hover:underline cursor-pointer"
                   onClick={() => setActiveModal("forgot")}
                 >
                   Quên mật khẩu?

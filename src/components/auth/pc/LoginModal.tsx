@@ -182,7 +182,15 @@ export default function LoginModal({
       {/* ================= LOGIN MODAL ================= */}
       {activeModal === "login" && (
         <div className="fixed inset-0 z-[9999] bg-black/70 flex items-center justify-center">
-          <div className="bg-white dark:bg-gray-900 p-6 rounded-2xl shadow-xl w-full max-w-sm">
+          <div className="bg-white dark:bg-gray-900 p-6 rounded-2xl shadow-xl w-full max-w-sm relative">
+            {/* ⬇️ NÚT ĐÓNG X TO HƠN */}
+            <button
+              onClick={onClose}
+              className="absolute top-3 right-3 text-gray-500 hover:text-gray-700 dark:hover:text-gray-200 text-3xl font-bold cursor-pointer"
+            >
+              ×
+            </button>
+
             {/* ⬇️ PHẦN FORM GIỮ NGUYÊN 100% */}
             <form onSubmit={handleSubmit(onSubmit)} className="space-y-4">
               {errorMsg && (

@@ -51,9 +51,16 @@ export default function MiniChatBox({
 
   // ⭐ Lấy user ID hiện tại
   useEffect(() => {
-    supabase.auth.getUser().then(({ data }) => {
-      if (data.user) setCurrentUserId(data.user.id);
-    });
+    const fetchUser = async () => {
+      try {
+        const { data, error } = await supabase.auth.getUser();
+        if (error) throw error;
+        if (data.user) setCurrentUserId(data.user.id);
+      } catch (err) {
+        console.error("Error fetching current user:", err);
+      }
+    };
+    fetchUser();
   }, []);
 
   // ⭐ Đánh dấu đã đọc khi mở MiniChat
@@ -61,14 +68,18 @@ export default function MiniChatBox({
     if (!partnerId || !currentUserId) return;
 
     const markRead = async () => {
-      await supabase
-        .from("messages")
-        .update({ is_read: true })
-        .eq("sender_id", partnerId)
-        .eq("receiver_id", currentUserId)
-        .eq("is_read", false);
+      try {
+        await supabase
+          .from("messages")
+          .update({ is_read: true })
+          .eq("sender_id", partnerId)
+          .eq("receiver_id", currentUserId)
+          .eq("is_read", false);
 
-      onReadMessages();
+        onReadMessages();
+      } catch (err) {
+        console.error("Error marking messages as read:", err);
+      }
     };
 
     markRead();
@@ -77,13 +88,17 @@ export default function MiniChatBox({
   // ⭐ Lấy thông tin partner
   useEffect(() => {
     const fetchPartner = async () => {
-      const { data } = await supabase
-        .from("users")
-        .select("id, username, avatar_url")
-        .eq("id", partnerId)
-        .single();
-
-      if (data) setPartner(data as User);
+      try {
+        const { data, error } = await supabase
+          .from("users")
+          .select("id, username, avatar_url")
+          .eq("id", partnerId)
+          .single();
+        if (error) throw error;
+        if (data) setPartner(data as User);
+      } catch (err) {
+        console.error("Error fetching partner info:", err);
+      }
     };
 
     fetchPartner();
@@ -93,45 +108,66 @@ export default function MiniChatBox({
   useEffect(() => {
     if (!currentUserId || !partnerId) return;
 
-    // --- Fetch tin nhắn cũ
     const fetchMessages = async () => {
-      const { data } = await supabase
-        .from("messages")
-        .select("*")
-        .or(
-          `and(sender_id.eq.${currentUserId},receiver_id.eq.${partnerId}),and(sender_id.eq.${partnerId},receiver_id.eq.${currentUserId})`
-        )
-        .order("created_at", { ascending: true });
+      try {
+        // fetch tin nhắn gửi đi
+        const { data: sentMsgs, error: sentErr } = await supabase
+          .from("messages")
+          .select("*")
+          .eq("sender_id", currentUserId)
+          .eq("receiver_id", partnerId);
+        if (sentErr) console.error("Supabase sentMsgs error:", sentErr);
 
-      setMessages(data ? (data as Message[]) : []);
+        // fetch tin nhắn nhận về
+        const { data: recvMsgs, error: recvErr } = await supabase
+          .from("messages")
+          .select("*")
+          .eq("sender_id", partnerId)
+          .eq("receiver_id", currentUserId);
+        if (recvErr) console.error("Supabase recvMsgs error:", recvErr);
+
+        const allMessages = [...(sentMsgs ?? []), ...(recvMsgs ?? [])].sort(
+          (a, b) =>
+            new Date(a.created_at || "").getTime() -
+            new Date(b.created_at || "").getTime()
+        );
+
+        setMessages(allMessages);
+      } catch (err) {
+        console.error("Unexpected error fetching messages:", err);
+      }
     };
 
     fetchMessages();
 
-    // --- Realtime listener riêng cho cuộc trò chuyện này
+    // --- Realtime listener
     const channel = supabase
       .channel(`mini-chat-${currentUserId}-${partnerId}`)
       .on(
         "postgres_changes",
         { event: "INSERT", schema: "public", table: "messages" },
         async (payload) => {
-          const msg = payload.new as Message;
+          try {
+            const msg = payload.new as Message;
+            const isRelated =
+              (msg.sender_id === currentUserId &&
+                msg.receiver_id === partnerId) ||
+              (msg.sender_id === partnerId &&
+                msg.receiver_id === currentUserId);
+            if (!isRelated) return;
 
-          const isRelated =
-            (msg.sender_id === currentUserId && msg.receiver_id === partnerId) ||
-            (msg.sender_id === partnerId && msg.receiver_id === currentUserId);
+            setMessages((prev) => [...prev, msg]);
 
-          if (!isRelated) return;
-
-          setMessages((prev) => [...prev, msg]);
-
-          // đánh dấu đã đọc nếu là tin nhắn từ partner
-          if (msg.sender_id === partnerId) {
-            await supabase
-              .from("messages")
-              .update({ is_read: true })
-              .eq("id", msg.id);
-            onReadMessages();
+            // đánh dấu đã đọc nếu là tin nhắn từ partner
+            if (msg.sender_id === partnerId) {
+              await supabase
+                .from("messages")
+                .update({ is_read: true })
+                .eq("id", msg.id);
+              onReadMessages();
+            }
+          } catch (err) {
+            console.error("Error handling realtime message:", err);
           }
         }
       )
@@ -152,25 +188,29 @@ export default function MiniChatBox({
     e.preventDefault();
     if (!newMessage.trim() || !currentUserId) return;
 
-    await supabase.from("messages").insert({
-      sender_id: currentUserId,
-      receiver_id: partnerId,
-      content: newMessage.trim(),
-      is_read: false,
-    });
-
-    if ((messages?.length ?? 0) === 0 && partner) {
-      onNewConversation({
-        partner_id: partner.id,
-        username: partner.username || "Unknown",
-        avatar_url: partner.avatar_url || "/default-avatar.png",
-        last_message: newMessage.trim(),
-        last_time: new Date().toISOString(),
-        is_read: true,
+    try {
+      await supabase.from("messages").insert({
+        sender_id: currentUserId,
+        receiver_id: partnerId,
+        content: newMessage.trim(),
+        is_read: false,
       });
-    }
 
-    setNewMessage("");
+      if ((messages?.length ?? 0) === 0 && partner) {
+        onNewConversation({
+          partner_id: partner.id,
+          username: partner.username || "Unknown",
+          avatar_url: partner.avatar_url || "/default-avatar.png",
+          last_message: newMessage.trim(),
+          last_time: new Date().toISOString(),
+          is_read: true,
+        });
+      }
+
+      setNewMessage("");
+    } catch (err) {
+      console.error("Error sending message:", err);
+    }
   };
 
   const formatTime = (t: string | null) => {
@@ -187,7 +227,7 @@ export default function MiniChatBox({
   return (
     <div
       className="fixed bottom-4 w-80 h-[420px] bg-white shadow-2xl rounded-xl flex flex-col z-[999]"
-      style={{ right: 4 + index * 340 + "px" }} // ✅ offset
+      style={{ right: 4 + index * 340 + "px" }}
     >
       {/* HEADER */}
       <div className="flex items-center justify-between px-3 py-2 border-b bg-white">
@@ -253,3 +293,4 @@ export default function MiniChatBox({
     </div>
   );
 }
+

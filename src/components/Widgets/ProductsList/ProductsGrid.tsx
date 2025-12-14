@@ -11,7 +11,6 @@ type Props = {
   likesCount: Record<string, number>;
   commentsCount: Record<string, number>;
   likedIds: string[];
-  /** Accept the full setState dispatch so children can use updater functions too */
   setLikedIds: React.Dispatch<React.SetStateAction<string[]>>;
   setActiveTag: (tag: string | null) => void;
 };
@@ -38,61 +37,62 @@ export default function ProductsGrid({
       >
         {products.map((p) => {
           const id = p.id;
-
-          // per-product counts (lookup from maps)
           const likesForProduct = likesCount[id] ?? 0;
           const commentsForProduct = commentsCount[id] ?? 0;
           const isLiked = likedIds.includes(id);
 
+          // toggle handler passed to cards — updates parent likedIds state
+          const toggleLike = () => {
+            setLikedIds((prev) => (isLiked ? prev.filter((x) => x !== id) : [...prev, id]));
+          };
+
+          const productProp = {
+            id,
+            title: p.title,
+            image_url: p.image_url ?? null,
+            tags: p.tags ?? [],
+            author: p.users?.username ?? "",
+            avatar_url: p.users?.avatar_url ?? null,
+            created_at: p.created_at ?? null,
+            category: p.category ?? "",
+            price: p.price ?? null,
+            views: p.views ?? null,
+            community_id: p.community_id ?? null,
+            communityName: p.communityName ?? null,
+            communityIcon: p.communityIcon ?? null,
+            user_id: p.user_id ?? null,
+          };
+
           return biggerGrid ? (
             <SmallCard
               key={id}
-              product={{
-                id,
-                title: p.title,
-                image_url: p.image_url ?? null,
-                tags: p.tags ?? [],
-                author: p.users.username,
-                avatar_url: p.users.avatar_url ?? null,
-                created_at: p.created_at ?? null,
-                category: p.category,
-                price: p.price,
-                views: p.views,
-                community_id: p.community_id,
-                communityName: p.communityName,
-                communityIcon: p.communityIcon ?? null,
-                user_id: p.user_id,
-              }}
-              /** pass per-product numbers */
+              product={productProp}
               likesCount={likesForProduct}
               commentsCount={commentsForProduct}
               liked={isLiked}
-              setLikedIds={setLikedIds}
+              onToggleLike={toggleLike}
+              onToggleSave={(prodId) => {
+                /* optional: parent can handle saved state here if needed */
+              }}
+              onShare={() => {
+                /* optional: parent-level share handling */
+              }}
               onTagClick={(tag) => setActiveTag(tag)}
             />
           ) : (
             <LongCard
               key={id}
-              product={{
-                id,
-                title: p.title,
-                image_url: p.image_url ?? null,
-                tags: p.tags ?? [],
-                author: p.users.username,
-                avatar_url: p.users.avatar_url ?? null,
-                created_at: p.created_at ?? null,
-                category: p.category,
-                price: p.price,
-                views: p.views,
-                community_id: p.community_id,
-                communityName: p.communityName,
-                communityIcon: p.communityIcon ?? null,
-                user_id: p.user_id,
-              }}
+              product={productProp}
               likesCount={likesForProduct}
               commentsCount={commentsForProduct}
               liked={isLiked}
-              setLikedIds={setLikedIds}
+              onToggleLike={toggleLike}
+              onToggleSave={(prodId) => {
+                /* optional */
+              }}
+              onShare={() => {
+                /* optional */
+              }}
               onTagClick={(tag) => setActiveTag(tag)}
             />
           );

@@ -4,10 +4,10 @@ import { useState, useEffect, useCallback } from "react";
 import SidebarMainNav from "./SidebarMainNav";
 import SidebarCommunity from "./SidebarCommunity";
 import MessagesPanel from "./MessagesPanel";
-import MiniChatBox from "@/components/MiniChat/MiniChatBox";
 import NewsPanel from "./NewsPanel";
 import { supabase } from "@/lib/supabase/client";
 import Logo from "@/components/Navbar/pc/LogoSearchIcon/logo";
+import { useChat } from "@/components/MiniChat/ChatContext";
 
 // -------------------------
 // TYPES
@@ -49,8 +49,7 @@ export default function SidebarLeft() {
   const [activePanel, setActivePanel] = useState<string | null>(null);
   const [unreadCount, setUnreadCount] = useState(0);
 
-  // ✅ Mở nhiều chat cùng lúc
-  const [openChats, setOpenChats] = useState<string[]>([]);
+  const { openChat } = useChat();
 
   // -------------------------
   // INIT USER
@@ -211,7 +210,9 @@ export default function SidebarLeft() {
         .eq("receiver_id", userId)
         .eq("is_read", false);
 
-      setConversations((prev) => prev.map((c) => (c.partner_id === partnerId ? { ...c, is_read: true } : c)));
+      setConversations((prev) =>
+        prev.map((c) => (c.partner_id === partnerId ? { ...c, is_read: true } : c))
+      );
     } else {
       await supabase
         .from("messages")
@@ -251,11 +252,12 @@ export default function SidebarLeft() {
           open={openMessages}
           setOpen={setOpenMessages}
           conversations={conversations}
-          // ✅ TOGGLE MiniChatBox khi click conversation
+          // ✅ mở chat qua context thay vì render MiniChatBox tại đây
           onSelect={(id) => {
-            setOpenChats((prev) =>
-              prev.includes(id) ? prev.filter((x) => x !== id) : [...prev, id]
-            );
+            openChat(id);
+            clearUnread(id);
+            setOpenMessages(false);
+            setActivePanel(null);
           }}
           activePanel={activePanel}
           setActivePanel={setActivePanel}
@@ -264,37 +266,13 @@ export default function SidebarLeft() {
       )}
 
       {isClient && (
-        <NewsPanel open={openNews} setOpen={setOpenNews} activePanel={activePanel} setActivePanel={setActivePanel} />
-      )}
-
-      {/* Render tất cả MiniChatBox đang mở */}
-      {openChats.map((partnerId, i) => (
-        <MiniChatBox
-          key={partnerId}
-          partnerId={partnerId}
-          index={i} // ✅ truyền index để offset
-          onClose={() => setOpenChats((prev) => prev.filter((id) => id !== partnerId))}
-          onReadMessages={() => clearUnread(partnerId)}
-          onNewConversation={() => {
-            setConversations((prev) => {
-              const exists = prev.find((c) => c.partner_id === partnerId);
-              if (exists) return prev;
-
-              return [
-                ...prev,
-                {
-                  partner_id: partnerId,
-                  username: "Unknown",
-                  avatar_url: "/default-avatar.png",
-                  last_message: "",
-                  last_time: new Date().toISOString(),
-                  is_read: true,
-                },
-              ];
-            });
-          }}
+        <NewsPanel
+          open={openNews}
+          setOpen={setOpenNews}
+          activePanel={activePanel}
+          setActivePanel={setActivePanel}
         />
-      ))}
+      )}
     </>
   );
 }

@@ -32,7 +32,7 @@ export default function OtherUserProfile() {
 
   const [currentUserId, setCurrentUserId] = useState<string | null>(null);
 
-  const { openChat } = useChat();
+  const { chatOpen, activePartnerId, openChat } = useChat();
 
   useEffect(() => {
     supabase.auth.getUser().then(({ data }) => {
@@ -109,6 +109,17 @@ export default function OtherUserProfile() {
 
   const isOtherUser = currentUserId !== null && currentUserId !== user.id;
 
+  const handleOpenChatFromProfile = () => {
+    // Nếu chat đang mở với cùng partner thì không gọi openChat nữa
+    if (chatOpen && activePartnerId === user.id) {
+      console.log("Chat already open for", user.id);
+      return;
+    }
+
+    // Gọi openChat (ChatContext đã có guard để tránh remount/re-render thừa)
+    openChat(user.id);
+  };
+
   return (
     <div className="max-w-3xl mx-auto p-6">
       <div className="flex items-center gap-4 mb-6">
@@ -140,7 +151,7 @@ export default function OtherUserProfile() {
           {isOtherUser && (
             <button
               className="px-4 py-2 border border-gray-300 text-gray-900 rounded-lg hover:bg-gray-100 transition cursor-pointer"
-              onClick={() => openChat(user.id)}
+              onClick={handleOpenChatFromProfile}
             >
               Nhắn tin
             </button>

@@ -73,7 +73,7 @@ export default function MessagesPanel({
   setActivePanel,
   clearUnread,
 }: MessagesPanelProps) {
-  const { openChat } = useChat();
+  const { chatOpen, activePartnerId, openChat } = useChat();
 
   const formattedConversations = useMemo(
     () =>
@@ -110,13 +110,19 @@ export default function MessagesPanel({
   const panelClass = [...baseClasses, ...openClasses, zClass].join(" ");
 
   const handleConversationClick = (id: string) => {
-    // open global chat (single source of truth)
+    // Nếu chat đang mở với cùng partner thì chỉ clear unread và đóng panel / focus
+    if (chatOpen && activePartnerId === id) {
+      clearUnread(id);
+      onSelect(id);
+      setOpen(false);
+      setActivePanel(null);
+      return;
+    }
+
+    // Nếu chat đang mở với partner khác hoặc chưa mở, gọi openChat (ChatContext đã bảo vệ trùng lặp)
     openChat(id);
-    // clear unread locally / server
     clearUnread(id);
-    // notify parent if needed
     onSelect(id);
-    // close messages panel to avoid duplicate UI
     setOpen(false);
     setActivePanel(null);
   };

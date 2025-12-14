@@ -3,7 +3,7 @@
 import { useEffect, useState } from "react";
 import { supabase } from "@/lib/supabase/client";
 import ProductsList from "@/components/Widgets/ProductsList/ProductsList";
-import type { Badge } from "@/types/products";
+import type { ProductWithUser, Badge } from "@/types/products";
 
 type DBProductRow = {
   id: string;
@@ -240,8 +240,9 @@ export default function ProductsPage() {
 
   return (
     <div className="pl-6">
+      {/* Local cast: pass the narrow list items to the component while keeping ProductWithUser type intact elsewhere */}
       <ProductsList
-        products={products}
+        products={products as unknown as ProductWithUser[]}
         likesCount={likesCount}
         commentsCount={commentsCount}
         likedIds={likedIds}

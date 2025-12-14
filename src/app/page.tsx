@@ -82,6 +82,7 @@ export default function ProductsPage() {
         if (res.error) throw res.error;
         const raw = (res.data as DBProductRow[] | null) ?? [];
 
+        // ...
         const formatted: ProductsListProps["products"] = raw.map((p) => {
           const tagNames: string[] =
             (p.product_tags ?? [])
@@ -93,7 +94,7 @@ export default function ProductsPage() {
               })
               .filter((n): n is string => Boolean(n)) ?? [];
 
-          const ui: ProductWithUser = {
+          const ui: ProductsListProps["products"][number] = {
             id: p.id,
             title: p.title ?? "", // fallback string
             price:

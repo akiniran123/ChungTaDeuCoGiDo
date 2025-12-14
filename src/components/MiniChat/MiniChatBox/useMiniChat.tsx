@@ -1,8 +1,11 @@
-// src/components/MiniChat/useMiniChat.ts
 "use client";
 
 import { useCallback, useEffect, useRef, useState } from "react";
 import { supabase } from "@/lib/supabase/client";
+import type {
+  RealtimeChannel,
+  RealtimePostgresChangesPayload,
+} from "@supabase/supabase-js";
 
 export interface User {
   id: string;
@@ -30,22 +33,29 @@ export function useMiniChat(partnerId: string | null) {
   const messagesLoadedRef = useRef(false);
   const readDebounceTimer = useRef<number | null>(null);
   const newConvDebounceTimer = useRef<number | null>(null);
-  const subscriptionRef = useRef<any>(null);
+  const subscriptionRef = useRef<RealtimeChannel | null>(null);
 
   useEffect(() => {
     mountedRef.current = true;
+
+    // copy current ref values into locals so cleanup uses stable values
+    const readTimer = readDebounceTimer.current;
+    const newConvTimer = newConvDebounceTimer.current;
+    const sub = subscriptionRef.current;
+
     return () => {
       mountedRef.current = false;
-      if (readDebounceTimer.current) window.clearTimeout(readDebounceTimer.current);
-      if (newConvDebounceTimer.current) window.clearTimeout(newConvDebounceTimer.current);
-      if (subscriptionRef.current) {
+      if (readTimer) window.clearTimeout(readTimer);
+      if (newConvTimer) window.clearTimeout(newConvTimer);
+      if (sub) {
         try {
-          supabase.removeChannel(subscriptionRef.current);
+          supabase.removeChannel(sub);
         } catch (err) {
           console.error("removeChannel error:", err);
         }
-        subscriptionRef.current = null;
       }
+      // keep refs cleared for safety
+      subscriptionRef.current = null;
     };
   }, []);
 
@@ -100,7 +110,7 @@ export function useMiniChat(partnerId: string | null) {
     messagesLoadedRef.current = true;
     setLoading(true);
 
-    let channelRef: any = null;
+    let channelRef: RealtimeChannel | null = null;
     const fetchMessages = async () => {
       try {
         const { data: sentMsgs } = await supabase
@@ -116,7 +126,11 @@ export function useMiniChat(partnerId: string | null) {
           .eq("receiver_id", currentUserId);
 
         const all = [...(sentMsgs ?? []), ...(recvMsgs ?? [])] as Message[];
-        all.sort((a, b) => new Date(a.created_at || "").getTime() - new Date(b.created_at || "").getTime());
+        all.sort(
+          (a, b) =>
+            new Date(a.created_at || "").getTime() -
+            new Date(b.created_at || "").getTime()
+        );
         if (mountedRef.current) setMessages(all);
       } catch (err) {
         console.error("fetchMessages error:", err);
@@ -133,18 +147,25 @@ export function useMiniChat(partnerId: string | null) {
         .on(
           "postgres_changes",
           { event: "INSERT", schema: "public", table: "messages" },
-          async (payload) => {
+          async (
+            payload: RealtimePostgresChangesPayload<Message>
+          ) => {
             try {
               const msg = payload.new as Message;
               const isRelated =
-                (msg.sender_id === currentUserId && msg.receiver_id === partnerId) ||
-                (msg.sender_id === partnerId && msg.receiver_id === currentUserId);
+                (msg.sender_id === currentUserId &&
+                  msg.receiver_id === partnerId) ||
+                (msg.sender_id === partnerId &&
+                  msg.receiver_id === currentUserId);
               if (!isRelated) return;
               if (mountedRef.current) setMessages((prev) => [...prev, msg]);
 
               if (msg.sender_id === partnerId) {
                 try {
-                  await supabase.from("messages").update({ is_read: true }).eq("id", msg.id);
+                  await supabase
+                    .from("messages")
+                    .update({ is_read: true })
+                    .eq("id", msg.id);
                 } catch (err) {
                   console.error("update is_read error:", err);
                 }
@@ -162,10 +183,12 @@ export function useMiniChat(partnerId: string | null) {
       console.error("subscribe error:", err);
     }
 
+    // capture channelRef for stable cleanup
+    const subscribedChannel = channelRef;
     return () => {
-      if (channelRef) {
+      if (subscribedChannel) {
         try {
-          supabase.removeChannel(channelRef);
+          supabase.removeChannel(subscribedChannel);
         } catch (err) {
           console.error("removeChannel error:", err);
         }
@@ -206,7 +229,8 @@ export function useMiniChat(partnerId: string | null) {
         .eq("is_read", false)
         .limit(1);
 
-      if (!unread || (Array.isArray(unread) && unread.length === 0)) return false;
+      if (!unread || (Array.isArray(unread) && unread.length === 0))
+        return false;
 
       await supabase
         .from("messages")

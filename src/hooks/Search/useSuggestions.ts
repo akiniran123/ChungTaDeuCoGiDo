@@ -1,4 +1,3 @@
-// hooks/useSuggestions.ts
 import { useCallback, useEffect, useState } from "react";
 import {
   fetchProductsByTitle,
@@ -26,7 +25,18 @@ export function useSuggestions(query: string, debounceMs = 300) {
       fetchCommunities(q, 5),
     ]);
 
-    const uniqueTags = Array.from(new Set(tagRows.map((t: any) => t.tag_id)));
+    const hasTagId = (v: unknown): v is { tag_id: string } =>
+      typeof v === "object" &&
+      v !== null &&
+      "tag_id" in v &&
+      typeof (v as { tag_id: unknown }).tag_id === "string";
+
+    const tagIds =
+      Array.isArray(tagRows) && tagRows.length > 0
+        ? tagRows.filter(hasTagId).map((t) => t.tag_id)
+        : [];
+
+    const uniqueTags = Array.from(new Set(tagIds));
     const normalized = normalizeSuggestions({
       products,
       users,

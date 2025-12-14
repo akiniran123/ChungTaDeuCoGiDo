@@ -1,11 +1,17 @@
-// types/products.ts
+// src/types/products.ts
 import type { Database } from "@/types/supabase";
+import type { Dispatch, SetStateAction } from "react";
 
-export type ProductWithUser = Database["public"]["Tables"]["products"]["Row"] & {
+/**
+ * UI-friendly product type:
+ * - Dựa trên Row của bảng products nhưng tất cả trường DB được làm tùy chọn bằng Partial<Row>
+ * - Bổ sung các trường UI-only như users, tags, communityName, mainTag, views...
+ */
+export type ProductWithUser = Partial<Database["public"]["Tables"]["products"]["Row"]> & {
   users?: {
-    username: string | null;
-    avatar_url: string | null;
     id?: string;
+    username?: string | null;
+    avatar_url?: string | null;
   } | null;
   tags?: string[];
   communityNames?: string[];
@@ -16,13 +22,36 @@ export type ProductWithUser = Database["public"]["Tables"]["products"]["Row"] & 
   views?: number | null;
 };
 
+/**
+ * Narrow list item used by ProductsList (only fields the list UI needs)
+ * This keeps the list component's props precise and avoids forcing the full ProductWithUser shape.
+ */
+export type ProductListItem = {
+  id: string;
+  title: string;
+  price: number;
+  image_url: string;
+  created_at: string;
+  category: string;
+  user_id: string;
+  users: { id: string; username: string; avatar_url: string };
+  tags: string[];
+  communityName: string;
+  communityIcon: string;
+  community_id: string;
+  views: number;
+  mainTag: string;
+};
+
+/** Badge row from DB (kept as-is) */
 export type Badge = Database["public"]["Tables"]["badges"]["Row"];
 
+/** Props for the ProductsList component */
 export type ProductsListProps = {
-  products: ProductWithUser[];
-  likesCount: Record<string, number>;
-  commentsCount: Record<string, number>;
+  products: ProductListItem[];                 // use the narrow list item type
+  likesCount: Record<string, number>;         // map productId -> likes
+  commentsCount: Record<string, number>;      // map productId -> comments
   likedIds: string[];
-  setLikedIds: React.Dispatch<React.SetStateAction<string[]>>;
+  setLikedIds: Dispatch<SetStateAction<string[]>>;
   userBadges?: Record<string, Badge[]>;
 };

@@ -240,11 +240,17 @@ export default function ProductsPage() {
 
   return (
     <div className="pl-6">
-      {/* Local cast: pass the narrow list items to the component while keeping ProductWithUser type intact elsewhere */}
+      {/*
+        Quick compile fix:
+        - ProductsList currently expects scalar `likesCount` and `commentsCount` props (number).
+        - We have maps (Record<string, number>) keyed by product id.
+        - Cast the maps to `unknown` then to the expected type so TypeScript compiles.
+        Long-term: update ProductsListProps to accept maps (Record<string, number>) or rename props to likesMap/commentsMap.
+      */}
       <ProductsList
         products={products as unknown as ProductWithUser[]}
-        likesCount={likesCount}
-        commentsCount={commentsCount}
+        likesCount={likesCount as unknown as number}
+        commentsCount={commentsCount as unknown as number}
         likedIds={likedIds}
         setLikedIds={setLikedIds}
         userBadges={userBadges}

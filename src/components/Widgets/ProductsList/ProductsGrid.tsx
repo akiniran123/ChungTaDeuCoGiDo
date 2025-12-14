@@ -37,23 +37,25 @@ export default function ProductsGrid({
         style={{ willChange: "transform, opacity" }}
         className={`grid gap-4 ${biggerGrid ? "grid-cols-4" : "grid-cols-1"}`}
       >
-        {products.map((p) =>
-          biggerGrid ? (
+        {products.map((p) => {
+          const id = p.id ?? "";
+
+          return biggerGrid ? (
             <SmallCard
-              key={p.id}
+              key={id}
               product={{
-                id: p.id,
-                title: p.title,
+                id,
+                title: p.title ?? "",
                 image_url: p.image_url ?? null,
                 tags: p.tags ?? [],
-                author: p.users?.username ?? null,
+                author: p.users?.username ?? "",
                 avatar_url: p.users?.avatar_url ?? null,
                 created_at: p.created_at ?? null,
-                category: p.category ?? null,
+                category: p.category ?? "",
                 price: p.price ?? null,
                 views: p.views ?? null,
-                community_id: p.community_id ?? null,
-                communityName: p.communityName ?? null,
+                community_id: p.community_id ?? "",
+                communityName: p.communityName ?? "",
                 communityIcon: p.communityIcon ?? null,
                 user_id: p.users?.id ?? "",
               }}
@@ -66,31 +68,31 @@ export default function ProductsGrid({
             />
           ) : (
             <LongCard
-              key={p.id}
+              key={id}
               product={{
-                id: p.id,
-                title: p.title,
-                image_url: p.image_url ?? undefined,
+                id,
+                title: p.title ?? "",
+                image_url: p.image_url ?? null,
                 tags: p.tags ?? [],
-                author: p.users?.username ?? null,
+                author: p.users?.username ?? "",
                 avatar_url: p.users?.avatar_url ?? null,
                 created_at: p.created_at ?? null,
-                category: p.category ?? null,
+                category: p.category ?? "",
                 price: p.price ?? null,
                 views: p.views ?? null,
-                community_id: p.community_id ?? null,
-                communityName: p.communityName ?? null,
+                community_id: p.community_id ?? "",
+                communityName: p.communityName ?? "",
                 communityIcon: p.communityIcon ?? null,
                 user_id: p.users?.id ?? "",
               }}
-              likesCount={likesCount[p.id] ?? 0}
-              commentsCount={commentsCount[p.id] ?? 0}
+              likesCount={likesCount[id] ?? 0}
+              commentsCount={commentsCount[id] ?? 0}
               likedIds={likedIds}
               setLikedIds={setLikedIds}
               onTagClick={(tag) => setActiveTag(tag)}
             />
-          )
-        )}
+          );
+        })}
       </motion.div>
     </AnimatePresence>
   );

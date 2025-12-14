@@ -1,14 +1,9 @@
-// app/(your-route)/page.tsx
 "use client";
 
 import { useEffect, useState } from "react";
 import { supabase } from "@/lib/supabase/client";
 import ProductsList from "@/components/Widgets/ProductsList/ProductsList";
-import type {
-  ProductWithUser,
-  ProductsListProps,
-  Badge,
-} from "@/types/products";
+import type { Badge } from "@/types/products";
 
 type DBProductRow = {
   id: string;
@@ -18,32 +13,59 @@ type DBProductRow = {
   created_at?: string | null;
   category?: string | null;
   user_id?: string | null;
-  users?: {
-    id?: string | null;
-    username?: string | null;
-    avatar_url?: string | null;
-  } | null;
-  communities?: {
-    id?: string | null;
-    title?: string | null;
-    avatar_url?: string | null;
-  } | null;
-  product_tags?: Array<
+  users?:
     | {
-        tag_id?: string;
-        tags?: { id?: string; name?: string | null } | null;
-        name?: string | null;
+        id?: string | null;
+        username?: string | null;
+        avatar_url?: string | null;
       }
-    | null
-  > | null;
+    | null;
+  communities?:
+    | {
+        id?: string | null;
+        title?: string | null;
+        avatar_url?: string | null;
+      }
+    | null;
+  product_tags?:
+    | (
+        | {
+            tag_id?: string;
+            tags?: { id?: string; name?: string | null } | null;
+            name?: string | null;
+          }
+        | null
+      )[]
+    | null;
   [k: string]: unknown;
 };
 
 type LikeRow = { product_id: string; user_id: string };
 type UserBadgeRow = { badge_id: string; badges?: Badge | null };
 
+/**
+ * Narrow type used for the list view.
+ * Only includes the fields the ProductsList actually needs.
+ */
+type ProductListItem = {
+  id: string;
+  title: string;
+  price: number;
+  image_url: string;
+  created_at: string;
+  category: string;
+  user_id: string;
+  users: { id: string; username: string; avatar_url: string };
+  tags: string[];
+  communityName: string;
+  communityIcon: string;
+  community_id: string;
+  views: number;
+  mainTag: string;
+};
+
 export default function ProductsPage() {
-  const [products, setProducts] = useState<ProductsListProps["products"]>([]);
+  const [products, setProducts] = useState<ProductListItem[]>([]);
   const [likesCount, setLikesCount] = useState<Record<string, number>>({});
   const [commentsCount, setCommentsCount] = useState<Record<string, number>>({});
   const [likedIds, setLikedIds] = useState<string[]>([]);
@@ -82,8 +104,7 @@ export default function ProductsPage() {
         if (res.error) throw res.error;
         const raw = (res.data as DBProductRow[] | null) ?? [];
 
-        // ...
-        const formatted: ProductsListProps["products"] = raw.map((p) => {
+        const formatted: ProductListItem[] = raw.map((p) => {
           const tagNames: string[] =
             (p.product_tags ?? [])
               .map((pt) => {
@@ -94,24 +115,24 @@ export default function ProductsPage() {
               })
               .filter((n): n is string => Boolean(n)) ?? [];
 
-          const ui: ProductsListProps["products"][number] = {
+          const ui: ProductListItem = {
             id: p.id,
-            title: p.title ?? "", // fallback string
+            title: p.title ?? "",
             price:
               typeof p.price === "number"
                 ? p.price
                 : typeof p.price === "string"
                 ? Number(p.price)
-                : 0, // fallback number
-            image_url: p.image_url ?? "", // fallback string
-            created_at: p.created_at ?? "", // fallback string
-            category: p.category ?? "", // fallback string
-            user_id: p.user_id ?? "", // fallback string
+                : 0,
+            image_url: p.image_url ?? "",
+            created_at: p.created_at ?? "",
+            category: p.category ?? "",
+            user_id: p.user_id ?? "",
             users: p.users
               ? {
-                  id: p.users.id ?? "", // fallback string
-                  username: p.users.username ?? "", // fallback string
-                  avatar_url: p.users.avatar_url ?? "", // fallback string
+                  id: p.users.id ?? "",
+                  username: p.users.username ?? "",
+                  avatar_url: p.users.avatar_url ?? "",
                 }
               : { id: "", username: "", avatar_url: "" },
             tags: tagNames,
@@ -127,25 +148,25 @@ export default function ProductsPage() {
         setProducts(formatted);
 
         const commentMap: Record<string, number> = {};
-       await Promise.all(
-  formatted.map(async (prod) => {
-    if (!prod.id) return; // bỏ qua nếu không có id
+        await Promise.all(
+          formatted.map(async (prod) => {
+            if (!prod.id) return;
 
-    const cRes = await supabase
-      .from("comments")
-      .select("*", { count: "exact", head: false })
-      .eq("product_id", prod.id); // prod.id đã là string
+            const cRes = await supabase
+              .from("comments")
+              .select("*", { count: "exact", head: false })
+              .eq("product_id", prod.id);
 
-    const cnt =
-      typeof cRes.count === "number"
-        ? cRes.count
-        : Array.isArray(cRes.data)
-        ? cRes.data.length
-        : 0;
+            const cnt =
+              typeof cRes.count === "number"
+                ? cRes.count
+                : Array.isArray(cRes.data)
+                ? cRes.data.length
+                : 0;
 
-    commentMap[prod.id] = cnt;
-  })
-);
+            commentMap[prod.id] = cnt;
+          })
+        );
         setCommentsCount(commentMap);
 
         const likesRes = await supabase.from("product_likes").select("product_id, user_id");
@@ -169,7 +190,9 @@ export default function ProductsPage() {
 
         const userIds = [
           ...new Set(
-            formatted.map((p) => p.user_id || p.users?.id || "").filter((v): v is string => Boolean(v))
+            formatted
+              .map((p) => p.user_id || p.users?.id || "")
+              .filter((v): v is string => Boolean(v))
           ),
         ];
         const badgeMap: Record<string, Badge[]> = {};

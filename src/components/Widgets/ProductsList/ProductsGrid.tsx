@@ -1,13 +1,12 @@
-// components/Trang_chu/pc/ProductsGrid.tsx
 "use client";
 
 import { AnimatePresence, motion } from "framer-motion";
 import SmallCard from "@/components/Widgets/SmallCard/SmallCard";
 import LongCard from "@/components/Widgets/LongCard/LongCard";
-import type { ProductWithUser } from "@/types/products";
+import type { ProductListItem } from "@/types/products";
 
 type Props = {
-  products: ProductWithUser[];
+  products: ProductListItem[];
   biggerGrid: boolean;
   likesCount: Record<string, number>;
   commentsCount: Record<string, number>;
@@ -38,31 +37,36 @@ export default function ProductsGrid({
         className={`grid gap-4 ${biggerGrid ? "grid-cols-4" : "grid-cols-1"}`}
       >
         {products.map((p) => {
-          const id = p.id ?? "";
+          const id = p.id;
+
+          // per-product counts (lookup from maps)
+          const likesForProduct = likesCount[id] ?? 0;
+          const commentsForProduct = commentsCount[id] ?? 0;
+          const isLiked = likedIds.includes(id);
 
           return biggerGrid ? (
             <SmallCard
               key={id}
               product={{
                 id,
-                title: p.title ?? "",
+                title: p.title,
                 image_url: p.image_url ?? null,
                 tags: p.tags ?? [],
-                author: p.users?.username ?? "",
-                avatar_url: p.users?.avatar_url ?? null,
+                author: p.users.username,
+                avatar_url: p.users.avatar_url ?? null,
                 created_at: p.created_at ?? null,
-                category: p.category ?? "",
-                price: p.price ?? null,
-                views: p.views ?? null,
-                community_id: p.community_id ?? "",
-                communityName: p.communityName ?? "",
+                category: p.category,
+                price: p.price,
+                views: p.views,
+                community_id: p.community_id,
+                communityName: p.communityName,
                 communityIcon: p.communityIcon ?? null,
-                user_id: p.users?.id ?? "",
+                user_id: p.user_id,
               }}
-              /** Pass the full mappings because SmallCard expects Record<string, number> */
-              likesCount={likesCount}
-              commentsCount={commentsCount}
-              likedIds={likedIds}
+              /** pass per-product numbers */
+              likesCount={likesForProduct}
+              commentsCount={commentsForProduct}
+              liked={isLiked}
               setLikedIds={setLikedIds}
               onTagClick={(tag) => setActiveTag(tag)}
             />
@@ -71,23 +75,23 @@ export default function ProductsGrid({
               key={id}
               product={{
                 id,
-                title: p.title ?? "",
+                title: p.title,
                 image_url: p.image_url ?? null,
                 tags: p.tags ?? [],
-                author: p.users?.username ?? "",
-                avatar_url: p.users?.avatar_url ?? null,
+                author: p.users.username,
+                avatar_url: p.users.avatar_url ?? null,
                 created_at: p.created_at ?? null,
-                category: p.category ?? "",
-                price: p.price ?? null,
-                views: p.views ?? null,
-                community_id: p.community_id ?? "",
-                communityName: p.communityName ?? "",
+                category: p.category,
+                price: p.price,
+                views: p.views,
+                community_id: p.community_id,
+                communityName: p.communityName,
                 communityIcon: p.communityIcon ?? null,
-                user_id: p.users?.id ?? "",
+                user_id: p.user_id,
               }}
-              likesCount={likesCount[id] ?? 0}
-              commentsCount={commentsCount[id] ?? 0}
-              likedIds={likedIds}
+              likesCount={likesForProduct}
+              commentsCount={commentsForProduct}
+              liked={isLiked}
               setLikedIds={setLikedIds}
               onTagClick={(tag) => setActiveTag(tag)}
             />

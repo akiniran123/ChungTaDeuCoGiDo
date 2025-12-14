@@ -1,9 +1,8 @@
-// components/Trang_chu/pc/SmallCard.tsx
 "use client";
 
 import { motion } from "framer-motion";
 import { supabase } from "@/lib/supabase/client";
-import { useState } from "react";
+import { useState, useEffect } from "react";
 
 import SmallCardImage from "./SmallImage";
 import SmallCardMain from "./SmallMain";
@@ -25,44 +24,80 @@ export type SmallCardProps = {
     community_id?: string | null;
     communityName?: string | null;
     communityIcon?: string | null;
-    user_id: string;
+    user_id?: string | null;
   };
+  /** per-product counts (numbers) */
   likesCount: number;
   commentsCount: number;
-  likedIds: string[];
-  setLikedIds: React.Dispatch<React.SetStateAction<string[]>>;
-  onTagClick: (tag: string) => void;
+  /** whether current user liked this product */
+  liked: boolean;
+  /** notify parent to toggle likedIds (parent keeps the map/state) */
+  onToggleLike?: () => void;
+  onToggleSave?: (id: string) => void;
+  onShare?: () => void;
+  onTagClick?: (tag: string) => void;
 };
 
 export default function SmallCard({
   product,
   likesCount,
   commentsCount,
-  likedIds,
-  setLikedIds,
+  liked,
+  onToggleLike,
+  onToggleSave,
+  onShare,
   onTagClick,
 }: SmallCardProps) {
   const [saved, setSaved] = useState<string[]>([]);
-  const [localLikes, setLocalLikes] = useState(likesCount);
+  const [localLikes, setLocalLikes] = useState<number>(likesCount);
+  const [processing, setProcessing] = useState(false);
+
+  // keep localLikes in sync with parent-provided number
+  useEffect(() => {
+    setLocalLikes(likesCount);
+  }, [likesCount]);
 
   const toggleSave = (id: string) => {
     setSaved((prev) => (prev.includes(id) ? prev.filter((x) => x !== id) : [...prev, id]));
+    onToggleSave?.(id);
   };
 
   const toggleLike = async () => {
-    const { data: auth } = await supabase.auth.getUser();
-    if (!auth.user?.id) return alert("Bạn cần đăng nhập");
+    if (processing) return;
+    setProcessing(true);
 
-    const alreadyLiked = likedIds.includes(product.id);
+    try {
+      const { data: auth } = await supabase.auth.getUser();
+      if (!auth.user?.id) {
+        alert("Bạn cần đăng nhập");
+        return;
+      }
 
-    if (alreadyLiked) {
-      await supabase.from("product_likes").delete().eq("product_id", product.id).eq("user_id", auth.user.id);
-      setLikedIds((prev) => prev.filter((x) => x !== product.id));
-      setLocalLikes((prev) => Math.max(prev - 1, 0));
-    } else {
-      await supabase.from("product_likes").insert({ product_id: product.id, user_id: auth.user.id });
-      setLikedIds((prev) => [...prev, product.id]);
-      setLocalLikes((prev) => prev + 1);
+      if (liked) {
+        // unlike in DB
+        await supabase
+          .from("product_likes")
+          .delete()
+          .eq("product_id", product.id)
+          .eq("user_id", auth.user.id);
+
+        setLocalLikes((prev) => Math.max(prev - 1, 0));
+      } else {
+        // like in DB
+        await supabase.from("product_likes").insert({
+          product_id: product.id,
+          user_id: auth.user.id,
+        });
+
+        setLocalLikes((prev) => prev + 1);
+      }
+
+      // notify parent to update its likedIds state
+      onToggleLike?.();
+    } catch (err) {
+      console.error("toggleLike error:", err);
+    } finally {
+      setProcessing(false);
     }
   };
 
@@ -70,14 +105,22 @@ export default function SmallCard({
     const url = `${window.location.origin}/deal/${product.id}`;
     const title = product.title;
     if (navigator.share) navigator.share({ title, url });
-    else alert(`Copy liên kết để chia sẻ: ${url}`);
+    else {
+      onShare?.();
+      alert(`Copy liên kết để chia sẻ: ${url}`);
+    }
   };
 
   return (
-    <motion.div initial={{ opacity: 0, y: 6 }} animate={{ opacity: 1, y: 0 }} className="w-full px-1 py-1 bg-white transition hover:bg-gray-50">
+    <motion.div
+      initial={{ opacity: 0, y: 6 }}
+      animate={{ opacity: 1, y: 0 }}
+      className="w-full px-1 py-1 bg-white transition hover:bg-gray-50"
+    >
       <div className="flex items-center gap-4 min-h-[200px]">
         <SmallCardImage id={product.id} title={product.title} image_url={product.image_url} />
 
+        {/* Pass numeric commentsCount for SmallCardMain */}
         <SmallCardMain product={product} commentsCount={commentsCount} />
 
         <SmallCardTags
@@ -85,15 +128,15 @@ export default function SmallCard({
           communityId={product.community_id}
           communityName={product.communityName}
           communityIcon={product.communityIcon}
-          onTagClick={onTagClick}
+          onTagClick={(t) => onTagClick?.(t)}
         />
 
         <SmallCardActions
           productId={product.id}
-          likedIds={likedIds}
+          liked={liked}
           localLikes={localLikes}
           onToggleLike={toggleLike}
-          onToggleSave={toggleSave}
+          onToggleSave={() => toggleSave(product.id)}
           onShare={share}
         />
       </div>

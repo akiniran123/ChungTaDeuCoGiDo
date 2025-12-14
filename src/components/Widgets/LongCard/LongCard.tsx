@@ -1,18 +1,13 @@
 "use client";
 
 import Link from "next/link";
-import Image from "next/image"; // ⭐ THÊM
+import Image from "next/image";
 import { motion } from "framer-motion";
-import {
-  Bookmark,
-  BookmarkCheck,
-  Heart as HeartIcon,
-  Share2,
-} from "lucide-react";
+import { Bookmark, BookmarkCheck, Heart as HeartIcon, Share2 } from "lucide-react";
 import { supabase } from "@/lib/supabase/client";
-import { useState } from "react";
+import { useState, useEffect } from "react";
 
-export type SmallCardProps = {
+export type LongCardProps = {
   product: {
     id: string;
     title: string;
@@ -27,105 +22,119 @@ export type SmallCardProps = {
     community_id?: string | null;
     communityName?: string | null;
     communityIcon?: string | null;
-    user_id: string;
+    user_id?: string | null;
   };
-  likesCount: number;
-  commentsCount: number;
-  likedIds: string[];
-  setLikedIds: React.Dispatch<React.SetStateAction<string[]>>;
-  onTagClick: (tag: string) => void;
+  likesCount: number; // per-product number
+  commentsCount: number; // per-product number
+  liked: boolean; // whether current user liked this product
+  /**
+   * Optional callback parent can provide to update its likedIds state.
+   * LongCard will still perform DB operations itself, then call this to notify parent.
+   */
+  onToggleLike?: () => void;
+  onToggleSave?: (id: string) => void;
+  onShare?: () => void;
+  onTagClick?: (tag: string) => void;
 };
 
-export default function SmallCard({
+export default function LongCard({
   product,
   likesCount,
   commentsCount,
-  likedIds,
-  setLikedIds,
+  liked,
+  onToggleLike,
+  onToggleSave,
+  onShare,
   onTagClick,
-}: SmallCardProps) {
+}: LongCardProps) {
   const [saved, setSaved] = useState<string[]>([]);
-  const [localLikes, setLocalLikes] = useState(likesCount);
+  const [localLikes, setLocalLikes] = useState<number>(likesCount);
+  const [processing, setProcessing] = useState(false);
+
+  // keep localLikes in sync with parent-provided number
+  useEffect(() => {
+    setLocalLikes(likesCount);
+  }, [likesCount]);
 
   const toggleSave = (id: string) => {
-    setSaved((prev) =>
-      prev.includes(id) ? prev.filter((x) => x !== id) : [...prev, id]
-    );
+    setSaved((prev) => (prev.includes(id) ? prev.filter((x) => x !== id) : [...prev, id]));
+    onToggleSave?.(id);
   };
 
   const toggleLike = async () => {
-    const { data: auth } = await supabase.auth.getUser();
-    if (!auth.user?.id) return alert("Bạn cần đăng nhập");
+    if (processing) return;
+    setProcessing(true);
 
-    const alreadyLiked = likedIds.includes(product.id);
+    try {
+      const { data: auth } = await supabase.auth.getUser();
+      if (!auth.user?.id) {
+        alert("Bạn cần đăng nhập");
+        return;
+      }
 
-    if (alreadyLiked) {
-      await supabase
-        .from("product_likes")
-        .delete()
-        .eq("product_id", product.id)
-        .eq("user_id", auth.user.id);
+      if (liked) {
+        // unlike
+        await supabase
+          .from("product_likes")
+          .delete()
+          .eq("product_id", product.id)
+          .eq("user_id", auth.user.id);
 
-      setLikedIds((prev) => prev.filter((x) => x !== product.id));
-      setLocalLikes((prev) => Math.max(prev - 1, 0));
-    } else {
-      await supabase.from("product_likes").insert({
-        product_id: product.id,
-        user_id: auth.user.id,
-      });
+        setLocalLikes((prev) => Math.max(prev - 1, 0));
+      } else {
+        // like
+        await supabase.from("product_likes").insert({
+          product_id: product.id,
+          user_id: auth.user.id,
+        });
 
-      setLikedIds((prev) => [...prev, product.id]);
-      setLocalLikes((prev) => prev + 1);
+        setLocalLikes((prev) => prev + 1);
+      }
+
+      // notify parent to update its likedIds state if provided
+      onToggleLike?.();
+    } catch (err) {
+      console.error("toggleLike error:", err);
+    } finally {
+      setProcessing(false);
     }
   };
 
   const share = () => {
     const url = `${window.location.origin}/deal/${product.id}`;
     const title = product.title;
-
     if (navigator.share) navigator.share({ title, url });
-    else alert(`Copy liên kết để chia sẻ: ${url}`);
+    else {
+      onShare?.();
+      alert(`Copy liên kết để chia sẻ: ${url}`);
+    }
   };
 
   return (
     <motion.div
       initial={{ opacity: 0, y: 6 }}
       animate={{ opacity: 1, y: 0 }}
-      className="
-        w-full px-1 py-1 bg-white
-        transition 
-        hover:bg-gray-50
-      "
+      className="w-full px-1 py-1 bg-white transition hover:bg-gray-50"
     >
       <div className="flex items-center gap-4 min-h-[200px]">
-
         {/* IMAGE */}
         <Link
           href={`/deal/${product.id}`}
           className="flex-shrink-0 overflow-hidden w-[195px] h-[195px] bg-gray-100 rounded-lg relative"
         >
           {product.image_url ? (
-            <Image
-              src={product.image_url}
-              alt={product.title}
-              fill
-              className="object-cover"
-              sizes="195px"
-            />
+            <Image src={product.image_url} alt={product.title} fill className="object-cover" sizes="195px" />
           ) : (
-            <div className="w-full h-full flex items-center justify-center text-gray-500">
-              Không có ảnh
-            </div>
+            <div className="w-full h-full flex items-center justify-center text-gray-500">Không có ảnh</div>
           )}
         </Link>
 
         {/* MAIN */}
         <div className="flex-1 min-w-0">
-
           {/* USER + TIME */}
           <div className="mb-1 text-sm flex items-center gap-3 flex-wrap">
             <Link
-              href={`/profile/${product.user_id}`}
+              href={`/profile/${product.user_id ?? ""}`}
               className="flex items-center gap-2 whitespace-nowrap hover:opacity-80 cursor-pointer"
             >
               <Image
@@ -136,9 +145,7 @@ export default function SmallCard({
                 className="rounded-full object-cover"
               />
 
-              <span className="truncate max-w-[150px] text-gray-900">
-                {product.author || "Người dùng"}
-              </span>
+              <span className="truncate max-w-[150px] text-gray-900">{product.author || "Người dùng"}</span>
             </Link>
 
             <span className="whitespace-nowrap text-gray-400 text-xs">
@@ -155,12 +162,10 @@ export default function SmallCard({
           {/* TITLE + PRICE */}
           <div className="flex items-center gap-3">
             <Link href={`/deal/${product.id}`} className="min-w-0 flex-1">
-              <div className="text-lg font-semibold text-gray-800 leading-snug truncate">
-                {product.title}
-              </div>
+              <div className="text-lg font-semibold text-gray-800 leading-snug truncate">{product.title}</div>
             </Link>
 
-            {product.price && (
+            {product.price != null && (
               <div className="ml-2 text-base font-bold text-indigo-600 whitespace-nowrap">
                 {product.price.toLocaleString()}₫
               </div>
@@ -169,99 +174,68 @@ export default function SmallCard({
 
           {/* META */}
           <div className="mt-2 text-sm text-gray-500 flex items-center gap-3 flex-wrap">
-            {product.category && (
-              <span className="whitespace-nowrap">{product.category}</span>
-            )}
+            {product.category && <span className="whitespace-nowrap">{product.category}</span>}
 
-            <span className="whitespace-nowrap">
-              {commentsCount} bình luận
-            </span>
+            <span className="whitespace-nowrap">{commentsCount} bình luận</span>
 
-            <span className="whitespace-nowrap">
-              {product.views ?? 0} lượt xem
-            </span>
+            <span className="whitespace-nowrap">{product.views ?? 0} lượt xem</span>
           </div>
         </div>
 
         {/* TAGS + COMMUNITY */}
         <div className="flex-shrink-0 hidden lg:flex flex-col gap-1 ml-2">
-
           {product.tags && product.tags.length > 0 && (
             <div className="flex items-center gap-1">
               {product.tags.slice(0, 4).map((t, i) => (
                 <button
                   key={i}
-                  onClick={() => onTagClick(t)}
+                  onClick={() => onTagClick?.(t)}
                   className="text-xs bg-pink-50 text-purple-500 px-2 py-1 rounded-full hover:bg-pink-100 whitespace-nowrap cursor-pointer"
                 >
                   {t}
                 </button>
               ))}
 
-              {product.tags.length > 4 && (
-                <div className="text-xs text-gray-400 whitespace-nowrap">
-                  +{product.tags.length - 4}
-                </div>
-              )}
+              {product.tags.length > 4 && <div className="text-xs text-gray-400 whitespace-nowrap">+{product.tags.length - 4}</div>}
             </div>
           )}
 
           {product.communityName && (
             <Link
-              href={`/communities/${product.community_id}`}
+              href={`/communities/${product.community_id ?? ""}`}
               className="flex items-center gap-2 hover:opacity-80 whitespace-nowrap cursor-pointer mt-1"
             >
               {product.communityIcon && (
                 <div className="w-6 h-6 rounded-full overflow-hidden relative flex-shrink-0">
-                  <Image
-                    src={product.communityIcon}
-                    alt="community"
-                    fill
-                    className="object-cover"
-                  />
+                  <Image src={product.communityIcon} alt="community" fill className="object-cover" />
                 </div>
               )}
 
-              <span className="truncate max-w-[140px] text-gray-900">
-                {product.communityName}
-              </span>
+              <span className="truncate max-w-[140px] text-gray-900">{product.communityName}</span>
             </Link>
           )}
         </div>
 
         {/* ACTIONS */}
         <div className="flex items-center gap-3 ml-3 flex-shrink-0">
-
           {/* ❤️ LIKE */}
           <button
             onClick={toggleLike}
+            disabled={processing}
             className="flex items-center gap-1 text-gray-600 hover:text-pink-500 transition cursor-pointer"
           >
-            <HeartIcon
-              size={20}
-              fill={likedIds.includes(product.id) ? "currentColor" : "none"}
-            />
+            <HeartIcon size={20} fill={liked ? "currentColor" : "none"} />
             <span className="text-sm">{localLikes}</span>
           </button>
 
           {/* SHARE */}
-          <button
-            onClick={share}
-            className="text-gray-600 hover:text-gray-800 transition cursor-pointer"
-          >
+          <button onClick={share} className="text-gray-600 hover:text-gray-800 transition cursor-pointer">
             <Share2 size={20} />
           </button>
 
           {/* SAVE */}
-          <button
-            onClick={() => toggleSave(product.id)}
-            className="text-gray-600 hover:text-pink-500 transition cursor-pointer"
-          >
-            {saved.includes(product.id) ? (
-              <BookmarkCheck size={20} />
-            ) : (
-              <Bookmark size={20} />
-            )}
+          <button onClick={() => toggleSave(product.id)} className="text-gray-600 hover:text-pink-500 transition cursor-pointer">
+            {saved.includes(product.id) ? <BookmarkCheck size={20} /> : <Bookmark size={20} />}
           </button>
         </div>
       </div>

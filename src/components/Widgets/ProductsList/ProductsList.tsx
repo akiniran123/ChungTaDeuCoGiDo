@@ -1,17 +1,12 @@
-// components/Trang_chu/pc/ProductsList.tsx
 "use client";
 
-import { useEffect, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import HeaderBar from "@/components/Widgets/HeaderBar";
 import { useScrollHeader } from "@/hooks/useScrollHeader";
 import { useGridToggle } from "@/hooks/GridToggle/useGridToggle";
 import TagFilter from "@/components/Widgets/ProductsList/TagFilter";
 import ProductsGrid from "@/components/Widgets/ProductsList/ProductsGrid";
 import type { ProductsListProps } from "@/types/products";
-
-console.log("HeaderBar:", HeaderBar);
-console.log("TagFilter:", TagFilter);
-console.log("ProductsGrid:", ProductsGrid);
 
 export default function ProductsList({
   products,
@@ -24,14 +19,16 @@ export default function ProductsList({
   const [selectedCategory, setSelectedCategory] = useState<string | null>(null);
 
   const { showHeader, scrollPosition } = useScrollHeader();
-  const { biggerGrid, toggleGrid, scrollPosition: gridScroll } = useGridToggle();
+  const { biggerGrid, toggleGrid } = useGridToggle();
 
-  const visibleProducts = activeTag
-    ? products.filter((p) => p.tags?.includes(activeTag))
-    : products;
+  const visibleProducts = useMemo(
+    () => (activeTag ? products.filter((p) => p.tags?.includes(activeTag)) : products),
+    [products, activeTag]
+  );
 
   useEffect(() => {
-    window.scrollTo({ top: scrollPosition.current, behavior: "auto" });
+    const top = scrollPosition.current;
+    window.scrollTo({ top, behavior: "auto" });
   }, [biggerGrid, scrollPosition]);
 
   return (

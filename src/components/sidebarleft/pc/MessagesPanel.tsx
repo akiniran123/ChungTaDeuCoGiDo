@@ -4,11 +4,12 @@
 import React, { useMemo } from "react";
 import { createPortal } from "react-dom";
 import Image from "next/image";
+import { useChat } from "@/components/MiniChat/ChatContext";
 
 export type Conversation = {
   partner_id: string;
   username: string;
-  avatar_url: string;
+  avatar_url: string | null;
   last_message: string;
   last_time: string;
   is_read?: boolean;
@@ -26,16 +27,16 @@ type MessagesPanelProps = {
 
 const ConversationItem = React.memo(function ConversationItem({
   c,
-  onSelect,
+  onClick,
 }: {
   c: Conversation & { formatted_time: string };
-  onSelect: (partnerId: string) => void;
+  onClick: (partnerId: string) => void;
 }) {
   return (
     <div
       key={c.partner_id}
       className="flex items-center gap-3 p-4 hover:bg-gray-50 cursor-pointer"
-      onClick={() => onSelect(c.partner_id)}
+      onClick={() => onClick(c.partner_id)}
     >
       <div className="w-10 h-10 relative">
         <Image
@@ -47,11 +48,7 @@ const ConversationItem = React.memo(function ConversationItem({
         />
       </div>
       <div className="flex-1">
-        <p
-          className={
-            c.is_read === false ? "text-black font-medium" : "text-gray-500"
-          }
-        >
+        <p className={c.is_read === false ? "text-black font-medium" : "text-gray-500"}>
           {c.username}
         </p>
         <p
@@ -62,9 +59,7 @@ const ConversationItem = React.memo(function ConversationItem({
           {c.last_message}
         </p>
       </div>
-      <span className="text-[11px] text-gray-400 whitespace-nowrap">
-        {c.formatted_time}
-      </span>
+      <span className="text-[11px] text-gray-400 whitespace-nowrap">{c.formatted_time}</span>
     </div>
   );
 });
@@ -78,7 +73,8 @@ export default function MessagesPanel({
   setActivePanel,
   clearUnread,
 }: MessagesPanelProps) {
-  // luôn gọi hook trước khi return
+  const { openChat } = useChat();
+
   const formattedConversations = useMemo(
     () =>
       conversations.map((c) => ({
@@ -107,13 +103,23 @@ export default function MessagesPanel({
     "duration-300",
   ];
 
-  const openClasses = open
-    ? ["opacity-100", "translate-x-0"]
-    : ["opacity-0", "-translate-x-10", "pointer-events-none"];
+  const openClasses = open ? ["opacity-100", "translate-x-0"] : ["opacity-0", "-translate-x-10", "pointer-events-none"];
 
   const zClass = activePanel === "messages" ? "z-[999999]" : "z-[90000]";
 
   const panelClass = [...baseClasses, ...openClasses, zClass].join(" ");
+
+  const handleConversationClick = (id: string) => {
+    // open global chat (single source of truth)
+    openChat(id);
+    // clear unread locally / server
+    clearUnread(id);
+    // notify parent if needed
+    onSelect(id);
+    // close messages panel to avoid duplicate UI
+    setOpen(false);
+    setActivePanel(null);
+  };
 
   const panelJSX = (
     <div className={panelClass} onMouseDown={() => setActivePanel("messages")}>
@@ -132,19 +138,10 @@ export default function MessagesPanel({
 
       <div className="overflow-y-auto h-full">
         {formattedConversations.length === 0 ? (
-          <p className="text-sm text-gray-500 p-4">
-            Bạn chưa có cuộc trò chuyện nào.
-          </p>
+          <p className="text-sm text-gray-500 p-4">Bạn chưa có cuộc trò chuyện nào.</p>
         ) : (
           formattedConversations.map((c) => (
-            <ConversationItem
-              key={c.partner_id}
-              c={c}
-              onSelect={(id) => {
-                onSelect(id);
-                clearUnread(id);
-              }}
-            />
+            <ConversationItem key={c.partner_id} c={c} onClick={handleConversationClick} />
           ))
         )}
       </div>

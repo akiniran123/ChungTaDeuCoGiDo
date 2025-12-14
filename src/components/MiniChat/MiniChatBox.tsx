@@ -7,7 +7,7 @@ import Image from "next/image";
 
 type MiniChatProps = {
   partnerId: string;
-  index?: number; // thêm index để offset
+  index?: number;
   onClose: () => void;
   onReadMessages: () => void;
   onNewConversation: (conversation: {
@@ -49,13 +49,14 @@ export default function MiniChatBox({
   const [newMessage, setNewMessage] = useState("");
   const scrollRef = useRef<HTMLDivElement | null>(null);
 
-  // ⭐ Lấy user ID hiện tại
+  // Lấy user ID hiện tại
   useEffect(() => {
+    
     const fetchUser = async () => {
       try {
         const { data, error } = await supabase.auth.getUser();
         if (error) throw error;
-        if (data.user) setCurrentUserId(data.user.id);
+        if (data?.user) setCurrentUserId(data.user.id);
       } catch (err) {
         console.error("Error fetching current user:", err);
       }
@@ -63,12 +64,18 @@ export default function MiniChatBox({
     fetchUser();
   }, []);
 
-  // ⭐ Đánh dấu đã đọc khi mở MiniChat
+  useEffect(() => {
+  console.log("[MiniChatBox] mount for", partnerId);
+  return () => console.log("[MiniChatBox] unmount for", partnerId);
+}, [partnerId]);
+
+  // Đánh dấu đã đọc khi mở MiniChat
   useEffect(() => {
     if (!partnerId || !currentUserId) return;
 
     const markRead = async () => {
       try {
+        // avoid deep generic instantiation by not passing generics to from()
         await supabase
           .from("messages")
           .update({ is_read: true })
@@ -85,8 +92,10 @@ export default function MiniChatBox({
     markRead();
   }, [partnerId, currentUserId, onReadMessages]);
 
-  // ⭐ Lấy thông tin partner
+  // Lấy thông tin partner
   useEffect(() => {
+    if (!partnerId) return;
+
     const fetchPartner = async () => {
       try {
         const { data, error } = await supabase
@@ -104,29 +113,32 @@ export default function MiniChatBox({
     fetchPartner();
   }, [partnerId]);
 
-  // ⭐ Load tin nhắn + realtime
+  // Load tin nhắn + realtime
   useEffect(() => {
     if (!currentUserId || !partnerId) return;
 
+    let channelRef: any = null;
+
     const fetchMessages = async () => {
       try {
-        // fetch tin nhắn gửi đi
-        const { data: sentMsgs, error: sentErr } = await supabase
+        const { data: sentMsgsData, error: sentErr } = await supabase
           .from("messages")
           .select("*")
           .eq("sender_id", currentUserId)
           .eq("receiver_id", partnerId);
         if (sentErr) console.error("Supabase sentMsgs error:", sentErr);
 
-        // fetch tin nhắn nhận về
-        const { data: recvMsgs, error: recvErr } = await supabase
+        const { data: recvMsgsData, error: recvErr } = await supabase
           .from("messages")
           .select("*")
           .eq("sender_id", partnerId)
           .eq("receiver_id", currentUserId);
         if (recvErr) console.error("Supabase recvMsgs error:", recvErr);
 
-        const allMessages = [...(sentMsgs ?? []), ...(recvMsgs ?? [])].sort(
+        const sentMsgs = (sentMsgsData ?? []) as Message[];
+        const recvMsgs = (recvMsgsData ?? []) as Message[];
+
+        const allMessages = [...sentMsgs, ...recvMsgs].sort(
           (a, b) =>
             new Date(a.created_at || "").getTime() -
             new Date(b.created_at || "").getTime()
@@ -140,30 +152,25 @@ export default function MiniChatBox({
 
     fetchMessages();
 
-    // --- Realtime listener
-    const channel = supabase
+    // Realtime listener
+    channelRef = supabase
       .channel(`mini-chat-${currentUserId}-${partnerId}`)
       .on(
         "postgres_changes",
         { event: "INSERT", schema: "public", table: "messages" },
         async (payload) => {
           try {
-            const msg = payload.new as Message;
+            const msg = payload.new as unknown as Message;
             const isRelated =
-              (msg.sender_id === currentUserId &&
-                msg.receiver_id === partnerId) ||
-              (msg.sender_id === partnerId &&
-                msg.receiver_id === currentUserId);
+              (msg.sender_id === currentUserId && msg.receiver_id === partnerId) ||
+              (msg.sender_id === partnerId && msg.receiver_id === currentUserId);
             if (!isRelated) return;
 
             setMessages((prev) => [...prev, msg]);
 
             // đánh dấu đã đọc nếu là tin nhắn từ partner
             if (msg.sender_id === partnerId) {
-              await supabase
-                .from("messages")
-                .update({ is_read: true })
-                .eq("id", msg.id);
+              await supabase.from("messages").update({ is_read: true }).eq("id", msg.id);
               onReadMessages();
             }
           } catch (err) {
@@ -174,16 +181,18 @@ export default function MiniChatBox({
       .subscribe();
 
     return () => {
-      supabase.removeChannel(channel);
+      if (channelRef) {
+        supabase.removeChannel(channelRef);
+      }
     };
   }, [currentUserId, partnerId, onReadMessages]);
 
-  // ⭐ Auto scroll khi có tin nhắn mới
+  // Auto scroll khi có tin nhắn mới
   useEffect(() => {
     scrollRef.current?.scrollIntoView({ behavior: "smooth" });
   }, [messages]);
 
-  // ⭐ Gửi tin nhắn
+  // Gửi tin nhắn
   const sendMessage = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!newMessage.trim() || !currentUserId) return;
@@ -248,7 +257,7 @@ export default function MiniChatBox({
 
       {/* CHAT */}
       <div className="flex-1 overflow-y-auto px-3 py-3 bg-gray-50 space-y-3">
-        {messages?.map((msg) => (
+        {messages.map((msg) => (
           <div
             key={msg.id}
             className={`flex flex-col ${
@@ -273,24 +282,17 @@ export default function MiniChatBox({
       </div>
 
       {/* INPUT */}
-      <form
-        onSubmit={sendMessage}
-        className="flex items-center gap-2 px-3 py-2 bg-white"
-      >
+      <form onSubmit={sendMessage} className="flex items-center gap-2 px-3 py-2 bg-white">
         <input
           value={newMessage}
           onChange={(e) => setNewMessage(e.target.value)}
           placeholder="Nhập tin nhắn..."
           className="flex-1 px-3 py-1.5 text-sm border rounded-full"
         />
-        <button
-          type="submit"
-          className="p-2 hover:bg-gray-100 rounded-full cursor-pointer"
-        >
+        <button type="submit" className="p-2 hover:bg-gray-100 rounded-full cursor-pointer">
           <Send size={16} />
         </button>
       </form>
     </div>
   );
 }
-

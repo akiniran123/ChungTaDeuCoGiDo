@@ -9,6 +9,10 @@ import TagFilter from "@/components/Widgets/ProductsList/TagFilter";
 import ProductsGrid from "@/components/Widgets/ProductsList/ProductsGrid";
 import type { ProductsListProps } from "@/types/products";
 
+console.log("HeaderBar:", HeaderBar);
+console.log("TagFilter:", TagFilter);
+console.log("ProductsGrid:", ProductsGrid);
+
 export default function ProductsList({
   products,
   likesCount,

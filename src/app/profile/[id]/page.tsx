@@ -5,7 +5,7 @@ import { useParams } from "next/navigation";
 import Link from "next/link"; // 🔹 import Link để không bị lỗi
 import { supabase } from "@/lib/supabase/client";
 import { Product } from "@/types";
-import MiniChatBox from "@/components/MiniChat/MiniChatBox";
+import { useChat } from "@/components/MiniChat/ChatContext";
 
 interface User {
   id: string;
@@ -30,8 +30,9 @@ export default function OtherUserProfile() {
   const [products, setProducts] = useState<ProductWithUser[]>([]);
   const [loading, setLoading] = useState(true);
 
-  const [openMiniChat, setOpenMiniChat] = useState(false);
   const [currentUserId, setCurrentUserId] = useState<string | null>(null);
+
+  const { openChat } = useChat();
 
   useEffect(() => {
     supabase.auth.getUser().then(({ data }) => {
@@ -139,7 +140,7 @@ export default function OtherUserProfile() {
           {isOtherUser && (
             <button
               className="px-4 py-2 border border-gray-300 text-gray-900 rounded-lg hover:bg-gray-100 transition cursor-pointer"
-              onClick={() => setOpenMiniChat(true)}
+              onClick={() => openChat(user.id)}
             >
               Nhắn tin
             </button>
@@ -168,7 +169,7 @@ export default function OtherUserProfile() {
               />
               <div className="p-3 flex items-center gap-2">
                 {/* === Avatar người đăng sản phẩm === */}
-                {p.users.avatar_url ? (
+                {p.users?.avatar_url ? (
                   <img
                     src={p.users.avatar_url}
                     alt={p.users.username ?? "user"}
@@ -185,24 +186,13 @@ export default function OtherUserProfile() {
                     </svg>
                   </div>
                 )}
-                <span className="text-sm text-gray-600">{p.users.username}</span>
+                <span className="text-sm text-gray-600">{p.users?.username}</span>
               </div>
               <p className="mt-1 text-sm text-gray-500">{p.category}</p>
               <h3 className="font-semibold text-lg">{p.title}</h3>
             </Link>
           ))}
         </div>
-      )}
-
-      {openMiniChat && user && (
-        <MiniChatBox
-          partnerId={user.id}
-          onClose={() => setOpenMiniChat(false)}
-          onReadMessages={() => console.log("Đã đọc tin nhắn với", user.id)}
-          onNewConversation={() =>
-            console.log("Thêm người này vào MessengerPanel:", user.id)
-          }
-        />
       )}
     </div>
   );

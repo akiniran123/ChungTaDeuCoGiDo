@@ -3,7 +3,7 @@
 import { useEffect, useState } from "react";
 import { supabase } from "@/lib/supabase/client";
 import ProductsList from "@/components/Widgets/ProductsList/ProductsList";
-import type { ProductWithUser, Badge } from "@/types/products";
+import type { ProductsListProps, ProductListItem, Badge } from "@/types/products";
 
 type DBProductRow = {
   id: string;
@@ -43,29 +43,8 @@ type DBProductRow = {
 type LikeRow = { product_id: string; user_id: string };
 type UserBadgeRow = { badge_id: string; badges?: Badge | null };
 
-/**
- * Narrow type used for the list view.
- * Only includes the fields the ProductsList actually needs.
- */
-type ProductListItem = {
-  id: string;
-  title: string;
-  price: number;
-  image_url: string;
-  created_at: string;
-  category: string;
-  user_id: string;
-  users: { id: string; username: string; avatar_url: string };
-  tags: string[];
-  communityName: string;
-  communityIcon: string;
-  community_id: string;
-  views: number;
-  mainTag: string;
-};
-
 export default function ProductsPage() {
-  const [products, setProducts] = useState<ProductListItem[]>([]);
+  const [products, setProducts] = useState<ProductsListProps["products"]>([]);
   const [likesCount, setLikesCount] = useState<Record<string, number>>({});
   const [commentsCount, setCommentsCount] = useState<Record<string, number>>({});
   const [likedIds, setLikedIds] = useState<string[]>([]);
@@ -104,7 +83,7 @@ export default function ProductsPage() {
         if (res.error) throw res.error;
         const raw = (res.data as DBProductRow[] | null) ?? [];
 
-        const formatted: ProductListItem[] = raw.map((p) => {
+        const formatted: ProductsListProps["products"] = raw.map((p) => {
           const tagNames: string[] =
             (p.product_tags ?? [])
               .map((pt) => {
@@ -147,56 +126,51 @@ export default function ProductsPage() {
 
         setProducts(formatted);
 
+        // comments count map
         const commentMap: Record<string, number> = {};
         await Promise.all(
           formatted.map(async (prod) => {
             if (!prod.id) return;
-
             const cRes = await supabase
               .from("comments")
               .select("*", { count: "exact", head: false })
               .eq("product_id", prod.id);
-
             const cnt =
               typeof cRes.count === "number"
                 ? cRes.count
                 : Array.isArray(cRes.data)
                 ? cRes.data.length
                 : 0;
-
             commentMap[prod.id] = cnt;
           })
         );
         setCommentsCount(commentMap);
 
+        // likes map
         const likesRes = await supabase.from("product_likes").select("product_id, user_id");
-        const likesArr = (Array.isArray(likesRes.data) ? (likesRes.data as LikeRow[]) : []) ?? [];
+        const likesArr = Array.isArray(likesRes.data) ? (likesRes.data as LikeRow[]) : [];
         const likeMap: Record<string, number> = {};
-        const liked: string[] = [];
-
         for (const row of likesArr) {
           if (!row?.product_id) continue;
           likeMap[row.product_id] = (likeMap[row.product_id] || 0) + 1;
         }
+        setLikesCount(likeMap);
 
+        // liked ids for current user
         const authRes = await supabase.auth.getUser();
         const user = authRes.data?.user ?? null;
         if (user) {
-          liked.push(...likesArr.filter((l) => l.user_id === user.id).map((l) => l.product_id));
+          const liked = likesArr.filter((l) => l.user_id === user.id).map((l) => l.product_id);
+          setLikedIds(liked);
         }
 
-        setLikesCount(likeMap);
-        setLikedIds(liked);
-
+        // badges per user
         const userIds = [
           ...new Set(
-            formatted
-              .map((p) => p.user_id || p.users?.id || "")
-              .filter((v): v is string => Boolean(v))
+            formatted.map((p) => p.user_id || p.users?.id || "").filter((v): v is string => Boolean(v))
           ),
         ];
         const badgeMap: Record<string, Badge[]> = {};
-
         await Promise.all(
           userIds.map(async (uid) => {
             const bRes = await supabase
@@ -214,12 +188,10 @@ export default function ProductsPage() {
               `
               )
               .eq("user_id", uid);
-
             const arr = Array.isArray(bRes.data) ? (bRes.data as UserBadgeRow[]) : [];
             badgeMap[uid] = arr.map((b) => b.badges).filter((x): x is Badge => Boolean(x));
           })
         );
-
         setUserBadges(badgeMap);
       } catch (err) {
         console.error("Lỗi tải sản phẩm:", err);
@@ -240,17 +212,10 @@ export default function ProductsPage() {
 
   return (
     <div className="pl-6">
-      {/*
-        Quick compile fix:
-        - ProductsList currently expects scalar `likesCount` and `commentsCount` props (number).
-        - We have maps (Record<string, number>) keyed by product id.
-        - Cast the maps to `unknown` then to the expected type so TypeScript compiles.
-        Long-term: update ProductsListProps to accept maps (Record<string, number>) or rename props to likesMap/commentsMap.
-      */}
       <ProductsList
-        products={products as unknown as ProductWithUser[]}
-        likesCount={likesCount as unknown as number}
-        commentsCount={commentsCount as unknown as number}
+        products={products}           // pass ProductListItem[] directly
+        likesCount={likesCount}       // pass Record<string, number>
+        commentsCount={commentsCount} // pass Record<string, number>
         likedIds={likedIds}
         setLikedIds={setLikedIds}
         userBadges={userBadges}

@@ -33,7 +33,7 @@ export type ProductListItem = {
   image_url: string;
   created_at: string;
   category: string;
-  user_id: string;
+  user_id?: string | null;
   users: { id: string; username: string; avatar_url: string };
   tags: string[];
   communityName: string;

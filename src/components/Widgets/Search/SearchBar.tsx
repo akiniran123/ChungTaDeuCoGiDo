@@ -4,8 +4,8 @@ import React, { useState } from "react";
 import { useRouter } from "next/navigation";
 import SearchInput from "@/components/Widgets/Search/SearchInput";
 import SuggestionsList from "@/components/Widgets/Search/SuggestionsList";
-import { useSearchHistory } from "@/hooks/useSearchHistory";
-import { useSuggestions } from "@/hooks/useSuggestions";
+import { useSearchHistory } from "@/hooks/Search/useSearchHistory";
+import { useSuggestions } from "@/hooks/Search/useSuggestions";
 import type { SuggestionItem } from "@/types/search";
 
 type Props = {

@@ -11,8 +11,8 @@ export default function AppLayout({
 }: {
   children: React.ReactNode;
 }) {
-  const SIDEBAR_LEFT_WIDTH = 290; // px
-  const SIDEBAR_RIGHT_WIDTH = 300; // px
+  const SIDEBAR_LEFT_WIDTH = 280; // px
+  const SIDEBAR_RIGHT_WIDTH = 330; // px
 
   const [biggerGrid, setBiggerGrid] = useState(false);
   const toggleGrid = () => setBiggerGrid((s) => !s);

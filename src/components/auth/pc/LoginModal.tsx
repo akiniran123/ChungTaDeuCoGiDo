@@ -6,6 +6,7 @@ import { useForm } from "react-hook-form";
 import { z } from "zod";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { FcGoogle } from "react-icons/fc";
+import Image from "next/image";
 import { supabase } from "@/lib/supabase/client";
 import SignUpModal from "@/components/auth/pc/SignUpModal";
 import ForgotPasswordModal from "@/components/auth/pc/ForgotPasswordModal";
@@ -144,28 +145,45 @@ export default function LoginModal({
             {/* LEFT PANEL */}
             <div className="hidden md:flex w-1/2 bg-gradient-to-tr from-indigo-500 to-purple-600 flex-col justify-between items-center p-10">
               <div className="flex flex-col items-center mt-10">
-                <img
-                  src="/logo-nexloot.png"
-                  alt="Logo Nexloot"
-                  className="w-24 h-24 mb-4"
-                />
+                <div className="relative w-24 h-24 mb-4">
+                  <Image
+                    src="/logo-nexloot.png"
+                    alt="Logo Nexloot"
+                    width={96}
+                    height={96}
+                    className="object-contain"
+                    unoptimized
+                  />
+                </div>
+
                 <h1 className="text-white text-3xl font-bold mb-6">
                   Nexloot
                 </h1>
-                <img
-                  src="/login-illustration.png"
-                  alt="Minh họa"
-                  className="w-64 h-auto mb-6"
-                />
+
+                <div className="relative w-64 h-[256px] mb-6">
+                  <Image
+                    src="/login-illustration.png"
+                    alt="Minh họa đăng nhập"
+                    width={256}
+                    height={256}
+                    className="object-contain"
+                    unoptimized
+                  />
+                </div>
               </div>
 
               <div className="flex flex-col items-center mb-10">
                 <p className="text-white text-sm mb-2">Tải app Nexloot</p>
-                <img
-                  src="/qr-code.png"
-                  alt="QR Code"
-                  className="w-24 h-24"
-                />
+                <div className="relative w-24 h-24">
+                  <Image
+                    src="/qr-code.png"
+                    alt="QR Code tải app Nexloot"
+                    width={96}
+                    height={96}
+                    className="object-contain"
+                    unoptimized
+                  />
+                </div>
               </div>
             </div>
 
@@ -174,6 +192,7 @@ export default function LoginModal({
               <button
                 onClick={onClose}
                 className="absolute top-5 right-5 w-12 h-12 text-4xl text-gray-500 hover:text-gray-900 dark:hover:text-white"
+                aria-label="Đóng"
               >
                 ×
               </button>
@@ -184,7 +203,7 @@ export default function LoginModal({
 
               <form onSubmit={handleSubmit(onSubmit)} className="space-y-6">
                 {errorMsg && (
-                  <p className="text-red-500 text-center">{errorMsg}</p>
+                  <p className="text-red-500 text-center" role="alert">{errorMsg}</p>
                 )}
 
                 <div>
@@ -193,6 +212,7 @@ export default function LoginModal({
                     type="email"
                     {...register("email")}
                     className="w-full mt-1 px-4 py-3 rounded-xl border bg-gray-50 dark:bg-gray-800"
+                    aria-invalid={!!errors.email}
                   />
                   {errors.email && (
                     <p className="text-xs text-red-500">
@@ -207,6 +227,7 @@ export default function LoginModal({
                     type="password"
                     {...register("password")}
                     className="w-full mt-1 px-4 py-3 rounded-xl border bg-gray-50 dark:bg-gray-800"
+                    aria-invalid={!!errors.password}
                   />
                   {errors.password && (
                     <p className="text-xs text-red-500">

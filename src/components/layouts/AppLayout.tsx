@@ -14,9 +14,9 @@ export default function AppLayout({
   const SIDEBAR_LEFT_WIDTH = 280; // px
   const SIDEBAR_RIGHT_WIDTH = 330; // px
 
-  const [biggerGrid, setBiggerGrid] = useState(false);
-  const toggleGrid = () => setBiggerGrid((s) => !s);
-  const [selectedCategory, setSelectedCategory] = useState<string | null>(null);
+  // removed unused grid toggle variables
+  // keep selectedCategory value for passing to SidebarRight
+  const [selectedCategory] = useState<string | null>(null);
 
   return (
     <div className="bg-white text-black min-h-screen flex flex-col">

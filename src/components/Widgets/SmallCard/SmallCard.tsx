@@ -111,35 +111,47 @@ export default function SmallCard({
     }
   };
 
-  return (
-    <motion.div
-      initial={{ opacity: 0, y: 6 }}
-      animate={{ opacity: 1, y: 0 }}
-      className="w-full px-1 py-1 bg-white transition hover:bg-gray-50"
-    >
-      <div className="flex items-center gap-4 min-h-[200px]">
-        <SmallCardImage id={product.id} title={product.title} image_url={product.image_url} />
+ return (
+  <motion.div
+    initial={{ opacity: 0, y: 6 }}
+    animate={{ opacity: 1, y: 0 }}
+    className="w-full max-w-sm rounded-2xl bg-white shadow-sm hover:shadow-md transition overflow-hidden"
+  >
+    {/* IMAGE / LOGO */}
+    <SmallCardImage
+      id={product.id}
+      title={product.title}
+      image_url={product.image_url}
+    />
 
-        {/* Pass numeric commentsCount for SmallCardMain */}
-        <SmallCardMain product={product} commentsCount={commentsCount} />
+    {/* BODY */}
+    <div className="px-4 py-3 flex flex-col gap-3">
+      {/* AUTHOR + TIME + TITLE + COMMENTS */}
+      <SmallCardMain
+        product={product}
+        commentsCount={commentsCount}
+      />
 
-        <SmallCardTags
-          tags={product.tags}
-          communityId={product.community_id}
-          communityName={product.communityName}
-          communityIcon={product.communityIcon}
-          onTagClick={(t) => onTagClick?.(t)}
-        />
+      {/* PRICE + TAG (iphone 14 / PC / etc.) */}
+      <SmallCardTags
+        tags={product.tags}
+        communityId={product.community_id}
+        communityName={product.communityName}
+        communityIcon={product.communityIcon}
+        onTagClick={(t) => onTagClick?.(t)}
+      />
 
-        <SmallCardActions
-          productId={product.id}
-          liked={liked}
-          localLikes={localLikes}
-          onToggleLike={toggleLike}
-          onToggleSave={() => toggleSave(product.id)}
-          onShare={share}
-        />
-      </div>
-    </motion.div>
-  );
+      {/* ACTIONS (views / like / share / save) */}
+      <SmallCardActions
+        productId={product.id}
+        liked={liked}
+        localLikes={localLikes}
+        onToggleLike={toggleLike}
+        onToggleSave={() => toggleSave(product.id)}
+        onShare={share}
+      />
+    </div>
+  </motion.div>
+);
+
 }

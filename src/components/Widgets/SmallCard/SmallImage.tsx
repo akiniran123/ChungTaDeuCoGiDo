@@ -1,4 +1,3 @@
-// components/Trang_chu/pc/SmallCardImage.tsx
 "use client";
 
 import Link from "next/link";
@@ -14,12 +13,25 @@ export default function SmallCardImage({ id, title, image_url }: Props) {
   return (
     <Link
       href={`/deal/${id}`}
-      className="flex-shrink-0 overflow-hidden w-[195px] h-[195px] bg-gray-100 rounded-lg relative"
+      className="
+        relative
+        block
+        w-full
+        aspect-[4/3]
+        overflow-hidden
+        bg-gray-100
+      "
     >
       {image_url ? (
-        <Image src={image_url} alt={title} fill className="object-cover" sizes="195px" />
+        <Image
+          src={image_url}
+          alt={title}
+          fill
+          className="object-cover"
+          sizes="(max-width: 640px) 100vw, 400px"
+        />
       ) : (
-        <div className="w-full h-full flex items-center justify-center text-gray-500">
+        <div className="flex h-full w-full items-center justify-center text-gray-400">
           Không có ảnh
         </div>
       )}

@@ -45,10 +45,16 @@ export default function DealHeader({
               />
             </Link>
 
-            {/* USERNAME */}
+            {/* USERNAME — FIX CHẮC CHẮN KHÔNG XANH */}
             <Link
               href={`/profile/${author.id}`}
-              className="font-semibold text-gray-900 hover:underline"
+              className="
+                font-semibold
+                !text-gray-900
+                visited:!text-gray-900
+                hover:!text-gray-900
+                no-underline
+              "
             >
               {author.username}
             </Link>

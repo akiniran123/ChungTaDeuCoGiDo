@@ -1,7 +1,7 @@
 "use client";
 
 import Image from "next/image";
-import Link from "next/link"; // ✅ THÊM
+import Link from "next/link";
 import { useRef, useState } from "react";
 import { SendHorizontal } from "lucide-react";
 import { supabase } from "@/lib/supabase/client";
@@ -71,7 +71,6 @@ export default function DealComments({
 
     if (!data) return;
 
-    // ✅ NORMALIZE DATA
     const formatted: Comment = {
       id: data.id,
       user_id: data.user_id,
@@ -110,7 +109,7 @@ export default function DealComments({
       <div className="space-y-4">
         {comments.map((c) => (
           <div key={c.id} className="flex gap-3">
-            {/* ✅ AVATAR CLICK → PROFILE */}
+            {/* AVATAR */}
             <Link
               href={`/profile/${c.user_id}`}
               className="w-10 h-10 relative rounded-full overflow-hidden shrink-0"
@@ -124,10 +123,16 @@ export default function DealComments({
             </Link>
 
             <div>
-              {/* ✅ USERNAME CLICK → PROFILE */}
+              {/* ✅ USERNAME – ÉP ĐEN + KHÔNG GẠCH CHÂN */}
               <Link
                 href={`/profile/${c.user_id}`}
-                className="font-semibold hover:underline"
+                className="
+                  font-semibold
+                  !text-gray-900
+                  !visited:text-gray-900
+                  no-underline
+                  hover:no-underline
+                "
               >
                 {c.user.username}
               </Link>

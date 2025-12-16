@@ -17,6 +17,7 @@ export default function DealAuthor({
 
   return (
     <div className="flex items-center gap-3">
+      {/* AVATAR */}
       <Link
         href={`/profile/${author.id}`}
         className="w-10 h-10 relative rounded-full overflow-hidden border"
@@ -30,13 +31,15 @@ export default function DealAuthor({
       </Link>
 
       <div>
+        {/* USERNAME */}
         <Link
           href={`/profile/${author.id}`}
-          className="font-semibold hover:underline"
+          className="font-semibold text-gray-800 hover:underline"
         >
           {author.username ?? "Người dùng"}
         </Link>
 
+        {/* TIME */}
         {createdAt && (
           <p className="text-xs text-gray-400">
             {new Date(createdAt).toLocaleString()}

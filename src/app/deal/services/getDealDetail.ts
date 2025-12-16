@@ -1,93 +1,110 @@
-// src/app/deal/[id]/services/getDealDetail.ts
-"use server";
-
-import { getServerClient } from "@/lib/supabase/serverClient";
+import { supabase } from "@/lib/supabase/client";
 import type { Database } from "@/types/supabase";
 
-// Kiểu comment kèm user (UI-facing)
-export interface CommentWithUser {
+type Product = Database["public"]["Tables"]["products"]["Row"];
+type UserRow = Database["public"]["Tables"]["users"]["Row"];
+type CommentRow = Database["public"]["Tables"]["comments"]["Row"];
+
+type CommentWithUsersRow = CommentRow & {
+  users?: {
+    username?: string | null;
+    avatar_url?: string | null;
+  } | null;
+};
+
+/** 👉 COMMENT TYPE DÙNG CHO UI */
+export interface DealComment {
   id: string;
-  product_id: string;
+  content: string;
+  created_at: string;
   user_id: string;
-  content: string | null;
-  created_at: string | null;
   user: {
     username: string;
     avatar_url: string;
   };
 }
 
-// Kiểu product và user từ schema
-export type Product = Database["public"]["Tables"]["products"]["Row"];
-export type User = Database["public"]["Tables"]["users"]["Row"];
+/** 👉 RETURN TYPE CHUẨN */
+export interface DealDetailResult {
+  product: Product;
+  author: UserRow | null;
+  comments: DealComment[];
+  likesCount: number;
+  liked: boolean;
+}
 
-// Kiểu trả về khi join relation users từ Supabase
-type CommentWithUsersRow = Database["public"]["Tables"]["comments"]["Row"] & {
-  users?: { username?: string | null; avatar_url?: string | null } | null;
-};
-
-export async function getDealDetail(id: string) {
-  const supabase = await getServerClient();
-
-  // 1️⃣ Lấy sản phẩm
-  const productRes = await supabase
+export async function getDealDetail(
+  id: string
+): Promise<DealDetailResult | null> {
+  // PRODUCT
+  const { data: product } = await supabase
     .from("products")
     .select("*")
     .eq("id", id)
-    .single();
+    .single<Product>();
 
-  if (productRes.error || !productRes.data) {
-    throw productRes.error || new Error("Không tìm thấy sản phẩm");
-  }
-  const product = productRes.data as Product;
+  if (!product) return null;
 
-  // 2️⃣ Lấy tác giả
-  const authorRes = await supabase
+  // AUTHOR
+  const { data: author } = await supabase
     .from("users")
     .select("*")
     .eq("id", product.user_id)
-    .single();
+    .single<UserRow>();
 
-  if (authorRes.error || !authorRes.data) {
-    throw authorRes.error || new Error("Không tìm thấy tác giả");
-  }
-  const author = authorRes.data as User;
-
-  // 3️⃣ Lấy comments kèm user info
-  const commentsRes = await supabase
+  // COMMENTS
+  const { data: commentsRaw } = await supabase
     .from("comments")
     .select(
       `
-      *,
-      users (
-        username,
-        avatar_url
-      )
+      id,
+      content,
+      created_at,
+      user_id,
+      users ( username, avatar_url )
     `
     )
     .eq("product_id", id)
     .order("created_at", { ascending: true });
 
-  if (commentsRes.error) throw commentsRes.error;
+  const comments: DealComment[] =
+    (commentsRaw as CommentWithUsersRow[] | null)?.map((c) => ({
+      id: c.id,
+      user_id: c.user_id,
+      content: c.content ?? "",
+      created_at: c.created_at ?? "",
+      user: {
+        username: c.users?.username ?? "Người dùng",
+        avatar_url: c.users?.avatar_url ?? "/default-avatar.png",
+      },
+    })) ?? [];
 
-  // Ép kiểu an toàn và map sang CommentWithUser (không dùng any)
-  const typedCommentsData = (commentsRes.data as CommentWithUsersRow[] | null) ?? [];
+  // LIKES COUNT
+  const { count: likesCount } = await supabase
+    .from("product_likes")
+    .select("*", { count: "exact", head: true })
+    .eq("product_id", id);
 
-  const comments: CommentWithUser[] = typedCommentsData.map((c) => ({
-    id: c.id,
-    product_id: c.product_id,
-    user_id: c.user_id,
-    content: c.content ?? null,
-    created_at: c.created_at ?? null,
-    user: {
-      username: c.users?.username ?? "Người dùng",
-      avatar_url: c.users?.avatar_url ?? "/default-avatar.png",
-    },
-  }));
+  // CHECK USER LIKE
+  const { data: auth } = await supabase.auth.getUser();
+  let liked = false;
+
+  if (auth?.user) {
+    const { data } = await supabase
+      .from("product_likes")
+      .select("id")
+      .eq("product_id", id)
+      .eq("user_id", auth.user.id)
+      .maybeSingle();
+
+    liked = !!data;
+  }
 
   return {
     product,
     author,
     comments,
+    likesCount: likesCount ?? 0,
+    liked,
   };
 }

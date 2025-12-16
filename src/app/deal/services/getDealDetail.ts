@@ -12,31 +12,32 @@ type CommentWithUsersRow = CommentRow & {
   } | null;
 };
 
-/** 👉 COMMENT TYPE DÙNG CHO UI */
-export interface DealComment {
+/* ======= SINGLE SOURCE OF TRUTH ======= */
+export type Comment = {
   id: string;
-  content: string;
-  created_at: string;
+  product_id: string;
   user_id: string;
+  content: string;
+  created_at: string; // ✅ CHUẨN
   user: {
     username: string;
     avatar_url: string;
   };
-}
+};
 
-/** 👉 RETURN TYPE CHUẨN */
-export interface DealDetailResult {
+export type DealDetailResult = {
   product: Product;
   author: UserRow | null;
-  comments: DealComment[];
+  comments: Comment[];
   likesCount: number;
   liked: boolean;
-}
+};
+/* ===================================== */
 
 export async function getDealDetail(
   id: string
 ): Promise<DealDetailResult | null> {
-  // PRODUCT
+  /* PRODUCT */
   const { data: product } = await supabase
     .from("products")
     .select("*")
@@ -45,54 +46,52 @@ export async function getDealDetail(
 
   if (!product) return null;
 
-  // AUTHOR
+  /* AUTHOR */
   const { data: author } = await supabase
     .from("users")
     .select("*")
     .eq("id", product.user_id)
     .single<UserRow>();
 
-  // COMMENTS
+  /* COMMENTS */
   const { data: commentsRaw } = await supabase
     .from("comments")
     .select(
       `
-      id,
-      content,
-      created_at,
-      user_id,
+      *,
       users ( username, avatar_url )
     `
     )
     .eq("product_id", id)
     .order("created_at", { ascending: true });
 
-  const comments: DealComment[] =
+  const comments: Comment[] =
     (commentsRaw as CommentWithUsersRow[] | null)?.map((c) => ({
       id: c.id,
+      product_id: c.product_id,
       user_id: c.user_id,
       content: c.content ?? "",
-      created_at: c.created_at ?? "",
+      created_at: c.created_at ?? new Date().toISOString(), // ✅ FIX CUỐI CÙNG
       user: {
         username: c.users?.username ?? "Người dùng",
         avatar_url: c.users?.avatar_url ?? "/default-avatar.png",
       },
     })) ?? [];
 
-  // LIKES COUNT
-  const { count: likesCount } = await supabase
+  /* LIKES COUNT */
+  const { count } = await supabase
     .from("product_likes")
     .select("*", { count: "exact", head: true })
     .eq("product_id", id);
 
-  // CHECK USER LIKE
+  /* CHECK USER LIKE */
   const { data: auth } = await supabase.auth.getUser();
   let liked = false;
 
   if (auth?.user) {
     const { data } = await supabase
       .from("product_likes")
-      .select("id")
+      .select("*")
       .eq("product_id", id)
       .eq("user_id", auth.user.id)
       .maybeSingle();
@@ -104,7 +103,7 @@ export async function getDealDetail(
     product,
     author,
     comments,
-    likesCount: likesCount ?? 0,
+    likesCount: count ?? 0,
     liked,
   };
 }

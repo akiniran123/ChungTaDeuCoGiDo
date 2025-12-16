@@ -1,136 +1,110 @@
 "use client";
 
-import React from "react";
-import { motion } from "framer-motion";
-import {
-  MessageSquare,
-  Share2,
-  Bookmark,
-  Heart as HeartIcon,
-} from "lucide-react";
-
+import Image from "next/image";
+import Link from "next/link";
+import { Heart, Share2, MessageCircle } from "lucide-react";
 import type { Database } from "@/types/supabase";
 
 type Product = Database["public"]["Tables"]["products"]["Row"];
-type User = Database["public"]["Tables"]["users"]["Row"];
+type UserRow = Database["public"]["Tables"]["users"]["Row"];
 
 export default function DealHeader({
   product,
   author,
-
-  liked = false,
-  likesCount = 0,
-  commentCount = 0,
-  saved = false,
-
+  liked,
+  likesCount,
+  commentCount,
   onLike,
-  onComment,
   onShare,
-  onSave,
 }: {
   product: Product;
-  author: User | null;
-
-  liked?: boolean;
-  likesCount?: number;
-  commentCount?: number;
-  saved?: boolean;
-
+  author: UserRow | null;
+  liked: boolean;
+  likesCount: number;
+  commentCount: number;
   onLike?: () => void;
-  onComment?: () => void;
   onShare?: () => void;
-  onSave?: () => void;
 }) {
   return (
-    <div className="p-6">
+    <div className="bg-white rounded-xl p-6 mb-6 shadow-sm space-y-4">
+      {/* 👤 USER + AVATAR + TIME */}
+      <div className="flex items-center gap-3 text-sm text-gray-500">
+        {author && (
+          <>
+            {/* AVATAR */}
+            <Link
+              href={`/profile/${author.id}`}
+              className="relative w-8 h-8 rounded-full overflow-hidden border"
+            >
+              <Image
+                src={author.avatar_url ?? "/default-avatar.png"}
+                alt={author.username ?? "User"}
+                fill
+                className="object-cover"
+              />
+            </Link>
 
-      {/* AUTHOR SECTION */}
-      <div className="flex items-center gap-4 mb-6">
-        <img
-          src={author?.avatar_url || "/default-avatar.png"}
-          alt={author?.username || "User Avatar"}
-          className="w-12 h-12 rounded-full border object-cover shadow"
-        />
+            {/* USERNAME */}
+            <Link
+              href={`/profile/${author.id}`}
+              className="font-semibold text-gray-900 hover:underline"
+            >
+              {author.username}
+            </Link>
+          </>
+        )}
 
-        <div>
-          <p className="font-semibold text-lg">
-            {author?.username || "Người dùng"}
-          </p>
+        <span>•</span>
 
-          <p className="text-gray-500 text-sm">
-            Đăng vào:{" "}
-            {product.created_at
-              ? new Date(product.created_at).toLocaleString()
-              : "Không rõ thời gian"}
-          </p>
-        </div>
+        {/* TIME */}
+        <span>
+          {product.created_at
+            ? new Date(product.created_at).toLocaleString()
+            : ""}
+        </span>
       </div>
 
-      {/* PRODUCT TITLE */}
-      <h1 className="text-3xl font-bold mb-6 leading-snug">
-        {product.title}
-      </h1>
+      {/* 🏷️ TITLE */}
+      <h1 className="text-2xl font-bold">{product.title}</h1>
 
-      {/* MAIN IMAGE */}
+      {/* 🖼️ PRODUCT IMAGE */}
       {product.image_url && (
-        <motion.img
-          initial={{ opacity: 0, scale: 0.98 }}
-          animate={{ opacity: 1, scale: 1 }}
-          transition={{ duration: 0.3 }}
-          src={product.image_url}
-          alt={product.title}
-          className="w-full max-h-[460px] object-cover rounded-xl shadow-lg mb-6"
-        />
+        <div className="relative w-full aspect-[4/3] rounded-xl overflow-hidden">
+          <Image
+            src={product.image_url}
+            alt={product.title}
+            fill
+            className="object-cover"
+            priority
+          />
+        </div>
       )}
 
-      {/* ACTION BUTTONS */}
-      <div className="flex items-center justify-between mt-3 text-gray-700 select-none">
-
-        {/* LEFT SIDE */}
-        <div className="flex items-center gap-6">
-
-          {/* LIKE BUTTON */}
-          <motion.button
-            onClick={onLike}
-            whileTap={{ scale: 0.9 }}
-            className="flex items-center gap-1 cursor-pointer px-1 hover:text-pink-600 transition"
-          >
-            <HeartIcon
-              size={22}
-              fill={liked ? "currentColor" : "none"}
-              className={liked ? "text-pink-600" : ""}
-            />
-            <span className="text-sm">{likesCount}</span>
-          </motion.button>
-
-          {/* COMMENT BUTTON */}
-          <button
-            onClick={onComment}
-            className="flex items-center gap-1 cursor-pointer px-1 hover:text-gray-900 transition"
-          >
-            <MessageSquare size={22} />
-            <span className="text-sm">{commentCount}</span>
-          </button>
-
-          {/* SHARE BUTTON */}
-          <button
-            onClick={onShare}
-            className="flex items-center gap-1 cursor-pointer px-1 hover:text-gray-900 transition"
-          >
-            <Share2 size={22} />
-            <span className="text-sm hidden sm:inline">Chia sẻ</span>
-          </button>
-        </div>
-
-        {/* SAVE BUTTON */}
+      {/* ACTIONS */}
+      <div className="flex items-center gap-6 pt-2">
         <button
-          onClick={onSave}
-          className={`cursor-pointer px-1 transition 
-            ${saved ? "text-pink-600" : "text-gray-700 hover:text-gray-900"}`}
+          onClick={onLike}
+          className="flex items-center gap-1 hover:text-red-500 transition"
         >
-          <Bookmark size={22} fill={saved ? "currentColor" : "none"} />
+          <Heart
+            size={20}
+            className={liked ? "fill-red-500 text-red-500" : ""}
+          />
+          <span>{likesCount}</span>
         </button>
 
+        <div className="flex items-center gap-1 text-gray-600">
+          <MessageCircle size={20} />
+          <span>{commentCount}</span>
+        </div>
+
+        <button
+          onClick={onShare}
+          className="flex items-center gap-1 text-gray-600 hover:text-black transition"
+        >
+          <Share2 size={20} />
+          <span>Chia sẻ</span>
+        </button>
       </div>
     </div>
   );

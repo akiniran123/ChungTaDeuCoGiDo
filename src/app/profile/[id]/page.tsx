@@ -1,6 +1,7 @@
 "use client";
 
 import React, { useEffect, useState } from "react";
+import Image from "next/image";
 import { useParams } from "next/navigation";
 import Link from "next/link"; // 🔹 import Link để không bị lỗi
 import { supabase } from "@/lib/supabase/client";
@@ -125,10 +126,13 @@ export default function OtherUserProfile() {
       <div className="flex items-center gap-4 mb-6">
         {/* === Avatar chính === */}
         {user.avatar_url ? (
-          <img
+          <Image
             src={user.avatar_url}
             alt={user.username}
+            width={80}
+            height={80}
             className="w-20 h-20 rounded-full object-cover border border-gray-200"
+            unoptimized
           />
         ) : (
           <div className="w-20 h-20 rounded-full border border-gray-200 bg-gray-300 flex items-center justify-center">
@@ -173,18 +177,26 @@ export default function OtherUserProfile() {
               key={p.id}
               className="rounded-xl overflow-hidden shadow hover:shadow-lg transition bg-white"
             >
-              <img
-                src={p.image_url ?? "/default-product.png"}
-                className="w-full h-40 object-cover"
-                alt={p.title}
-              />
+              <div className="relative w-full h-40">
+                <Image
+                  src={p.image_url ?? "/default-product.png"}
+                  alt={p.title ?? "Product"}
+                  fill
+                  className="object-cover"
+                  unoptimized
+                />
+              </div>
+
               <div className="p-3 flex items-center gap-2">
                 {/* === Avatar người đăng sản phẩm === */}
                 {p.users?.avatar_url ? (
-                  <img
+                  <Image
                     src={p.users.avatar_url}
                     alt={p.users.username ?? "user"}
+                    width={24}
+                    height={24}
                     className="w-6 h-6 rounded-full object-cover border border-gray-200"
+                    unoptimized
                   />
                 ) : (
                   <div className="w-6 h-6 rounded-full border border-gray-200 bg-gray-300 flex items-center justify-center">

@@ -44,13 +44,16 @@ const CommunityDetailPage: React.FC<CommunityDetailPageProps> = ({ params }) => 
   }, [params]);
 
   useEffect(() => {
-    supabase.auth.getUser().then((res) => {
-      // res.data may be undefined; guard and cast safely
-      const data = res.data;
-      if (data?.user) setUser(data.user);
-    }).catch((err: unknown) => {
-      console.error("Auth getUser error:", err);
-    });
+    supabase
+      .auth.getUser()
+      .then((res) => {
+        // res.data may be undefined; guard and cast safely
+        const data = res.data;
+        if (data?.user) setUser(data.user);
+      })
+      .catch((err: unknown) => {
+        console.error("Auth getUser error:", err);
+      });
   }, []);
 
   useEffect(() => {
@@ -135,7 +138,7 @@ const CommunityDetailPage: React.FC<CommunityDetailPageProps> = ({ params }) => 
         onClick={() => {
           try {
             sessionStorage.setItem("scrollPosition", window.scrollY.toString());
-          } catch (e) {
+          } catch {
             // ignore sessionStorage errors in some environments
           }
           router.back();

@@ -1,6 +1,7 @@
 "use client";
 
 import React, { useState, useEffect } from "react";
+import Image from "next/image";
 import { Pencil, Loader2, Check } from "lucide-react";
 import { supabase } from "@/lib/supabase/client";
 import type { Database } from "@/types/supabase";
@@ -180,7 +181,16 @@ export default function CommunityHeader({ community }: { community: Community })
         {/* BANNER — đã xoá zoom */}
         <div className="relative w-full h-36 bg-gray-200">
           {localBanner ? (
-            <img src={localBanner} className="w-full h-full object-cover" />
+            <div className="relative w-full h-full">
+              <Image
+                src={localBanner}
+                alt={`${title ?? "Community"} banner`}
+                fill
+                className="object-cover"
+                priority
+                sizes="100vw"
+              />
+            </div>
           ) : (
             <div className="w-full h-full bg-gradient-to-r from-blue-50 to-white" />
           )}
@@ -215,10 +225,15 @@ export default function CommunityHeader({ community }: { community: Community })
           {/* AVATAR — đã xoá zoom */}
           <div className="relative flex flex-col items-start">
             {localAvatar ? (
-              <img
-                src={localAvatar}
-                className="w-20 h-20 md:w-24 md:h-24 rounded-xl object-cover border"
-              />
+              <div className="relative w-20 h-20 md:w-24 md:h-24 rounded-xl overflow-hidden border">
+                <Image
+                  src={localAvatar}
+                  alt={`${title ?? "Community"} avatar`}
+                  fill
+                  className="object-cover"
+                  sizes="96px"
+                />
+              </div>
             ) : (
               <div className="w-20 h-20 md:w-24 md:h-24 rounded-xl bg-blue-50 flex items-center justify-center text-blue-600 text-3xl font-bold">
                 {title?.charAt(0).toUpperCase() ?? "C"}

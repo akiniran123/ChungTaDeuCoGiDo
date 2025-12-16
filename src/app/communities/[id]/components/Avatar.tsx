@@ -1,6 +1,7 @@
 "use client";
 
 import { useState, useEffect } from "react";
+import Image from "next/image";
 import { supabase } from "@/lib/supabase/client";
 
 export default function AvatarUploader({ onUploaded }: { onUploaded: (url: string) => void }) {
@@ -54,10 +55,13 @@ export default function AvatarUploader({ onUploaded }: { onUploaded: (url: strin
       />
 
       {preview && (
-        <img
+        <Image
           src={preview}
           alt="Avatar Preview"
+          width={96}
+          height={96}
           className="w-24 h-24 rounded-full object-cover border"
+          unoptimized
         />
       )}
     </div>

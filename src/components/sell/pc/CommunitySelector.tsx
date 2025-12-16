@@ -10,7 +10,7 @@ type CommunityTag = Database["public"]["Tables"]["community_tags"]["Row"];
 type CommunitySelectorProps = {
   value: string | null; // community_id
   onChange: (value: string) => void;
-  userId: string;
+  userId?: string;
 
   selectedTag?: string | null;
   onTagChange?: (value: string | null) => void;
@@ -29,24 +29,42 @@ export default function CommunitySelector({
   const [tagsLoading, setTagsLoading] = useState(false);
 
   // ==========================
-  // 🔥 Lấy tất cả cộng đồng (không cần user tham gia)
+  // 🔥 Lấy tất cả cộng đồng (nếu userId được cung cấp thì lấy communities của user)
   // ==========================
   useEffect(() => {
     const fetchCommunities = async () => {
       try {
         setLoading(true);
 
-        const { data: communityData, error: commErr } = await supabase
-          .from("communities")
-          .select("*")
-          .order("created_at", { ascending: false });
+        if (userId) {
+          // Nếu userId có, lấy communities mà user đã tham gia
+          const { data: membershipData, error: memErr } = await supabase
+            .from("community_members")
+            .select("communities (id, title, avatar_url)")
+            .eq("user_id", userId);
 
-        if (commErr) {
-          console.error("❌ Lỗi lấy danh sách communities:", commErr.message);
-          setCommunities([]);
+          if (memErr) {
+            console.error("❌ Lỗi lấy communities của user:", memErr.message);
+            setCommunities([]);
+          } else {
+            const mapped: Community[] = (membershipData || [])
+              .map((item: any) => item.communities)
+              .filter(Boolean);
+            setCommunities(mapped as Community[]);
+          }
         } else {
-          // Cast an toàn về Community[]
-          setCommunities((communityData ?? []) as Community[]);
+          // Nếu không có userId, lấy tất cả communities
+          const { data: communityData, error: commErr } = await supabase
+            .from("communities")
+            .select("*")
+            .order("created_at", { ascending: false });
+
+          if (commErr) {
+            console.error("❌ Lỗi lấy danh sách communities:", commErr.message);
+            setCommunities([]);
+          } else {
+            setCommunities((communityData ?? []) as Community[]);
+          }
         }
       } catch (err) {
         console.error("❌ Lỗi không mong muốn:", err);
@@ -57,7 +75,7 @@ export default function CommunitySelector({
     };
 
     fetchCommunities();
-  }, []);
+  }, [userId]);
 
   // ==========================
   // 🔥 Khi chọn community → load tags
@@ -88,7 +106,7 @@ export default function CommunitySelector({
     };
 
     fetchTags();
-  }, [value]);
+  }, [value, onTagChange]);
 
   // ==========================
   // UI

@@ -38,9 +38,10 @@ export default function DealHeader({
             >
               <Image
                 src={author.avatar_url ?? "/default-avatar.png"}
-                alt={author.username ?? "User"}
+                alt={author.username ? `${author.username} avatar` : "User avatar"}
                 fill
                 className="object-cover"
+                unoptimized
               />
             </Link>
 
@@ -58,9 +59,7 @@ export default function DealHeader({
 
         {/* TIME */}
         <span>
-          {product.created_at
-            ? new Date(product.created_at).toLocaleString()
-            : ""}
+          {product.created_at ? new Date(product.created_at).toLocaleString() : ""}
         </span>
       </div>
 
@@ -72,10 +71,11 @@ export default function DealHeader({
         <div className="relative w-full aspect-[4/3] rounded-xl overflow-hidden">
           <Image
             src={product.image_url}
-            alt={product.title}
+            alt={product.title ?? "Product image"}
             fill
             className="object-cover"
             priority
+            unoptimized
           />
         </div>
       )}
@@ -85,15 +85,14 @@ export default function DealHeader({
         <button
           onClick={onLike}
           className="flex items-center gap-1 hover:text-red-500 transition"
+          aria-pressed={liked}
+          aria-label={liked ? "Bỏ thích" : "Thích"}
         >
-          <Heart
-            size={20}
-            className={liked ? "fill-red-500 text-red-500" : ""}
-          />
+          <Heart size={20} className={liked ? "fill-red-500 text-red-500" : ""} />
           <span>{likesCount}</span>
         </button>
 
-        <div className="flex items-center gap-1 text-gray-600">
+        <div className="flex items-center gap-1 text-gray-600" aria-hidden>
           <MessageCircle size={20} />
           <span>{commentCount}</span>
         </div>
@@ -101,6 +100,7 @@ export default function DealHeader({
         <button
           onClick={onShare}
           className="flex items-center gap-1 text-gray-600 hover:text-black transition"
+          aria-label="Chia sẻ"
         >
           <Share2 size={20} />
           <span>Chia sẻ</span>

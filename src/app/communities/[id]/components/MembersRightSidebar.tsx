@@ -1,6 +1,7 @@
 "use client";
 
-import React, { useEffect, useState } from "react";
+import React, { useEffect, useState, useCallback } from "react";
+import Image from "next/image";
 import { supabase } from "@/lib/supabase/client";
 import { User } from "lucide-react";
 
@@ -22,7 +23,7 @@ const MembersSidebar: React.FC<CommunityMemberSidebarProps> = ({ communityId }) 
   const [loading, setLoading] = useState(true);
 
   // 🔥 Fetch members
-  const fetchMembers = async () => {
+  const fetchMembers = useCallback(async () => {
     try {
       const { data, error } = await supabase
         .from("community_members")
@@ -49,12 +50,12 @@ const MembersSidebar: React.FC<CommunityMemberSidebarProps> = ({ communityId }) 
     } finally {
       setLoading(false);
     }
-  };
+  }, [communityId]);
 
   // 🟦 Load lần đầu
   useEffect(() => {
     fetchMembers();
-  }, [communityId]);
+  }, [fetchMembers]);
 
   // 🟩 Realtime listener: auto update khi có người join / leave
   useEffect(() => {
@@ -77,7 +78,7 @@ const MembersSidebar: React.FC<CommunityMemberSidebarProps> = ({ communityId }) 
     return () => {
       supabase.removeChannel(channel);
     };
-  }, [communityId]);
+  }, [communityId, fetchMembers]);
 
   return (
     <aside className="hidden lg:flex flex-col w-[300px] bg-white border-l border-gray-200 rounded-r-2xl">
@@ -101,11 +102,15 @@ const MembersSidebar: React.FC<CommunityMemberSidebarProps> = ({ communityId }) 
               >
                 <div className="w-10 h-10 rounded-full overflow-hidden bg-gray-200 flex items-center justify-center">
                   {member.users?.avatar_url ? (
-                    <img
-                      src={member.users.avatar_url}
-                      alt="avatar"
-                      className="w-full h-full object-cover"
-                    />
+                    <div className="relative w-full h-full">
+                      <Image
+                        src={member.users.avatar_url}
+                        alt={`${member.users?.username ?? "Người dùng"} avatar`}
+                        fill
+                        className="object-cover"
+                        unoptimized
+                      />
+                    </div>
                   ) : (
                     <User className="w-5 h-5 text-gray-600" />
                   )}

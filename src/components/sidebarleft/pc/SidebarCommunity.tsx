@@ -2,7 +2,8 @@
 
 import { useEffect, useState } from "react";
 import Link from "next/link";
-import { ChevronDown, Plus, Users, Star } from "lucide-react";
+import Image from "next/image";
+import { ChevronDown, Plus, Star } from "lucide-react";
 import { supabase } from "@/lib/supabase/client";
 
 type Community = {
@@ -60,10 +61,9 @@ export default function SidebarCommunity() {
         href="/create-community"
         className="flex items-center gap-2 px-2 py-1.5 rounded hover:bg-gray-100 text-gray-900"
       >
-        <Plus className="w-4 h-4 text-gray-900" /> 
+        <Plus className="w-4 h-4 text-gray-900" />
         <span className="text-gray-900">Tạo cộng đồng</span>
       </Link>
-     
 
       {/* Danh sách cộng đồng */}
       {loading ? (
@@ -80,10 +80,17 @@ export default function SidebarCommunity() {
               href={`/communities/${c.id}`}
               className="flex items-center gap-2 px-2 py-1.5 rounded hover:bg-gray-100 text-gray-900"
             >
-              <img
-                src={c.avatar_url || "/default-community.png"}
-                className="w-5 h-5 rounded-full"
-              />
+              <div className="relative w-5 h-5 rounded-full overflow-hidden">
+                <Image
+                  src={c.avatar_url || "/default-community.png"}
+                  alt={c.title ? `${c.title} avatar` : "Community avatar"}
+                  width={20}
+                  height={20}
+                  className="object-cover"
+                  unoptimized
+                />
+              </div>
+
               <span className="truncate text-gray-900">{c.title}</span>
               <Star className="w-4 h-4 text-gray-400 ml-auto" />
             </Link>

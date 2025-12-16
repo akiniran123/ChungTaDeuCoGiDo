@@ -47,10 +47,12 @@ export default function CommunitySelector({
             console.error("❌ Lỗi lấy communities của user:", memErr.message);
             setCommunities([]);
           } else {
-            const mapped: Community[] = (membershipData || [])
-              .map((item: any) => item.communities)
-              .filter(Boolean);
-            setCommunities(mapped as Community[]);
+            // Explicitly type the items returned from the join
+            const items = (membershipData ?? []) as { communities?: Community }[];
+            const mapped: Community[] = items
+              .map((item) => item.communities)
+              .filter(Boolean) as Community[];
+            setCommunities(mapped);
           }
         } else {
           // Nếu không có userId, lấy tất cả communities

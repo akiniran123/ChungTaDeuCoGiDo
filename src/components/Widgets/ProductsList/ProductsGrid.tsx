@@ -71,7 +71,7 @@ export default function ProductsGrid({
               commentsCount={commentsForProduct}
               liked={isLiked}
               onToggleLike={toggleLike}
-              onToggleSave={(prodId) => {
+              onToggleSave={() => {
                 /* optional: parent can handle saved state here if needed */
               }}
               onShare={() => {
@@ -87,7 +87,7 @@ export default function ProductsGrid({
               commentsCount={commentsForProduct}
               liked={isLiked}
               onToggleLike={toggleLike}
-              onToggleSave={(prodId) => {
+              onToggleSave={() => {
                 /* optional */
               }}
               onShare={() => {

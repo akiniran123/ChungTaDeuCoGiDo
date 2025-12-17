@@ -3,7 +3,7 @@
 import { useEffect, useState } from "react";
 import Link from "next/link";
 import Image from "next/image";
-import { ChevronDown, Plus, Star } from "lucide-react";
+import { Plus, Star } from "lucide-react";
 import { supabase } from "@/lib/supabase/client";
 
 type Community = {
@@ -53,7 +53,6 @@ export default function SidebarCommunity() {
       {/* Header */}
       <div className="flex items-center justify-between text-xs uppercase text-gray-500 font-semibold tracking-wider py-1">
         Cộng đồng
-        <ChevronDown className="w-4 h-4" />
       </div>
 
       {/* Tạo cộng đồng */}

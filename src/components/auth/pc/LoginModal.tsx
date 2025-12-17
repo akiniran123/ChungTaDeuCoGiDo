@@ -11,6 +11,7 @@ import { supabase } from "@/lib/supabase/client";
 import SignUpModal from "@/components/auth/pc/SignUpModal";
 import ForgotPasswordModal from "@/components/auth/pc/ForgotPasswordModal";
 import { useRouter } from "next/navigation";
+import { Eye, EyeOff } from "lucide-react"; // icon mắt thần
 
 const loginSchema = z.object({
   email: z.string().email("Email không hợp lệ"),
@@ -43,9 +44,12 @@ export default function LoginModal({
   const [mounted, setMounted] = useState(false);
   const [loading, setLoading] = useState(false);
   const [errorMsg, setErrorMsg] = useState("");
-  const [activeModal, setActiveModal] = useState<
-    "login" | "signup" | "forgot"
-  >("login");
+  const [activeModal, setActiveModal] = useState<"login" | "signup" | "forgot">(
+    "login"
+  );
+
+  // Mới thêm state showPassword
+  const [showPassword, setShowPassword] = useState(false);
 
   useEffect(() => {
     setMounted(true);
@@ -176,7 +180,6 @@ export default function LoginModal({
 
             {/* RIGHT PANEL */}
             <div className="w-full md:w-1/2 p-10 flex flex-col justify-center relative">
-              {/* ❌ NÚT ĐÓNG */}
               <button
                 onClick={onClose}
                 className="cursor-pointer absolute top-5 right-5 w-12 h-12 text-4xl text-gray-500 hover:text-gray-900 dark:hover:text-white"
@@ -198,20 +201,29 @@ export default function LoginModal({
                   <input
                     type="email"
                     {...register("email")}
-                    className="w-full mt-1 px-4 py-3 rounded-xl border bg-gray-50 dark:bg-gray-800"
+                    className="w-full mt-1 px-4 py-3 rounded-xl border bg-gray-50 text-gray-900 dark:bg-gray-800 dark:text-white"
                   />
                 </div>
 
+                {/* PASSWORD INPUT WITH EYE */}
                 <div>
                   <label className="text-sm font-medium">Mật khẩu</label>
-                  <input
-                    type="password"
-                    {...register("password")}
-                    className="w-full mt-1 px-4 py-3 rounded-xl border bg-gray-50 dark:bg-gray-800"
-                  />
+                  <div className="relative">
+                    <input
+                      type={showPassword ? "text" : "password"}
+                      {...register("password")}
+                      className="w-full mt-1 px-4 py-3 rounded-xl border bg-gray-50 text-gray-900 dark:bg-gray-800 dark:text-white pr-10"
+                    />
+                    <button
+                      type="button"
+                      onClick={() => setShowPassword(!showPassword)}
+                      className="absolute right-3 top-1/2 -translate-y-1/2 text-gray-400 hover:text-gray-600 cursor-pointer"
+                    >
+                      {showPassword ? <EyeOff size={20} /> : <Eye size={20} />}
+                    </button>
+                  </div>
                 </div>
 
-                {/* ⭐ ĐĂNG NHẬP */}
                 <button
                   type="submit"
                   disabled={loading}
@@ -233,7 +245,6 @@ export default function LoginModal({
                   <hr className="flex-1" />
                 </div>
 
-                {/* GOOGLE */}
                 <button
                   type="button"
                   onClick={handleGoogleLogin}

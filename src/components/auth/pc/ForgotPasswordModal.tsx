@@ -29,7 +29,9 @@ export default function ForgotPasswordModal({
     if (error) {
       setError(error.message);
     } else {
-      setMessage('Email đặt lại mật khẩu đã được gửi. Vui lòng kiểm tra hộp thư.');
+      setMessage(
+        'Email đặt lại mật khẩu đã được gửi. Vui lòng kiểm tra hộp thư.'
+      );
     }
 
     setLoading(false);
@@ -68,7 +70,9 @@ export default function ForgotPasswordModal({
 
                 <form onSubmit={handleReset} className="space-y-4 mt-4">
                   {error && <div className="text-red-500 text-sm">{error}</div>}
-                  {message && <div className="text-green-600 text-sm">{message}</div>}
+                  {message && (
+                    <div className="text-green-600 text-sm">{message}</div>
+                  )}
 
                   <div>
                     <label className="block text-sm text-gray-700 dark:text-gray-300 mb-1">
@@ -79,11 +83,10 @@ export default function ForgotPasswordModal({
                       required
                       value={email}
                       onChange={(e) => setEmail(e.target.value)}
-                      className="w-full px-3 py-2 border rounded-md bg-gray-50 dark:bg-gray-800 dark:border-gray-700 text-sm"
+                      className="w-full px-3 py-2 border rounded-md bg-gray-50 dark:bg-gray-800 dark:border-gray-700 text-sm text-gray-900 dark:text-white"
                     />
                   </div>
 
-                  {/* Nút gửi email đặt lại mật khẩu với cursor pointer */}
                   <button
                     type="submit"
                     disabled={loading}
@@ -94,7 +97,6 @@ export default function ForgotPasswordModal({
                 </form>
 
                 <div className="mt-4 text-center">
-                  {/* Nút hủy với cursor pointer */}
                   <button
                     onClick={onClose}
                     className="text-sm text-gray-500 hover:underline cursor-pointer"

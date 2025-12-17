@@ -25,10 +25,7 @@ export default function SignUpModal({ onClose }: { onClose: () => void }) {
     }
 
     setLoading(true);
-    const { error } = await supabase.auth.signUp({
-      email,
-      password,
-    });
+    const { error } = await supabase.auth.signUp({ email, password });
 
     if (error) {
       setError(error.message);
@@ -38,6 +35,9 @@ export default function SignUpModal({ onClose }: { onClose: () => void }) {
 
     setLoading(false);
   };
+
+  const inputClass =
+    'w-full px-3 py-2 border rounded-md bg-white text-gray-900 text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500';
 
   return (
     <Transition appear show as={Fragment}>
@@ -71,13 +71,10 @@ export default function SignUpModal({ onClose }: { onClose: () => void }) {
                 </Dialog.Title>
 
                 <form onSubmit={handleSignUp} className="space-y-4 mt-4">
-                  {error && (
-                    <div className="text-sm text-red-500 text-center">{error}</div>
-                  )}
-                  {success && (
-                    <div className="text-sm text-green-600 text-center">{success}</div>
-                  )}
+                  {error && <div className="text-sm text-red-500 text-center">{error}</div>}
+                  {success && <div className="text-sm text-green-600 text-center">{success}</div>}
 
+                  {/* Email */}
                   <div>
                     <label className="block text-sm mb-1 text-gray-700 dark:text-gray-300">
                       Email
@@ -87,10 +84,11 @@ export default function SignUpModal({ onClose }: { onClose: () => void }) {
                       required
                       value={email}
                       onChange={(e) => setEmail(e.target.value)}
-                      className="w-full px-3 py-2 border rounded-md bg-gray-50 dark:bg-gray-800 dark:border-gray-700 text-sm"
+                      className={inputClass}
                     />
                   </div>
 
+                  {/* Password */}
                   <div>
                     <label className="block text-sm mb-1 text-gray-700 dark:text-gray-300">
                       Mật khẩu
@@ -100,10 +98,11 @@ export default function SignUpModal({ onClose }: { onClose: () => void }) {
                       required
                       value={password}
                       onChange={(e) => setPassword(e.target.value)}
-                      className="w-full px-3 py-2 border rounded-md bg-gray-50 dark:bg-gray-800 dark:border-gray-700 text-sm"
+                      className={inputClass}
                     />
                   </div>
 
+                  {/* Confirm Password */}
                   <div>
                     <label className="block text-sm mb-1 text-gray-700 dark:text-gray-300">
                       Nhập lại mật khẩu
@@ -113,11 +112,11 @@ export default function SignUpModal({ onClose }: { onClose: () => void }) {
                       required
                       value={confirmPassword}
                       onChange={(e) => setConfirmPassword(e.target.value)}
-                      className="w-full px-3 py-2 border rounded-md bg-gray-50 dark:bg-gray-800 dark:border-gray-700 text-sm"
+                      className={inputClass}
                     />
                   </div>
 
-                  {/* Sign Up button với cursor pointer */}
+                  {/* Sign Up button */}
                   <button
                     type="submit"
                     disabled={loading}
@@ -128,7 +127,6 @@ export default function SignUpModal({ onClose }: { onClose: () => void }) {
                 </form>
 
                 <div className="mt-4 text-center">
-                  {/* Cancel button với cursor pointer */}
                   <button
                     onClick={onClose}
                     className="text-sm text-gray-500 hover:underline cursor-pointer"

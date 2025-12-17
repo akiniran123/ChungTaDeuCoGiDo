@@ -47,7 +47,6 @@ export default function LoginModal({
     "login" | "signup" | "forgot"
   >("login");
 
-  // Mount + ESC
   useEffect(() => {
     setMounted(true);
     document.body.style.overflow = "hidden";
@@ -71,9 +70,6 @@ export default function LoginModal({
     resolver: zodResolver(loginSchema),
   });
 
-  // -----------------------
-  // EMAIL / PASSWORD LOGIN
-  // -----------------------
   const onSubmit = async (data: LoginFormSchema) => {
     try {
       setLoading(true);
@@ -85,12 +81,6 @@ export default function LoginModal({
       });
 
       if (error) throw error;
-
-      /**
-       * ⚠️ IMPORTANT
-       * - User profile đã được DB trigger tạo sẵn
-       * - Frontend KHÔNG ghi vào bảng users
-       */
 
       router.refresh();
       onLoginSuccess?.();
@@ -109,9 +99,6 @@ export default function LoginModal({
     }
   };
 
-  // -----------------------
-  // GOOGLE LOGIN
-  // -----------------------
   const handleGoogleLogin = async () => {
     try {
       setLoading(true);
@@ -189,10 +176,10 @@ export default function LoginModal({
 
             {/* RIGHT PANEL */}
             <div className="w-full md:w-1/2 p-10 flex flex-col justify-center relative">
+              {/* ❌ NÚT ĐÓNG */}
               <button
                 onClick={onClose}
-                className="absolute top-5 right-5 w-12 h-12 text-4xl text-gray-500 hover:text-gray-900 dark:hover:text-white"
-                aria-label="Đóng"
+                className="cursor-pointer absolute top-5 right-5 w-12 h-12 text-4xl text-gray-500 hover:text-gray-900 dark:hover:text-white"
               >
                 ×
               </button>
@@ -203,7 +190,7 @@ export default function LoginModal({
 
               <form onSubmit={handleSubmit(onSubmit)} className="space-y-6">
                 {errorMsg && (
-                  <p className="text-red-500 text-center" role="alert">{errorMsg}</p>
+                  <p className="text-red-500 text-center">{errorMsg}</p>
                 )}
 
                 <div>
@@ -212,13 +199,7 @@ export default function LoginModal({
                     type="email"
                     {...register("email")}
                     className="w-full mt-1 px-4 py-3 rounded-xl border bg-gray-50 dark:bg-gray-800"
-                    aria-invalid={!!errors.email}
                   />
-                  {errors.email && (
-                    <p className="text-xs text-red-500">
-                      {errors.email.message}
-                    </p>
-                  )}
                 </div>
 
                 <div>
@@ -227,19 +208,21 @@ export default function LoginModal({
                     type="password"
                     {...register("password")}
                     className="w-full mt-1 px-4 py-3 rounded-xl border bg-gray-50 dark:bg-gray-800"
-                    aria-invalid={!!errors.password}
                   />
-                  {errors.password && (
-                    <p className="text-xs text-red-500">
-                      {errors.password.message}
-                    </p>
-                  )}
                 </div>
 
+                {/* ⭐ ĐĂNG NHẬP */}
                 <button
                   type="submit"
                   disabled={loading}
-                  className="w-full bg-indigo-600 hover:bg-indigo-700 text-white py-3 rounded-xl font-semibold disabled:opacity-50"
+                  className="
+                    cursor-pointer
+                    w-full bg-indigo-600 text-white py-3 rounded-xl font-semibold
+                    transition-all duration-200
+                    hover:bg-indigo-700 hover:shadow-md hover:-translate-y-0.5
+                    active:scale-[0.97]
+                    disabled:opacity-60 disabled:cursor-not-allowed
+                  "
                 >
                   {loading ? "Đang đăng nhập..." : "Đăng nhập"}
                 </button>
@@ -250,28 +233,40 @@ export default function LoginModal({
                   <hr className="flex-1" />
                 </div>
 
+                {/* GOOGLE */}
                 <button
                   type="button"
                   onClick={handleGoogleLogin}
                   disabled={loading}
-                  className="w-full flex items-center justify-center gap-3 py-3 rounded-xl border"
+                  className="
+                    cursor-pointer
+                    w-full flex items-center justify-center gap-3 py-3 rounded-xl
+                    border border-gray-300
+                    bg-white text-gray-900
+                    transition-all duration-200
+                    hover:bg-gray-50 hover:shadow-md hover:-translate-y-0.5
+                    active:scale-[0.97]
+                    disabled:opacity-60 disabled:cursor-not-allowed
+                  "
                 >
-                  <FcGoogle className="w-6 h-6" />
-                  Tiếp tục với Google
+                  <FcGoogle
+                    className={`w-6 h-6 ${loading ? "animate-spin" : ""}`}
+                  />
+                  {loading ? "Đang chuyển hướng..." : "Tiếp tục với Google"}
                 </button>
 
                 <div className="flex justify-between text-sm mt-4">
                   <button
                     type="button"
                     onClick={() => setActiveModal("signup")}
-                    className="text-indigo-600 hover:underline"
+                    className="cursor-pointer text-indigo-600 hover:underline"
                   >
                     Đăng ký
                   </button>
                   <button
                     type="button"
                     onClick={() => setActiveModal("forgot")}
-                    className="text-gray-500 hover:underline"
+                    className="cursor-pointer text-gray-500 hover:underline"
                   >
                     Quên mật khẩu?
                   </button>

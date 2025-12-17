@@ -12,12 +12,14 @@ import {
 import { useRouter } from "next/navigation";
 import { supabase } from "@/lib/supabase/client";
 
+import LoginModal from "@/components/auth/pc/LoginModal";
+
 type SidebarMainNavProps = {
   setOpenMessages: React.Dispatch<React.SetStateAction<boolean>>;
   setOpenNews: React.Dispatch<React.SetStateAction<boolean>>;
   activePanel: string | null;
   setActivePanel: React.Dispatch<React.SetStateAction<string | null>>;
-  unreadCount?: number; // đã thêm
+  unreadCount?: number;
 };
 
 export default function SidebarMainNav({
@@ -25,9 +27,10 @@ export default function SidebarMainNav({
   setOpenNews,
   activePanel,
   setActivePanel,
-  unreadCount = 0, // nhận giá trị
+  unreadCount = 0,
 }: SidebarMainNavProps) {
   const [userId, setUserId] = useState<string | null>(null);
+  const [showLogin, setShowLogin] = useState(false);
   const router = useRouter();
 
   useEffect(() => {
@@ -36,79 +39,95 @@ export default function SidebarMainNav({
     });
   }, []);
 
-  const handleStartSelling = () => {
-    if (userId) router.push("/protected/sell");
-    else alert("Bạn cần đăng nhập trước!");
+  const requireAuth = (callback: () => void) => {
+    if (!userId) {
+      alert("Bạn cần đăng nhập hoặc đăng ký để sử dụng tính năng này");
+      setShowLogin(true);
+      return;
+    }
+    callback();
   };
 
+  // 🔥 FIX TRIỆT ĐỂ: ép màu cho <a>
+  const itemClass =
+    "flex items-center gap-4 px-5 py-3 mx-2 rounded-xl " +
+    "!text-gray-900 !visited:text-gray-900 !hover:text-gray-900 " +
+    "hover:bg-gray-100 cursor-pointer";
+
   return (
-    <nav className="mt-4 space-y-1">
-      {/* Trang chủ */}
-      <Link
-        href="/"
-        className="flex items-center gap-4 px-5 py-3 mx-2 rounded-xl hover:bg-gray-100 text-gray-900"
-      >
-        <Home className="w-6 h-6 text-gray-900" />
-        <span className="text-gray-900">Trang chủ</span>
-      </Link>
+    <>
+      <nav className="mt-4 space-y-1">
+        {/* Trang chủ */}
+        <Link href="/" className={itemClass}>
+          <Home className="w-6 h-6" />
+          <span>Trang chủ</span>
+        </Link>
 
-      {/* Khám phá */}
-      <Link
-        href="/discovery"
-        className="flex items-center gap-4 px-5 py-3 mx-2 rounded-xl hover:bg-gray-100 text-gray-900"
-      >
-        <Compass className="w-6 h-6 text-gray-900" />
-        <span className="text-gray-900">Khám phá</span>
-      </Link>
+        {/* Khám phá */}
+        <Link href="/discovery" className={itemClass}>
+          <Compass className="w-6 h-6" />
+          <span>Khám phá</span>
+        </Link>
 
-      {/* Tin nhắn */}
-      <div
-        onClick={() => {
-          setOpenMessages((v) => !v);
-          setOpenNews(false);
-          setActivePanel("messages");
-        }}
-        className="relative flex items-center gap-4 px-5 py-3 mx-2 rounded-xl hover:bg-gray-100 cursor-pointer text-gray-900"
-      >
-        <MessageSquare className="w-6 h-6 text-gray-900" />
+        {/* Tin nhắn */}
+        <div
+          onClick={() =>
+            requireAuth(() => {
+              setOpenMessages((v) => !v);
+              setOpenNews(false);
+              setActivePanel("messages");
+            })
+          }
+          className={`${itemClass} relative`}
+        >
+          <MessageSquare className="w-6 h-6" />
+          <span>Tin nhắn</span>
 
-        <span className="text-gray-900">Tin nhắn</span>
+          {unreadCount > 0 && (
+            <span className="absolute right-4 bg-red-500 text-white text-xs px-2 py-0.5 rounded-full">
+              {unreadCount}
+            </span>
+          )}
+        </div>
 
-        {/* --- BADGE HIỂN THỊ SỐ TIN CHƯA ĐỌC --- */}
-        {unreadCount > 0 && (
-          <span
-            className="
-              absolute right-4
-              bg-red-500 text-white text-xs font-semibold
-              px-2 py-0.5 rounded-full
-            "
-          >
-            {unreadCount}
-          </span>
-        )}
-      </div>
+        {/* Bán hàng */}
+        <div
+          onClick={() =>
+            requireAuth(() => {
+              router.push("/protected/sell");
+            })
+          }
+          className={itemClass}
+        >
+          <ShoppingBag className="w-6 h-6" />
+          <span>Bán hàng</span>
+        </div>
 
-      {/* Bán hàng */}
-      <div
-        onClick={handleStartSelling}
-        className="flex items-center gap-4 px-5 py-3 mx-2 rounded-xl hover:bg-gray-100 cursor-pointer text-gray-900"
-      >
-        <ShoppingBag className="w-6 h-6 text-gray-900" />
-        <span className="text-gray-900">Bán hàng</span>
-      </div>
+        {/* Thông báo */}
+        <div
+          onClick={() =>
+            requireAuth(() => {
+              setOpenNews((v) => !v);
+              setOpenMessages(false);
+              setActivePanel("news");
+            })
+          }
+          className={itemClass}
+        >
+          <Newspaper className="w-6 h-6" />
+          <span>Thông báo</span>
+        </div>
+      </nav>
 
-      {/* Thông báo */}
-      <div
-        onClick={() => {
-          setOpenNews((v) => !v);
-          setOpenMessages(false);
-          setActivePanel("news");
-        }}
-        className="flex items-center gap-4 px-5 py-3 mx-2 rounded-xl hover:bg-gray-100 cursor-pointer text-gray-900"
-      >
-        <Newspaper className="w-6 h-6 text-gray-900" />
-        <span className="text-gray-900">Thông báo</span>
-      </div>
-    </nav>
+      {showLogin && (
+        <LoginModal
+          onClose={() => setShowLogin(false)}
+          onLoginSuccess={() => {
+            setShowLogin(false);
+            router.refresh();
+          }}
+        />
+      )}
+    </>
   );
 }

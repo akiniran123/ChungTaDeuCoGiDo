@@ -15,7 +15,6 @@ export default function DealHeader({
   likesCount,
   commentCount,
   onLike,
-  onShare,
 }: {
   product: Product;
   author: UserRow | null;
@@ -23,29 +22,43 @@ export default function DealHeader({
   likesCount: number;
   commentCount: number;
   onLike?: () => void;
-  onShare?: () => void;
 }) {
+  const handleShare = async () => {
+    const url = typeof window !== "undefined" ? window.location.href : "";
+
+    if (navigator.share) {
+      try {
+        await navigator.share({
+          title: product.title ?? "Deal hay",
+          text: "Xem deal này nè 👇",
+          url,
+        });
+      } catch {}
+    } else {
+      await navigator.clipboard.writeText(url);
+      alert("Đã copy link để chia sẻ 📋");
+    }
+  };
+
   return (
     <div className="bg-white rounded-xl p-6 mb-6 shadow-sm space-y-4">
       {/* 👤 USER + AVATAR + TIME */}
       <div className="flex items-center gap-3 text-sm text-gray-500">
         {author && (
           <>
-            {/* AVATAR */}
             <Link
               href={`/profile/${author.id}`}
               className="relative w-8 h-8 rounded-full overflow-hidden border"
             >
               <Image
                 src={author.avatar_url ?? "/default-avatar.png"}
-                alt={author.username ? `${author.username} avatar` : "User avatar"}
+                alt="avatar"
                 fill
                 className="object-cover"
                 unoptimized
               />
             </Link>
 
-            {/* USERNAME — FIX CHẮC CHẮN KHÔNG XANH */}
             <Link
               href={`/profile/${author.id}`}
               className="
@@ -63,16 +76,15 @@ export default function DealHeader({
 
         <span>•</span>
 
-        {/* TIME */}
         <span>
-          {product.created_at ? new Date(product.created_at).toLocaleString() : ""}
+          {product.created_at
+            ? new Date(product.created_at).toLocaleString()
+            : ""}
         </span>
       </div>
 
-      {/* 🏷️ TITLE */}
       <h1 className="text-2xl font-bold">{product.title}</h1>
 
-      {/* 🖼️ PRODUCT IMAGE */}
       {product.image_url && (
         <div className="relative w-full aspect-[4/3] rounded-xl overflow-hidden">
           <Image
@@ -90,23 +102,25 @@ export default function DealHeader({
       <div className="flex items-center gap-6 pt-2">
         <button
           onClick={onLike}
-          className="flex items-center gap-1 hover:text-red-500 transition"
-          aria-pressed={liked}
-          aria-label={liked ? "Bỏ thích" : "Thích"}
+          className="flex items-center gap-1 hover:text-pink-400 transition cursor-pointer"
         >
-          <Heart size={20} className={liked ? "fill-red-500 text-red-500" : ""} />
+          <Heart
+            size={20}
+            className={
+              liked ? "fill-pink-400 text-pink-400" : ""
+            }
+          />
           <span>{likesCount}</span>
         </button>
 
-        <div className="flex items-center gap-1 text-gray-600" aria-hidden>
+        <div className="flex items-center gap-1 text-gray-600">
           <MessageCircle size={20} />
           <span>{commentCount}</span>
         </div>
 
         <button
-          onClick={onShare}
-          className="flex items-center gap-1 text-gray-600 hover:text-black transition"
-          aria-label="Chia sẻ"
+          onClick={handleShare}
+          className="flex items-center gap-1 text-gray-600 hover:text-black transition cursor-pointer"
         >
           <Share2 size={20} />
           <span>Chia sẻ</span>

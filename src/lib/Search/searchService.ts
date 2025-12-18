@@ -1,5 +1,5 @@
 import { supabase } from "@/lib/supabase/client";
-import type { SuggestionItem } from "@/types/search";
+import type { SuggestionItem } from "@/components/Search/types/search";
 
 /* =========================================================
    Raw DB row types (search-only, minimal & explicit)

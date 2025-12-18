@@ -2,11 +2,11 @@
 "use client";
 import React, { useState } from "react";
 import { useRouter } from "next/navigation";
-import SearchInput from "@/components/Widgets/Search/SearchInput";
-import SuggestionsList from "@/components/Widgets/Search/SuggestionsList";
-import { useSearchHistory } from "@/hooks/Search/useSearchHistory";
-import { useSuggestions } from "@/hooks/Search/useSuggestions";
-import type { SuggestionItem } from "@/types/search";
+import SearchInput from "@/components/Search/components/SearchInput";
+import SuggestionsList from "@/components/Search/components/SuggestionsList";
+import { useSearchHistory } from "@/components/Search/hooks/useSearchHistory";
+import { useSuggestions } from "@/components/Search/hooks/useSuggestions";
+import type { SuggestionItem } from "@/components/Search/types/search";
 
 type Props = {
   userId?: string;

@@ -2,8 +2,8 @@
 
 import { useEffect, useState } from "react";
 import { supabase } from "@/lib/supabase/client";
-import ProductsList from "@/components/Widgets/ProductsList/ProductsList";
-import type { ProductsListProps, ProductListItem, Badge } from "@/types/products";
+import ProductsList from "@/components/ProductsList/components/ProductsList";
+import type { ProductsListProps, ProductListItem, Badge } from "@/components/ProductsList/types/products";
 
 type DBProductRow = {
   id: string;

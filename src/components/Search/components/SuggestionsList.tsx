@@ -3,7 +3,7 @@
 import React from "react";
 import Image from "next/image";
 import { User, Tag, Users, Package } from "lucide-react";
-import type { SuggestionItem, HistoryItem } from "@/types/search";
+import type { SuggestionItem, HistoryItem } from "@/components/Search/types/search";
 
 type Props = {
   query: string;

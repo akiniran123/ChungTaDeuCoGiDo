@@ -6,7 +6,7 @@ import {
   fetchCommunities,
   normalizeSuggestions,
 } from "@/lib/Search/searchService";
-import type { SuggestionItem } from "@/types/search";
+import type { SuggestionItem } from "@/components/Search/types/search";
 
 export function useSuggestions(query: string, debounceMs = 300) {
   const [results, setResults] = useState<SuggestionItem[]>([]);

@@ -2,7 +2,7 @@
 
 import Link from "next/link";
 import Image from "next/image";
-import type { ProductWithUser } from "@/types/products";
+import type { ProductWithUser } from "@/components/ProductsList/types/products";
 
 type FlatDeal = {
   id: string;

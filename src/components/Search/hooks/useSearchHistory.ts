@@ -1,7 +1,7 @@
 // src/hooks/Search/useSearchHistory.ts
 import { useEffect, useState, useCallback } from "react";
 import { loadSearchHistory, upsertSearchHistory } from "@/lib/Search/searchService";
-import type { HistoryItem } from "@/types/search";
+import type { HistoryItem } from "@/components/Search/types/search";
 
 const MAX_HISTORY = 5;
 const ANON_KEY = "search_history_anonymous";

@@ -1,301 +1,205 @@
-"use client";
+'use client';
+import { useEffect, useRef, useState } from 'react';
+import { supabase } from '@/lib/supabaseClient';
+import type { User } from '@supabase/supabase-js';
 
-import { useState, useEffect } from "react";
-import { createPortal } from "react-dom";
-import { useForm } from "react-hook-form";
-import { z } from "zod";
-import { zodResolver } from "@hookform/resolvers/zod";
-import { FcGoogle } from "react-icons/fc";
-import Image from "next/image";
-import { supabase } from "@/lib/supabase/client";
-import SignUpModal from "@/components/auth/pc/SignUpModal";
-import ForgotPasswordModal from "@/components/auth/pc/ForgotPasswordModal";
-import { useRouter } from "next/navigation";
-import { Eye, EyeOff } from "lucide-react"; // icon mắt thần
-
-const loginSchema = z.object({
-  email: z.string().email("Email không hợp lệ"),
-  password: z.string().min(6, "Mật khẩu phải có ít nhất 6 ký tự"),
-});
-
-type LoginFormSchema = z.infer<typeof loginSchema>;
-
-function extractErrorMessage(err: unknown): string {
-  if (!err) return "Đăng nhập thất bại";
-  if (typeof err === "string") return err;
-  if (typeof err === "object" && err !== null && "message" in err) {
-    const msg = (err as { message?: unknown }).message;
-    if (typeof msg === "string") return msg;
-  }
-  return "Đăng nhập thất bại";
-}
-
-export default function LoginModal({
-  onLoginSuccess,
-  redirectTo,
-  onClose,
-}: {
-  onLoginSuccess?: () => void;
-  redirectTo?: string;
-  onClose: () => void;
-}) {
-  const router = useRouter();
-
-  const [mounted, setMounted] = useState(false);
+export default function GuestSignIn() {
   const [loading, setLoading] = useState(false);
-  const [errorMsg, setErrorMsg] = useState("");
-  const [activeModal, setActiveModal] = useState<"login" | "signup" | "forgot">(
-    "login"
-  );
+  const [user, setUser] = useState<User | null>(null);
+  const [nickname, setNickname] = useState('');
+  const [upserting, setUpserting] = useState(false);
+  const mountedRef = useRef(true);
 
-  // Mới thêm state showPassword
-  const [showPassword, setShowPassword] = useState(false);
+  // Helper: upsert profile safely
+  const upsertProfile = async (u: User, nicknameValue?: string) => {
+    if (!u?.id) return;
+    setUpserting(true);
+    try {
+      const payload = {
+        id: u.id,
+        email: u.email ?? null,
+        nickname: (nicknameValue?.trim() || (u.user_metadata as any)?.name || null),
+      };
+      const { error } = await supabase.from('profiles').upsert(payload, { onConflict: 'id' });
+      if (error) throw error;
+      console.log('Profile upserted for', u.id);
+    } catch (err) {
+      console.error('Profile upsert error', err);
+    } finally {
+      if (mountedRef.current) setUpserting(false);
+    }
+  };
 
+  // Initialize user and handle session-from-url (if needed)
   useEffect(() => {
-    setMounted(true);
-    document.body.style.overflow = "hidden";
+    mountedRef.current = true;
 
-    const handleEsc = (e: KeyboardEvent) => {
-      if (e.key === "Escape") onClose();
+    const init = async () => {
+      try {
+        // Some supabase-js versions require finishing OAuth redirect
+        if (typeof window !== 'undefined' && window.location.search.includes('access_token')) {
+          if (typeof (supabase.auth as any).getSessionFromUrl === 'function') {
+            try {
+              await (supabase.auth as any).getSessionFromUrl({ storeSession: true });
+            } catch (e) {
+              console.warn('getSessionFromUrl warning', e);
+            }
+          }
+        }
+
+        const { data } = await supabase.auth.getUser();
+        if (!mountedRef.current) return;
+        setUser(data?.user ?? null);
+      } catch (e) {
+        console.error('getUser error', e);
+      }
     };
-    window.addEventListener("keydown", handleEsc);
+
+    init();
+
+    const { data: listener } = supabase.auth.onAuthStateChange((_event, session) => {
+      if (!mountedRef.current) return;
+      setUser(session?.user ?? null);
+    });
 
     return () => {
-      document.body.style.overflow = "";
-      window.removeEventListener("keydown", handleEsc);
+      mountedRef.current = false;
+      try {
+        listener.subscription.unsubscribe();
+      } catch {}
     };
-  }, [onClose]);
+  }, []);
 
-  const {
-    register,
-    handleSubmit,
-    formState: { errors },
-  } = useForm<LoginFormSchema>({
-    resolver: zodResolver(loginSchema),
-  });
+  // Upsert when SIGNED_IN event occurs (use onAuthStateChange to catch it)
+  useEffect(() => {
+    let unsub: { subscription: { unsubscribe: () => void } } | null = null;
 
-  const onSubmit = async (data: LoginFormSchema) => {
+    const subscribe = () => {
+      const { data: listener } = supabase.auth.onAuthStateChange(async (event, session) => {
+        const u = session?.user ?? null;
+        setUser(u);
+
+        if (event === 'SIGNED_IN' && u) {
+          // Use the current nickname input if provided, otherwise fallback to user_metadata.name
+          await upsertProfile(u, nickname);
+        }
+      });
+      unsub = listener;
+    };
+
+    subscribe();
+
+    return () => {
+      try {
+        unsub?.subscription.unsubscribe();
+      } catch {}
+    };
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
+
+  // Google OAuth redirect flow
+  const signInWithGoogle = async () => {
     try {
       setLoading(true);
-      setErrorMsg("");
+      // Use the same callback route you configured in Supabase (e.g., /auth/callback)
+      const redirectTo = typeof window !== 'undefined' ? `${window.location.origin}/auth/callback` : undefined;
 
-      const { error } = await supabase.auth.signInWithPassword({
-        email: data.email,
-        password: data.password,
-      });
-
-      if (error) throw error;
-
-      router.refresh();
-      onLoginSuccess?.();
-
-      if (redirectTo) {
-        router.push(redirectTo);
+      // Support both new and older supabase-js APIs
+      if (typeof (supabase as any).auth.signInWithOAuth === 'function') {
+        const res = await (supabase as any).auth.signInWithOAuth({
+          provider: 'google',
+          options: { redirectTo, queryParams: { prompt: 'select_account' } },
+        });
+        console.log('signInWithOAuth response', res);
+        if (res?.error) throw res.error;
+        // redirect will occur; on return, onAuthStateChange will handle upsert
+      } else if (typeof (supabase as any).auth.signIn === 'function') {
+        const res = await (supabase as any).auth.signIn({
+          provider: 'google',
+          options: { redirectTo, queryParams: { prompt: 'select_account' } } as any,
+        } as any);
+        console.log('signIn (fallback) response', res);
+        if (res?.error) throw res.error;
       } else {
-        window.location.href = "/";
+        throw new Error('Supabase auth method for OAuth not found. Update @supabase/supabase-js.');
       }
-
-      onClose();
-    } catch (err) {
-      setErrorMsg(extractErrorMessage(err));
+    } catch (err: any) {
+      console.error('Google sign-in error:', err);
+      alert('Google sign-in failed: ' + (err?.message ?? JSON.stringify(err)));
     } finally {
-      setLoading(false);
+      if (mountedRef.current) setLoading(false);
     }
   };
 
-  const handleGoogleLogin = async () => {
+  // Optional anonymous sign-in (kept as fallback)
+  const signInAnonymous = async () => {
     try {
       setLoading(true);
-      setErrorMsg("");
-
-      const { error } = await supabase.auth.signInWithOAuth({
-        provider: "google",
-        options: {
-          redirectTo: `${window.location.origin}/auth/callback`,
-          queryParams: {
-            prompt: "select_account",
-          },
-        },
-      });
-
-      if (error) throw error;
-    } catch (err) {
-      setErrorMsg(extractErrorMessage(err));
-      setLoading(false);
+      const res = await (supabase as any).auth.signInAnonymously?.();
+      console.log('Anonymous response', res);
+      const u = res?.data?.user ?? res?.user ?? res?.session?.user ?? null;
+      if (!u) throw new Error('Anonymous sign-in did not return a user');
+      setUser(u);
+      // upsert immediately for anonymous
+      await upsertProfile(u, nickname);
+    } catch (err: any) {
+      console.error('Anonymous sign-in error (detailed):', err);
+      alert('Sign-in failed: ' + (err?.message ?? JSON.stringify(err)));
+    } finally {
+      if (mountedRef.current) setLoading(false);
     }
   };
 
-  if (!mounted) return null;
+  const signOut = async () => {
+    try {
+      setLoading(true);
+      await supabase.auth.signOut();
+      setUser(null);
+    } catch (e) {
+      console.error('signOut error', e);
+    } finally {
+      if (mountedRef.current) setLoading(false);
+    }
+  };
 
-  return createPortal(
-    <>
-      {activeModal === "login" && (
-        <div className="fixed inset-0 z-[9999] flex items-center justify-center bg-black/50 backdrop-blur-sm p-4">
-          <div className="flex w-full max-w-4xl rounded-3xl shadow-2xl overflow-hidden bg-white dark:bg-gray-900">
+  return (
+    <div className="p-6 rounded bg-white shadow">
+      {user ? (
+        <div>
+          <p className="mb-2">Signed in as <strong>{user.id}</strong></p>
+          <p className="mb-2 text-sm text-gray-600">Email: {user.email ?? '—'}</p>
+          <button onClick={signOut} className="px-4 py-2 bg-red-500 text-white rounded">Sign out</button>
+        </div>
+      ) : (
+        <div className="flex flex-col gap-3">
+          <input
+            value={nickname}
+            onChange={(e) => setNickname(e.target.value)}
+            placeholder="Choose a nickname (optional)"
+            className="border px-3 py-2 rounded"
+          />
+          <div className="flex gap-2">
+            <button
+              onClick={signInWithGoogle}
+              disabled={loading}
+              className="px-4 py-2 bg-red-600 text-white rounded"
+            >
+              {loading ? 'Signing in...' : 'Sign in with Google'}
+            </button>
 
-            {/* LEFT PANEL */}
-            <div className="hidden md:flex w-1/2 bg-gradient-to-tr from-indigo-500 to-purple-600 flex-col justify-between items-center p-10">
-              <div className="flex flex-col items-center mt-10">
-                <div className="relative w-24 h-24 mb-4">
-                  <Image
-                    src="/logo-nexloot.png"
-                    alt="Logo Nexloot"
-                    width={96}
-                    height={96}
-                    className="object-contain"
-                    unoptimized
-                  />
-                </div>
-
-                <h1 className="text-white text-3xl font-bold mb-6">
-                  Nexloot
-                </h1>
-
-                <div className="relative w-64 h-[256px] mb-6">
-                  <Image
-                    src="/login-illustration.png"
-                    alt="Minh họa đăng nhập"
-                    width={256}
-                    height={256}
-                    className="object-contain"
-                    unoptimized
-                  />
-                </div>
-              </div>
-
-              <div className="flex flex-col items-center mb-10">
-                <p className="text-white text-sm mb-2">Tải app Nexloot</p>
-                <div className="relative w-24 h-24">
-                  <Image
-                    src="/qr-code.png"
-                    alt="QR Code tải app Nexloot"
-                    width={96}
-                    height={96}
-                    className="object-contain"
-                    unoptimized
-                  />
-                </div>
-              </div>
-            </div>
-
-            {/* RIGHT PANEL */}
-            <div className="w-full md:w-1/2 p-10 flex flex-col justify-center relative">
-              <button
-                onClick={onClose}
-                className="cursor-pointer absolute top-5 right-5 w-12 h-12 text-4xl text-gray-500 hover:text-gray-900 dark:hover:text-white"
-              >
-                ×
-              </button>
-
-              <h2 className="text-3xl font-bold text-center mb-8 text-gray-900 dark:text-white">
-                Chào mừng trở lại
-              </h2>
-
-              <form onSubmit={handleSubmit(onSubmit)} className="space-y-6">
-                {errorMsg && (
-                  <p className="text-red-500 text-center">{errorMsg}</p>
-                )}
-
-                <div>
-                  <label className="text-sm font-medium">Email</label>
-                  <input
-                    type="email"
-                    {...register("email")}
-                    className="w-full mt-1 px-4 py-3 rounded-xl border bg-gray-50 text-gray-900 dark:bg-gray-800 dark:text-white"
-                  />
-                </div>
-
-                {/* PASSWORD INPUT WITH EYE */}
-                <div>
-                  <label className="text-sm font-medium">Mật khẩu</label>
-                  <div className="relative">
-                    <input
-                      type={showPassword ? "text" : "password"}
-                      {...register("password")}
-                      className="w-full mt-1 px-4 py-3 rounded-xl border bg-gray-50 text-gray-900 dark:bg-gray-800 dark:text-white pr-10"
-                    />
-                    <button
-                      type="button"
-                      onClick={() => setShowPassword(!showPassword)}
-                      className="absolute right-3 top-1/2 -translate-y-1/2 text-gray-400 hover:text-gray-600 cursor-pointer"
-                    >
-                      {showPassword ? <EyeOff size={20} /> : <Eye size={20} />}
-                    </button>
-                  </div>
-                </div>
-
-                <button
-                  type="submit"
-                  disabled={loading}
-                  className="
-                    cursor-pointer
-                    w-full bg-indigo-600 text-white py-3 rounded-xl font-semibold
-                    transition-all duration-200
-                    hover:bg-indigo-700 hover:shadow-md hover:-translate-y-0.5
-                    active:scale-[0.97]
-                    disabled:opacity-60 disabled:cursor-not-allowed
-                  "
-                >
-                  {loading ? "Đang đăng nhập..." : "Đăng nhập"}
-                </button>
-
-                <div className="flex items-center gap-2">
-                  <hr className="flex-1" />
-                  <span className="text-sm text-gray-500">hoặc</span>
-                  <hr className="flex-1" />
-                </div>
-
-                <button
-                  type="button"
-                  onClick={handleGoogleLogin}
-                  disabled={loading}
-                  className="
-                    cursor-pointer
-                    w-full flex items-center justify-center gap-3 py-3 rounded-xl
-                    border border-gray-300
-                    bg-white text-gray-900
-                    transition-all duration-200
-                    hover:bg-gray-50 hover:shadow-md hover:-translate-y-0.5
-                    active:scale-[0.97]
-                    disabled:opacity-60 disabled:cursor-not-allowed
-                  "
-                >
-                  <FcGoogle
-                    className={`w-6 h-6 ${loading ? "animate-spin" : ""}`}
-                  />
-                  {loading ? "Đang chuyển hướng..." : "Tiếp tục với Google"}
-                </button>
-
-                <div className="flex justify-between text-sm mt-4">
-                  <button
-                    type="button"
-                    onClick={() => setActiveModal("signup")}
-                    className="cursor-pointer text-indigo-600 hover:underline"
-                  >
-                    Đăng ký
-                  </button>
-                  <button
-                    type="button"
-                    onClick={() => setActiveModal("forgot")}
-                    className="cursor-pointer text-gray-500 hover:underline"
-                  >
-                    Quên mật khẩu?
-                  </button>
-                </div>
-              </form>
-            </div>
+            <button
+              onClick={signInAnonymous}
+              disabled={loading}
+              className="px-4 py-2 bg-blue-600 text-white rounded"
+            >
+              {loading ? 'Signing in...' : 'Join as Guest'}
+            </button>
           </div>
+
+          {upserting && <p className="text-xs text-gray-500">Saving profile...</p>}
+          <p className="text-xs text-gray-500">You can convert this guest to a full account later.</p>
         </div>
       )}
-
-      {activeModal === "signup" && (
-        <SignUpModal onClose={() => setActiveModal("login")} />
-      )}
-
-      {activeModal === "forgot" && (
-        <ForgotPasswordModal onClose={() => setActiveModal("login")} />
-      )}
-    </>,
-    document.body
+    </div>
   );
 }

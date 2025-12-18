@@ -3,10 +3,10 @@
 import { useEffect, useMemo, useState } from "react";
 import HeaderBar from "@/components/Widgets/HeaderBar";
 import { useScrollHeader } from "@/hooks/useScrollHeader";
-import { useGridToggle } from "@/hooks/GridToggle/useGridToggle";
-import TagFilter from "@/components/Widgets/ProductsList/TagFilter";
-import ProductsGrid from "@/components/Widgets/ProductsList/ProductsGrid";
-import type { ProductsListProps } from "@/types/products";
+import { useGridToggle } from "@/components/ProductsList/hooks/useGridToggle";
+import TagFilter from "@/components/ProductsList/components/TagFilter";
+import ProductsGrid from "@/components/ProductsList/components/ProductsGrid";
+import type { ProductsListProps } from "@/components/ProductsList/types/products";
 
 export default function ProductsList({
   products,

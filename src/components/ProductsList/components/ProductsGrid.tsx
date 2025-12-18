@@ -3,7 +3,7 @@
 import { AnimatePresence, motion } from "framer-motion";
 import SmallCard from "@/components/Widgets/SmallCard/SmallCard";
 import LongCard from "@/components/Widgets/LongCard/LongCard";
-import type { ProductListItem } from "@/types/products";
+import type { ProductListItem } from "@/components/ProductsList/types/products";
 
 type Props = {
   products: ProductListItem[];
@@ -21,6 +21,8 @@ export default function ProductsGrid({
   likesCount,
   commentsCount,
   likedIds,
+
+  
   setLikedIds,
   setActiveTag,
 }: Props) {

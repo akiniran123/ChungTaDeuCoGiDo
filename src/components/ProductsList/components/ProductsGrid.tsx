@@ -1,8 +1,8 @@
 "use client";
 
 import { AnimatePresence, motion } from "framer-motion";
-import SmallCard from "@/components/Widgets/SmallCard/SmallCard";
-import LongCard from "@/components/Widgets/LongCard/LongCard";
+import SmallCard from "@/components/SmallCard/SmallCard";
+import LongCard from "@/components/LongCard/LongCard";
 import type { ProductListItem } from "@/components/ProductsList/types/products";
 
 type Props = {

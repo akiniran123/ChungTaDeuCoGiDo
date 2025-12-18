@@ -8,7 +8,7 @@ import { supabase } from "@/lib/supabase/client";
 import { useRouter } from "next/navigation";
 
 // 🔐 Login modal
-import LoginModal from "@/components/auth/pc/LoginModal";
+import LoginModal from "@/components/auth/LoginModal";
 
 type Community = {
   id: string;

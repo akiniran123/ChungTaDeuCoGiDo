@@ -1,8 +1,8 @@
 "use client";
 
 import { useEffect, useMemo, useState } from "react";
-import HeaderBar from "@/components/Widgets/HeaderBar";
-import { useScrollHeader } from "@/hooks/useScrollHeader";
+import HeaderBar from "@/components/HeaderBar/components/HeaderBar";
+import { useScrollHeader } from "@/components/HeaderBar/hooks/useScrollHeader";
 import { useGridToggle } from "@/components/ProductsList/hooks/useGridToggle";
 import TagFilter from "@/components/ProductsList/components/TagFilter";
 import ProductsGrid from "@/components/ProductsList/components/ProductsGrid";

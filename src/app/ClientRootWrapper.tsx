@@ -1,7 +1,6 @@
 "use client";
 
 import { useEffect, useRef } from "react";
-import { CartProvider } from "./context/CartContext";
 import FirebaseInit from "@/components/FirebaseInit";
 import AppLayout from "@/components/layouts/AppLayout";
 import { usePathname, useRouter } from "next/navigation"; // ⭐ thêm
@@ -54,9 +53,9 @@ export default function ClientRootWrapper({ children }: { children: React.ReactN
   });
 
   return (
-    <CartProvider>
+    <>
       <FirebaseInit />
       <AppLayout>{children}</AppLayout>
-    </CartProvider>
+    </>
   );
 }

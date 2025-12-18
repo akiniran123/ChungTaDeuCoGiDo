@@ -12,7 +12,7 @@ import {
 import { useRouter } from "next/navigation";
 import { supabase } from "@/lib/supabase/client";
 
-import LoginModal from "@/components/auth/pc/LoginModal";
+import LoginModal from "@/components/auth/LoginModal";
 
 type SidebarMainNavProps = {
   setOpenMessages: React.Dispatch<React.SetStateAction<boolean>>;

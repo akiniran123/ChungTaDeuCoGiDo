@@ -2,7 +2,7 @@
 "use client";
 
 import { LayoutGrid, Grid } from "lucide-react";
-import SearchBar from "@/components/Navbar/pc/LogoSearchIcon/SearchBar";
+import SearchBar from "@/components/Search/components/SearchBar";
 import { motion } from "framer-motion";
 import React from "react";
 

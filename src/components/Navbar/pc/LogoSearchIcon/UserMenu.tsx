@@ -8,7 +8,7 @@ import type { User } from '@supabase/supabase-js'
 import { useRouter } from 'next/navigation'
 
 // Import LoginModal
-import LoginModal from "@/components/auth/pc/LoginModal"
+import LoginModal from "@/components/auth/LoginModal"
 
 export default function UserMenu() {
   const [user, setUser] = useState<User | null>(null)

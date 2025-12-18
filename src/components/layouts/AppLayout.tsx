@@ -3,7 +3,7 @@
 
 import { useState } from "react";
 import SidebarLeft from "@/components/sidebarleft/pc/SidebarLeft";
-import SidebarRight from "@/components/Trang_chu/pc/SidebarRight";
+import SidebarRight from "@/components/SideBarRight/SidebarRight";
 import BottomNav from "@/components/sidebarleft/mobile/BottomNav";
 
 export default function AppLayout({
@@ -14,7 +14,6 @@ export default function AppLayout({
   const SIDEBAR_LEFT_WIDTH = 280; // px
   const SIDEBAR_RIGHT_WIDTH = 330; // px
 
-  // removed unused grid toggle variables
   // keep selectedCategory value for passing to SidebarRight
   const [selectedCategory] = useState<string | null>(null);
 

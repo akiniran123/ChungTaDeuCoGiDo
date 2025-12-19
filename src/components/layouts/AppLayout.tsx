@@ -14,7 +14,6 @@ export default function AppLayout({
   const SIDEBAR_LEFT_WIDTH = 280; // px
   const SIDEBAR_RIGHT_WIDTH = 330; // px
 
-  // removed unused grid toggle variables
   // keep selectedCategory value for passing to SidebarRight
   const [selectedCategory] = useState<string | null>(null);
 

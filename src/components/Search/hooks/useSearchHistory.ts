@@ -6,13 +6,16 @@ import type { HistoryItem } from "@/components/Search/types/search";
 const MAX_HISTORY = 5;
 const ANON_KEY = "search_history_anonymous";
 
+function isUuid(v?: string) {
+  return typeof v === "string" && /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i.test(v);
+}
+
 export function useSearchHistory(userId?: string) {
   const [history, setHistory] = useState<HistoryItem[]>([]);
-  const keyFor = (uid?: string) => (uid ? `search_history_${uid}` : ANON_KEY);
 
   useEffect(() => {
-    if (!userId) {
-      // load anonymous history from localStorage
+    // If no userId or userId is not a UUID, load anonymous history from localStorage
+    if (!userId || !isUuid(userId)) {
       try {
         const raw = localStorage.getItem(ANON_KEY);
         setHistory(raw ? (JSON.parse(raw) as HistoryItem[]) : []);
@@ -30,15 +33,32 @@ export function useSearchHistory(userId?: string) {
 
     (async () => {
       try {
-        const data = await loadSearchHistory(userId);
+        // Debug: ensure we know what userId is when loading (optional)
+        // console.debug("useSearchHistory: loading for userId:", userId);
+
+        const data = await loadSearchHistory(userId as string);
+
         if (!mounted) return;
 
-        if (!Array.isArray(data)) {
+        // Normalize possible shapes:
+        // - array directly
+        // - { data: [...] } or { items: [...] } or { history: [...] }
+        let arr: unknown[] | undefined;
+        if (Array.isArray(data)) {
+          arr = data;
+        } else if (data && typeof data === "object") {
+          const d = data as Record<string, unknown>;
+          if (Array.isArray(d.data)) arr = d.data as unknown[];
+          else if (Array.isArray(d.items)) arr = d.items as unknown[];
+          else if (Array.isArray(d.history)) arr = d.history as unknown[];
+        }
+
+        if (!arr) {
           setHistory([]);
           return;
         }
 
-        const next = data.filter(hasQuery).map((h) => ({ query: h.query }));
+        const next = arr.filter(hasQuery).map((h) => ({ query: h.query }));
         setHistory(next.slice(0, MAX_HISTORY));
       } catch (err) {
         console.error("loadSearchHistory error:", err);
@@ -52,7 +72,7 @@ export function useSearchHistory(userId?: string) {
   }, [userId]);
 
   const saveHistory = useCallback(
-    async (userIdParam: string | undefined, query: string) => {
+    async (userIdParam: string | undefined, query: string): Promise<void> => {
       const trimmed = query.trim();
       if (!trimmed) return;
 
@@ -63,13 +83,17 @@ export function useSearchHistory(userId?: string) {
       });
 
       try {
-        if (!userIdParam) {
-          // anonymous: persist to localStorage
+        // Treat non-UUID userIdParam as anonymous to avoid DB errors
+        if (!userIdParam || !isUuid(userIdParam)) {
           const key = ANON_KEY;
-          const raw = localStorage.getItem(key);
-          const arr: HistoryItem[] = raw ? JSON.parse(raw) : [];
-          const next = [{ query: trimmed }, ...arr.filter((h) => h.query !== trimmed)].slice(0, MAX_HISTORY);
-          localStorage.setItem(key, JSON.stringify(next));
+          try {
+            const raw = localStorage.getItem(key);
+            const arr: HistoryItem[] = raw ? JSON.parse(raw) : [];
+            const next = [{ query: trimmed }, ...arr.filter((h) => h.query !== trimmed)].slice(0, MAX_HISTORY);
+            localStorage.setItem(key, JSON.stringify(next));
+          } catch (err) {
+            console.error("save anonymous history failed:", err);
+          }
           return;
         }
 
@@ -79,6 +103,8 @@ export function useSearchHistory(userId?: string) {
         // optional: rollback optimistic update or leave as-is
       }
     },
+    // upsertSearchHistory is an imported function; including it in deps can cause lint noise.
+    // eslint-disable-next-line react-hooks/exhaustive-deps
     []
   );
 

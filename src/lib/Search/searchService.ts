@@ -1,3 +1,4 @@
+// src/lib/Search/searchService.ts
 import { supabase } from "@/lib/supabase/client";
 import type { SuggestionItem } from "@/components/Search/types/search";
 
@@ -36,76 +37,96 @@ export async function fetchProductsByTitle(
   q: string,
   limit = 5
 ): Promise<ProductSearchRow[]> {
-  const { data, error } = await supabase
-    .from("products")
-    .select("id, title, image_url, price")
-    .ilike("title", `%${q}%`)
-    .limit(limit);
+  try {
+    const { data, error } = await supabase
+      .from("products")
+      .select("id, title, image_url, price")
+      .ilike("title", `%${q}%`)
+      .limit(limit);
 
-  if (error) {
-    console.error("fetchProductsByTitle", error);
+    if (error) {
+      console.error("fetchProductsByTitle", error);
+      return [];
+    }
+
+    return (data as ProductSearchRow[]) ?? [];
+  } catch (err) {
+    console.error("fetchProductsByTitle exception:", err);
     return [];
   }
-
-  return data ?? [];
 }
 
 export async function fetchUsersByName(
   q: string,
   limit = 5
 ): Promise<UserSearchRow[]> {
-  const { data, error } = await supabase
-    .from("users")
-    .select("id, username, avatar_url")
-    .ilike("username", `%${q}%`)
-    .limit(limit);
+  try {
+    const { data, error } = await supabase
+      .from("users")
+      .select("id, username, avatar_url")
+      .ilike("username", `%${q}%`)
+      .limit(limit);
 
-  if (error) {
-    console.error("fetchUsersByName", error);
+    if (error) {
+      console.error("fetchUsersByName", error);
+      return [];
+    }
+
+    return (data as UserSearchRow[]) ?? [];
+  } catch (err) {
+    console.error("fetchUsersByName exception:", err);
     return [];
   }
-
-  return data ?? [];
 }
 
 export async function fetchTags(
   q: string,
   limit = 10
 ): Promise<string[]> {
-  const { data, error } = await supabase
-    .from("product_tags")
-    .select("tag_id")
-    .ilike("tag_id", `%${q}%`)
-    .limit(limit);
+  try {
+    const { data, error } = await supabase
+      .from("product_tags")
+      .select("tag_id")
+      .ilike("tag_id", `%${q}%`)
+      .limit(limit);
 
-  if (error) {
-    console.error("fetchTags", error);
+    if (error) {
+      console.error("fetchTags", error);
+      return [];
+    }
+
+    return (
+      (data as { tag_id?: unknown }[] | null)
+        ?.map((r) => (r as { tag_id?: unknown }).tag_id)
+        .filter((t): t is string => typeof t === "string") ?? []
+    );
+  } catch (err) {
+    console.error("fetchTags exception:", err);
     return [];
   }
-
-  return (
-    data
-      ?.map((r) => r.tag_id)
-      .filter((t): t is string => typeof t === "string") ?? []
-  );
 }
 
 export async function fetchCommunities(
   q: string,
   limit = 5
 ): Promise<CommunitySearchRow[]> {
-  const { data, error } = await supabase
-    .from("communities")
-    .select("id, title, banner_url")
-    .ilike("title", `%${q}%`)
-    .limit(limit);
+  try {
+    const { data, error } = await supabase
+      .from("communities")
+      .select("id, title, banner_url")
+      .ilike("title", `%${q}%`)
+      .limit(limit);
 
-  if (error) {
-    console.error("fetchCommunities", error);
+    if (error) {
+      console.error("fetchCommunities", error);
+      return [];
+    }
+
+    return (data as CommunitySearchRow[]) ?? [];
+  } catch (err) {
+    console.error("fetchCommunities exception:", err);
     return [];
   }
-
-  return data ?? [];
 }
 
 /* =========================================================
@@ -116,16 +137,33 @@ export async function upsertSearchHistory(
   userId: string,
   query: string
 ) {
-  return supabase.from("search_history").upsert(
-    [
-      {
-        user_id: userId,
-        query,
-        searched_at: new Date().toISOString(),
-      },
-    ],
-    { onConflict: "user_id,query" }
-  );
+  if (!userId || typeof userId !== "string") {
+    console.error("upsertSearchHistory called with invalid userId:", userId);
+    console.trace("upsertSearchHistory call trace");
+    return null;
+  }
+
+  try {
+    const res = await supabase.from("search_history").upsert(
+      [
+        {
+          user_id: userId,
+          query,
+          searched_at: new Date().toISOString(),
+        },
+      ],
+      { onConflict: "user_id,query" }
+    );
+
+    if (res.error) {
+      console.error("upsertSearchHistory error:", res.error);
+    }
+
+    return res;
+  } catch (err) {
+    console.error("upsertSearchHistory exception:", err);
+    return null;
+  }
 }
 
 /**
@@ -137,24 +175,35 @@ export async function loadSearchHistory(
   userId: string,
   limit = 5
 ): Promise<{ query: string }[]> {
-  const { data, error } = await supabase
-    .from("search_history")
-    .select("query")
-    .eq("user_id", userId)
-    .order("searched_at", { ascending: false })
-    .limit(limit);
-
-  if (error) {
-    console.error("loadSearchHistory", error);
+  if (!userId || typeof userId !== "string") {
+    console.error("loadSearchHistory called with invalid userId:", userId);
+    console.trace("loadSearchHistory call trace");
     return [];
   }
 
-  return (
-    (data as SearchHistoryRow[] | null)
-      ?.map((r) => r.query)
-      .filter((q): q is string => typeof q === "string")
-      .map((q) => ({ query: q })) ?? []
-  );
+  try {
+    const { data, error } = await supabase
+      .from("search_history")
+      .select("query")
+      .eq("user_id", userId)
+      .order("searched_at", { ascending: false })
+      .limit(limit);
+
+    if (error) {
+      console.error("loadSearchHistory", error);
+      return [];
+    }
+
+    return (
+      (data as SearchHistoryRow[] | null)
+        ?.map((r) => r.query)
+        .filter((q): q is string => typeof q === "string")
+        .map((q) => ({ query: q })) ?? []
+    );
+  } catch (err) {
+    console.error("loadSearchHistory exception:", err);
+    return [];
+  }
 }
 
 /* =========================================================

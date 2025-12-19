@@ -1,41 +1,28 @@
+// components/LongCard/index.tsx
 "use client";
 
 import Link from "next/link";
 import Image from "next/image";
 import { motion } from "framer-motion";
 import { Bookmark, BookmarkCheck, Heart as HeartIcon, Share2 } from "lucide-react";
-import { supabase } from "@/lib/supabase/client";
-import { useState, useEffect } from "react";
+import useProductActions from "@/components/LongCard/hooks/useProductActions";
+import type { LongCardProps } from "@/components/LongCard/types/long-card";
 
-export type LongCardProps = {
-  product: {
-    id: string;
-    title: string;
-    image_url?: string | null;
-    tags?: string[];
-    author?: string | null;
-    avatar_url?: string | null;
-    created_at?: string | null;
-    category?: string | null;
-    price?: number | null;
-    views?: number | null;
-    community_id?: string | null;
-    communityName?: string | null;
-    communityIcon?: string | null;
-    user_id?: string | null;
-  };
-  likesCount: number; // per-product number
-  commentsCount: number; // per-product number
-  liked: boolean; // whether current user liked this product
-  /**
-   * Optional callback parent can provide to update its likedIds state.
-   * LongCard will still perform DB operations itself, then call this to notify parent.
-   */
-  onToggleLike?: () => void;
-  onToggleSave?: (id: string) => void;
-  onShare?: () => void;
-  onTagClick?: (tag: string) => void;
-};
+// Hàm tính thời gian tương đối bằng tiếng Việt
+function getRelativeTime(dateString: string): string {
+  const now = new Date();
+  const posted = new Date(dateString);
+  const diffMs = now.getTime() - posted.getTime();
+  const diffSec = Math.floor(diffMs / 1000);
+  const diffMin = Math.floor(diffSec / 60);
+  const diffHour = Math.floor(diffMin / 60);
+  const diffDay = Math.floor(diffHour / 24);
+
+  if (diffDay > 0) return `${diffDay} ngày trước`;
+  if (diffHour > 0) return `${diffHour} giờ trước`;
+  if (diffMin > 0) return `${diffMin} phút trước`;
+  return "Vừa xong";
+}
 
 export default function LongCard({
   product,
@@ -47,77 +34,24 @@ export default function LongCard({
   onShare,
   onTagClick,
 }: LongCardProps) {
-  const [saved, setSaved] = useState<string[]>([]);
-  const [localLikes, setLocalLikes] = useState<number>(likesCount);
-  const [processing, setProcessing] = useState(false);
+  const { saved, localLikes, processing, toggleSave, toggleLike, share } = useProductActions({
+    productId: product.id,
+    initialLikes: likesCount,
+    initialLiked: liked,
+    onToggleLike,
+    onToggleSave,
+    onShare,
+  });
 
-  // keep localLikes in sync with parent-provided number
-  useEffect(() => {
-    setLocalLikes(likesCount);
-  }, [likesCount]);
-
-  const toggleSave = (id: string) => {
-    setSaved((prev) => (prev.includes(id) ? prev.filter((x) => x !== id) : [...prev, id]));
-    onToggleSave?.(id);
-  };
-
-  const toggleLike = async () => {
-    if (processing) return;
-    setProcessing(true);
-
-    try {
-      const { data: auth } = await supabase.auth.getUser();
-      if (!auth.user?.id) {
-        alert("Bạn cần đăng nhập");
-        return;
-      }
-
-      if (liked) {
-        // unlike
-        await supabase
-          .from("product_likes")
-          .delete()
-          .eq("product_id", product.id)
-          .eq("user_id", auth.user.id);
-
-        setLocalLikes((prev) => Math.max(prev - 1, 0));
-      } else {
-        // like
-        await supabase.from("product_likes").insert({
-          product_id: product.id,
-          user_id: auth.user.id,
-        });
-
-        setLocalLikes((prev) => prev + 1);
-      }
-
-      // notify parent to update its likedIds state if provided
-      onToggleLike?.();
-    } catch (err) {
-      console.error("toggleLike error:", err);
-    } finally {
-      setProcessing(false);
-    }
-  };
-
-  const share = () => {
-    const url = `${window.location.origin}/deal/${product.id}`;
-    const title = product.title;
-    if (navigator.share) navigator.share({ title, url });
-    else {
-      onShare?.();
-      alert(`Copy liên kết để chia sẻ: ${url}`);
-    }
-  };
+  const isSaved = saved.includes(product.id);
 
   return (
     <motion.div
       initial={{ opacity: 0, y: 6 }}
       animate={{ opacity: 1, y: 0 }}
-      className="w-full px-1 py-1 bg-white transition hover:bg-gray-50"
+      className="w-full px-1 py-1 bg-white transition hover:bg-gray-50 relative"
     >
       <div className="flex items-center gap-4 min-h-[200px]">
-        {/* IMAGE */}
         <Link
           href={`/deal/${product.id}`}
           className="flex-shrink-0 overflow-hidden w-[195px] h-[195px] bg-gray-100 rounded-lg relative"
@@ -129,9 +63,7 @@ export default function LongCard({
           )}
         </Link>
 
-        {/* MAIN */}
         <div className="flex-1 min-w-0">
-          {/* USER + TIME */}
           <div className="mb-1 text-sm flex items-center gap-3 flex-wrap">
             <Link
               href={`/profile/${product.user_id ?? ""}`}
@@ -144,22 +76,10 @@ export default function LongCard({
                 height={24}
                 className="rounded-full object-cover"
               />
-
               <span className="truncate max-w-[150px] text-gray-900">{product.author || "Người dùng"}</span>
             </Link>
-
-            <span className="whitespace-nowrap text-gray-400 text-xs">
-              {product.created_at
-                ? new Date(product.created_at).toLocaleDateString("vi-VN", {
-                    day: "2-digit",
-                    month: "2-digit",
-                    year: "numeric",
-                  })
-                : ""}
-            </span>
           </div>
 
-          {/* TITLE + PRICE */}
           <div className="flex items-center gap-3">
             <Link href={`/deal/${product.id}`} className="min-w-0 flex-1">
               <div className="text-lg font-semibold text-gray-800 leading-snug truncate">{product.title}</div>
@@ -172,17 +92,13 @@ export default function LongCard({
             )}
           </div>
 
-          {/* META */}
           <div className="mt-2 text-sm text-gray-500 flex items-center gap-3 flex-wrap">
             {product.category && <span className="whitespace-nowrap">{product.category}</span>}
-
             <span className="whitespace-nowrap">{commentsCount} bình luận</span>
-
             <span className="whitespace-nowrap">{product.views ?? 0} lượt xem</span>
           </div>
         </div>
 
-        {/* TAGS + COMMUNITY */}
         <div className="flex-shrink-0 hidden lg:flex flex-col gap-1 ml-2">
           {product.tags && product.tags.length > 0 && (
             <div className="flex items-center gap-1">
@@ -195,8 +111,9 @@ export default function LongCard({
                   {t}
                 </button>
               ))}
-
-              {product.tags.length > 4 && <div className="text-xs text-gray-400 whitespace-nowrap">+{product.tags.length - 4}</div>}
+              {product.tags.length > 4 && (
+                <div className="text-xs text-gray-400 whitespace-nowrap">+{product.tags.length - 4}</div>
+              )}
             </div>
           )}
 
@@ -210,17 +127,14 @@ export default function LongCard({
                   <Image src={product.communityIcon} alt="community" fill className="object-cover" />
                 </div>
               )}
-
               <span className="truncate max-w-[140px] text-gray-900">{product.communityName}</span>
             </Link>
           )}
         </div>
 
-        {/* ACTIONS */}
         <div className="flex items-center gap-3 ml-3 flex-shrink-0">
-          {/* ❤️ LIKE */}
           <button
-            onClick={toggleLike}
+            onClick={() => toggleLike(liked)}
             disabled={processing}
             className="flex items-center gap-1 text-gray-600 hover:text-pink-500 transition cursor-pointer"
           >
@@ -228,17 +142,28 @@ export default function LongCard({
             <span className="text-sm">{localLikes}</span>
           </button>
 
-          {/* SHARE */}
-          <button onClick={share} className="text-gray-600 hover:text-gray-800 transition cursor-pointer">
+          <button
+            onClick={() => share(product.title)}
+            className="text-gray-600 hover:text-gray-800 transition cursor-pointer"
+          >
             <Share2 size={20} />
           </button>
 
-          {/* SAVE */}
-          <button onClick={() => toggleSave(product.id)} className="text-gray-600 hover:text-pink-500 transition cursor-pointer">
-            {saved.includes(product.id) ? <BookmarkCheck size={20} /> : <Bookmark size={20} />}
+          <button
+            onClick={() => toggleSave(product.id)}
+            className="text-gray-600 hover:text-pink-500 transition cursor-pointer"
+          >
+            {isSaved ? <BookmarkCheck size={20} /> : <Bookmark size={20} />}
           </button>
         </div>
       </div>
+
+      {/* Thời gian ở góc phải trên dạng tiếng Việt */}
+      {product.created_at && (
+        <div className="absolute top-2 right-2 bg-gray-800 text-gray-300 text-xs px-2 py-1 rounded-md">
+          {getRelativeTime(product.created_at)}
+        </div>
+      )}
     </motion.div>
   );
 }

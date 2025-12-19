@@ -6,7 +6,7 @@ import SidebarCommunity from "./SidebarCommunity";
 import MessagesPanel from "./MessagesPanel";
 import NewsPanel from "./NewsPanel";
 import { supabase } from "@/lib/supabase/client";
-import Logo from "@/components/Navbar/pc/LogoSearchIcon/logo";
+import Logo from "@/components/sidebarleft/pc/logo";
 import { useChat } from "@/components/MiniChat/ChatContext";
 
 // -------------------------

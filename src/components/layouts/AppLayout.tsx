@@ -3,7 +3,7 @@
 
 import { useState } from "react";
 import SidebarLeft from "@/components/sidebarleft/pc/SidebarLeft";
-import SidebarRight from "@/components/Trang_chu/pc/SidebarRight";
+import SidebarRight from "@/components/SideBarRight/SidebarRight";
 import BottomNav from "@/components/sidebarleft/mobile/BottomNav";
 
 export default function AppLayout({

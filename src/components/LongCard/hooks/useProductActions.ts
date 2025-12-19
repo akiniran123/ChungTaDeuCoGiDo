@@ -1,4 +1,3 @@
-// hooks/useProductActions.ts
 "use client";
 
 import { useCallback, useEffect, useState } from "react";
@@ -7,16 +6,18 @@ import { supabase } from "@/lib/supabase/client";
 type UseProductActionsParams = {
   productId: string;
   initialLikes: number;
-  initialLiked: boolean;
   onToggleLike?: () => void;
   onToggleSave?: (id: string) => void;
   onShare?: () => void;
 };
 
+type NavigatorWithShare = Navigator & {
+  share?: (data: { title?: string; url?: string }) => Promise<void>;
+};
+
 export default function useProductActions({
   productId,
   initialLikes,
-  initialLiked, // kept for potential future use
   onToggleLike,
   onToggleSave,
   onShare,
@@ -71,8 +72,15 @@ export default function useProductActions({
     (title?: string) => {
       const origin = typeof window !== "undefined" ? window.location.origin : "";
       const url = `${origin}/deal/${productId}`;
-      if (typeof navigator !== "undefined" && (navigator as any).share) {
-        (navigator as any).share({ title: title ?? "", url });
+
+      const nav = typeof navigator !== "undefined" ? (navigator as NavigatorWithShare) : undefined;
+      if (nav?.share) {
+        // call share and ignore returned promise (optional: await if you want to handle errors)
+        nav.share({ title: title ?? "", url }).catch((err) => {
+          console.error("Web Share failed:", err);
+          onShare?.();
+          alert(`Copy liên kết để chia sẻ: ${url}`);
+        });
       } else {
         onShare?.();
         alert(`Copy liên kết để chia sẻ: ${url}`);

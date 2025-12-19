@@ -4,12 +4,12 @@ import React, { useEffect, useState } from "react";
 import { supabase } from "@/lib/supabase/client";
 import type { Database } from "@/types/supabase";
 import type { User } from "@supabase/supabase-js";
-import CommunityHeader from "./components/CommunityHeader";
-import EmptyState from "./components/EmptyState";
-import JoinLeaveButton from "./components/JoinLeaveButtons";
-import LoadingState from "./components/LoadingState";
-import ProductList from "./components/ProductList";
-import CreateTagButton from "./components/CreateTagButton";
+import CommunityHeader from "@/components/communities/CommunityHeader";
+import EmptyState from "@/components/communities/EmptyState";
+import JoinLeaveButton from "@/components/communities/JoinLeaveButtons";
+import LoadingState from "@/components/communities/LoadingState";
+import ProductList from "@/components/communities/ProductList";
+import CreateTagButton from "@/components/communities/CreateTagButton";
 import { useRouter } from "next/navigation";
 
 type Community = Database["public"]["Tables"]["communities"]["Row"];

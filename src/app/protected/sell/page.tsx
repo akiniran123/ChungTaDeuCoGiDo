@@ -5,15 +5,15 @@ import { useForm, FormProvider } from "react-hook-form";
 import type { Control, FieldErrors } from "react-hook-form";
 import { supabase } from "@/lib/supabase/client";
 
-import ListingTitleInput from "@/components/sell/pc//ListingTitleInput";
-import DescriptionEditor from "@/components/sell/pc//DescriptionEditor";
-import ConditionSelector from "@/components/sell/pc//ConditionSelector";
-import ImageUploader from "@/components/sell/pc//ImageUploader";
-import PriceAndOffers from "@/components/sell/pc//PriceAndOffers";
-import TechSpecsEditor from "@/components/sell/pc//TechSpecsEditor";
-import PrivateToggle from "@/components/sell/pc//PrivateToggle";
-import ReturnPolicies from "@/components/sell/pc//ReturnPolicies";
-import CommunitySelector from "@/components/sell/pc/CommunitySelector";
+import ListingTitleInput from "@/components/sell/components/ListingTitleInput";
+import DescriptionEditor from "@/components/sell/components/DescriptionEditor";
+import ConditionSelector from "@/components/sell/components/ConditionSelector";
+import ImageUploader from "@/components/sell/components/ImageUploader";
+import PriceAndOffers from "@/components/sell/components/PriceAndOffers";
+import TechSpecsEditor from "@/components/sell/components/TechSpecsEditor";
+import PrivateToggle from "@/components/sell/components/PrivateToggle";
+import ReturnPolicies from "@/components/sell/components/ReturnPolicies";
+import CommunitySelector from "@/components/sell/components/CommunitySelector";
 
 import type { ProductFormData } from "@/types/form"; // dùng type mà các component con mong đợi
 

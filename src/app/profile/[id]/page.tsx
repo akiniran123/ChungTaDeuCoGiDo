@@ -1,9 +1,11 @@
+// src/app/(your-route)/[id]/page.tsx  (hoặc nơi bạn đặt component)
+// "use client" nếu component cần client-side behavior
 "use client";
 
-import React, { useEffect, useState } from "react";
+import React, { JSX, useEffect, useState } from "react";
 import Image from "next/image";
 import { useParams } from "next/navigation";
-import Link from "next/link"; // 🔹 import Link để không bị lỗi
+import Link from "next/link";
 import { supabase } from "@/lib/supabase/client";
 import { Product } from "@/types";
 import { useChat } from "@/components/MiniChat/ChatContext";
@@ -22,7 +24,7 @@ interface ProductWithUser extends Product {
   };
 }
 
-export default function OtherUserProfile() {
+export default function OtherUserProfile(): JSX.Element {
   const params = useParams();
   const rawId = params?.id;
   const id = Array.isArray(rawId) ? rawId[0] : rawId;
@@ -33,7 +35,8 @@ export default function OtherUserProfile() {
 
   const [currentUserId, setCurrentUserId] = useState<string | null>(null);
 
-  const { chatOpen, activePartnerId, openChat } = useChat();
+  // ChatContext mới: dùng openChat, isOpen, focusChat
+  const { openChat, isOpen, focusChat } = useChat();
 
   useEffect(() => {
     supabase.auth.getUser().then(({ data }) => {
@@ -91,9 +94,7 @@ export default function OtherUserProfile() {
 
   if (loading)
     return (
-      <div className="p-6 text-center text-gray-500">
-        Đang tải trang cá nhân...
-      </div>
+      <div className="p-6 text-center text-gray-500">Đang tải trang cá nhân...</div>
     );
 
   if (!id)
@@ -104,20 +105,22 @@ export default function OtherUserProfile() {
     );
 
   if (!user)
-    return (
-      <div className="p-6 text-center text-gray-500">Không tìm thấy người dùng.</div>
-    );
+    return <div className="p-6 text-center text-gray-500">Không tìm thấy người dùng.</div>;
 
   const isOtherUser = currentUserId !== null && currentUserId !== user.id;
+  const alreadyOpen = isOpen(user.id);
 
   const handleOpenChatFromProfile = () => {
-    // Nếu chat đang mở với cùng partner thì không gọi openChat nữa
-    if (chatOpen && activePartnerId === user.id) {
-      console.log("Chat already open for", user.id);
+    if (!isOtherUser) return;
+
+    if (alreadyOpen) {
+      // nếu đã mở, chỉ focus cửa sổ chat
+      console.log("Chat already open for", user.id, "- focusing instead");
+      focusChat(user.id);
       return;
     }
 
-    // Gọi openChat (ChatContext đã có guard để tránh remount/re-render thừa)
+    // mở chat mới
     openChat(user.id);
   };
 
@@ -136,11 +139,7 @@ export default function OtherUserProfile() {
           />
         ) : (
           <div className="w-20 h-20 rounded-full border border-gray-200 bg-gray-300 flex items-center justify-center">
-            <svg
-              className="w-12 h-12 text-gray-500"
-              fill="currentColor"
-              viewBox="0 0 24 24"
-            >
+            <svg className="w-12 h-12 text-gray-500" fill="currentColor" viewBox="0 0 24 24">
               <path d="M12 12c2.7 0 4.8-2.1 4.8-4.8S14.7 2.4 12 2.4 7.2 4.5 7.2 7.2 9.3 12 12 12zm0 2.4c-3.2 0-9.6 1.6-9.6 4.8v2.4h19.2v-2.4c0-3.2-6.4-4.8-9.6-4.8z" />
             </svg>
           </div>
@@ -154,10 +153,16 @@ export default function OtherUserProfile() {
 
           {isOtherUser && (
             <button
-              className="px-4 py-2 border border-gray-300 text-gray-900 rounded-lg hover:bg-gray-100 transition cursor-pointer"
+              className={`px-4 py-2 border rounded-lg transition cursor-pointer ${
+                alreadyOpen
+                  ? "bg-blue-600 text-white border-blue-600 hover:bg-blue-700"
+                  : "border-gray-300 text-gray-900 hover:bg-gray-100"
+              }`}
               onClick={handleOpenChatFromProfile}
+              aria-pressed={alreadyOpen}
+              aria-label={alreadyOpen ? "Đã mở chat, nhấn để đưa lên trước" : "Mở chat với người này"}
             >
-              Nhắn tin
+              {alreadyOpen ? "Đang mở" : "Nhắn tin"}
             </button>
           )}
         </div>
@@ -200,11 +205,7 @@ export default function OtherUserProfile() {
                   />
                 ) : (
                   <div className="w-6 h-6 rounded-full border border-gray-200 bg-gray-300 flex items-center justify-center">
-                    <svg
-                      className="w-4 h-4 text-gray-500"
-                      fill="currentColor"
-                      viewBox="0 0 24 24"
-                    >
+                    <svg className="w-4 h-4 text-gray-500" fill="currentColor" viewBox="0 0 24 24">
                       <path d="M12 12c2.7 0 4.8-2.1 4.8-4.8S14.7 2.4 12 2.4 7.2 4.5 7.2 7.2 9.3 12 12 12zm0 2.4c-3.2 0-9.6 1.6-9.6 4.8v2.4h19.2v-2.4c0-3.2-6.4-4.8-9.6-4.8z" />
                     </svg>
                   </div>

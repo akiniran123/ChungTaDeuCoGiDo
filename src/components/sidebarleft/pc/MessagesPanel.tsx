@@ -1,4 +1,4 @@
-// MessagesPanel.tsx
+// src/components/MiniChat/MessagesPanel.tsx
 "use client";
 
 import React, { useMemo } from "react";
@@ -73,7 +73,8 @@ export default function MessagesPanel({
   setActivePanel,
   clearUnread,
 }: MessagesPanelProps) {
-  const { chatOpen, activePartnerId, openChat } = useChat();
+  // Sử dụng API mới từ ChatContext
+  const { openChats, focusedId, openChat, focusChat, isOpen } = useChat();
 
   const formattedConversations = useMemo(
     () =>
@@ -110,8 +111,10 @@ export default function MessagesPanel({
   const panelClass = [...baseClasses, ...openClasses, zClass].join(" ");
 
   const handleConversationClick = (id: string) => {
-    // Nếu chat đang mở với cùng partner thì chỉ clear unread và đóng panel / focus
-    if (chatOpen && activePartnerId === id) {
+    // Nếu đã mở cửa sổ chat với partner này, chỉ focus và clear unread
+    if (isOpen(id)) {
+      console.log("[MessagesPanel] conversation already open, focusing:", id);
+      focusChat(id);
       clearUnread(id);
       onSelect(id);
       setOpen(false);
@@ -119,7 +122,8 @@ export default function MessagesPanel({
       return;
     }
 
-    // Nếu chat đang mở với partner khác hoặc chưa mở, gọi openChat (ChatContext đã bảo vệ trùng lặp)
+    // Nếu chưa mở, mở chat mới
+    console.log("[MessagesPanel] opening chat for:", id);
     openChat(id);
     clearUnread(id);
     onSelect(id);

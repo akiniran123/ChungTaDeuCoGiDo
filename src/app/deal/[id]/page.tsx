@@ -2,8 +2,8 @@
 
 import { useEffect, useState } from "react";
 import { useParams } from "next/navigation";
-import DealHeader from "./components/DealHeader";
-import DealComments from "./components/DealComments";
+import DealHeader from "@/components/detail/DealHeader";
+import DealComments from "@/components/detail/DealComments";
 import {
   getDealDetail,
   type DealDetailResult,

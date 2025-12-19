@@ -7,16 +7,20 @@ import { supabase } from "@/lib/supabase/client";
 type UseProductActionsParams = {
   productId: string;
   initialLikes: number;
-  initialLiked: boolean;
+  initialLiked?: boolean; // optional, kept for future use
   onToggleLike?: () => void;
   onToggleSave?: (id: string) => void;
   onShare?: () => void;
 };
 
+type NavigatorWithShare = Navigator & {
+  share?: (data: { title?: string; url?: string }) => Promise<void>;
+};
+
 export default function useProductActions({
   productId,
   initialLikes,
-  initialLiked, // kept for potential future use
+  initialLiked: _initialLiked, // renamed to avoid "defined but never used" lint warning
   onToggleLike,
   onToggleSave,
   onShare,
@@ -50,7 +54,11 @@ export default function useProductActions({
         }
 
         if (liked) {
-          await supabase.from("product_likes").delete().eq("product_id", productId).eq("user_id", auth.user.id);
+          await supabase
+            .from("product_likes")
+            .delete()
+            .eq("product_id", productId)
+            .eq("user_id", auth.user.id);
           setLocalLikes((prev) => Math.max(prev - 1, 0));
         } else {
           await supabase.from("product_likes").insert({ product_id: productId, user_id: auth.user.id });
@@ -71,8 +79,14 @@ export default function useProductActions({
     (title?: string) => {
       const origin = typeof window !== "undefined" ? window.location.origin : "";
       const url = `${origin}/deal/${productId}`;
-      if (typeof navigator !== "undefined" && (navigator as any).share) {
-        (navigator as any).share({ title: title ?? "", url });
+
+      const nav = typeof navigator !== "undefined" ? (navigator as NavigatorWithShare) : undefined;
+      if (nav?.share) {
+        nav.share({ title: title ?? "", url }).catch((err) => {
+          console.error("Web Share failed:", err);
+          onShare?.();
+          alert(`Copy liên kết để chia sẻ: ${url}`);
+        });
       } else {
         onShare?.();
         alert(`Copy liên kết để chia sẻ: ${url}`);

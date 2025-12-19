@@ -11,8 +11,8 @@ export default function AppLayout({
 }: {
   children: React.ReactNode;
 }) {
-  const SIDEBAR_LEFT_WIDTH = 280; // px
-  const SIDEBAR_RIGHT_WIDTH = 330; // px
+  const SIDEBAR_LEFT_WIDTH = 250; // px
+  const SIDEBAR_RIGHT_WIDTH = 300; // px
 
   // keep selectedCategory value for passing to SidebarRight
   const [selectedCategory] = useState<string | null>(null);

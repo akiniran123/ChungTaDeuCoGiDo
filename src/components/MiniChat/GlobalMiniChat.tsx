@@ -1,11 +1,12 @@
+// src/components/MiniChat/GlobalMiniChat.tsx
 "use client";
 
-import React, { useEffect, useMemo, useCallback } from "react";
+import React, { JSX, useEffect, useMemo } from "react";
 import MiniChatBox from "@/components/MiniChat/MiniChatBox";
 import { useChat } from "@/components/MiniChat/ChatContext";
 
-export default function GlobalMiniChat() {
-  const { chatOpen, activePartnerId, closeChat } = useChat();
+export default function GlobalMiniChat(): JSX.Element | null {
+  const { openChats, focusedId, closeChat, focusChat } = useChat();
 
   useEffect(() => {
     console.log("[GlobalMiniChat] mount");
@@ -13,45 +14,53 @@ export default function GlobalMiniChat() {
   }, []);
 
   useEffect(() => {
-    console.log("[GlobalMiniChat] state change", { chatOpen, activePartnerId });
-  }, [chatOpen, activePartnerId]);
+    console.log("[GlobalMiniChat] state change", { openChats, focusedId });
+  }, [openChats, focusedId]);
 
-  // Stable callbacks so props identity doesn't change unnecessarily
-  const handleClose = useCallback(() => {
-    console.log("[GlobalMiniChat] onClose called for", activePartnerId);
-    closeChat();
-  }, [closeChat, activePartnerId]);
+  const miniChatElements = useMemo(() => {
+    if (!openChats || openChats.length === 0) {
+      console.log("[GlobalMiniChat] not rendering (no openChats)");
+      return null;
+    }
 
-  const handleReadMessages = useCallback(() => {
-    console.log("Đã đọc tin nhắn với", activePartnerId);
-  }, [activePartnerId]);
+    console.log("[GlobalMiniChat] memoizing MiniChatBox list", openChats);
+    return openChats.map((partnerId, index) => {
+      const handleClose = () => {
+        console.log("[GlobalMiniChat] onClose called for", partnerId);
+        closeChat(partnerId);
+      };
 
-  const handleNewConversation = useCallback(() => {
-    console.log("Thêm người này vào MessengerPanel:", activePartnerId);
-  }, [activePartnerId]);
+      const handleReadMessages = () => {
+        console.log("[GlobalMiniChat] onReadMessages for", partnerId);
+      };
 
-  // useMemo called unconditionally to preserve Hook order
-  const miniChatElement = useMemo(() => {
-    if (!chatOpen || !activePartnerId) return null;
+      const handleNewConversation = (conv: {
+        partner_id: string;
+        username: string;
+        avatar_url: string;
+        last_message: string;
+        last_time: string;
+        is_read: boolean;
+      }) => {
+        console.log("[GlobalMiniChat] onNewConversation for", partnerId, conv);
+        // bạn có thể cập nhật danh sách conversation ở đây nếu cần
+      };
 
-    console.log("[GlobalMiniChat] memoizing MiniChatBox for", activePartnerId);
-    return (
-      <MiniChatBox
-        partnerId={activePartnerId}
-        onClose={handleClose}
-        onReadMessages={handleReadMessages}
-        onNewConversation={handleNewConversation}
-      />
-    );
-  }, [chatOpen, activePartnerId, handleClose, handleReadMessages, handleNewConversation]);
-
-  if (!miniChatElement) {
-    console.log("[GlobalMiniChat] not rendering (chatOpen or activePartnerId falsy)", {
-      chatOpen,
-      activePartnerId,
+      // Nếu muốn focus khi click vào box, bạn có thể gọi focusChat ở nơi phù hợp (ví dụ trong MiniChatView)
+      // Nhưng vì MiniChatBox hiện tại không nhận onFocus prop, ta chỉ truyền props mà nó mong đợi.
+      return (
+        <MiniChatBox
+          key={partnerId}
+          partnerId={partnerId}
+          index={index}
+          onClose={handleClose}
+          onReadMessages={handleReadMessages}
+          onNewConversation={handleNewConversation}
+        />
+      );
     });
-    return null;
-  }
+  }, [openChats, focusedId, closeChat, focusChat]);
 
-  return <>{miniChatElement}</>;
+  if (!miniChatElements) return null;
+  return <>{miniChatElements}</>;
 }

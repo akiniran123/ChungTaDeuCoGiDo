@@ -1,26 +1,35 @@
 // src/components/MiniChat/ChatContext.tsx
 "use client";
 
-import React, { createContext, useContext, useEffect, useRef, useState, useCallback, useMemo } from "react";
+import React, {
+  createContext,
+  useContext,
+  useEffect,
+  useRef,
+  useState,
+  useCallback,
+  useMemo,
+} from "react";
 
-type ChatState = {
-  chatOpen: boolean;
-  activePartnerId: string | null;
+type ChatContextValue = {
+  openChats: string[]; // list of partnerId đang mở
+  focusedId: string | null; // partnerId đang được focus (optional)
   openChat: (partnerId: string) => void;
-  closeChat: () => void;
+  closeChat: (partnerId: string) => void;
+  toggleChat: (partnerId: string) => void;
+  focusChat: (partnerId: string) => void;
+  isOpen: (partnerId: string) => boolean;
 };
 
-const ChatContext = createContext<ChatState | undefined>(undefined);
+const ChatContext = createContext<ChatContextValue | undefined>(undefined);
 
 export function ChatProvider({ children }: { children: React.ReactNode }) {
-  // single state object to avoid intermediate renders
-  const [{ chatOpen, activePartnerId }, setState] = useState({
-    chatOpen: false,
-    activePartnerId: null as string | null,
-  });
+  // openChats lưu danh sách partnerId đang mở
+  const [openChats, setOpenChats] = useState<string[]>([]);
+  const [focusedId, setFocusedId] = useState<string | null>(null);
 
-  // ref to avoid immediate close after open (race protection)
-  const lastOpenAt = useRef<number | null>(null);
+  // ref để tránh đóng ngay sau khi mở (race protection) cho từng partner
+  const lastOpenAtRef = useRef<Record<string, number>>({});
 
   useEffect(() => {
     console.log("[ChatProvider] mount");
@@ -28,39 +37,97 @@ export function ChatProvider({ children }: { children: React.ReactNode }) {
   }, []);
 
   useEffect(() => {
-    console.log("[ChatProvider] state change", { chatOpen, activePartnerId });
-  }, [chatOpen, activePartnerId]);
+    console.log("[ChatProvider] state change", { openChats, focusedId });
+  }, [openChats, focusedId]);
 
   const openChat = useCallback((partnerId: string) => {
     console.log("[ChatProvider] openChat called for", partnerId);
 
-    // nếu đang mở cùng partner thì bỏ qua
-    if (chatOpen && activePartnerId === partnerId) {
-      console.log("[ChatProvider] openChat ignored (already open for)", partnerId);
-      return;
-    }
+    setOpenChats((prev) => {
+      if (prev.includes(partnerId)) {
+        // vẫn focus nếu đã mở
+        setFocusedId(partnerId);
+        return prev;
+      }
+      const next = [...prev, partnerId];
+      setFocusedId(partnerId);
+      lastOpenAtRef.current[partnerId] = Date.now();
+      return next;
+    });
+  }, []);
 
-    // cập nhật cả 2 giá trị trong 1 setState để tránh render trung gian
-    setState({ chatOpen: true, activePartnerId: partnerId });
-    lastOpenAt.current = Date.now();
-  }, [chatOpen, activePartnerId]);
-
-  const closeChat = useCallback(() => {
+  const closeChat = useCallback((partnerId: string) => {
     const now = Date.now();
+    const lastOpenAt = lastOpenAtRef.current[partnerId] ?? null;
+
     // ignore close if chat was opened very recently (avoid immediate toggle)
-    if (lastOpenAt.current && now - lastOpenAt.current < 250) {
-      console.log("[ChatProvider] closeChat ignored due to recent open");
+    if (lastOpenAt && now - lastOpenAt < 250) {
+      console.log(
+        "[ChatProvider] closeChat ignored due to recent open for",
+        partnerId
+      );
       return;
     }
 
-    console.log("[ChatProvider] closeChat called (closing chat for)", activePartnerId);
-    setState({ chatOpen: false, activePartnerId: null });
-  }, [activePartnerId]);
+    console.log("[ChatProvider] closeChat called for", partnerId);
+    setOpenChats((prev) => prev.filter((id) => id !== partnerId));
+    setFocusedId((prev) => (prev === partnerId ? null : prev));
+    // cleanup timestamp
+    delete lastOpenAtRef.current[partnerId];
+  }, []);
 
-  // memoize context value to keep stable identity and avoid unnecessary re-renders
+  const toggleChat = useCallback((partnerId: string) => {
+    setOpenChats((prev) => {
+      if (prev.includes(partnerId)) {
+        // close
+        // respect recent-open protection
+        const now = Date.now();
+        const lastOpenAt = lastOpenAtRef.current[partnerId] ?? null;
+        if (lastOpenAt && now - lastOpenAt < 250) {
+          console.log(
+            "[ChatProvider] toggleChat ignored due to recent open for",
+            partnerId
+          );
+          return prev;
+        }
+        setFocusedId((f) => (f === partnerId ? null : f));
+        delete lastOpenAtRef.current[partnerId];
+        return prev.filter((id) => id !== partnerId);
+      } else {
+        // open
+        lastOpenAtRef.current[partnerId] = Date.now();
+        setFocusedId(partnerId);
+        return [...prev, partnerId];
+      }
+    });
+  }, []);
+
+  const focusChat = useCallback((partnerId: string) => {
+    if (!partnerId) return;
+    setFocusedId(partnerId);
+    // optional: move to end to reflect recency
+    setOpenChats((prev) => {
+      if (!prev.includes(partnerId)) return [...prev, partnerId];
+      return [...prev.filter((id) => id !== partnerId), partnerId];
+    });
+  }, []);
+
+  const isOpen = useCallback(
+    (partnerId: string) => openChats.includes(partnerId),
+    [openChats]
+  );
+
   const value = useMemo(
-    () => ({ chatOpen, activePartnerId, openChat, closeChat }),
-    [chatOpen, activePartnerId, openChat, closeChat]
+    () => ({
+      openChats,
+      focusedId,
+      openChat,
+      closeChat,
+      toggleChat,
+      focusChat,
+      isOpen,
+    }),
+    [openChats, focusedId, openChat, closeChat, toggleChat, focusChat, isOpen]
   );
 
   return <ChatContext.Provider value={value}>{children}</ChatContext.Provider>;

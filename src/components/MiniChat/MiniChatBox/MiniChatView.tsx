@@ -3,7 +3,11 @@
 import React, { useEffect, useRef, useState } from "react";
 import Image from "next/image";
 import { Send, X, User as UserIcon } from "lucide-react";
-import type { Message, User } from "./useMiniChat";
+import type {
+  Message,
+  User,
+} from "@/components/MiniChat/MiniChatBox/type/types";
+
 
 type Props = {
   partner: User | null;

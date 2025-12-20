@@ -7,10 +7,10 @@ import { Loader2 } from "lucide-react";
 import type { Product } from "@/types";
 import type { User } from "@supabase/supabase-js";
 
-import ProfileHeader from "../../components/components/ProfileHeader";
-import ProfileAvatar from "../../components/components/ProfileAvatar";
-import ProfileForm from "../../components/components/ProfileForm";
-import UserProducts from "../../components/components/UserProducts";
+import ProfileHeader from "../../components/profile/ProfileHeader";
+import ProfileAvatar from "../../components/profile/ProfileAvatar";
+import ProfileForm from "../../components/profile/ProfileForm";
+import UserProducts from "../../components/profile/UserProducts";
 
 // ==========================
 // 📌 Kiểu dữ liệu User
@@ -232,4 +232,3 @@ export default function ProfilePage() {
     </div>
   );
 }
-// 

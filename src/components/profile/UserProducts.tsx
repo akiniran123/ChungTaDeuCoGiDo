@@ -5,6 +5,16 @@ import type { Product } from "@/types";
 import type { User } from "@supabase/supabase-js";
 import type { UserData } from "../../app/profile/page";
 
+/**
+ * Minimal router-like interface used by this component.
+ * Keeps the prop typed without depending on a specific router implementation.
+ */
+type RouterLike = {
+  push: (url: string) => void;
+  replace?: (url: string) => void;
+  back?: () => void;
+};
+
 export default function UserProducts({
   products,
   loading,
@@ -18,7 +28,7 @@ export default function UserProducts({
   loading: boolean;
   user: UserData;
   currentUser: User | null;
-  router: any;
+  router: RouterLike;
   deleting: string | null;
   onDelete: (productId: string, imageUrl?: string) => void;
 }) {

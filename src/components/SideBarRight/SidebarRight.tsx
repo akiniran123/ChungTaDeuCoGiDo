@@ -1,6 +1,6 @@
 "use client";
 import React, { useEffect, useState } from "react";
-import UserMenu from "@/components/Navbar/pc/LogoSearchIcon/UserMenu";
+import UserMenu from "@/components/SideBarRight/UserMenu";
 import { supabase } from "@/lib/supabase/client";
 import type { Database } from "@/types/supabase";
 

@@ -75,6 +75,7 @@ export default function ProfilePage() {
 
       setCurrentUser(sessionUser);
 
+      // Fetch without complex generics; cast the result to UserData
       const { data } = await supabase
         .from("users")
         .select("*")
@@ -86,13 +87,15 @@ export default function ProfilePage() {
         return;
       }
 
-      setUser(data as UserData);
+      const userData = data as UserData;
+
+      setUser(userData);
       setFormData({
-        username: data.username ?? "",
-        avatar_url: data.avatar_url ?? "",
-        address: data.address ?? "",
-        phone: data.phone?.toString() ?? "",
-        birth: data.birth ?? "",
+        username: userData.username ?? "",
+        avatar_url: userData.avatar_url ?? "",
+        address: userData.address ?? "",
+        phone: userData.phone?.toString() ?? "",
+        birth: userData.birth ?? "",
       });
 
       setLoading(false);
@@ -110,6 +113,7 @@ export default function ProfilePage() {
     const loadProducts = async () => {
       setLoadingProducts(true);
 
+      // Fetch without generics; cast the result to Product[] afterwards
       const { data } = await supabase
         .from("products")
         .select("*")

@@ -2,7 +2,7 @@
 
 import { useEffect, useState } from "react";
 import { supabase } from "@/lib/supabase/client";
-import ProductsList from "@/components/ProductsList/components/ProductsList";
+import ProductsList from "@/components/ProductsList/ProductsList";
 import type { ProductsListProps, ProductListItem, Badge } from "@/components/ProductsList/types/products";
 
 type DBProductRow = {

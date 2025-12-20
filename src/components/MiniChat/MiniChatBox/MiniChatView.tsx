@@ -1,8 +1,8 @@
 "use client";
 
-import React, { useEffect } from "react";
+import React from "react";
 import Image from "next/image";
-import { Send, X } from "lucide-react";
+import { Send, X, User as UserIcon } from "lucide-react";
 import type { Message, User } from "./useMiniChat";
 
 type Props = {
@@ -29,23 +29,11 @@ export default function MiniChatView({
   index = 0,
   loading,
 }: Props) {
-  // ✅ ĐÚNG 100%: UTC → Giờ Việt Nam
+  // ✅ UTC → Giờ Việt Nam
   const formatTime = (t: string | null) => {
     if (!t) return "--:--";
 
     const d = new Date(t);
-
-    // 🔎 LOG KIỂM TRA
-    console.log("🕒 raw created_at:", t);
-    console.log("🖥️ parsed local date:", d.toString());
-    console.log(
-      "🇻🇳 VN time:",
-      d.toLocaleTimeString("vi-VN", {
-        timeZone: "Asia/Ho_Chi_Minh",
-        hour: "2-digit",
-        minute: "2-digit",
-      })
-    );
 
     return d.toLocaleTimeString("vi-VN", {
       timeZone: "Asia/Ho_Chi_Minh",
@@ -62,17 +50,26 @@ export default function MiniChatView({
       {/* HEADER */}
       <div className="flex items-center justify-between px-3 py-2 border-b bg-white">
         <div className="flex items-center gap-2">
-          <Image
-            src={(partner && partner.avatar_url) || "/default-avatar.png"}
-            width={35}
-            height={35}
-            alt="avatar"
-            className="rounded-full"
-          />
+          {/* AVATAR */}
+          {partner?.avatar_url ? (
+            <Image
+              src={partner.avatar_url}
+              width={35}
+              height={35}
+              alt="avatar"
+              className="rounded-full border border-gray-200 bg-white"
+            />
+          ) : (
+            <div className="w-[35px] h-[35px] rounded-full border border-gray-200 bg-white flex items-center justify-center">
+              <UserIcon size={18} className="text-gray-400" />
+            </div>
+          )}
+
           <div className="font-semibold text-sm">
             {partner ? partner.username : "Đang tải..."}
           </div>
         </div>
+
         <button onClick={onClose}>
           <X size={18} />
         </button>

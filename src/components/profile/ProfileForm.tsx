@@ -34,11 +34,13 @@ export default function ProfileForm({
         birth: "Ngày sinh",
       }).map(([key, label]) => {
         const typedKey = key as keyof ProfileFormData;
+        const isBirth = key === "birth";
+
         return (
           <div key={key}>
             <label className="block text-sm mb-1">{label}</label>
             <input
-              type={key === "birth" ? "date" : "text"}
+              type={isBirth ? "date" : "text"}
               value={formData[typedKey]}
               onChange={(e) =>
                 setFormData((prev) => ({
@@ -46,7 +48,11 @@ export default function ProfileForm({
                   [typedKey]: e.target.value,
                 }))
               }
-              className="w-full border rounded-md p-2 text-sm"
+              className={`w-full border rounded-md p-2 text-sm ${
+                isBirth
+                  ? "[&::-webkit-calendar-picker-indicator]:cursor-pointer"
+                  : ""
+              }`}
             />
           </div>
         );

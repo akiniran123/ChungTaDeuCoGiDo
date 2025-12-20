@@ -21,13 +21,13 @@ export default function ProfileHeader({
         <div className="flex gap-2">
           <button
             onClick={onSave}
-            className="bg-green-600 text-white px-3 py-2 rounded-md text-sm flex items-center gap-1"
+            className="bg-green-600 text-white px-3 py-2 rounded-md text-sm flex items-center gap-1 cursor-pointer"
           >
             <Save size={16} /> Lưu
           </button>
           <button
             onClick={onCancel}
-            className="border px-3 py-2 rounded-md text-sm flex items-center gap-1"
+            className="border px-3 py-2 rounded-md text-sm flex items-center gap-1 cursor-pointer"
           >
             <X size={16} /> Hủy
           </button>
@@ -35,7 +35,7 @@ export default function ProfileHeader({
       ) : (
         <button
           onClick={onEdit}
-          className="border px-3 py-2 rounded-md text-sm flex items-center gap-1"
+          className="border px-3 py-2 rounded-md text-sm flex items-center gap-1 cursor-pointer"
         >
           <Edit3 size={16} /> Chỉnh sửa
         </button>

@@ -20,6 +20,16 @@ export type MiniChatBoxProps = {
   }) => void;
 };
 
+// Định nghĩa rõ ràng kiểu trả về của hook
+interface MiniChatHookResult {
+  currentUserId: string | null;
+  partner: HookUser | null;
+  messages: HookMessage[];
+  loading: boolean;
+  sendMessage: (content: string) => Promise<HookMessage | null>;
+  markUnreadFromPartner: () => Promise<boolean>;
+}
+
 export default function MiniChatBox({
   partnerId,
   index = 0,
@@ -27,9 +37,6 @@ export default function MiniChatBox({
   onReadMessages,
   onNewConversation,
 }: MiniChatBoxProps) {
-  /* ----------------------------------------------------------------
-   * Use the hook's real return types (imported from the shared types file)
-   * ---------------------------------------------------------------- */
   const {
     currentUserId,
     partner,
@@ -37,20 +44,10 @@ export default function MiniChatBox({
     loading,
     sendMessage,
     markUnreadFromPartner,
-  } = useMiniChat(partnerId) as {
-    currentUserId: string | null;
-    partner: HookUser | null;
-    messages: HookMessage[];
-    loading: boolean;
-    sendMessage: (content: string) => Promise<HookMessage | null>;
-    markUnreadFromPartner: () => Promise<boolean>;
-  };
+  } = useMiniChat(partnerId) as MiniChatHookResult;
 
   const [newMessage, setNewMessage] = useState<string>("");
 
-  /* --------------------------------------------------
-   * 🧭 DEBUG: kiểm tra giờ client (CHỈ CHẠY 1 LẦN)
-   * -------------------------------------------------- */
   useEffect(() => {
     const now = new Date();
     console.log("🖥️ Client local time:", now.toString());
@@ -58,9 +55,6 @@ export default function MiniChatBox({
     console.log("⏱️ Date.now():", Date.now());
   }, []);
 
-  /* --------------------------------------------------
-   * 📩 DEBUG: log messages mỗi khi thay đổi
-   * -------------------------------------------------- */
   useEffect(() => {
     if (!messages || messages.length === 0) return;
 
@@ -76,9 +70,6 @@ export default function MiniChatBox({
     });
   }, [messages]);
 
-  /* --------------------------------------------------
-   * 👁️ mark read once when partner ready
-   * -------------------------------------------------- */
   useEffect(() => {
     let cancelled = false;
 
@@ -90,7 +81,7 @@ export default function MiniChatBox({
       if (!cancelled && had) {
         try {
           onReadMessages?.();
-        } catch (err) {
+        } catch (err: unknown) {
           console.error("❌ onReadMessages callback error:", err);
         }
       }
@@ -104,9 +95,6 @@ export default function MiniChatBox({
     };
   }, [partnerId, markUnreadFromPartner, onReadMessages]);
 
-  /* --------------------------------------------------
-   * ✉️ Send message
-   * -------------------------------------------------- */
   const handleSend = useCallback(
     async (content: string): Promise<void> => {
       console.log("➡️ Sending message:", content);
@@ -117,17 +105,13 @@ export default function MiniChatBox({
 
       if (insertedMessage?.created_at) {
         const d = new Date(insertedMessage.created_at);
-        console.log(
-          "🕒 insertedMessage.created_at raw:",
-          insertedMessage.created_at
-        );
+        console.log("🕒 insertedMessage.created_at raw:", insertedMessage.created_at);
         console.log("🇻🇳 parsed local time:", d.toString());
         console.log("🧭 ISO:", d.toISOString());
       } else {
         console.warn("⚠️ insertedMessage.created_at is null");
       }
 
-      // first message → notify parent
       if (
         messages.length === 0 &&
         partner &&
@@ -135,8 +119,7 @@ export default function MiniChatBox({
         insertedMessage
       ) {
         try {
-          const lastTime =
-            insertedMessage.created_at ?? new Date().toISOString();
+          const lastTime = insertedMessage.created_at ?? new Date().toISOString();
 
           console.log("📌 onNewConversation last_time:", lastTime);
 
@@ -148,7 +131,7 @@ export default function MiniChatBox({
             last_time: lastTime,
             is_read: true,
           });
-        } catch (err) {
+        } catch (err: unknown) {
           console.error("❌ onNewConversation callback error:", err);
         }
       }

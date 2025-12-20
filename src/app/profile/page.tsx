@@ -74,13 +74,12 @@ export default function ProfilePage() {
 
       setCurrentUser(userSession);
 
-      const { data, error } = await supabase
+      const { data } = await supabase
         .from("users")
         .select("*")
         .eq("id", userSession.id)
         .maybeSingle();
 
-      if (error) console.error(error);
       if (!data) {
         setLoading(false);
         return;
@@ -112,20 +111,18 @@ export default function ProfilePage() {
     const loadProducts = async () => {
       setLoadingProducts(true);
 
-      const { data, error } = await supabase
+      const { data } = await supabase
         .from("products")
         .select("*")
         .eq("user_id", user.id)
         .order("created_at", { ascending: false });
 
-      if (error) console.error(error);
       if (!data) {
         setLoadingProducts(false);
         return;
       }
 
-      const products = data as Product[];
-      const normalized = products.map((p) => {
+      const normalized = (data as Product[]).map((p) => {
         let images: string[] = [];
         if (Array.isArray(p.images)) images = p.images;
         else if (typeof p.images === "string") {
@@ -161,22 +158,17 @@ export default function ProfilePage() {
       updated_at: new Date().toISOString(),
     };
 
-    const { error } = await supabase.from("users").update(updates).eq("id", user.id);
-    if (error) console.error(error);
+    await supabase.from("users").update(updates).eq("id", user.id);
 
     setUser({ ...user, ...updates });
     setIsEditing(false);
   };
 
   // =========================================
-  // 🗑️ XÓA SẢN PHẨM (Chính chủ)
+  // 🗑️ XÓA SẢN PHẨM
   // =========================================
   const handleDelete = async (productId: string, imageUrl?: string) => {
-    if (!currentUser || currentUser.id !== user?.id) {
-      alert("❌ Bạn không có quyền xóa bài này");
-      return;
-    }
-
+    if (!currentUser || currentUser.id !== user?.id) return;
     if (!confirm("Bạn có chắc muốn xóa bài này?")) return;
 
     setDeleting(productId);
@@ -189,13 +181,11 @@ export default function ProfilePage() {
         }
       }
 
-      const { error } = await supabase
+      await supabase
         .from("products")
         .delete()
         .eq("id", productId)
         .eq("user_id", currentUser.id);
-
-      if (error) console.error(error);
 
       setUserProducts((prev) => prev.filter((p) => p.id !== productId));
     } finally {
@@ -206,29 +196,30 @@ export default function ProfilePage() {
   if (loading)
     return (
       <div className="flex justify-center items-center h-80">
-        <Loader2 className="w-6 h-6 animate-spin text-gray-600" />
+        <Loader2 className="w-6 h-6 animate-spin" />
       </div>
     );
 
   if (!user) return <p className="text-center py-20">Chưa đăng nhập</p>;
 
   return (
-    <div className="min-h-screen bg-gray-50 py-10">
-      <div className="max-w-3xl mx-auto bg-white rounded-2xl shadow-lg p-8">
-        {/* USER INFO */}
-        <div className="flex justify-between">
-          <h2 className="text-2xl font-semibold text-gray-800">Hồ sơ cá nhân</h2>
+    <div className="min-h-screen py-10">
+      <div className="max-w-3xl mx-auto bg-white rounded-2xl shadow p-8">
+        {/* HEADER */}
+        <div className="flex justify-between items-center">
+          <h2 className="text-2xl font-semibold">Hồ sơ cá nhân</h2>
+
           {isEditing ? (
             <div className="flex gap-2">
               <button
                 onClick={handleSave}
-                className="bg-green-600 text-white px-3 py-2 rounded-md text-sm flex items-center cursor-pointer"
+                className="bg-green-600 text-white px-3 py-2 rounded-md text-sm flex items-center gap-1"
               >
                 <Save size={16} /> Lưu
               </button>
               <button
                 onClick={() => setIsEditing(false)}
-                className="bg-gray-300 px-3 py-2 rounded-md text-sm flex items-center cursor-pointer"
+                className="border px-3 py-2 rounded-md text-sm flex items-center gap-1"
               >
                 <X size={16} /> Hủy
               </button>
@@ -236,16 +227,16 @@ export default function ProfilePage() {
           ) : (
             <button
               onClick={() => setIsEditing(true)}
-              className="px-3 py-2 rounded-md text-sm flex items-center cursor-pointer border border-gray-300 hover:bg-gray-100"
+              className="border px-3 py-2 rounded-md text-sm flex items-center gap-1"
             >
               <Edit3 size={16} /> Chỉnh sửa
             </button>
           )}
         </div>
 
-        {/* === AVATAR MẶC ĐỊNH VỚI HÌNH NGƯỜI XÁM & KHUNG TRẮNG === */}
+        {/* AVATAR */}
         <div className="flex flex-col items-center mt-6">
-          <div className="w-32 h-32 rounded-full border-4 border-white overflow-hidden flex items-center justify-center bg-gray-200 shadow-md">
+          <div className="w-32 h-32 rounded-full overflow-hidden border shadow">
             {formData.avatar_url ? (
               <Image
                 src={formData.avatar_url}
@@ -256,7 +247,7 @@ export default function ProfilePage() {
               />
             ) : (
               <svg
-                className="w-16 h-16 text-gray-500"
+                className="w-full h-full p-8 text-gray-400"
                 fill="currentColor"
                 viewBox="0 0 24 24"
               >
@@ -265,63 +256,56 @@ export default function ProfilePage() {
             )}
           </div>
 
-          <h2 className="text-xl font-semibold text-gray-800 mt-2">
+          <h2 className="text-xl font-semibold mt-3">
             {user.username || "Người dùng"}
           </h2>
-          <p className="text-gray-500 text-sm">{user.email}</p>
+          <p className="text-sm text-gray-500">{user.email}</p>
         </div>
 
         {/* FORM */}
         <div className="mt-6 space-y-4">
           {isEditing ? (
-            <>
-              {Object.entries({
-                username: "Tên người dùng",
-                avatar_url: "Avatar URL",
-                address: "Địa chỉ",
-                phone: "Số điện thoại",
-                birth: "Ngày sinh",
-              }).map(([key, label]) => {
-                const typedKey = key as keyof ProfileForm;
-                return (
-                  <div key={key}>
-                    <label className="block text-sm mb-1 text-gray-600">{label}</label>
-                    <input
-                      type={key === "birth" ? "date" : "text"}
-                      value={formData[typedKey]}
-                      onChange={(e) =>
-                        setFormData((prev) => ({ ...prev, [typedKey]: e.target.value }))
-                      }
-                      className="w-full border rounded-md p-2 text-sm"
-                    />
-                  </div>
-                );
-              })}
-            </>
+            Object.entries({
+              username: "Tên người dùng",
+              avatar_url: "Avatar URL",
+              address: "Địa chỉ",
+              phone: "Số điện thoại",
+              birth: "Ngày sinh",
+            }).map(([key, label]) => {
+              const typedKey = key as keyof ProfileForm;
+              return (
+                <div key={key}>
+                  <label className="block text-sm mb-1">{label}</label>
+                  <input
+                    type={key === "birth" ? "date" : "text"}
+                    value={formData[typedKey]}
+                    onChange={(e) =>
+                      setFormData((prev) => ({
+                        ...prev,
+                        [typedKey]: e.target.value,
+                      }))
+                    }
+                    className="w-full border rounded-md p-2 text-sm"
+                  />
+                </div>
+              );
+            })
           ) : (
-            <div className="text-sm text-gray-700 space-y-2">
-              <p>
-                <strong>Địa chỉ:</strong> {user.address || "Chưa cập nhật"}
-              </p>
-              <p>
-                <strong>Số điện thoại:</strong> {user.phone || "Chưa có"}
-              </p>
-              <p>
-                <strong>Ngày sinh:</strong> {user.birth || "Chưa cập nhật"}
-              </p>
+            <div className="space-y-2 text-sm">
+              <p><strong>Địa chỉ:</strong> {user.address || "Chưa cập nhật"}</p>
+              <p><strong>SĐT:</strong> {user.phone || "Chưa có"}</p>
+              <p><strong>Ngày sinh:</strong> {user.birth || "Chưa cập nhật"}</p>
             </div>
           )}
         </div>
 
-        {/* USER PRODUCTS */}
-        <h3 className="text-xl font-semibold text-gray-800 mt-10 mb-4">
-          Sản phẩm đã đăng
-        </h3>
+        {/* PRODUCTS */}
+        <h3 className="text-xl font-semibold mt-10 mb-4">Sản phẩm đã đăng</h3>
 
         {loadingProducts ? (
-          <p className="text-gray-500 text-center">Đang tải...</p>
+          <p className="text-center">Đang tải...</p>
         ) : userProducts.length === 0 ? (
-          <p className="text-gray-500 text-center">Bạn chưa đăng sản phẩm nào.</p>
+          <p className="text-center">Bạn chưa đăng sản phẩm nào.</p>
         ) : (
           <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-5">
             {userProducts.map((p) => {
@@ -334,7 +318,7 @@ export default function ProfilePage() {
                 <div
                   key={p.id}
                   onClick={() => router.push(`/deal/${p.id}`)}
-                  className="bg-white rounded-xl border shadow-sm overflow-hidden relative cursor-pointer"
+                  className="border rounded-xl shadow hover:shadow-md cursor-pointer relative"
                 >
                   <Image
                     src={imageUrl}
@@ -344,13 +328,10 @@ export default function ProfilePage() {
                     className="object-cover w-full h-40"
                   />
                   <div className="p-3">
-                    <h3 className="font-semibold text-gray-800 text-sm">{p.title}</h3>
-                    <p className="text-gray-600 text-sm mt-1">
+                    <h3 className="font-semibold text-sm">{p.title}</h3>
+                    <p className="text-sm mt-1">
                       {p.price ? p.price.toLocaleString() + "₫" : "Chưa có giá"}
                     </p>
-                    {p.description && (
-                      <p className="text-gray-500 text-xs mt-1 line-clamp-2">{p.description}</p>
-                    )}
                   </div>
 
                   {currentUser?.id === user.id && (
@@ -360,9 +341,7 @@ export default function ProfilePage() {
                         handleDelete(p.id, imageUrl);
                       }}
                       disabled={deleting === p.id}
-                      className={`absolute top-2 right-2 px-3 py-1 rounded text-white text-xs cursor-pointer ${
-                        deleting === p.id ? "bg-gray-400" : "bg-red-500 hover:bg-red-600"
-                      }`}
+                      className="absolute top-2 right-2 bg-red-500 hover:bg-red-600 text-white text-xs px-3 py-1 rounded"
                     >
                       {deleting === p.id ? "Đang xoá..." : "Xoá"}
                     </button>

@@ -34,14 +34,15 @@ export default function LongCard({
   onShare,
   onTagClick,
 }: LongCardProps) {
-  const { saved, localLikes, processing, toggleSave, toggleLike, share } = useProductActions({
-    productId: product.id,
-    initialLikes: likesCount,
-    initialLiked: liked,
-    onToggleLike,
-    onToggleSave,
-    onShare,
-  });
+  const { saved, localLikes, processing, toggleSave, toggleLike, share } =
+    useProductActions({
+      productId: product.id,
+      initialLikes: likesCount,
+      initialLiked: liked,
+      onToggleLike,
+      onToggleSave,
+      onShare,
+    });
 
   const isSaved = saved.includes(product.id);
 
@@ -57,9 +58,17 @@ export default function LongCard({
           className="flex-shrink-0 overflow-hidden w-[195px] h-[195px] bg-gray-100 rounded-lg relative"
         >
           {product.image_url ? (
-            <Image src={product.image_url} alt={product.title} fill className="object-cover" sizes="195px" />
+            <Image
+              src={product.image_url}
+              alt={product.title}
+              fill
+              className="object-cover"
+              sizes="195px"
+            />
           ) : (
-            <div className="w-full h-full flex items-center justify-center text-gray-500">Không có ảnh</div>
+            <div className="w-full h-full flex items-center justify-center text-gray-500">
+              Không có ảnh
+            </div>
           )}
         </Link>
 
@@ -76,13 +85,17 @@ export default function LongCard({
                 height={24}
                 className="rounded-full object-cover"
               />
-              <span className="truncate max-w-[150px] text-gray-900">{product.author || "Người dùng"}</span>
+              <span className="truncate max-w-[150px] text-gray-900">
+                {product.author || "Người dùng"}
+              </span>
             </Link>
           </div>
 
           <div className="flex items-center gap-3">
             <Link href={`/deal/${product.id}`} className="min-w-0 flex-1">
-              <div className="text-lg font-semibold text-gray-800 leading-snug truncate">{product.title}</div>
+              <div className="text-lg font-semibold text-gray-800 leading-snug truncate">
+                {product.title}
+              </div>
             </Link>
 
             {product.price != null && (
@@ -93,9 +106,15 @@ export default function LongCard({
           </div>
 
           <div className="mt-2 text-sm text-gray-500 flex items-center gap-3 flex-wrap">
-            {product.category && <span className="whitespace-nowrap">{product.category}</span>}
-            <span className="whitespace-nowrap">{commentsCount} bình luận</span>
-            <span className="whitespace-nowrap">{product.views ?? 0} lượt xem</span>
+            {product.category && (
+              <span className="whitespace-nowrap">{product.category}</span>
+            )}
+            <span className="whitespace-nowrap">
+              {commentsCount} bình luận
+            </span>
+            <span className="whitespace-nowrap">
+              {product.views ?? 0} lượt xem
+            </span>
           </div>
         </div>
 
@@ -112,22 +131,22 @@ export default function LongCard({
                 </button>
               ))}
               {product.tags.length > 4 && (
-                <div className="text-xs text-gray-400 whitespace-nowrap">+{product.tags.length - 4}</div>
+                <div className="text-xs text-gray-400 whitespace-nowrap">
+                  +{product.tags.length - 4}
+                </div>
               )}
             </div>
           )}
 
+          {/* ✅ ĐÃ BỎ AVATAR CỘNG ĐỒNG – chỉ giữ tên + link */}
           {product.communityName && (
             <Link
               href={`/communities/${product.community_id ?? ""}`}
-              className="flex items-center gap-2 hover:opacity-80 whitespace-nowrap cursor-pointer mt-1"
+              className="hover:opacity-80 whitespace-nowrap cursor-pointer mt-1"
             >
-              {product.communityIcon && (
-                <div className="w-6 h-6 rounded-full overflow-hidden relative flex-shrink-0">
-                  <Image src={product.communityIcon} alt="community" fill className="object-cover" />
-                </div>
-              )}
-              <span className="truncate max-w-[140px] text-gray-900">{product.communityName}</span>
+              <span className="truncate max-w-[140px] text-gray-900">
+                {product.communityName}
+              </span>
             </Link>
           )}
         </div>
@@ -158,7 +177,6 @@ export default function LongCard({
         </div>
       </div>
 
-      {/* Thời gian ở góc phải trên dạng tiếng Việt */}
       {product.created_at && (
         <div className="absolute top-2 right-2 bg-gray-800 text-gray-300 text-xs px-2 py-1 rounded-md">
           {getRelativeTime(product.created_at)}

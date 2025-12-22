@@ -26,12 +26,9 @@ export type SmallCardProps = {
     communityIcon?: string | null;
     user_id?: string | null;
   };
-  /** per-product counts (numbers) */
   likesCount: number;
   commentsCount: number;
-  /** whether current user liked this product */
   liked: boolean;
-  /** notify parent to toggle likedIds (parent keeps the map/state) */
   onToggleLike?: () => void;
   onToggleSave?: (id: string) => void;
   onShare?: () => void;
@@ -52,13 +49,14 @@ export default function SmallCard({
   const [localLikes, setLocalLikes] = useState<number>(likesCount);
   const [processing, setProcessing] = useState(false);
 
-  // keep localLikes in sync with parent-provided number
   useEffect(() => {
     setLocalLikes(likesCount);
   }, [likesCount]);
 
   const toggleSave = (id: string) => {
-    setSaved((prev) => (prev.includes(id) ? prev.filter((x) => x !== id) : [...prev, id]));
+    setSaved((prev) =>
+      prev.includes(id) ? prev.filter((x) => x !== id) : [...prev, id]
+    );
     onToggleSave?.(id);
   };
 
@@ -74,7 +72,6 @@ export default function SmallCard({
       }
 
       if (liked) {
-        // unlike in DB
         await supabase
           .from("product_likes")
           .delete()
@@ -83,7 +80,6 @@ export default function SmallCard({
 
         setLocalLikes((prev) => Math.max(prev - 1, 0));
       } else {
-        // like in DB
         await supabase.from("product_likes").insert({
           product_id: product.id,
           user_id: auth.user.id,
@@ -92,7 +88,6 @@ export default function SmallCard({
         setLocalLikes((prev) => prev + 1);
       }
 
-      // notify parent to update its likedIds state
       onToggleLike?.();
     } catch (err) {
       console.error("toggleLike error:", err);
@@ -111,47 +106,44 @@ export default function SmallCard({
     }
   };
 
- return (
-  <motion.div
-    initial={{ opacity: 0, y: 6 }}
-    animate={{ opacity: 1, y: 0 }}
-    className="w-full max-w-sm rounded-2xl bg-white shadow-sm hover:shadow-md transition overflow-hidden"
-  >
-    {/* IMAGE / LOGO */}
-    <SmallCardImage
-      id={product.id}
-      title={product.title}
-      image_url={product.image_url}
-    />
-
-    {/* BODY */}
-    <div className="px-4 py-3 flex flex-col gap-3">
-      {/* AUTHOR + TIME + TITLE + COMMENTS */}
-      <SmallCardMain
-        product={product}
-        commentsCount={commentsCount}
+  return (
+    <motion.div
+      initial={{ opacity: 0, y: 6 }}
+      animate={{ opacity: 1, y: 0 }}
+      className="w-full max-w-sm rounded-2xl bg-white shadow-sm hover:shadow-md transition overflow-hidden"
+    >
+      {/* IMAGE */}
+      <SmallCardImage
+        id={product.id}
+        title={product.title}
+        image_url={product.image_url}
       />
 
-      {/* PRICE + TAG (iphone 14 / PC / etc.) */}
-      <SmallCardTags
-        tags={product.tags}
-        communityId={product.community_id}
-        communityName={product.communityName}
-        communityIcon={product.communityIcon}
-        onTagClick={(t) => onTagClick?.(t)}
-      />
+      {/* BODY */}
+      <div className="px-4 py-3 flex flex-col gap-3">
+        <SmallCardMain
+          product={product}
+          commentsCount={commentsCount}
+        />
 
-      {/* ACTIONS (views / like / share / save) */}
-      <SmallCardActions
-        productId={product.id}
-        liked={liked}
-        localLikes={localLikes}
-        onToggleLike={toggleLike}
-        onToggleSave={() => toggleSave(product.id)}
-        onShare={share}
-      />
-    </div>
-  </motion.div>
-);
+        {/* ❌ BỎ avatar cộng đồng – KHÔNG truyền communityIcon */}
+        {/* ✅ VẪN GIỮ tên cộng đồng */}
+        <SmallCardTags
+          tags={product.tags}
+          communityId={product.community_id}
+          communityName={product.communityName}
+          onTagClick={(t) => onTagClick?.(t)}
+        />
 
+        <SmallCardActions
+          productId={product.id}
+          liked={liked}
+          localLikes={localLikes}
+          onToggleLike={toggleLike}
+          onToggleSave={() => toggleSave(product.id)}
+          onShare={share}
+        />
+      </div>
+    </motion.div>
+  );
 }

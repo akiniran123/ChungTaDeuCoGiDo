@@ -140,6 +140,7 @@ export default function UserMenu() {
                     await supabase.auth.signOut()
                     setUser(null)
                     setUserData(null)
+                    router.push('/')      // ✅ ĐẨY VỀ TRANG CHÍNH
                     router.refresh()
                   }}
                   className={`block w-full px-4 py-2 text-left text-red-500 cursor-pointer ${

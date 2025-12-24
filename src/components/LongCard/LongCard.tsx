@@ -4,25 +4,17 @@
 import Link from "next/link";
 import Image from "next/image";
 import { motion } from "framer-motion";
-import { Bookmark, BookmarkCheck, Heart as HeartIcon, Share2 } from "lucide-react";
+import {
+  Bookmark,
+  BookmarkCheck,
+  Heart as HeartIcon,
+  Share2,
+  MessageCircle,
+} from "lucide-react";
+import { useEffect, useState } from "react";
+import { supabase } from "@/lib/supabase/client";
 import useProductActions from "@/components/LongCard/hooks/useProductActions";
 import type { LongCardProps } from "@/components/LongCard/types/long-card";
-
-// Hàm tính thời gian tương đối bằng tiếng Việt
-function getRelativeTime(dateString: string): string {
-  const now = new Date();
-  const posted = new Date(dateString);
-  const diffMs = now.getTime() - posted.getTime();
-  const diffSec = Math.floor(diffMs / 1000);
-  const diffMin = Math.floor(diffSec / 60);
-  const diffHour = Math.floor(diffMin / 60);
-  const diffDay = Math.floor(diffHour / 24);
-
-  if (diffDay > 0) return `${diffDay} ngày trước`;
-  if (diffHour > 0) return `${diffHour} giờ trước`;
-  if (diffMin > 0) return `${diffMin} phút trước`;
-  return "Vừa xong";
-}
 
 export default function LongCard({
   product,
@@ -45,6 +37,17 @@ export default function LongCard({
     });
 
   const isSaved = saved.includes(product.id);
+
+  // user hiện tại
+  const [currentUserId, setCurrentUserId] = useState<string | null>(null);
+
+  useEffect(() => {
+    supabase.auth.getUser().then(({ data }) => {
+      setCurrentUserId(data.user?.id ?? null);
+    });
+  }, []);
+
+  const isOwner = currentUserId === product.user_id;
 
   return (
     <motion.div
@@ -73,11 +76,44 @@ export default function LongCard({
         </Link>
 
         <div className="flex-1 min-w-0">
-          <div className="mb-1 text-sm flex items-center gap-3 flex-wrap">
+          {/* TIÊU ĐỀ + LƯỢT XEM */}
+          <div className="flex items-center justify-between gap-3">
+            <Link href={`/deal/${product.id}`} className="min-w-0">
+              <div className="text-lg font-semibold text-gray-800 leading-snug truncate">
+                {product.title}
+              </div>
+            </Link>
+
+            {isOwner && (
+              <span className="text-sm text-gray-500 whitespace-nowrap flex-shrink-0">
+                {product.views ?? 0} lượt xem
+              </span>
+            )}
+          </div>
+
+          {/* GIÁ + COMMUNITY + AUTHOR */}
+          <div className="mt-1 flex items-center gap-4 flex-wrap text-sm">
+            {product.price != null && (
+              <div className="text-base font-bold text-indigo-600 whitespace-nowrap">
+                {product.price.toLocaleString()}₫
+              </div>
+            )}
+
+            {product.communityName && (
+              <Link
+                href={`/communities/${product.community_id ?? ""}`}
+                className="hover:opacity-80 whitespace-nowrap text-gray-800"
+              >
+                <span className="text-gray-500 mr-1">Từ</span>
+                {product.communityName}
+              </Link>
+            )}
+
             <Link
               href={`/profile/${product.user_id ?? ""}`}
-              className="flex items-center gap-2 whitespace-nowrap hover:opacity-80 cursor-pointer"
+              className="flex items-center gap-2 hover:opacity-80 cursor-pointer"
             >
+              <span className="text-gray-500 text-sm">được đăng bởi</span>
               <Image
                 src={product.avatar_url || "/default-avatar.png"}
                 alt="avatar"
@@ -91,36 +127,9 @@ export default function LongCard({
             </Link>
           </div>
 
-          <div className="flex items-center gap-3">
-            <Link href={`/deal/${product.id}`} className="min-w-0 flex-1">
-              <div className="text-lg font-semibold text-gray-800 leading-snug truncate">
-                {product.title}
-              </div>
-            </Link>
-
-            {product.price != null && (
-              <div className="ml-2 text-base font-bold text-indigo-600 whitespace-nowrap">
-                {product.price.toLocaleString()}₫
-              </div>
-            )}
-          </div>
-
-          <div className="mt-2 text-sm text-gray-500 flex items-center gap-3 flex-wrap">
-            {product.category && (
-              <span className="whitespace-nowrap">{product.category}</span>
-            )}
-            <span className="whitespace-nowrap">
-              {commentsCount} bình luận
-            </span>
-            <span className="whitespace-nowrap">
-              {product.views ?? 0} lượt xem
-            </span>
-          </div>
-        </div>
-
-        <div className="flex-shrink-0 hidden lg:flex flex-col gap-1 ml-2">
+          {/* TAGS */}
           {product.tags && product.tags.length > 0 && (
-            <div className="flex items-center gap-1">
+            <div className="mt-1 flex items-center gap-1 flex-wrap">
               {product.tags.slice(0, 4).map((t, i) => (
                 <button
                   key={i}
@@ -138,50 +147,45 @@ export default function LongCard({
             </div>
           )}
 
-          {/* ✅ ĐÃ BỎ AVATAR CỘNG ĐỒNG – chỉ giữ tên + link */}
-          {product.communityName && (
-            <Link
-              href={`/communities/${product.community_id ?? ""}`}
-              className="hover:opacity-80 whitespace-nowrap cursor-pointer mt-1"
+          {/* ACTIONS */}
+          <div className="mt-2 flex items-center gap-4">
+            <button
+              onClick={() => toggleLike(liked)}
+              disabled={processing}
+              className="flex items-center gap-1 text-gray-600 hover:text-pink-500 transition cursor-pointer"
             >
-              <span className="truncate max-w-[140px] text-gray-900">
-                {product.communityName}
-              </span>
-            </Link>
-          )}
-        </div>
+              <HeartIcon size={20} fill={liked ? "currentColor" : "none"} />
+              <span className="text-sm">{localLikes}</span>
+            </button>
 
-        <div className="flex items-center gap-3 ml-3 flex-shrink-0">
-          <button
-            onClick={() => toggleLike(liked)}
-            disabled={processing}
-            className="flex items-center gap-1 text-gray-600 hover:text-pink-500 transition cursor-pointer"
-          >
-            <HeartIcon size={20} fill={liked ? "currentColor" : "none"} />
-            <span className="text-sm">{localLikes}</span>
-          </button>
+            <div className="flex items-center gap-1 text-gray-600">
+              <MessageCircle size={20} />
+              <span className="text-sm">{commentsCount}</span>
+            </div>
 
-          <button
-            onClick={() => share(product.title)}
-            className="text-gray-600 hover:text-gray-800 transition cursor-pointer"
-          >
-            <Share2 size={20} />
-          </button>
+            <button
+              onClick={() => share(product.title)}
+              className="text-gray-600 hover:text-gray-800 transition cursor-pointer"
+            >
+              <Share2 size={20} />
+            </button>
 
-          <button
-            onClick={() => toggleSave(product.id)}
-            className="text-gray-600 hover:text-pink-500 transition cursor-pointer"
-          >
-            {isSaved ? <BookmarkCheck size={20} /> : <Bookmark size={20} />}
-          </button>
+            <button
+              onClick={() => toggleSave(product.id)}
+              className="text-gray-600 hover:text-pink-500 transition cursor-pointer"
+            >
+              {isSaved ? <BookmarkCheck size={20} /> : <Bookmark size={20} />}
+            </button>
+          </div>
+
+          {/* META */}
+          <div className="mt-2 text-sm text-gray-500 flex items-center gap-3 flex-wrap">
+            {product.category && (
+              <span className="whitespace-nowrap">{product.category}</span>
+            )}
+          </div>
         </div>
       </div>
-
-      {product.created_at && (
-        <div className="absolute top-2 right-2 bg-gray-800 text-gray-300 text-xs px-2 py-1 rounded-md">
-          {getRelativeTime(product.created_at)}
-        </div>
-      )}
     </motion.div>
   );
 }

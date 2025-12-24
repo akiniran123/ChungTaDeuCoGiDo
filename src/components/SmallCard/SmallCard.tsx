@@ -121,18 +121,17 @@ export default function SmallCard({
 
       {/* BODY */}
       <div className="px-4 py-3 flex flex-col gap-3">
-        <SmallCardMain
-          product={product}
-          commentsCount={commentsCount}
-        />
-
-        {/* ❌ BỎ avatar cộng đồng – KHÔNG truyền communityIcon */}
-        {/* ✅ VẪN GIỮ tên cộng đồng */}
+        {/* ✅ TÊN CỘNG ĐỒNG (SmallCardTags) LÊN TRÊN CÙNG */}
         <SmallCardTags
           tags={product.tags}
           communityId={product.community_id}
           communityName={product.communityName}
           onTagClick={(t) => onTagClick?.(t)}
+        />
+
+        <SmallCardMain
+          product={product}
+          commentsCount={commentsCount}
         />
 
         <SmallCardActions

@@ -23,8 +23,32 @@ export default function SmallCardTags({
 
   return (
     <div className="flex-shrink-0 hidden lg:flex flex-col gap-1 ml-2">
+      {/* ✅ TÊN CỘNG ĐỒNG – LÊN TRÊN */}
+      {communityName && (
+        <Link
+          href={`/communities/${communityId}`}
+          className="flex items-center gap-2 hover:opacity-80 whitespace-nowrap cursor-pointer"
+        >
+          {communityIcon && (
+            <div className="w-6 h-6 rounded-full overflow-hidden relative flex-shrink-0">
+              <Image
+                src={communityIcon}
+                alt="community"
+                fill
+                className="object-cover"
+              />
+            </div>
+          )}
+
+          <span className="truncate max-w-[140px] text-gray-900">
+            {communityName}
+          </span>
+        </Link>
+      )}
+
+      {/* TAGS – XUỐNG DƯỚI */}
       {tags && tags.length > 0 && (
-        <div className="flex items-center gap-1">
+        <div className="flex items-center gap-1 mt-1">
           {tags.slice(0, 4).map((t, i) => (
             <button
               key={i}
@@ -35,23 +59,12 @@ export default function SmallCardTags({
             </button>
           ))}
 
-          {tags.length > 4 && <div className="text-xs text-gray-400 whitespace-nowrap">+{tags.length - 4}</div>}
-        </div>
-      )}
-
-      {communityName && (
-        <Link
-          href={`/communities/${communityId}`}
-          className="flex items-center gap-2 hover:opacity-80 whitespace-nowrap cursor-pointer mt-1"
-        >
-          {communityIcon && (
-            <div className="w-6 h-6 rounded-full overflow-hidden relative flex-shrink-0">
-              <Image src={communityIcon} alt="community" fill className="object-cover" />
+          {tags.length > 4 && (
+            <div className="text-xs text-gray-400 whitespace-nowrap">
+              +{tags.length - 4}
             </div>
           )}
-
-          <span className="truncate max-w-[140px] text-gray-900">{communityName}</span>
-        </Link>
+        </div>
       )}
     </div>
   );

@@ -55,9 +55,7 @@ export default function SmallCardMain({
           </Link>
         )}
 
-        {communityName && (
-          <span className="text-gray-300 select-none">|</span>
-        )}
+        {communityName && <span className="text-gray-300 select-none">|</span>}
 
         {product.user_id ? (
           <Link
@@ -90,7 +88,7 @@ export default function SmallCardMain({
       {/* META */}
       <div className="mt-2 text-sm text-gray-500 flex items-center gap-3 flex-wrap">
         {product.category && <span>{product.category}</span>}
-        <span>{product.views ?? 0} lượt xem</span>
+        {/* Đã loại bỏ lượt xem ở đây */}
       </div>
     </div>
   );

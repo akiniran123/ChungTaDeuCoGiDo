@@ -6,8 +6,8 @@ import { useState, useEffect } from "react";
 
 import SmallCardImage from "./SmallImage";
 import SmallCardMain from "./SmallMain";
-import SmallCardTags from "./SmallTags";
 import SmallCardActions from "./SmallActions";
+import SmallCardTags from "./SmallTags";
 
 export type SmallCardProps = {
   product: {
@@ -112,23 +112,44 @@ export default function SmallCard({
       animate={{ opacity: 1, y: 0 }}
       className="w-full max-w-sm rounded-2xl bg-white shadow-sm hover:shadow-md transition overflow-hidden"
     >
-      {/* IMAGE */}
-      <SmallCardImage
-        id={product.id}
-        title={product.title}
-        image_url={product.image_url}
+      {/* IMAGE + TAG OVERLAY */}
+      <div className="relative">
+        <SmallCardImage
+          id={product.id}
+          title={product.title}
+          image_url={product.image_url}
+        />
+
+        {/* ✅ TAG ĐÈ TRÊN ẢNH */}
+        {product.tags && product.tags.length > 0 && (
+          <div className="absolute bottom-2 left-2 z-30 flex gap-1 flex-wrap">
+            {product.tags.slice(0, 3).map((t, i) => (
+              <div
+                key={i}
+                onClick={(e) => {
+                  e.preventDefault();
+                  e.stopPropagation();
+                  onTagClick?.(t);
+                }}
+                className="text-xs bg-black/70 text-white px-2 py-1 rounded-full backdrop-blur hover:bg-black/80 cursor-pointer whitespace-nowrap"
+              >
+                {t}
+              </div>
+            ))}
+          </div>
+        )}
+      </div>
+
+      {/* ✅ TÊN CỘNG ĐỒNG */}
+      <SmallCardTags
+        communityId={product.community_id}
+        communityName={product.communityName}
+        communityIcon={product.communityIcon}
+        onTagClick={() => {}}
       />
 
       {/* BODY */}
       <div className="px-4 py-3 flex flex-col gap-3">
-        {/* ✅ TÊN CỘNG ĐỒNG (SmallCardTags) LÊN TRÊN CÙNG */}
-        <SmallCardTags
-          tags={product.tags}
-          communityId={product.community_id}
-          communityName={product.communityName}
-          onTagClick={(t) => onTagClick?.(t)}
-        />
-
         <SmallCardMain
           product={product}
           commentsCount={commentsCount}

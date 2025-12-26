@@ -2,14 +2,21 @@
 
 import Link from "next/link";
 import Image from "next/image";
+import { ReactNode } from "react";
 
 type Props = {
   id: string;
   title: string;
   image_url?: string | null;
+  children?: ReactNode;
 };
 
-export default function SmallCardImage({ id, title, image_url }: Props) {
+export default function SmallCardImage({
+  id,
+  title,
+  image_url,
+  children,
+}: Props) {
   return (
     <Link
       href={`/deal/${id}`}
@@ -35,6 +42,9 @@ export default function SmallCardImage({ id, title, image_url }: Props) {
           Không có ảnh
         </div>
       )}
+
+      {/* ✅ CHỖ NÀY */}
+      {children}
     </Link>
   );
 }

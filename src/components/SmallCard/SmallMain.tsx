@@ -1,8 +1,8 @@
-// components/Trang_chu/pc/SmallCardMain.tsx
 "use client";
 
 import Link from "next/link";
 import Image from "next/image";
+import { MessageCircle } from "lucide-react";
 
 export type Product = {
   id: string;
@@ -79,25 +79,31 @@ export default function SmallCardMain({
         )}
       </div>
 
-      {/* Title + price */}
-      <div className="flex items-center gap-3">
-        <Link href={`/deal/${product.id}`} className="min-w-0 flex-1">
-          <div className="text-lg font-semibold text-gray-800 leading-snug truncate">
-            {product.title}
-          </div>
-        </Link>
+      {/* TITLE */}
+      <Link href={`/deal/${product.id}`} className="block">
+        <div className="text-lg font-semibold text-gray-800 leading-snug line-clamp-2">
+          {product.title}
+        </div>
+      </Link>
 
-        {product.price != null && (
-          <div className="ml-2 text-base font-bold text-indigo-600 whitespace-nowrap">
-            {Number(product.price).toLocaleString()}₫
-          </div>
-        )}
-      </div>
+      {/* PRICE – Ở DƯỚI TIÊU ĐỀ */}
+      {product.price != null && (
+        <div className="mt-1 text-base font-bold text-indigo-600">
+          {Number(product.price).toLocaleString()}₫
+        </div>
+      )}
 
-      {/* Meta */}
+      {/* META */}
       <div className="mt-2 text-sm text-gray-500 flex items-center gap-3 flex-wrap">
         {product.category && <span>{product.category}</span>}
-        <span>{commentsCount} bình luận</span>
+
+        {/* Bình luận + icon */}
+        <div className="flex items-center gap-1">
+          <span>{commentsCount}</span>
+          <MessageCircle size={14} className="text-gray-400" />
+          <span>bình luận</span>
+        </div>
+
         <span>{product.views ?? 0} lượt xem</span>
       </div>
     </div>

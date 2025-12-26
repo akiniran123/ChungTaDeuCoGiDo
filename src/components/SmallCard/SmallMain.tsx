@@ -2,7 +2,6 @@
 
 import Link from "next/link";
 import Image from "next/image";
-import { MessageCircle } from "lucide-react";
 
 export type Product = {
   id: string;
@@ -17,7 +16,6 @@ export type Product = {
 
 type Props = {
   product: Product;
-  commentsCount: number;
 
   // dùng nếu card thuộc cộng đồng
   communityId?: string | null;
@@ -26,7 +24,6 @@ type Props = {
 
 export default function SmallCardMain({
   product,
-  commentsCount,
   communityId,
   communityName,
 }: Props) {
@@ -49,7 +46,6 @@ export default function SmallCardMain({
     <div className="flex-1 min-w-0">
       {/* COMMUNITY | USER */}
       <div className="mb-1 text-sm flex items-center gap-2 flex-wrap">
-        {/* Tên cộng đồng */}
         {communityName && communityId && (
           <Link
             href={`/communities/${communityId}`}
@@ -59,16 +55,14 @@ export default function SmallCardMain({
           </Link>
         )}
 
-        {/* Dấu | mờ */}
         {communityName && (
           <span className="text-gray-300 select-none">|</span>
         )}
 
-        {/* User */}
         {product.user_id ? (
           <Link
             href={`/profile/${product.user_id}`}
-            className="flex items-center gap-2 whitespace-nowrap hover:opacity-80 cursor-pointer"
+            className="flex items-center gap-2 whitespace-nowrap hover:opacity-80"
           >
             {AuthorContent}
           </Link>
@@ -86,7 +80,7 @@ export default function SmallCardMain({
         </div>
       </Link>
 
-      {/* PRICE – Ở DƯỚI TIÊU ĐỀ */}
+      {/* PRICE */}
       {product.price != null && (
         <div className="mt-1 text-base font-bold text-indigo-600">
           {Number(product.price).toLocaleString()}₫
@@ -96,14 +90,6 @@ export default function SmallCardMain({
       {/* META */}
       <div className="mt-2 text-sm text-gray-500 flex items-center gap-3 flex-wrap">
         {product.category && <span>{product.category}</span>}
-
-        {/* Bình luận + icon */}
-        <div className="flex items-center gap-1">
-          <span>{commentsCount}</span>
-          <MessageCircle size={14} className="text-gray-400" />
-          <span>bình luận</span>
-        </div>
-
         <span>{product.views ?? 0} lượt xem</span>
       </div>
     </div>

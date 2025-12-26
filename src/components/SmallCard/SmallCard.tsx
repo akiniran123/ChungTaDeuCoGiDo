@@ -26,7 +26,7 @@ export type SmallCardProps = {
     user_id?: string | null;
   };
   likesCount: number;
-  commentsCount: number;
+  commentsCount: number; // ✅ ĐÃ CÓ
   liked: boolean;
   onToggleLike?: () => void;
   onToggleSave?: (id: string) => void;
@@ -142,7 +142,6 @@ export default function SmallCard({
       <div className="px-4 py-3 flex flex-col gap-3">
         <SmallCardMain
           product={product}
-          commentsCount={commentsCount}
           communityId={product.community_id}
           communityName={product.communityName}
         />
@@ -151,6 +150,7 @@ export default function SmallCard({
           productId={product.id}
           liked={liked}
           localLikes={localLikes}
+          commentsCount={commentsCount} // ✅ FIX DUY NHẤT
           onToggleLike={toggleLike}
           onToggleSave={() => toggleSave(product.id)}
           onShare={share}

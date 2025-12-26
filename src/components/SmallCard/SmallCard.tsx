@@ -7,7 +7,6 @@ import { useState, useEffect } from "react";
 import SmallCardImage from "./SmallImage";
 import SmallCardMain from "./SmallMain";
 import SmallCardActions from "./SmallActions";
-import SmallCardTags from "./SmallTags";
 
 export type SmallCardProps = {
   product: {
@@ -120,7 +119,6 @@ export default function SmallCard({
           image_url={product.image_url}
         />
 
-        {/* ✅ TAG ĐÈ TRÊN ẢNH */}
         {product.tags && product.tags.length > 0 && (
           <div className="absolute bottom-2 left-2 z-30 flex gap-1 flex-wrap">
             {product.tags.slice(0, 3).map((t, i) => (
@@ -140,19 +138,13 @@ export default function SmallCard({
         )}
       </div>
 
-      {/* ✅ TÊN CỘNG ĐỒNG */}
-      <SmallCardTags
-        communityId={product.community_id}
-        communityName={product.communityName}
-        communityIcon={product.communityIcon}
-        onTagClick={() => {}}
-      />
-
       {/* BODY */}
       <div className="px-4 py-3 flex flex-col gap-3">
         <SmallCardMain
           product={product}
           commentsCount={commentsCount}
+          communityId={product.community_id}
+          communityName={product.communityName}
         />
 
         <SmallCardActions

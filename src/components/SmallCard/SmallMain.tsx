@@ -9,7 +9,6 @@ export type Product = {
   title: string;
   author?: string | null;
   avatar_url?: string | null;
-  created_at?: string | Date | null;
   price?: number | null;
   category?: string | null;
   views?: number | null;
@@ -19,20 +18,18 @@ export type Product = {
 type Props = {
   product: Product;
   commentsCount: number;
+
+  // dùng nếu card thuộc cộng đồng
+  communityId?: string | null;
+  communityName?: string | null;
 };
 
-function formatDate(value?: string | Date | null) {
-  if (!value) return "";
-  const d = typeof value === "string" ? new Date(value) : value;
-  if (Number.isNaN(d.getTime())) return "";
-  return d.toLocaleDateString("vi-VN", {
-    day: "2-digit",
-    month: "2-digit",
-    year: "numeric",
-  });
-}
-
-export default function SmallCardMain({ product, commentsCount }: Props) {
+export default function SmallCardMain({
+  product,
+  commentsCount,
+  communityId,
+  communityName,
+}: Props) {
   const AuthorContent = (
     <>
       <Image
@@ -50,8 +47,24 @@ export default function SmallCardMain({ product, commentsCount }: Props) {
 
   return (
     <div className="flex-1 min-w-0">
-      {/* Author + date */}
-      <div className="mb-1 text-sm flex items-center gap-3 flex-wrap">
+      {/* COMMUNITY | USER */}
+      <div className="mb-1 text-sm flex items-center gap-2 flex-wrap">
+        {/* Tên cộng đồng */}
+        {communityName && communityId && (
+          <Link
+            href={`/communities/${communityId}`}
+            className="truncate max-w-[180px] text-gray-700 hover:opacity-80"
+          >
+            {communityName}
+          </Link>
+        )}
+
+        {/* Dấu | mờ */}
+        {communityName && (
+          <span className="text-gray-300 select-none">|</span>
+        )}
+
+        {/* User */}
         {product.user_id ? (
           <Link
             href={`/profile/${product.user_id}`}
@@ -64,10 +77,6 @@ export default function SmallCardMain({ product, commentsCount }: Props) {
             {AuthorContent}
           </div>
         )}
-
-        <span className="whitespace-nowrap text-gray-400 text-xs">
-          {formatDate(product.created_at)}
-        </span>
       </div>
 
       {/* Title + price */}

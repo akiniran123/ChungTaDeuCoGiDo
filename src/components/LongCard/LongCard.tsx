@@ -99,13 +99,16 @@ export default function LongCard({
               </div>
             )}
 
+            {/* 👇 COMMUNITY – ÉP MÀU XÁM ĐẬM 100% */}
             {product.communityName && (
               <Link
                 href={`/communities/${product.community_id ?? ""}`}
-                className="hover:opacity-80 whitespace-nowrap text-gray-800"
+                className="hover:opacity-80 whitespace-nowrap"
               >
                 <span className="text-gray-500 mr-1">Từ</span>
-                {product.communityName}
+                <span className="!text-gray-900">
+                  {product.communityName}
+                </span>
               </Link>
             )}
 

@@ -49,9 +49,12 @@ export default function SmallCardMain({
         {communityName && communityId && (
           <Link
             href={`/communities/${communityId}`}
-            className="truncate max-w-[180px] text-gray-700 hover:opacity-80"
+            className="truncate max-w-[180px] hover:opacity-80"
           >
-            {communityName}
+            {/* 👇 ÉP MÀU TÊN CỘNG ĐỒNG */}
+            <span className="!text-gray-900">
+              {communityName}
+            </span>
           </Link>
         )}
 

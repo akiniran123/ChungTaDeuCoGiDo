@@ -136,6 +136,7 @@ export default function MessagesPanel({
       <div className="p-4 font-semibold flex justify-between">
         <span>Tin nhắn</span>
         <button
+          className="cursor-pointer"
           onClick={() => {
             setOpen(false);
             setActivePanel(null);

@@ -8,7 +8,6 @@ import type {
   User,
 } from "@/components/MiniChat/MiniChatBox/type/types";
 
-
 type Props = {
   partner: User | null;
   messages: Message[];
@@ -68,7 +67,10 @@ export default function MiniChatView({
   };
 
   // Avatar src: use partner.avatar_url if valid, otherwise fallback to local default
-  const avatarSrc = !avatarError && partner?.avatar_url ? partner.avatar_url : "/default-avatar.png";
+  const avatarSrc =
+    !avatarError && partner?.avatar_url
+      ? partner.avatar_url
+      : "/default-avatar.png";
 
   // Optional: show a sample message when messages empty (for quick UI test)
   // Remove or comment out in production
@@ -110,10 +112,17 @@ export default function MiniChatView({
             />
           )}
 
-          <div className="font-semibold text-sm">{partner ? partner.username : "Đang tải..."}</div>
+          <div className="font-semibold text-sm">
+            {partner ? partner.username : "Đang tải..."}
+          </div>
         </div>
 
-        <button onClick={onClose} aria-label="Close chat">
+        {/* ❌ CLOSE BUTTON */}
+        <button
+          onClick={onClose}
+          aria-label="Close chat"
+          className="cursor-pointer"
+        >
           <X size={18} />
         </button>
       </div>
@@ -138,31 +147,47 @@ export default function MiniChatView({
           <div>currentUserId: {String(currentUserId)}</div>
           <div>partnerId: {partner?.id ?? "null"}</div>
           <details className="mt-1">
-            <summary className="cursor-pointer text-blue-600">Show raw messages JSON</summary>
-            <pre className="whitespace-pre-wrap text-[11px] max-h-40 overflow-auto">{JSON.stringify(messages, null, 2)}</pre>
+            <summary className="cursor-pointer text-blue-600">
+              Show raw messages JSON
+            </summary>
+            <pre className="whitespace-pre-wrap text-[11px] max-h-40 overflow-auto">
+              {JSON.stringify(messages, null, 2)}
+            </pre>
           </details>
         </div>
 
         {loading ? (
-          <div className="p-4 text-sm text-gray-500">Đang tải cuộc trò chuyện...</div>
+          <div className="p-4 text-sm text-gray-500">
+            Đang tải cuộc trò chuyện...
+          </div>
         ) : displayMessages && displayMessages.length > 0 ? (
           displayMessages.map((msg, idx) => (
             <div
               key={(msg as Message).id ?? idx}
-              className={`flex flex-col ${msg.sender_id === currentUserId ? "items-end" : "items-start"}`}
+              className={`flex flex-col ${
+                msg.sender_id === currentUserId
+                  ? "items-end"
+                  : "items-start"
+              }`}
             >
               <div
                 className={`px-3 py-2 rounded-2xl max-w-[70%] text-sm shadow-sm ${
-                  msg.sender_id === currentUserId ? "bg-white text-gray-900 rounded-br-none" : "bg-blue-100 text-blue-800 rounded-bl-none"
+                  msg.sender_id === currentUserId
+                    ? "bg-white text-gray-900 rounded-br-none"
+                    : "bg-blue-100 text-blue-800 rounded-bl-none"
                 }`}
               >
                 {msg.content ?? "(no content)"}
               </div>
-              <span className="text-[10px] text-gray-400 mt-1">{formatTime(msg.created_at ?? null)}</span>
+              <span className="text-[10px] text-gray-400 mt-1">
+                {formatTime(msg.created_at ?? null)}
+              </span>
             </div>
           ))
         ) : (
-          <div className="p-4 text-sm text-gray-500">Chưa có tin nhắn</div>
+          <div className="p-4 text-sm text-gray-500">
+            Chưa có tin nhắn
+          </div>
         )}
       </div>
 
@@ -179,11 +204,19 @@ export default function MiniChatView({
         <input
           value={newMessage}
           onChange={(e) => setNewMessage(e.target.value)}
-          placeholder={partner ? "Nhập tin nhắn..." : "Không thể gửi khi chưa tải xong"}
+          placeholder={
+            partner
+              ? "Nhập tin nhắn..."
+              : "Không thể gửi khi chưa tải xong"
+          }
           className="flex-1 px-3 py-1.5 text-sm border rounded-full"
           disabled={!partner}
         />
-        <button type="submit" className="p-2 hover:bg-gray-100 rounded-full" disabled={!partner}>
+        <button
+          type="submit"
+          className="p-2 hover:bg-gray-100 rounded-full cursor-pointer"
+          disabled={!partner}
+        >
           <Send size={16} />
         </button>
       </form>

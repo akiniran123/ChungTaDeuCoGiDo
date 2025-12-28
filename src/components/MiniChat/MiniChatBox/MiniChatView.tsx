@@ -2,6 +2,7 @@
 
 import React, { useEffect, useRef, useState } from "react";
 import Image from "next/image";
+import Link from "next/link";
 import { Send, X, User as UserIcon } from "lucide-react";
 import type {
   Message,
@@ -35,7 +36,6 @@ export default function MiniChatView({
   const bodyRef = useRef<HTMLDivElement | null>(null);
   const [avatarError, setAvatarError] = useState(false);
 
-  // Debug logs to help trace why messages không hiển thị
   useEffect(() => {
     console.log("[MiniChatView] partner:", partner);
     console.log("[MiniChatView] messages length:", messages?.length ?? 0);
@@ -44,7 +44,6 @@ export default function MiniChatView({
     }
   }, [partner, messages]);
 
-  // Auto-scroll to bottom when messages change
   useEffect(() => {
     const el = bodyRef.current;
     if (!el) return;
@@ -54,7 +53,6 @@ export default function MiniChatView({
     return () => window.clearTimeout(t);
   }, [messages]);
 
-  // Format time with safe fallback
   const formatTime = (t: string | null | undefined) => {
     if (!t) return "--:--";
     const d = new Date(t);
@@ -66,25 +64,12 @@ export default function MiniChatView({
     });
   };
 
-  // Avatar src: use partner.avatar_url if valid, otherwise fallback to local default
   const avatarSrc =
     !avatarError && partner?.avatar_url
       ? partner.avatar_url
       : "/default-avatar.png";
 
-  // Optional: show a sample message when messages empty (for quick UI test)
-  // Remove or comment out in production
-  const sampleMessage: Message = {
-    id: "sample-1",
-    sender_id: partner?.id ?? "partner",
-    receiver_id: currentUserId ?? "me",
-    content: "Tin nhắn mẫu (chỉ để test giao diện).",
-    created_at: new Date().toISOString(),
-    type: null,
-    is_read: false,
-  };
-
-  const displayMessages = messages.length > 0 ? messages : []; // or [sampleMessage] to force-show sample
+  const displayMessages = messages.length > 0 ? messages : [];
 
   return (
     <div
@@ -93,31 +78,43 @@ export default function MiniChatView({
     >
       {/* HEADER */}
       <div className="flex items-center justify-between px-3 py-2 border-b bg-white">
-        <div className="flex items-center gap-2">
-          {/* AVATAR */}
-          {avatarSrc === "/default-avatar.png" ? (
+        {/* AVATAR + USERNAME */}
+        {partner ? (
+          <Link
+            href={`/profile/${partner.id}`}
+            className="flex items-center gap-2 cursor-pointer"
+          >
+            {avatarSrc === "/default-avatar.png" ? (
+              <div className="w-[35px] h-[35px] rounded-full border border-gray-200 bg-white flex items-center justify-center">
+                <UserIcon size={18} className="text-gray-400" />
+              </div>
+            ) : (
+              <Image
+                src={avatarSrc}
+                width={35}
+                height={35}
+                alt="avatar"
+                className="rounded-full border border-gray-200 bg-white"
+                onError={() => setAvatarError(true)}
+              />
+            )}
+
+            {/* ✅ CHỈNH MÀU USERNAME Ở ĐÂY */}
+            <div className="font-semibold text-sm text-gray-900 hover:text-gray-700">
+              {partner.username}
+            </div>
+          </Link>
+        ) : (
+          <div className="flex items-center gap-2">
             <div className="w-[35px] h-[35px] rounded-full border border-gray-200 bg-white flex items-center justify-center">
               <UserIcon size={18} className="text-gray-400" />
             </div>
-          ) : (
-            <Image
-              src={avatarSrc}
-              width={35}
-              height={35}
-              alt="avatar"
-              className="rounded-full border border-gray-200 bg-white"
-              onError={() => {
-                setAvatarError(true);
-              }}
-            />
-          )}
-
-          <div className="font-semibold text-sm">
-            {partner ? partner.username : "Đang tải..."}
+            <div className="font-semibold text-sm text-gray-400">
+              Đang tải...
+            </div>
           </div>
-        </div>
+        )}
 
-        {/* ❌ CLOSE BUTTON */}
         <button
           onClick={onClose}
           aria-label="Close chat"
@@ -131,19 +128,14 @@ export default function MiniChatView({
       <div
         ref={bodyRef}
         className="flex-1 overflow-y-auto px-3 py-3 bg-gray-50 space-y-3"
-        data-testid="mini-chat-body"
       >
-        {/* Small debug header inside UI to quickly see state */}
         <div className="text-[11px] text-gray-400 mb-2">
           <div>Debug: messages.length = {messages?.length ?? 0}</div>
           <div>partner loaded = {partner ? "yes" : "no"}</div>
         </div>
 
-        {/* Raw debug JSON (collapsible) */}
         <div className="bg-white p-2 rounded border text-xs text-gray-600 mb-2">
-          <div>
-            <strong>Debug raw</strong>
-          </div>
+          <strong>Debug raw</strong>
           <div>currentUserId: {String(currentUserId)}</div>
           <div>partnerId: {partner?.id ?? "null"}</div>
           <details className="mt-1">
@@ -160,7 +152,7 @@ export default function MiniChatView({
           <div className="p-4 text-sm text-gray-500">
             Đang tải cuộc trò chuyện...
           </div>
-        ) : displayMessages && displayMessages.length > 0 ? (
+        ) : displayMessages.length > 0 ? (
           displayMessages.map((msg, idx) => (
             <div
               key={(msg as Message).id ?? idx}

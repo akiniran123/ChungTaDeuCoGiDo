@@ -6,7 +6,6 @@ import { useState, useEffect } from "react";
 
 import SmallCardImage from "./SmallImage";
 import SmallCardMain from "./SmallMain";
-import SmallCardTags from "./SmallTags";
 import SmallCardActions from "./SmallActions";
 
 export type SmallCardProps = {
@@ -112,33 +111,52 @@ export default function SmallCard({
       animate={{ opacity: 1, y: 0 }}
       className="w-full max-w-sm rounded-2xl bg-white shadow-sm hover:shadow-md transition overflow-hidden"
     >
-      {/* IMAGE */}
-      <SmallCardImage
-        id={product.id}
-        title={product.title}
-        image_url={product.image_url}
-      />
+      {/* IMAGE + TAG OVERLAY + VIEWS */}
+      <div className="relative">
+        <SmallCardImage
+          id={product.id}
+          title={product.title}
+          image_url={product.image_url}
+        />
+
+        {/* Lượt xem góc trên cùng phải */}
+        <div className="absolute top-2 right-2 bg-black/60 text-white text-xs px-2 py-1 rounded-full z-20">
+          {product.views ?? 0} lượt xem
+        </div>
+
+        {/* TAGS */}
+        {product.tags && product.tags.length > 0 && (
+          <div className="absolute bottom-2 left-2 z-30 flex gap-1 flex-wrap">
+            {product.tags.slice(0, 3).map((t, i) => (
+              <div
+                key={i}
+                onClick={(e) => {
+                  e.preventDefault();
+                  e.stopPropagation();
+                  onTagClick?.(t);
+                }}
+                className="text-xs bg-black/70 text-white px-2 py-1 rounded-full backdrop-blur hover:bg-black/80 cursor-pointer whitespace-nowrap"
+              >
+                {t}
+              </div>
+            ))}
+          </div>
+        )}
+      </div>
 
       {/* BODY */}
       <div className="px-4 py-3 flex flex-col gap-3">
         <SmallCardMain
           product={product}
-          commentsCount={commentsCount}
-        />
-
-        {/* ❌ BỎ avatar cộng đồng – KHÔNG truyền communityIcon */}
-        {/* ✅ VẪN GIỮ tên cộng đồng */}
-        <SmallCardTags
-          tags={product.tags}
           communityId={product.community_id}
           communityName={product.communityName}
-          onTagClick={(t) => onTagClick?.(t)}
         />
 
         <SmallCardActions
           productId={product.id}
           liked={liked}
           localLikes={localLikes}
+          commentsCount={commentsCount}
           onToggleLike={toggleLike}
           onToggleSave={() => toggleSave(product.id)}
           onShare={share}

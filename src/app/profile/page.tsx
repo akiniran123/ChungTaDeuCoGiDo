@@ -56,9 +56,10 @@ export default function ProfilePage() {
 
   const [userProducts, setUserProducts] = useState<Product[]>([]);
   const [loadingProducts, setLoadingProducts] = useState(true);
-
-  // 🔴 THIẾU STATE NÀY TRƯỚC ĐÓ
   const [deleting, setDeleting] = useState<string | null>(null);
+
+  // 🔹 STATE mới cho theo dõi
+  const [isFollowing, setIsFollowing] = useState(false);
 
   // ==========================
   // 📌 Load User Profile
@@ -113,7 +114,6 @@ export default function ProfilePage() {
     const loadProducts = async () => {
       setLoadingProducts(true);
 
-      // Fetch without generics; cast the result to Product[] afterwards
       const { data } = await supabase
         .from("products")
         .select("*")
@@ -167,7 +167,15 @@ export default function ProfilePage() {
   };
 
   // ==========================
-  // 🗑️ XÓA SẢN PHẨM (GIỮ NGUYÊN LOGIC CŨ)
+  // 🔹 Toggle Follow
+  // ==========================
+  const handleFollowToggle = async () => {
+    setIsFollowing((prev) => !prev);
+    // TODO: Gọi Supabase để lưu trạng thái theo dõi thật
+  };
+
+  // ==========================
+  // 🗑️ XÓA SẢN PHẨM
   // ==========================
   const handleDelete = async (productId: string, imageUrl?: string) => {
     if (!currentUser || currentUser.id !== user?.id) return;
@@ -204,6 +212,9 @@ export default function ProfilePage() {
 
   if (!user) return <p className="text-center py-20">Chưa đăng nhập</p>;
 
+  // 🔹 Xác định user có phải profile của chính mình
+  const isOwnProfile = currentUser?.id === user?.id;
+
   return (
     <div className="min-h-screen py-10">
       <div className="max-w-3xl mx-auto bg-white rounded-2xl shadow p-8">
@@ -212,6 +223,9 @@ export default function ProfilePage() {
           onEdit={() => setIsEditing(true)}
           onCancel={() => setIsEditing(false)}
           onSave={handleSave}
+          isFollowing={isFollowing}
+          onFollowToggle={handleFollowToggle}
+          isOwnProfile={isOwnProfile}
         />
 
         <ProfileAvatar user={user} avatarUrl={formData.avatar_url} />

@@ -1,5 +1,3 @@
-// src/app/(your-route)/[id]/page.tsx  (hoặc nơi bạn đặt component)
-// "use client" nếu component cần client-side behavior
 "use client";
 
 import React, { JSX, useEffect, useState } from "react";
@@ -35,15 +33,20 @@ export default function OtherUserProfile(): JSX.Element {
 
   const [currentUserId, setCurrentUserId] = useState<string | null>(null);
 
-  // ChatContext mới: dùng openChat, isOpen, focusChat
+  // 🔹 State cho nút Theo dõi
+  const [isFollowing, setIsFollowing] = useState(false);
+
+  // ChatContext
   const { openChat, isOpen, focusChat } = useChat();
 
+  // Lấy current user id
   useEffect(() => {
     supabase.auth.getUser().then(({ data }) => {
       if (data.user) setCurrentUserId(data.user.id);
     });
   }, []);
 
+  // Load profile và sản phẩm của user đang xem
   useEffect(() => {
     if (!id) {
       setLoading(false);
@@ -57,6 +60,7 @@ export default function OtherUserProfile(): JSX.Element {
     const fetchData = async () => {
       setLoading(true);
       try {
+        // 🔹 Load user profile
         const { data: userData, error: userError } = await supabase
           .from("users")
           .select("*")
@@ -64,16 +68,15 @@ export default function OtherUserProfile(): JSX.Element {
           .single<User>();
 
         if (!mounted) return;
-
         setUser(userError ? null : userData || null);
 
+        // 🔹 Load products
         const { data: productData, error: productError } = await supabase
           .from("products")
           .select("*, users!inner(username, avatar_url)")
           .eq("user_id", id);
 
         if (!mounted) return;
-
         setProducts(productError ? [] : ((productData as ProductWithUser[]) || []));
       } catch (err) {
         console.error("Unexpected fetch error:", err);
@@ -107,6 +110,7 @@ export default function OtherUserProfile(): JSX.Element {
   if (!user)
     return <div className="p-6 text-center text-gray-500">Không tìm thấy người dùng.</div>;
 
+  // 🔹 Kiểm tra profile đang xem có phải là user khác
   const isOtherUser = currentUserId !== null && currentUserId !== user.id;
   const alreadyOpen = isOpen(user.id);
 
@@ -114,14 +118,17 @@ export default function OtherUserProfile(): JSX.Element {
     if (!isOtherUser) return;
 
     if (alreadyOpen) {
-      // nếu đã mở, chỉ focus cửa sổ chat
-      console.log("Chat already open for", user.id, "- focusing instead");
       focusChat(user.id);
       return;
     }
 
-    // mở chat mới
     openChat(user.id);
+  };
+
+  // 🔹 Toggle nút Theo dõi
+  const handleFollowToggle = async () => {
+    setIsFollowing((prev) => !prev);
+    // TODO: gọi Supabase để lưu trạng thái follow/unfollow thật
   };
 
   return (
@@ -152,18 +159,32 @@ export default function OtherUserProfile(): JSX.Element {
           </div>
 
           {isOtherUser && (
-            <button
-              className={`px-4 py-2 border rounded-lg transition cursor-pointer ${
-                alreadyOpen
-                  ? "bg-blue-600 text-white border-blue-600 hover:bg-blue-700"
-                  : "border-gray-300 text-gray-900 hover:bg-gray-100"
-              }`}
-              onClick={handleOpenChatFromProfile}
-              aria-pressed={alreadyOpen}
-              aria-label={alreadyOpen ? "Đã mở chat, nhấn để đưa lên trước" : "Mở chat với người này"}
-            >
-              {alreadyOpen ? "Đang mở" : "Nhắn tin"}
-            </button>
+            <div className="flex gap-2">
+              {/* 🔹 Nút Theo dõi */}
+              <button
+                className={`px-4 py-2 border rounded-lg transition cursor-pointer ${
+                  isFollowing
+                    ? "bg-gray-200 text-gray-700 border-gray-400 hover:bg-gray-300"
+                    : "bg-blue-600 text-white border-blue-600 hover:bg-blue-700"
+                }`}
+                onClick={handleFollowToggle}
+              >
+                {isFollowing ? "Đang theo dõi" : "Theo dõi"}
+              </button>
+
+              {/* 🔹 Nút Nhắn tin */}
+              <button
+                className={`px-4 py-2 border rounded-lg transition cursor-pointer ${
+                  alreadyOpen
+                    ? "bg-blue-600 text-white border-blue-600 hover:bg-blue-700"
+                    : "border-gray-300 text-gray-900 hover:bg-gray-100"
+                }`}
+                onClick={handleOpenChatFromProfile}
+                aria-pressed={alreadyOpen}
+              >
+                {alreadyOpen ? "Đang mở" : "Nhắn tin"}
+              </button>
+            </div>
           )}
         </div>
       </div>
@@ -193,7 +214,6 @@ export default function OtherUserProfile(): JSX.Element {
               </div>
 
               <div className="p-3 flex items-center gap-2">
-                {/* === Avatar người đăng sản phẩm === */}
                 {p.users?.avatar_url ? (
                   <Image
                     src={p.users.avatar_url}

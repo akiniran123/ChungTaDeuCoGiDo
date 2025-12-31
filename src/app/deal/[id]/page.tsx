@@ -2,8 +2,9 @@
 
 import { useEffect, useState } from "react";
 import { useParams } from "next/navigation";
-import DealHeader from "@/components/detail/DealHeader";
-import DealComments from "@/components/detail/DealComments";
+import DealHeader from "../../../components/detail/DealHeader";
+import DealComments from "../../../components/detail/DealComments";
+import DealOptions from "@/components/detail/DealOptions";
 import {
   getDealDetail,
   type DealDetailResult,
@@ -18,6 +19,33 @@ export default function DealDetailPage() {
   const [loading, setLoading] = useState(true);
   const [commentCount, setCommentCount] = useState(0);
 
+  // =====================================
+  // 👁️ INCREASE VIEW (GIỮ NGUYÊN)
+  // =====================================
+  useEffect(() => {
+    if (!dealId) return;
+
+    const key = `viewed_product_${dealId}`;
+    const hasViewed = localStorage.getItem(key);
+    if (hasViewed) return;
+
+    const increaseView = async () => {
+      try {
+        await supabase.rpc("increment_product_view", {
+          p_product_id: dealId,
+        });
+        localStorage.setItem(key, "true");
+      } catch (err) {
+        console.error("Increase view error:", err);
+      }
+    };
+
+    increaseView();
+  }, [dealId]);
+
+  // =====================================
+  // 📦 LOAD DEAL DETAIL (GIỮ NGUYÊN)
+  // =====================================
   useEffect(() => {
     if (!dealId) return;
 
@@ -31,7 +59,7 @@ export default function DealDetailPage() {
   }, [dealId]);
 
   // =======================
-  // ❤️ HANDLE LIKE (FIXED)
+  // ❤️ HANDLE LIKE (GIỮ NGUYÊN)
   // =======================
   const handleLike = async () => {
     if (!data) return;
@@ -46,9 +74,8 @@ export default function DealDetailPage() {
     const productId = data.product.id;
 
     if (data.liked) {
-      // ❌ UNLIKE
       await supabase
-        .from("product_likes") // ✅ FIX
+        .from("product_likes")
         .delete()
         .eq("product_id", productId)
         .eq("user_id", userId);
@@ -63,13 +90,10 @@ export default function DealDetailPage() {
           : prev
       );
     } else {
-      // ❤️ LIKE
-      await supabase
-        .from("product_likes") // ✅ FIX
-        .insert({
-          product_id: productId,
-          user_id: userId,
-        });
+      await supabase.from("product_likes").insert({
+        product_id: productId,
+        user_id: userId,
+      });
 
       setData((prev) =>
         prev
@@ -86,7 +110,6 @@ export default function DealDetailPage() {
   // =======================
   // RENDER
   // =======================
-
   if (!dealId) {
     return <div className="pt-20 text-center">❌ ID không hợp lệ</div>;
   }
@@ -104,6 +127,7 @@ export default function DealDetailPage() {
   return (
     <div className="min-h-screen bg-gray-50 pt-20 px-4">
       <div className="max-w-6xl mx-auto grid grid-cols-1 md:grid-cols-3 gap-8">
+        {/* MAIN */}
         <div className="md:col-span-2">
           <DealHeader
             product={product}
@@ -111,7 +135,7 @@ export default function DealDetailPage() {
             liked={liked}
             likesCount={likesCount}
             commentCount={commentCount}
-            onLike={handleLike} // ✅ OK
+            onLike={handleLike}
           />
 
           <DealComments
@@ -121,9 +145,20 @@ export default function DealDetailPage() {
           />
         </div>
 
+        {/* SIDEBAR */}
         <div className="space-y-6">
-          <h2 className="font-semibold">Mô tả</h2>
-          <p>{product.description}</p>
+          {/* ✅ OPTIONS: PRICE + SIZE + QUANTITY */}
+          <DealOptions
+            price={product.price}
+            sizes={["S", "M", "L", "XL"]}
+          />
+
+          <div>
+            <h2 className="font-semibold mb-2">Mô tả</h2>
+            <p className="text-gray-700 whitespace-pre-line">
+              {product.description}
+            </p>
+          </div>
         </div>
       </div>
     </div>

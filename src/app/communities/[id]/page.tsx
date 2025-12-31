@@ -1,6 +1,7 @@
+// pages or app route file where CommunityDetailPage is defined
 "use client";
 
-import React, { useEffect, useState } from "react";
+import React, { useEffect, useState, useCallback } from "react";
 import { supabase } from "@/lib/supabase/client";
 import type { Database } from "@/types/supabase";
 import type { User } from "@supabase/supabase-js";
@@ -9,7 +10,7 @@ import EmptyState from "@/components/communities/EmptyState";
 import JoinLeaveButton from "@/components/communities/JoinLeaveButtons";
 import LoadingState from "@/components/communities/LoadingState";
 import ProductList from "@/components/communities/ProductList";
-import CreateTagButton from "@/components/communities/CreateTagButton";
+import CreateTagGroupButton from "@/components/communities/CreateTagGroupButton";
 import { useRouter } from "next/navigation";
 
 type Community = Database["public"]["Tables"]["communities"]["Row"];
@@ -25,11 +26,14 @@ const CommunityDetailPage: React.FC<CommunityDetailPageProps> = ({ params }) => 
 
   const [community, setCommunity] = useState<Community | null>(null);
   const [products, setProducts] = useState<Product[]>([]);
+  const [tagGroups, setTagGroups] = useState<
+    { id: string; name: string; description?: string }[]
+  >([]);
   const [user, setUser] = useState<User | null>(null);
 
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
-  const [isOwner, setIsOwner] = useState(false);
+  const [isAdminOrMod, setIsAdminOrMod] = useState(false);
 
   useEffect(() => {
     async function unwrap() {
@@ -47,7 +51,6 @@ const CommunityDetailPage: React.FC<CommunityDetailPageProps> = ({ params }) => 
     supabase
       .auth.getUser()
       .then((res) => {
-        // res.data may be undefined; guard and cast safely
         const data = res.data;
         if (data?.user) setUser(data.user);
       })
@@ -69,7 +72,11 @@ const CommunityDetailPage: React.FC<CommunityDetailPageProps> = ({ params }) => 
           .single();
 
         const row = res.data as { role?: string } | null;
-        if (row?.role === "owner") setIsOwner(true);
+        if (row?.role === "owner" || row?.role === "admin" || row?.role === "mod") {
+          setIsAdminOrMod(true);
+        } else {
+          setIsAdminOrMod(false);
+        }
       } catch (err: unknown) {
         console.error("Error checking role:", err);
       }
@@ -77,6 +84,24 @@ const CommunityDetailPage: React.FC<CommunityDetailPageProps> = ({ params }) => 
 
     checkRole();
   }, [id, user]);
+
+  const fetchTagGroups = useCallback(
+    async (communityId: string) => {
+      try {
+        const res = await supabase
+          .from("tag_groups")
+          .select("id, name, description")
+          .eq("community_id", communityId)
+          .order("created_at", { ascending: true });
+
+        if (res.error) throw res.error;
+        setTagGroups((res.data as any[]) ?? []);
+      } catch (err) {
+        console.error("Fetch tag groups error:", err);
+      }
+    },
+    []
+  );
 
   useEffect(() => {
     if (!id) return;
@@ -106,6 +131,9 @@ const CommunityDetailPage: React.FC<CommunityDetailPageProps> = ({ params }) => 
 
         setCommunity(communityData);
         setProducts(productData);
+
+        // fetch tag groups for this community
+        await fetchTagGroups(id);
       } catch (err: unknown) {
         console.error("Fetch community error:", err);
         const message = err instanceof Error ? err.message : String(err ?? "Không xác định");
@@ -116,7 +144,7 @@ const CommunityDetailPage: React.FC<CommunityDetailPageProps> = ({ params }) => 
     };
 
     fetchAll();
-  }, [id]);
+  }, [id, fetchTagGroups]);
 
   useEffect(() => {
     const savedScroll = sessionStorage.getItem("scrollPosition");
@@ -149,10 +177,31 @@ const CommunityDetailPage: React.FC<CommunityDetailPageProps> = ({ params }) => 
       </button>
 
       <div className="flex gap-3 items-center mt-4">
-        {/* Guard id with non-null assertion only after we've confirmed community exists */}
         <JoinLeaveButton communityId={id!} />
-        {isOwner && <CreateTagButton communityId={id!} />}
+        {isAdminOrMod && (
+          <CreateTagGroupButton
+            communityId={id!}
+            onCreated={() => {
+              // reload tag groups after creation
+              fetchTagGroups(id!);
+            }}
+          />
+        )}
       </div>
+
+      {/* Hiển thị danh sách nhóm tag */}
+      {tagGroups.length > 0 && (
+        <div className="mt-6">
+          <h4 className="font-semibold mb-2">Nhóm tag</h4>
+          <div className="flex gap-2 flex-wrap">
+            {tagGroups.map((g) => (
+              <div key={g.id} className="px-3 py-1 bg-gray-100 rounded-full text-sm">
+                {g.name}
+              </div>
+            ))}
+          </div>
+        </div>
+      )}
 
       {products.length > 0 ? (
         <div className="mt-6">

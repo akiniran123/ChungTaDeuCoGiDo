@@ -112,7 +112,9 @@ export default function SidebarCommunity() {
                   />
                 </div>
 
-                <span className="truncate">{c.title}</span>
+                {/* ✅ ÉP MÀU TÊN CỘNG ĐỒNG */}
+                <span className="truncate text-gray-900">{c.title}</span>
+
                 <Star className="w-4 h-4 text-gray-400 ml-auto" />
               </Link>
             ))}

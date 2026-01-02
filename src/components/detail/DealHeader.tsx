@@ -3,9 +3,13 @@
 import Image from "next/image";
 import Link from "next/link";
 import { Heart, Share2, MessageCircle } from "lucide-react";
+import { useState } from "react";
 import type { Database } from "@/types/supabase";
 
-type Product = Database["public"]["Tables"]["products"]["Row"];
+type Product = Database["public"]["Tables"]["products"]["Row"] & {
+  images?: string[] | null; // hỗ trợ nhiều ảnh
+};
+
 type UserRow = Database["public"]["Tables"]["users"]["Row"];
 
 export default function DealHeader({
@@ -23,6 +27,15 @@ export default function DealHeader({
   commentCount: number;
   onLike?: () => void;
 }) {
+  // ✅ FIX CHÍNH Ở ĐÂY: images LUÔN LÀ ARRAY
+  const images: string[] = Array.isArray(product.images)
+    ? product.images
+    : product.image_url
+    ? [product.image_url]
+    : [];
+
+  const [activeImage, setActiveImage] = useState(0);
+
   const handleShare = async () => {
     const url = typeof window !== "undefined" ? window.location.href : "";
 
@@ -61,13 +74,7 @@ export default function DealHeader({
 
             <Link
               href={`/profile/${author.id}`}
-              className="
-                font-semibold
-                !text-gray-900
-                visited:!text-gray-900
-                hover:!text-gray-900
-                no-underline
-              "
+              className="font-semibold !text-gray-900 no-underline"
             >
               {author.username}
             </Link>
@@ -85,16 +92,47 @@ export default function DealHeader({
 
       <h1 className="text-2xl font-bold">{product.title}</h1>
 
-      {product.image_url && (
-        <div className="relative w-full aspect-[4/3] rounded-xl overflow-hidden">
-          <Image
-            src={product.image_url}
-            alt={product.title ?? "Product image"}
-            fill
-            className="object-cover"
-            priority
-            unoptimized
-          />
+      {/* 🖼️ IMAGE GALLERY */}
+      {images.length > 0 && (
+        <div className="flex gap-4">
+          {/* THUMBNAILS */}
+          {images.length > 1 && (
+            <div className="flex flex-col gap-2">
+              {images.map((img, idx) => (
+                <button
+                  key={idx}
+                  onClick={() => setActiveImage(idx)}
+                  className={`w-16 h-16 rounded-md overflow-hidden border
+                    ${
+                      activeImage === idx
+                        ? "border-indigo-600"
+                        : "border-gray-300"
+                    }`}
+                >
+                  <Image
+                    src={img}
+                    alt=""
+                    width={64}
+                    height={64}
+                    className="object-cover w-full h-full"
+                    unoptimized
+                  />
+                </button>
+              ))}
+            </div>
+          )}
+
+          {/* MAIN IMAGE */}
+          <div className="relative w-full aspect-[4/3] rounded-xl overflow-hidden border">
+            <Image
+              src={images[activeImage]}
+              alt={product.title ?? "Product image"}
+              fill
+              className="object-cover"
+              priority
+              unoptimized
+            />
+          </div>
         </div>
       )}
 
@@ -106,9 +144,7 @@ export default function DealHeader({
         >
           <Heart
             size={20}
-            className={
-              liked ? "fill-pink-400 text-pink-400" : ""
-            }
+            className={liked ? "fill-pink-400 text-pink-400" : ""}
           />
           <span>{likesCount}</span>
         </button>

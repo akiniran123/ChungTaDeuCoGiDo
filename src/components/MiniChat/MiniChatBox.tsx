@@ -1,26 +1,31 @@
 "use client";
 
-import React, { useEffect, useState, useCallback } from "react";
+import React, { useCallback, useEffect, useState } from "react";
 import MiniChatView from "@/components/MiniChat/MiniChatBox/MiniChatView";
 import { useMiniChat } from "@/components/MiniChat/MiniChatBox/hooks/useMiniChat";
-import type { Message as HookMessage, User as HookUser } from "@/components/MiniChat/MiniChatBox/type/types";
+import type {
+  Message as HookMessage,
+  User as HookUser,
+} from "@/components/MiniChat/MiniChatBox/type/types";
+
+export type ConversationSummary = {
+  partner_id: string;
+  username: string;
+  avatar_url: string;
+  last_message: string;
+  last_time: string;
+  is_read: boolean;
+};
 
 export type MiniChatBoxProps = {
   partnerId: string;
   index?: number;
   onClose: () => void;
   onReadMessages?: () => void;
-  onNewConversation?: (conv: {
-    partner_id: string;
-    username: string;
-    avatar_url: string;
-    last_message: string;
-    last_time: string;
-    is_read: boolean;
-  }) => void;
+  onNewConversation?: (conv: ConversationSummary) => void;
 };
 
-// Định nghĩa rõ ràng kiểu trả về của hook
+// Kiểu trả về rõ ràng cho hook useMiniChat
 interface MiniChatHookResult {
   currentUserId: string | null;
   partner: HookUser | null;
@@ -37,6 +42,8 @@ export default function MiniChatBox({
   onReadMessages,
   onNewConversation,
 }: MiniChatBoxProps) {
+  // Nếu useMiniChat chưa typed ở nơi khác, ép kiểu ở đây để component có kiểu rõ ràng.
+  // Việc ép kiểu này không dùng `any` nên không vi phạm rule @typescript-eslint/no-explicit-any.
   const {
     currentUserId,
     partner,
@@ -64,8 +71,8 @@ export default function MiniChatBox({
       console.log(`💬 Message[${i}] raw created_at:`, m.created_at);
       if (m.created_at) {
         const d = new Date(m.created_at);
-        console.log(`   🕒 parsed:`, d.toString());
-        console.log(`   🧭 ISO:`, d.toISOString());
+        console.log("   🕒 parsed:", d.toString());
+        console.log("   🧭 ISO:", d.toISOString());
       }
     });
   }, [messages]);
@@ -76,13 +83,25 @@ export default function MiniChatBox({
     const mark = async () => {
       if (!partnerId) return;
 
-      const had = await markUnreadFromPartner();
+      try {
+        const had = await markUnreadFromPartner();
 
-      if (!cancelled && had) {
-        try {
-          onReadMessages?.();
-        } catch (err: unknown) {
-          console.error("❌ onReadMessages callback error:", err);
+        if (!cancelled && had) {
+          try {
+            onReadMessages?.();
+          } catch (err: unknown) {
+            if (err instanceof Error) {
+              console.error("❌ onReadMessages callback error:", err.message);
+            } else {
+              console.error("❌ onReadMessages callback error (unknown):", err);
+            }
+          }
+        }
+      } catch (err: unknown) {
+        if (err instanceof Error) {
+          console.error("❌ markUnreadFromPartner error:", err.message);
+        } else {
+          console.error("❌ markUnreadFromPartner unknown error:", err);
         }
       }
     };
@@ -97,11 +116,26 @@ export default function MiniChatBox({
 
   const handleSend = useCallback(
     async (content: string): Promise<void> => {
+      if (!content || content.trim().length === 0) {
+        console.warn("⚠️ Attempted to send empty message, ignoring.");
+        return;
+      }
+
       console.log("➡️ Sending message:", content);
 
-      const insertedMessage = await sendMessage(content);
+      let insertedMessage: HookMessage | null = null;
 
-      console.log("✅ Inserted message:", insertedMessage);
+      try {
+        insertedMessage = await sendMessage(content);
+        console.log("✅ Inserted message:", insertedMessage);
+      } catch (err: unknown) {
+        if (err instanceof Error) {
+          console.error("❌ sendMessage error:", err.message);
+        } else {
+          console.error("❌ sendMessage unknown error:", err);
+        }
+        return;
+      }
 
       if (insertedMessage?.created_at) {
         const d = new Date(insertedMessage.created_at);
@@ -112,12 +146,10 @@ export default function MiniChatBox({
         console.warn("⚠️ insertedMessage.created_at is null");
       }
 
-      if (
-        messages.length === 0 &&
-        partner &&
-        onNewConversation &&
-        insertedMessage
-      ) {
+      // Nếu trước đó không có messages (lần đầu tạo conversation), gọi onNewConversation
+      const hadNoMessages = !messages || messages.length === 0;
+
+      if (hadNoMessages && partner && onNewConversation && insertedMessage) {
         try {
           const lastTime = insertedMessage.created_at ?? new Date().toISOString();
 
@@ -132,11 +164,15 @@ export default function MiniChatBox({
             is_read: true,
           });
         } catch (err: unknown) {
-          console.error("❌ onNewConversation callback error:", err);
+          if (err instanceof Error) {
+            console.error("❌ onNewConversation callback error:", err.message);
+          } else {
+            console.error("❌ onNewConversation callback error (unknown):", err);
+          }
         }
       }
     },
-    [sendMessage, messages.length, partner, onNewConversation]
+    [sendMessage, messages, partner, onNewConversation]
   );
 
   return (

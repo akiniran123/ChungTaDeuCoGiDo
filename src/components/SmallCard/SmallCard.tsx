@@ -135,7 +135,7 @@ export default function SmallCard({
                   e.stopPropagation();
                   onTagClick?.(t);
                 }}
-                className="text-xs bg-black/70 text-white px-2 py-1 rounded-full backdrop-blur hover:bg-black/80 cursor-pointer whitespace-nowrap"
+                className="text-xs bg-gray-200 text-gray-700 px-2 py-1 rounded-full hover:bg-gray-300 cursor-pointer whitespace-nowrap"
               >
                 {t}
               </div>

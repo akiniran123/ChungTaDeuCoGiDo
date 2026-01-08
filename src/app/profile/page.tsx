@@ -11,10 +11,8 @@ import ProfileHeader from "../../components/profile/ProfileHeader";
 import ProfileAvatar from "../../components/profile/ProfileAvatar";
 import ProfileForm from "../../components/profile/ProfileForm";
 import UserProducts from "../../components/profile/UserProducts";
+import ProfileBanner from "../../components/profile/ProfileBanner";
 
-// ==========================
-// 📌 Kiểu dữ liệu User
-// ==========================
 export type UserData = {
   id: string;
   username: string | null;
@@ -28,6 +26,7 @@ export type UserData = {
   phone: number | null;
   birth: string | null;
   updated_at?: string | null;
+  banner_url?: string | null;
 };
 
 export type ProfileFormData = {
@@ -58,12 +57,8 @@ export default function ProfilePage() {
   const [loadingProducts, setLoadingProducts] = useState(true);
   const [deleting, setDeleting] = useState<string | null>(null);
 
-  // 🔹 STATE mới cho theo dõi
   const [isFollowing, setIsFollowing] = useState(false);
 
-  // ==========================
-  // 📌 Load User Profile
-  // ==========================
   useEffect(() => {
     const loadProfile = async () => {
       const { data: sessionData } = await supabase.auth.getSession();
@@ -76,7 +71,6 @@ export default function ProfilePage() {
 
       setCurrentUser(sessionUser);
 
-      // Fetch without complex generics; cast the result to UserData
       const { data } = await supabase
         .from("users")
         .select("*")
@@ -105,9 +99,6 @@ export default function ProfilePage() {
     loadProfile();
   }, []);
 
-  // ==========================
-  // 📌 Load Products
-  // ==========================
   useEffect(() => {
     if (!user) return;
 
@@ -145,9 +136,6 @@ export default function ProfilePage() {
     loadProducts();
   }, [user]);
 
-  // ==========================
-  // 📌 Save
-  // ==========================
   const handleSave = async () => {
     if (!user) return;
 
@@ -161,22 +149,14 @@ export default function ProfilePage() {
     };
 
     await supabase.from("users").update(updates).eq("id", user.id);
-
     setUser({ ...user, ...updates });
     setIsEditing(false);
   };
 
-  // ==========================
-  // 🔹 Toggle Follow
-  // ==========================
   const handleFollowToggle = async () => {
     setIsFollowing((prev) => !prev);
-    // TODO: Gọi Supabase để lưu trạng thái theo dõi thật
   };
 
-  // ==========================
-  // 🗑️ XÓA SẢN PHẨM
-  // ==========================
   const handleDelete = async (productId: string, imageUrl?: string) => {
     if (!currentUser || currentUser.id !== user?.id) return;
     if (!confirm("Bạn có chắc muốn xóa bài này?")) return;
@@ -212,40 +192,53 @@ export default function ProfilePage() {
 
   if (!user) return <p className="text-center py-20">Chưa đăng nhập</p>;
 
-  // 🔹 Xác định user có phải profile của chính mình
   const isOwnProfile = currentUser?.id === user?.id;
 
   return (
-    <div className="min-h-screen py-10">
-      <div className="max-w-3xl mx-auto bg-white rounded-2xl shadow p-8">
-        <ProfileHeader
-          isEditing={isEditing}
-          onEdit={() => setIsEditing(true)}
-          onCancel={() => setIsEditing(false)}
-          onSave={handleSave}
-          isFollowing={isFollowing}
-          onFollowToggle={handleFollowToggle}
-          isOwnProfile={isOwnProfile}
-        />
+    <div className="min-h-screen bg-gray-100">
 
-        <ProfileAvatar user={user} avatarUrl={formData.avatar_url} />
+      {/* 🔥 PROFILE FULL WIDTH */}
+      <div className="w-full bg-white shadow overflow-hidden">
 
-        <ProfileForm
-          isEditing={isEditing}
-          user={user}
-          formData={formData}
-          setFormData={setFormData}
-        />
+        {/* Banner full màn hình */}
+        <div className="relative">
+          <ProfileBanner bannerUrl={user.banner_url} />
 
-        <UserProducts
-          products={userProducts}
-          loading={loadingProducts}
-          user={user}
-          currentUser={currentUser}
-          router={router}
-          deleting={deleting}
-          onDelete={handleDelete}
-        />
+          {/* Avatar bên trái */}
+          <div className="absolute left-10 bottom-0 translate-y-1/2">
+            <ProfileAvatar user={user} avatarUrl={formData.avatar_url} />
+          </div>
+        </div>
+
+        {/* Nội dung giới hạn lại cho đẹp */}
+        <div className="pt-28 px-10 max-w-6xl mx-auto">
+          <ProfileHeader
+            isEditing={isEditing}
+            onEdit={() => setIsEditing(true)}
+            onCancel={() => setIsEditing(false)}
+            onSave={handleSave}
+            isFollowing={isFollowing}
+            onFollowToggle={handleFollowToggle}
+            isOwnProfile={isOwnProfile}
+          />
+
+          <ProfileForm
+            isEditing={isEditing}
+            user={user}
+            formData={formData}
+            setFormData={setFormData}
+          />
+
+          <UserProducts
+            products={userProducts}
+            loading={loadingProducts}
+            user={user}
+            currentUser={currentUser}
+            router={router}
+            deleting={deleting}
+            onDelete={handleDelete}
+          />
+        </div>
       </div>
     </div>
   );

@@ -35,7 +35,8 @@ export default function ProfileAvatar({
       <h2 className="text-xl font-semibold mt-3">
         {user.username || "Người dùng"}
       </h2>
-      <p className="text-sm text-gray-500">{user.email}</p>
+
+      {/* ❌ ĐÃ BỎ HIỂN THỊ EMAIL */}
     </div>
   );
 }

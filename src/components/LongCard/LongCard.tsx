@@ -38,7 +38,6 @@ export default function LongCard({
 
   const isSaved = saved.includes(product.id);
 
-  // user hiện tại
   const [currentUserId, setCurrentUserId] = useState<string | null>(null);
 
   useEffect(() => {
@@ -76,7 +75,6 @@ export default function LongCard({
         </Link>
 
         <div className="flex-1 min-w-0">
-          {/* TIÊU ĐỀ + LƯỢT XEM */}
           <div className="flex items-center justify-between gap-3">
             <Link href={`/PageDetail/${product.id}`} className="min-w-0">
               <div className="text-lg font-semibold text-gray-800 leading-snug truncate">
@@ -91,7 +89,6 @@ export default function LongCard({
             )}
           </div>
 
-          {/* GIÁ + COMMUNITY + AUTHOR */}
           <div className="mt-1 flex items-center gap-4 flex-wrap text-sm">
             {product.price != null && (
               <div className="text-base font-bold text-indigo-600 whitespace-nowrap">
@@ -99,7 +96,6 @@ export default function LongCard({
               </div>
             )}
 
-            {/* 👇 COMMUNITY – ÉP MÀU XÁM ĐẬM 100% */}
             {product.communityName && (
               <Link
                 href={`/communities/${product.community_id ?? ""}`}
@@ -130,17 +126,17 @@ export default function LongCard({
             </Link>
           </div>
 
-          {/* TAGS */}
+          {/* TAGS – GIỐNG Y HỆT SmallCardTags */}
           {product.tags && product.tags.length > 0 && (
             <div className="mt-1 flex items-center gap-1 flex-wrap">
               {product.tags.slice(0, 4).map((t, i) => (
-                <button
+                <div
                   key={i}
                   onClick={() => onTagClick?.(t)}
-                  className="text-xs bg-pink-50 text-purple-500 px-2 py-1 rounded-full hover:bg-pink-100 whitespace-nowrap cursor-pointer"
+                  className="text-xs bg-gray-200 text-gray-700 px-2 py-1 rounded-full hover:bg-gray-300 whitespace-nowrap cursor-pointer"
                 >
                   {t}
-                </button>
+                </div>
               ))}
               {product.tags.length > 4 && (
                 <div className="text-xs text-gray-400 whitespace-nowrap">
@@ -150,7 +146,6 @@ export default function LongCard({
             </div>
           )}
 
-          {/* ACTIONS */}
           <div className="mt-2 flex items-center gap-4">
             <button
               onClick={() => toggleLike(liked)}
@@ -181,7 +176,6 @@ export default function LongCard({
             </button>
           </div>
 
-          {/* META */}
           <div className="mt-2 text-sm text-gray-500 flex items-center gap-3 flex-wrap">
             {product.category && (
               <span className="whitespace-nowrap">{product.category}</span>

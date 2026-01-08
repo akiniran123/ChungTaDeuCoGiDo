@@ -19,7 +19,7 @@ export default function SmallCardImage({
 }: Props) {
   return (
     <Link
-      href={`/deal/${id}`}
+      href={`/PageDetail/${id}`}
       className="
         relative
         block

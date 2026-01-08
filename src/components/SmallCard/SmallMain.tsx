@@ -75,7 +75,7 @@ export default function SmallCardMain({
       </div>
 
       {/* TITLE */}
-      <Link href={`/deal/${product.id}`} className="block">
+      <Link href={`/PageDetail/${product.id}`} className="block">
         <div className="text-lg font-semibold text-gray-800 leading-snug line-clamp-2">
           {product.title}
         </div>

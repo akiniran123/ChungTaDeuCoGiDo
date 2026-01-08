@@ -57,7 +57,7 @@ export default function LongCard({
     >
       <div className="flex items-center gap-4 min-h-[200px]">
         <Link
-          href={`/deal/${product.id}`}
+          href={`/PageDetail/${product.id}`}
           className="flex-shrink-0 overflow-hidden w-[195px] h-[195px] bg-gray-100 rounded-lg relative"
         >
           {product.image_url ? (
@@ -78,7 +78,7 @@ export default function LongCard({
         <div className="flex-1 min-w-0">
           {/* TIÊU ĐỀ + LƯỢT XEM */}
           <div className="flex items-center justify-between gap-3">
-            <Link href={`/deal/${product.id}`} className="min-w-0">
+            <Link href={`/PageDetail/${product.id}`} className="min-w-0">
               <div className="text-lg font-semibold text-gray-800 leading-snug truncate">
                 {product.title}
               </div>

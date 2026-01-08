@@ -5,7 +5,7 @@ import {
   fetchTags,
   fetchCommunities,
   normalizeSuggestions,
-} from "@/lib/Search/searchService";
+} from "@/components/Search/hooks/searchService";
 import type { SuggestionItem } from "@/components/Search/types/search";
 
 export function useSuggestions(query: string, debounceMs = 300) {

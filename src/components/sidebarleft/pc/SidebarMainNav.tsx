@@ -94,7 +94,7 @@ export default function SidebarMainNav({
         <div
           onClick={() =>
             requireAuth(() => {
-              router.push("/protected/sell");
+              router.push("/sell");
             })
           }
           className={itemClass}

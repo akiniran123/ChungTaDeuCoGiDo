@@ -4,7 +4,7 @@ import { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
 import { supabase } from "@/lib/supabase/client";
 import type { Database } from "@/types/supabase";
-import CommunityForm from "@/components/CreatCommnunity/CommunityForm/CommunityForm";
+import CommunityForm from "@/components/CreatCommnunity/Component/CommunityForm";
 import CommunityList from "@/components/CreatCommnunity/Component/CommunityList";
 
 type Community = Database["public"]["Tables"]["communities"]["Row"];

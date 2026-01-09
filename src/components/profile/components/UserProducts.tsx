@@ -3,7 +3,7 @@
 import Image from "next/image";
 import type { Product } from "@/types";
 import type { User } from "@supabase/supabase-js";
-import type { UserData } from "../../../app/profile/page";
+import type { UserData } from "@/components/profile/type/types";
 
 /**
  * Minimal router-like interface used by this component.

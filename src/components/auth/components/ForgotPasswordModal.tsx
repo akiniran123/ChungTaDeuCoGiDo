@@ -1,41 +1,12 @@
 'use client';
 
 import { Dialog, Transition } from '@headlessui/react';
-import { Fragment, useState } from 'react';
-import { createPagesBrowserClient } from '@supabase/auth-helpers-nextjs';
-import type { Database } from '@/types/supabase';
+import { Fragment } from 'react';
+import { useForgotPassword } from '@/components/auth/hooks/use-forgot-password';
 
-export default function ForgotPasswordModal({
-  onClose,
-}: {
-  onClose: () => void;
-}) {
-  const supabase = createPagesBrowserClient<Database>();
-  const [email, setEmail] = useState('');
-  const [message, setMessage] = useState('');
-  const [error, setError] = useState('');
-  const [loading, setLoading] = useState(false);
-
-  const handleReset = async (e: React.FormEvent) => {
-    e.preventDefault();
-    setError('');
-    setMessage('');
-    setLoading(true);
-
-    const { error } = await supabase.auth.resetPasswordForEmail(email, {
-      redirectTo: `${location.origin}/reset-password`,
-    });
-
-    if (error) {
-      setError(error.message);
-    } else {
-      setMessage(
-        'Email đặt lại mật khẩu đã được gửi. Vui lòng kiểm tra hộp thư.'
-      );
-    }
-
-    setLoading(false);
-  };
+export default function ForgotPasswordModal({ onClose }: { onClose: () => void }) {
+  // Lấy toàn bộ logic từ hook
+  const { email, setEmail, message, error, loading, handleReset } = useForgotPassword();
 
   return (
     <Transition appear show as={Fragment}>
@@ -49,7 +20,7 @@ export default function ForgotPasswordModal({
           leaveFrom="opacity-100"
           leaveTo="opacity-0"
         >
-          <div className="fixed inset-0 bg-black bg-opacity-30" />
+          <div className="fixed inset-0 bg-black/30" />
         </Transition.Child>
 
         <div className="fixed inset-0 overflow-y-auto">
@@ -68,11 +39,10 @@ export default function ForgotPasswordModal({
                   Quên Mật Khẩu
                 </Dialog.Title>
 
+                {/* UI Form giữ nguyên nhưng code đã sạch hơn nhiều */}
                 <form onSubmit={handleReset} className="space-y-4 mt-4">
                   {error && <div className="text-red-500 text-sm">{error}</div>}
-                  {message && (
-                    <div className="text-green-600 text-sm">{message}</div>
-                  )}
+                  {message && <div className="text-green-600 text-sm">{message}</div>}
 
                   <div>
                     <label className="block text-sm text-gray-700 dark:text-gray-300 mb-1">

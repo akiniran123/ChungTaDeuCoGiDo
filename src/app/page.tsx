@@ -1,7 +1,7 @@
 "use client";
 
 import ProductsList from "@/components/ProductsList/ProductsList";
-import { useProductsData } from "./hooks/useProductsData";
+import { useProductsData } from "@/components/Trang_chu/hooks/useProductsData";
 import { Loader2 } from "lucide-react";
 
 export default function ProductsPage() {

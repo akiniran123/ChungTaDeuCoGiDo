@@ -9,7 +9,7 @@ import { FcGoogle } from "react-icons/fc";
 import Image from "next/image";
 import { supabase } from "@/lib/supabase/client";
 import SignUpModal from "@/components/auth/SignUpModal";
-import ForgotPasswordModal from "@/components/auth/ForgotPasswordModal";
+import ForgotPasswordModal from "@/components/auth/components/ForgotPasswordModal";
 import { useRouter } from "next/navigation";
 import { Eye, EyeOff } from "lucide-react"; // icon mắt thần
 

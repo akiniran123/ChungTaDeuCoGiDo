@@ -47,7 +47,7 @@ export async function POST(req: NextRequest) {
       return NextResponse.json({ error: "Failed to check membership" }, { status: 500 });
     }
 
-    const role = (memberRows as any)?.role;
+    const { role } = memberRows as { role: string };
     const allowed = ["owner", "admin", "mod"];
     if (!role || !allowed.includes(role)) {
       return NextResponse.json({ error: "Forbidden" }, { status: 403 });

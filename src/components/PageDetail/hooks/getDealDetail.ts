@@ -110,17 +110,18 @@ export async function getDealDetail(id: string): Promise<DealDetailResult | null
     .order("created_at", { ascending: true });
 
   const comments: Comment[] =
-    (commentsRaw as CommentWithUsersRow[] | null)?.map((c) => ({
-      id: c.id,
-      product_id: c.product_id,
-      user_id: c.user_id,
-      content: c.content ?? "",
-      created_at: c.created_at ?? new Date().toISOString(),
-      user: {
-        username: c.users?.username ?? "Người dùng",
-        avatar_url: c.users?.avatar_url ?? "/default-avatar.png",
-      },
-    })) ?? [];
+  (commentsRaw as CommentWithUsersRow[] | null)?.map((c) => ({
+    id: c.id,
+    // Add the fallback "" or handle the null case
+    product_id: c.product_id ?? "", 
+    user_id: c.user_id ?? "",       
+    content: c.content ?? "",
+    created_at: c.created_at ?? new Date().toISOString(),
+    user: {
+      username: c.users?.username ?? "Người dùng",
+      avatar_url: c.users?.avatar_url ?? "/default-avatar.png",
+    },
+  })) ?? [];
 
   /* 4. LIKES COUNT */
   const { count } = await supabase

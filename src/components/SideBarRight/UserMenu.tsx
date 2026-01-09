@@ -46,26 +46,13 @@ export default function UserMenu() {
     return <Loader2 className="w-5 h-5 animate-spin text-gray-500 mx-auto" />
   }
 
-  /* ======================
-     CHƯA ĐĂNG NHẬP
-  ====================== */
   if (!user) {
     return (
       <>
         <div className="w-full flex justify-center">
           <button
             onClick={() => setShowLogin(true)}
-            className="
-              px-4 py-2
-              rounded-md
-              text-sm
-              font-medium
-              text-gray-700
-              hover:text-[#9b4de0]
-              hover:bg-gray-50
-              transition
-              cursor-pointer
-            "
+            className="px-4 py-2 rounded-md text-sm font-medium text-gray-700 hover:text-[#9b4de0] hover:bg-gray-50 transition cursor-pointer"
           >
             Đăng nhập
           </button>
@@ -84,9 +71,6 @@ export default function UserMenu() {
     )
   }
 
-  /* ======================
-     ĐÃ ĐĂNG NHẬP
-  ====================== */
   const avatar = userData?.avatar_url
   const username = userData?.username || ''
 
@@ -103,11 +87,7 @@ export default function UserMenu() {
               />
             ) : (
               <div className="w-8 h-8 rounded-full bg-gray-300 flex items-center justify-center">
-                <svg
-                  className="w-5 h-5 text-gray-500"
-                  fill="currentColor"
-                  viewBox="0 0 24 24"
-                >
+                <svg className="w-5 h-5 text-gray-500" fill="currentColor" viewBox="0 0 24 24">
                   <path d="M12 12c2.7 0 4.8-2.1 4.8-4.8S14.7 2.4 12 2.4 7.2 4.5 7.2 7.2 9.3 12 12 12zm0 2.4c-3.2 0-9.6 1.6-9.6 4.8v2.4h19.2v-2.4c0-3.2-6.4-4.8-9.6-4.8z" />
                 </svg>
               </div>
@@ -123,7 +103,8 @@ export default function UserMenu() {
             <HeadlessMenu.Item>
               {({ active }) => (
                 <button
-                  onClick={() => router.push('/profile')}
+                  /* 🚀 CẬP NHẬT Ở ĐÂY: Sử dụng template literal để truyền user.id */
+                  onClick={() => router.push(`/profile/${user.id}`)}
                   className={`block w-full px-4 py-2 text-left cursor-pointer ${
                     active ? 'bg-gray-100' : ''
                   }`}
@@ -140,7 +121,7 @@ export default function UserMenu() {
                     await supabase.auth.signOut()
                     setUser(null)
                     setUserData(null)
-                    router.push('/')      // ✅ ĐẨY VỀ TRANG CHÍNH
+                    router.push('/')
                     router.refresh()
                   }}
                   className={`block w-full px-4 py-2 text-left text-red-500 cursor-pointer ${

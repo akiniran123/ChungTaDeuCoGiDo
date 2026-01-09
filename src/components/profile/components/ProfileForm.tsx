@@ -1,6 +1,6 @@
 "use client";
 
-import type { UserData, ProfileFormData } from "../../app/profile/page";
+import type { UserData, ProfileFormData } from "../../../app/profile/page";
 import React from "react";
 
 export default function ProfileForm({

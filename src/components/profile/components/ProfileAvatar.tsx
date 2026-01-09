@@ -1,7 +1,7 @@
 "use client";
 
 import Image from "next/image";
-import type { UserData } from "../../app/profile/page";
+import type { UserData } from "@/components/profile/type/types";
 
 export default function ProfileAvatar({
   user,

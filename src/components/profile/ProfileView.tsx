@@ -44,7 +44,7 @@ export default function ProfileView({ profileId }: { profileId: string }) {
     return <p className="text-center py-20">Không tìm thấy người dùng</p>;
 
   return (
-    <div className="max-w-3xl mx-auto bg-white rounded-2xl shadow p-8">
+    <div className="w-full min-h-screen bg-white px-6 py-8">
       <ProfileHeader
         isEditing={isEditing}
         isOwnProfile={isOwnProfile}
@@ -55,10 +55,21 @@ export default function ProfileView({ profileId }: { profileId: string }) {
         onFollowToggle={toggleFollow}
       />
 
-      {/* ✅ PROFILE BANNER – ĐÚNG PROPS */}
-      <ProfileBanner bannerUrl={null} />
+      {/* ===== BANNER + AVATAR (GÓC DƯỚI TRÁI) ===== */}
+      <div className="relative mt-6">
+        {/* BANNER */}
+        <div className="h-48 w-full overflow-hidden rounded-xl">
+          <ProfileBanner bannerUrl={null} />
+        </div>
 
-      <ProfileAvatar user={user} avatarUrl={formData.avatar_url} />
+        {/* AVATAR + NAME - GÓC DƯỚI TRÁI */}
+        <div className="absolute left-6 bottom-0 translate-y-1/2 z-10">
+          <ProfileAvatar user={user} avatarUrl={formData.avatar_url} />
+        </div>
+      </div>
+
+      {/* chừa khoảng trống vì avatar đè ra ngoài banner */}
+      <div className="h-20" />
 
       <ProfileForm
         isEditing={isEditing && isOwnProfile}

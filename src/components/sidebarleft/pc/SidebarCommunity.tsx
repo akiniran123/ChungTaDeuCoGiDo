@@ -8,7 +8,7 @@ import { supabase } from "@/lib/supabase/client";
 import { useRouter } from "next/navigation";
 
 // 🔐 Login modal
-import LoginModal from "@/components/auth/LoginModal";
+import LoginModal from "@/components/auth/components/LoginModal";
 
 type Community = {
   id: string;
@@ -36,22 +36,24 @@ export default function SidebarCommunity() {
       }
 
       const { data: rows } = await supabase
-        .from("community_members")
-        .select(`
-          community_id,
-          communities (
-            id,
-            title,
-            avatar_url
-          )
-        `)
-        .eq("user_id", data.user.id);
+  .from("community_members")
+  .select(`
+    community_id,
+    communities (
+      id,
+      title,
+      avatar_url
+    )
+  `)
+  .eq("user_id", data.user.id);
 
-      const mapped: Community[] = (rows || [])
-        .map((item) => item.communities)
-        .filter(Boolean);
+// 1. We cast the result of map to ensure TS knows it's an array of the nested object
+// 2. We use a Type Guard in filter or cast the final result
+const mapped: Community[] = (rows || [])
+  .map((item) => item.communities)
+  .filter((community): community is Community => community !== null); // Type Guard
 
-      setCommunities(mapped);
+setCommunities(mapped);
       setLoading(false);
     }
 

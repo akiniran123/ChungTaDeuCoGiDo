@@ -2,31 +2,32 @@
 
 import { useState } from "react";
 import { Loader2 } from "lucide-react";
+import { useRouter } from "next/navigation"; // Thêm router để truyền vào component con
 import { useProfileData } from "./hooks/useProfileData";
-// Đảm bảo import đúng đường dẫn
 import ProfileHeader from "@/components/profile/components/ProfileHeader";
 import ProfileAvatar from "@/components/profile/components/ProfileAvatar";
 import ProfileForm from "@/components/profile/components/ProfileForm";
 import UserProducts from "@/components/profile/components/UserProducts";
 
 export default function ProfileView({ profileId }: { profileId: string }) {
-  // 1. Lấy đầy đủ các biến từ Hook (đã bỏ any ở hook trước đó)
+  const router = useRouter(); // Khởi tạo router
+  const [deleting, setDeleting] = useState<string | null>(null);
+
   const { 
     user, 
     userProducts, 
     loading, 
     isOwnProfile, 
-    isFollowing,       // Thêm cái này
-    toggleFollow,      // Thêm cái này (tên hàm tùy bạn đặt ở hook)
-    formData,          // Dùng formData từ hook thay vì tạo mới ở đây
-    setFormData 
+    isFollowing,       
+    toggleFollow,      
+    formData,          
+    setFormData,
+    currentUser // Lấy thêm currentUser từ hook
   } = useProfileData(profileId);
 
   const [isEditing, setIsEditing] = useState(false);
 
-  // Hàm xử lý lưu (tạm thời)
   const handleSave = async () => {
-    // Gọi logic lưu ở đây hoặc từ hook
     setIsEditing(false);
   };
 
@@ -35,15 +36,14 @@ export default function ProfileView({ profileId }: { profileId: string }) {
 
   return (
     <div className="max-w-3xl mx-auto bg-white rounded-2xl shadow p-8">
-      {/* 2. Truyền đầy đủ props vào ProfileHeader */}
       <ProfileHeader
         isEditing={isEditing}
         isOwnProfile={isOwnProfile}
         onEdit={() => setIsEditing(true)}
         onSave={handleSave}
         onCancel={() => setIsEditing(false)}
-        isFollowing={isFollowing}           // Truyền prop thiếu
-        onFollowToggle={toggleFollow}        // Truyền prop thiếu
+        isFollowing={isFollowing}           
+        onFollowToggle={toggleFollow}        
       />
 
       <ProfileAvatar user={user} avatarUrl={formData.avatar_url} />
@@ -51,19 +51,22 @@ export default function ProfileView({ profileId }: { profileId: string }) {
       <ProfileForm
         isEditing={isEditing && isOwnProfile}
         user={user}
-        formData={formData}                  // Dùng trực tiếp formData từ hook
+        formData={formData}                  
         setFormData={setFormData}
       />
 
-      {/* Lưu ý: Component UserProducts của bạn có thể cần thêm các props khác 
-          như loading, currentUser, router, deleting tùy vào file gốc */}
+      {/* Sửa lại phần này để khớp chính xác với Interface của UserProducts */}
       <UserProducts
         products={userProducts}
-        user={user}
-        isOwnProfile={isOwnProfile}
-        onDelete={(id) => {
+        loading={false}            // Prop yêu cầu
+        user={user}                // Prop yêu cầu
+        currentUser={currentUser}  // Prop yêu cầu
+        router={router}            // Prop yêu cầu
+        deleting={deleting}        // Prop yêu cầu
+        onDelete={(productId, imageUrl) => { // Tham số yêu cầu đúng định dạng
           if(confirm("Xóa sản phẩm này?")) {
-             // Logic xóa
+             // Gọi hàm xóa của bạn ở đây
+             console.log("Xóa:", productId);
           }
         }}
       />

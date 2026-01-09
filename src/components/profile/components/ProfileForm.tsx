@@ -1,8 +1,25 @@
 "use client";
 
-import type { UserData, ProfileFormData } from "../../../app/profile/page";
 import React from "react";
 
+/* ================== TYPES ================== */
+export type UserData = {
+  username?: string | null;
+  avatar_url?: string | null;
+  address?: string | null;
+  phone?: string | null;
+  birth?: string | null;
+};
+
+export type ProfileFormData = {
+  username: string;
+  avatar_url: string;
+  address: string;
+  phone: string;
+  birth: string;
+};
+
+/* ================== COMPONENT ================== */
 export default function ProfileForm({
   isEditing,
   user,
@@ -24,15 +41,17 @@ export default function ProfileForm({
     );
   }
 
+  const fields: Record<keyof ProfileFormData, string> = {
+    username: "Tên người dùng",
+    avatar_url: "Avatar URL",
+    address: "Địa chỉ",
+    phone: "Số điện thoại",
+    birth: "Ngày sinh",
+  };
+
   return (
     <div className="mt-6 space-y-4">
-      {Object.entries({
-        username: "Tên người dùng",
-        avatar_url: "Avatar URL",
-        address: "Địa chỉ",
-        phone: "Số điện thoại",
-        birth: "Ngày sinh",
-      }).map(([key, label]) => {
+      {Object.entries(fields).map(([key, label]) => {
         const typedKey = key as keyof ProfileFormData;
         const isBirth = key === "birth";
 
@@ -43,7 +62,7 @@ export default function ProfileForm({
               type={isBirth ? "date" : "text"}
               value={formData[typedKey]}
               onChange={(e) =>
-                setFormData((prev) => ({
+                setFormData((prev: ProfileFormData) => ({
                   ...prev,
                   [typedKey]: e.target.value,
                 }))

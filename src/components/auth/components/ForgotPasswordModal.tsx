@@ -2,7 +2,7 @@
 
 import { Dialog, Transition } from '@headlessui/react';
 import { Fragment } from 'react';
-import { useForgotPassword } from '@/components/auth/hooks/use-forgot-password';
+import { useForgotPassword } from '@/components/auth/hooks/useForgotPassword';
 
 export default function ForgotPasswordModal({ onClose }: { onClose: () => void }) {
   // Lấy toàn bộ logic từ hook

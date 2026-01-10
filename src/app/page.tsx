@@ -11,7 +11,6 @@ export default function ProductsPage() {
     commentsCount, 
     likedIds, 
     setLikedIds, 
-    userBadges, 
     loading 
   } = useProductsData();
 
@@ -30,7 +29,7 @@ export default function ProductsPage() {
         commentsCount={commentsCount}
         likedIds={likedIds}
         setLikedIds={setLikedIds}
-        userBadges={userBadges} biggerGrid={false}      />
+             />
     </div>
   );
 }

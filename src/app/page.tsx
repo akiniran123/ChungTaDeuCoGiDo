@@ -30,8 +30,7 @@ export default function ProductsPage() {
         commentsCount={commentsCount}
         likedIds={likedIds}
         setLikedIds={setLikedIds}
-        userBadges={userBadges}
-      />
+        userBadges={userBadges} biggerGrid={false}      />
     </div>
   );
 }

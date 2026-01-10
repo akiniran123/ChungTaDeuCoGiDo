@@ -1,13 +1,12 @@
 "use client";
 
-import { useEffect, useMemo, useRef, useState } from "react";
-import HeaderBar from "@/components/HeaderBar/components/HeaderBar";
-import { useScrollHeader } from "@/components/HeaderBar/hooks/useScrollHeader";
-import { useGridToggle } from "@/components/ProductsList/hooks/useGridToggle";
+import { useMemo, useState } from "react";
 import TagFilter from "@/components/ProductsList/components/TagFilter";
 import ProductsGrid from "@/components/ProductsList/components/ProductsGrid";
+import { useGridContext } from "@/components/layouts/AppLayout"; // Đường dẫn tới AppLayout của bạn
 import type { ProductsListProps } from "@/components/ProductsList/types/products";
 
+// Sử dụng trực tiếp ProductsListProps gốc, không cần Extended vì biggerGrid lấy từ Context
 export default function ProductsList({
   products,
   likesCount,
@@ -16,39 +15,11 @@ export default function ProductsList({
   setLikedIds,
 }: ProductsListProps) {
   const [activeTag, setActiveTag] = useState<string | null>(null);
-  const [selectedCategory, setSelectedCategory] = useState<string | null>(null);
 
-  // useScrollHeader (mới) trả về showHeader và forceShow
-  const { showHeader, forceShow } = useScrollHeader();
-  const { biggerGrid, toggleGrid } = useGridToggle();
+  // Lấy trạng thái từ AppLayout Context
+  const { biggerGrid } = useGridContext();
 
-  // track last scroll position locally so we can restore it after layout change
-  const lastScrollY = useRef<number>(typeof window !== "undefined" ? window.scrollY : 0);
-
-  // update lastScrollY on scroll (passive listener for performance)
-  useEffect(() => {
-    const onScroll = () => {
-      lastScrollY.current = window.scrollY || document.documentElement.scrollTop || 0;
-    };
-    window.addEventListener("scroll", onScroll, { passive: true });
-    return () => window.removeEventListener("scroll", onScroll);
-  }, []);
-
-  // When toggling grid size, restore scroll position and force header visible
-  const handleToggleGrid = () => {
-    // toggle grid state
-    toggleGrid();
-
-    // force header to show immediately (so user sees controls)
-    forceShow();
-
-    // restore scroll position after layout change; use a small timeout to allow reflow
-    const top = lastScrollY.current || 0;
-    window.setTimeout(() => {
-      window.scrollTo({ top, behavior: "auto" });
-    }, 50);
-  };
-
+  // Lọc sản phẩm dựa trên tag đã chọn
   const visibleProducts = useMemo(
     () => (activeTag ? products.filter((p) => p.tags?.includes(activeTag)) : products),
     [products, activeTag]
@@ -56,17 +27,10 @@ export default function ProductsList({
 
   return (
     <div className="px-6 pb-6">
-      {showHeader && (
-        <HeaderBar
-          biggerGrid={biggerGrid}
-          toggleGrid={handleToggleGrid}
-          selectedCategory={selectedCategory}
-          setSelectedCategory={setSelectedCategory}
-        />
-      )}
-
+      {/* 1. Thanh lọc Tag */}
       <TagFilter activeTag={activeTag} onClear={() => setActiveTag(null)} />
 
+      {/* 2. Lưới sản phẩm - Tự động thay đổi khi toggle ở HeaderBar (thông qua Context) */}
       <ProductsGrid
         products={visibleProducts}
         biggerGrid={biggerGrid}

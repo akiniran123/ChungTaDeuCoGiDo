@@ -12,18 +12,19 @@ export default function ProfileAvatar({
 }) {
   return (
     <div className="flex flex-col items-center mt-6">
-      <div className="w-32 h-32 rounded-full overflow-hidden border shadow">
+      {/* 🔽 Avatar nhỏ hơn nữa */}
+      <div className="w-16 h-16 rounded-full overflow-hidden border shadow">
         {avatarUrl ? (
           <Image
             src={avatarUrl}
             alt="avatar"
-            width={128}
-            height={128}
+            width={64}
+            height={64}
             className="object-cover w-full h-full"
           />
         ) : (
           <svg
-            className="w-full h-full p-8 text-gray-400"
+            className="w-full h-full p-4 text-gray-400"
             fill="currentColor"
             viewBox="0 0 24 24"
           >
@@ -32,7 +33,8 @@ export default function ProfileAvatar({
         )}
       </div>
 
-      <h2 className="text-xl font-semibold mt-3">
+      {/* 🔽 Tên user giữ nguyên như cũ */}
+      <h2 className="text-sm font-medium mt-2">
         {user.username || "Người dùng"}
       </h2>
 

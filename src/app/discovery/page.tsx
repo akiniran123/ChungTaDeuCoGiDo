@@ -1,4 +1,4 @@
-import CommunitiesView from "@/components/communities/CommunitiesView";
+import CommunitiesView from "@/components/Discover/CommunitiesView";
 import type { Metadata } from "next";
 
 export const metadata: Metadata = {

@@ -40,7 +40,7 @@ export default function SidebarLeft() {
   return (
     <>
       {/* --- PC SIDEBAR --- */}
-      <aside className="hidden md:flex fixed left-0 top-0 w-64 h-screen bg-white shadow-sm flex-col z-40 border-r">
+      <aside className="hidden md:flex fixed left-0 top-0 w-64 h-screen bg-white shadow-sm flex-col z-40 ">
         <div className="mt-6 mb-4 px-4"><Logo /></div>
         <SidebarMainNav 
           activePanel={activePanel} 

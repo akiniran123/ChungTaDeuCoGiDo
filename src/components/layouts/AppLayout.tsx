@@ -42,7 +42,7 @@ export default function AppLayout({ children }: { children: React.ReactNode }) {
         <div
           className={`
             fixed top-0 right-0 left-0 z-40
-            bg-white border-b transition-transform duration-300 ease-in-out
+            bg-white  transition-transform duration-300 ease-in-out
             ${showHeader ? "translate-y-0" : "-translate-y-full"}
             /* Đảm bảo nội dung header không bị Sidebar che khuất */
             md:pl-64 
@@ -70,7 +70,7 @@ export default function AppLayout({ children }: { children: React.ReactNode }) {
 
         {/* 4. SIDEBAR PHẢI - Nổi lên trên cùng (Z-50) */}
         <aside
-          className="hidden xl:block fixed right-0 top-0 bg-white border-l overflow-y-auto"
+          className="hidden xl:block fixed right-0 top-0 bg-white  overflow-y-auto"
           style={{ width: 300, height: "100vh", zIndex: 50 }}
         >
           <SidebarRight selectedCategory={selectedCategory} />

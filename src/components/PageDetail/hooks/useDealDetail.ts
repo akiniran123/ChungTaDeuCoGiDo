@@ -9,25 +9,28 @@ export function useDealDetail(dealId?: string | null) {
   const [loading, setLoading] = useState(true);
   const [commentCount, setCommentCount] = useState(0);
 
-  // increase view once per client
+  // 1. Tăng lượt xem (Sử dụng hàm increment_views có sẵn trong DB)
   useEffect(() => {
     if (!dealId) return;
     const key = `viewed_product_${dealId}`;
     if (localStorage.getItem(key)) return;
 
-    const increaseView = async () => {
-      try {
-        await supabase.rpc("increment_product_view", { p_product_id: dealId });
-        localStorage.setItem(key, "true");
-      } catch (err) {
-        console.error("Increase view error:", err);
-      }
-    };
+   // Tìm đến hàm increaseView bên trong useEffect của bạn
+const increaseView = async () => {
+  try {
+    // Thay p_product_id thành pid
+    await supabase.rpc("increment_views", { pid: dealId }); 
+    
+    localStorage.setItem(key, "true");
+  } catch (err) {
+    console.error("Increase view error:", err);
+  }
+};
 
     increaseView();
   }, [dealId]);
 
-  // fetch detail
+  // 2. Lấy dữ liệu chi tiết
   useEffect(() => {
     if (!dealId) return;
     setLoading(true);
@@ -48,7 +51,7 @@ export function useDealDetail(dealId?: string | null) {
       .finally(() => setLoading(false));
   }, [dealId]);
 
-  // handle like
+  // 3. Xử lý Like
   const handleLike = useCallback(async () => {
     if (!data) return;
 

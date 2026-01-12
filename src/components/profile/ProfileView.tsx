@@ -17,7 +17,7 @@ export default function ProfileView({ profileId }: { profileId: string }) {
 
   const {
     user,
-    userProducts,
+    
     loading,
     isOwnProfile,
     isFollowing,
@@ -78,19 +78,7 @@ export default function ProfileView({ profileId }: { profileId: string }) {
         setFormData={setFormData}
       />
 
-      <UserProducts
-        products={userProducts}
-        loading={false}
-        user={user}
-        currentUser={currentUser}
-        router={router}
-        deleting={deleting}
-        onDelete={(productId, imageUrl) => {
-          if (confirm("Xóa sản phẩm này?")) {
-            console.log("Xóa:", productId);
-          }
-        }}
-      />
+      
     </div>
   );
 }

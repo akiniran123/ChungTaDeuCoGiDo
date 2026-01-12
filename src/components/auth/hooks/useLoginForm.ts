@@ -28,34 +28,29 @@ export const useLoginForm = (onLoginSuccess?: () => void) => {
     resolver: zodResolver(loginSchema),
   });
 
-  // Thay thế 'any' bằng type 'User' từ supabase-js
   const createUserProfile = async (user: User) => {
     try {
       const { data: existingUser, error: fetchError } = await supabase
         .from("users")
         .select("*")
         .eq("id", user.id)
-        .single();
+        .maybeSingle(); // Sử dụng maybeSingle để tránh lỗi đỏ khi không tìm thấy
 
-      // Kiểm tra code lỗi PostgREST cụ thể
-      if (fetchError && (fetchError as { code?: string }).code !== "PGRST116") {
-        throw fetchError;
-      }
+      if (fetchError) throw fetchError;
 
       if (!existingUser) {
+        // Chỉ giữ lại các thuộc tính có trong bảng users hiện tại
         const newUser: UserInsert = {
           id: user.id,
           email: user.email ?? "",
           username: user.user_metadata?.full_name || (user.email ?? "Unknown"),
           avatar_url: user.user_metadata?.avatar_url || null,
           created_at: new Date().toISOString(),
-          karma: 0,
-          is_online: true,
         };
+        
         await supabase.from("users").insert([newUser]);
-      } else {
-        await supabase.from("users").update({ is_online: true }).eq("id", user.id);
       }
+      // Bỏ phần update is_online vì bảng chưa có cột này
     } catch (err) {
       console.error("❌ Lỗi tạo hồ sơ:", err);
     }
@@ -77,7 +72,6 @@ export const useLoginForm = (onLoginSuccess?: () => void) => {
       onLoginSuccess?.();
       window.location.href = "/";
     } catch (err: unknown) {
-      // Xử lý lỗi một cách an toàn thay vì dùng any
       if (err instanceof Error) {
         setErrorMsg(err.message);
       } else {

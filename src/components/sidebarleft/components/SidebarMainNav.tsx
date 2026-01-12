@@ -70,11 +70,7 @@ export default function SidebarMainNav({
           <span>Trang chủ</span>
         </Link>
 
-        {/* Khám phá */}
-        <Link href="/discovery" className={itemClass} onClick={() => setActivePanel(null)}>
-          <Compass className="w-6 h-6" />
-          <span>Khám phá</span>
-        </Link>
+    
 
         {/* Tin nhắn */}
         <div
@@ -90,26 +86,9 @@ export default function SidebarMainNav({
           )}
         </div>
 
-        {/* Bán hàng */}
-        <div
-          onClick={() => requireAuth(() => {
-            setActivePanel(null); // Đóng panel trước khi chuyển trang
-            router.push("/sell");
-          })}
-          className={itemClass}
-        >
-          <ShoppingBag className="w-6 h-6" />
-          <span>Bán hàng</span>
-        </div>
+     
 
-        {/* Thông báo */}
-        <div
-          onClick={() => requireAuth(() => togglePanel("news"))}
-          className={`${itemClass} ${activePanel === "news" ? activeClass : ""}`}
-        >
-          <Newspaper className="w-6 h-6" />
-          <span>Thông báo</span>
-        </div>
+       
       </nav>
 
       {showLogin && (

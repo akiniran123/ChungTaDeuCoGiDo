@@ -44,6 +44,10 @@ export const useLoginModal = ({ onLoginSuccess, redirectTo, onClose }: UseLoginM
 
   const form = useForm<LoginFormSchema>({
     resolver: zodResolver(loginSchema),
+    defaultValues: {
+      email: "",
+      password: "",
+    }
   });
 
   const onSubmit = async (data: LoginFormSchema) => {
@@ -96,6 +100,28 @@ export const useLoginModal = ({ onLoginSuccess, redirectTo, onClose }: UseLoginM
     }
   };
 
+  const handleAnonymousLogin = async () => {
+    try {
+      setLoading(true);
+      setErrorMsg("");
+      
+      const { error } = await supabase.auth.signInAnonymously();
+      if (error) throw error;
+
+      router.refresh();
+      onLoginSuccess?.();
+      onClose();
+    } catch (err: unknown) {
+      if (err instanceof Error) {
+        setErrorMsg(err.message);
+      } else {
+        setErrorMsg("Đăng nhập ẩn danh thất bại");
+      }
+    } finally {
+      setLoading(false);
+    }
+  };
+
   return {
     mounted,
     loading,
@@ -107,5 +133,6 @@ export const useLoginModal = ({ onLoginSuccess, redirectTo, onClose }: UseLoginM
     form,
     onSubmit,
     handleGoogleLogin,
+    handleAnonymousLogin,
   };
 };

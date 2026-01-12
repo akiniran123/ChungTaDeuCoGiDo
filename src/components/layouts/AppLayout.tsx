@@ -40,7 +40,7 @@ export default function AppLayout({ children }: { children: React.ReactNode }) {
           style={{ width: 300, height: "100vh", zIndex: 50 }}
         >
           {/* Đã bỏ selectedCategory vì không còn HeaderBar để chọn */}
-          <SidebarRight selectedCategory={null} />
+          <SidebarRight  />
         </aside>
       </div>
     </GridContext.Provider>

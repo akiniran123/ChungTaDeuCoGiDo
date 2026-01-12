@@ -12,7 +12,7 @@ type Props = {
 
 export default function SearchInput({ value, onChange, onSubmit, onFocus }: Props) {
   return (
-    <form onSubmit={onSubmit} className="flex w-full items-center bg-white rounded-full shadow-sm border border-gray-200 px-2 h-12">
+    <form onSubmit={onSubmit} className="flex w-full items-center bg-white rounded-full shadow-sm border border-gray-200 px-2 h-10">
       <Search size={14} className="text-gray-400 mr-2" />
       <input
         type="text"

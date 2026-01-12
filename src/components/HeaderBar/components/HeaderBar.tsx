@@ -2,7 +2,7 @@
 
 import { LayoutGrid, Grid } from "lucide-react";
 import SearchBar from "@/components/Search/components/SearchBar";
-import React, { forwardRef } from "react";
+import React, { forwardRef, useState, useRef, useEffect } from "react";
 
 type Props = {
   biggerGrid: boolean;
@@ -11,6 +11,8 @@ type Props = {
   setSelectedCategory: (c: string | null) => void;
   categories?: string[];
 };
+
+const FILTER_TABS = ["For you", "Hottest", "Trending"];
 
 const HeaderBar = forwardRef<HTMLDivElement, Props>(({
   biggerGrid,
@@ -23,55 +25,88 @@ const HeaderBar = forwardRef<HTMLDivElement, Props>(({
     "Industrial equipment", "Home & Garden"
   ],
 }, ref) => {
+  const [activeTab, setActiveTab] = useState("For you");
+  const [underlineStyle, setUnderlineStyle] = useState({ left: 0, width: 0 });
+  const tabsRef = useRef<(HTMLButtonElement | null)[]>([]);
+
+  // Tính toán vị trí gạch chân cho thanh dưới
+  useEffect(() => {
+    const activeIndex = FILTER_TABS.indexOf(activeTab);
+    const activeRoute = tabsRef.current[activeIndex];
+    if (activeRoute) {
+      setUnderlineStyle({
+        left: activeRoute.offsetLeft,
+        width: activeRoute.offsetWidth,
+      });
+    }
+  }, [activeTab]);
+
   return (
-    <div 
-      ref={ref}
-      className="bg-white w-full border-b border-gray-100"
-    >
-      {/* 1. Categories Row - Căn giữa */}
-      <div className="flex justify-center border-b border-gray-50">
-        <div className="flex items-center text-[12px] overflow-x-auto no-scrollbar px-2 py-2 w-fit max-w-full">
-          {categories.map((cat) => (
+    <div ref={ref} className="bg-white w-full ">
+      
+      {/* 1. Thanh Danh Mục (Top Menu) */}
+      <div className="flex justify-center ">
+        <div className="flex items-center overflow-x-auto no-scrollbar px-6 py-1 gap-2">
+          {categories.map((cat) => {
+            const isActive = selectedCategory === cat;
+            return (
+              <button
+                key={cat}
+                onClick={() => setSelectedCategory(cat)}
+                className={`relative py-3 px-1 text-[13px] transition-all duration-200 whitespace-nowrap outline-none ${
+                  isActive ? "text-[#ff4500] font-bold" : "text-gray-500 font-normal hover:text-gray-800"
+                }`}
+              >
+                {cat}
+              </button>
+            );
+          })}
+        </div>
+      </div>
+
+      {/* 2. Thanh Công cụ (Toolbar) - Giảm gap từ 8 xuống 2 để các phần tử sát nhau */}
+      <div className="max-w-[1440px] mx-auto px-6 flex items-center justify-between gap-2 h-[64px]">
+        
+        {/* Nhóm Filter Tabs - Căn trái */}
+        <div className="relative flex items-center h-full">
+          {FILTER_TABS.map((tab, index) => (
             <button
-              key={cat}
-              onClick={() => setSelectedCategory(cat)}
-              className={`whitespace-nowrap px-4 py-2 rounded-full text-sm font-medium cursor-pointer transition-colors ${
-                selectedCategory === cat
-                  ? "bg-red-100 text-red-700 shadow-sm"
-                  : "text-gray-700 hover:bg-gray-50"
+              key={tab}
+              ref={(el) => { tabsRef.current[index] = el; }}
+              onClick={() => setActiveTab(tab)}
+              className={`relative h-full px-4 text-[15px] transition-colors duration-300 outline-none ${
+                activeTab === tab ? "text-[#ff4500] font-bold" : "text-gray-400 hover:text-black font-medium"
               }`}
             >
-              {cat}
+              {tab}
             </button>
           ))}
+          {/* Underline chạy mượt */}
+          <div 
+            className="absolute bottom-0 h-[3px] bg-[#ff4500] rounded-t-full transition-all duration-300"
+            style={{ left: underlineStyle.left, width: underlineStyle.width }}
+          />
         </div>
-      </div>
 
-      {/* 2. Search Bar Row - Căn giữa và giới hạn độ rộng */}
-      <div className="py-3 px-4 flex justify-center">
-        <div className="w-full max-w-3xl"> 
-          <SearchBar userId={"demo-user"} onSearch={(q) => console.log("Searching:", q)} />
+        {/* Thanh tìm kiếm - Giữ nguyên logic của bạn */}
+        <div className="flex-grow max-w-[600px]">
+           <div className="bg-[#F5F5F5] rounded-full px-1">
+              <SearchBar 
+                userId={"demo-user"} 
+                onSearch={(q) => console.log("Searching:", q)} 
+              />
+           </div>
         </div>
-      </div>
 
-      {/* 3. Filters Row - Căn giữa */}
-      <div className="pb-3 flex items-center justify-center gap-4 px-4">
-        <button className="flex items-center gap-1 px-3 py-1.5 text-sm font-medium text-gray-700 hover:bg-gray-100 rounded-md border border-transparent">
-          <span>Sắp xếp: Best</span>
-          <svg className="w-4 h-4 text-gray-500" fill="none" stroke="currentColor" strokeWidth="2" viewBox="0 0 24 24">
-            <path d="M19 9l-7 7-7-7" />
-          </svg>
-        </button>
-
-        <div className="h-4 w-[1px] bg-gray-200"></div> {/* Thanh chia nhỏ */}
-
+        {/* Nút Chế độ xem */}
         <button
           onClick={toggleGrid}
-          className="flex items-center gap-2 px-3 py-1.5 text-sm font-medium text-gray-700 rounded-md hover:bg-gray-100 cursor-pointer"
+          className="flex items-center gap-2 px-4 py-2 text-sm font-semibold text-gray-600 hover:bg-gray-50 rounded-xl border border-transparent hover:border-gray-100 transition-all active:scale-95 flex-shrink-0"
         >
-          {biggerGrid ? <Grid size={16} /> : <LayoutGrid size={16} />}
-          <span>Chế độ xem</span>
+          {biggerGrid ? <Grid size={18} strokeWidth={2.5} /> : <LayoutGrid size={18} strokeWidth={2.5} />}
+          <span className="hidden lg:inline text-gray-700">Chế độ xem</span>
         </button>
+
       </div>
     </div>
   );

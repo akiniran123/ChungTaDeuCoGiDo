@@ -1,19 +1,32 @@
 "use client";
 
-import React, { useEffect, useState } from "react";
-import { Lightbulb, Send, StickyNote } from "lucide-react";
+import React, { useEffect, useState, useRef } from "react";
+import { Lightbulb, Send, StickyNote, Sparkles } from "lucide-react";
 import { supabase } from "@/lib/supabase/client";
 import type { Tables } from "@/types/supabase";
 
-// Sử dụng Type chuẩn từ database để đồng bộ hoàn toàn
 type Note = Tables<"notes">;
+
+const NOTE_PALETTES = [
+  { bg: "#fff9c4", text: "#5d4037" },
+  { bg: "#ffecb3", text: "#4e342e" },
+  { bg: "#dcedc8", text: "#33691e" },
+  { bg: "#e1f5fe", text: "#01579b" },
+  { bg: "#f8bbd0", text: "#880e4f" },
+  { bg: "#e1bee7", text: "#4a148c" },
+  { bg: "#ffe0b2", text: "#e65100" },
+  { bg: "#cfd8dc", text: "#263238" },
+];
 
 export default function SharedNoteBoardPage() {
   const [notes, setNotes] = useState<Note[]>([]);
   const [newNote, setNewNote] = useState("");
   const [loading, setLoading] = useState(false);
+  
+  // Logic ẩn/hiện thanh nhập note
+  const [isVisible, setIsVisible] = useState(true);
+  const lastScrollY = useRef(0);
 
-  // 1. Tải ghi chú ban đầu & Lắng nghe Realtime
   useEffect(() => {
     const fetchNotes = async () => {
       const { data, error } = await supabase
@@ -25,32 +38,40 @@ export default function SharedNoteBoardPage() {
         console.error("Lỗi lấy notes:", error);
         return;
       }
-      
       if (data) setNotes(data as Note[]);
     };
 
     fetchNotes();
 
-    // Lắng nghe thay đổi thời gian thực
     const channel = supabase
       .channel("public:notes")
-      .on(
-        "postgres_changes",
-        { event: "INSERT", schema: "public", table: "notes" },
-        (payload) => {
-          // Ép kiểu payload mới về Note để tránh lỗi type 'null'
-          const newIncomingNote = payload.new as Note;
-          setNotes((prev) => [newIncomingNote, ...prev]);
-        }
-      )
+      .on("postgres_changes", { event: "INSERT", schema: "public", table: "notes" }, (payload) => {
+        setNotes((prev) => [payload.new as Note, ...prev]);
+      })
       .subscribe();
+
+    // Logic xử lý scroll
+    const handleScroll = () => {
+      const currentScrollY = window.scrollY;
+      
+      if (currentScrollY > lastScrollY.current && currentScrollY > 100) {
+        // Kéo xuống -> Ẩn
+        setIsVisible(false);
+      } else {
+        // Kéo lên -> Hiện
+        setIsVisible(true);
+      }
+      lastScrollY.current = currentScrollY;
+    };
+
+    window.addEventListener("scroll", handleScroll, { passive: true });
 
     return () => {
       supabase.removeChannel(channel);
+      window.removeEventListener("scroll", handleScroll);
     };
   }, []);
 
-  // 2. Hàm gửi ghi chú mới
   const handleAddNote = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!newNote.trim()) return;
@@ -58,16 +79,14 @@ export default function SharedNoteBoardPage() {
     setLoading(true);
     try {
       const { data: userData } = await supabase.auth.getUser();
-      
-      const colors = ["#fff9c4", "#ffecb3", "#dcedc8", "#e1f5fe"];
-      const randomColor = colors[Math.floor(Math.random() * colors.length)];
+      const randomPalette = NOTE_PALETTES[Math.floor(Math.random() * NOTE_PALETTES.length)];
 
       const { error } = await supabase.from("notes").insert([
         {
           content: newNote,
           username: userData.user?.user_metadata?.full_name || "Người dùng ẩn danh",
           user_id: userData.user?.id || null,
-          color: randomColor,
+          color: randomPalette.bg,
         },
       ]);
 
@@ -80,86 +99,130 @@ export default function SharedNoteBoardPage() {
     }
   };
 
+  const getNoteAppearance = (note: Note) => {
+    const id = note.id;
+    const charCodeSum = id.split('').reduce((acc, char) => acc + char.charCodeAt(0), 0);
+    
+    const heights = ["min-h-[160px]", "min-h-[200px]", "min-h-[180px]"];
+    const hClass = heights[charCodeSum % heights.length];
+    
+    const rotates = ["rotate-1", "-rotate-1", "rotate-2", "-rotate-2", "rotate-0"];
+    const rClass = rotates[charCodeSum % rotates.length];
+
+    const spans = ["col-span-1", "col-span-1", "md:col-span-2", "col-span-1", "col-span-1"];
+    const sClass = spans[charCodeSum % spans.length];
+
+    const palette = NOTE_PALETTES.find(p => p.bg === note.color) || NOTE_PALETTES[0];
+    const textColor = palette.text;
+
+    return { classes: `${hClass} ${rClass} ${sClass}`, textColor };
+  };
+
   return (
-    <div className="max-w-6xl mx-auto p-4 md:p-8 space-y-8 bg-[#fdfdfd] min-h-screen">
-      {/* 1. Header Banner */}
-      <header className="bg-[#1d72f2] text-white p-6 md:p-10 rounded-sm shadow-md text-center">
-        <h1 className="text-lg md:text-2xl font-serif italic">
+    <div className="w-full p-2 md:p-6 space-y-8 bg-[#f8fafc] min-h-screen">
+      
+      {/* Header rực rỡ */}
+      <header className="relative overflow-hidden bg-gradient-to-r from-blue-600 via-indigo-600 to-purple-600 text-white p-8 md:p-12 rounded-[2.5rem] shadow-2xl text-center group">
+        <div className="absolute top-0 left-0 w-full h-full opacity-10 bg-[url('https://www.transparenttextures.com/patterns/cubes.png')] animate-pulse" />
+        <h1 className="relative text-3xl md:text-5xl font-serif italic font-black tracking-tight drop-shadow-lg">
           &quot;Our Shared Wisdom Board&quot;
         </h1>
-        <p className="text-xs mt-2 opacity-70 italic">Mọi người cùng viết, mọi người cùng xem</p>
+        <div className="relative flex items-center justify-center gap-3 mt-4">
+          <Sparkles className="w-5 h-5 text-yellow-300 animate-bounce" />
+          <p className="text-sm md:text-base opacity-90 font-bold tracking-[0.2em] uppercase">Góc nhỏ cộng đồng</p>
+          <Sparkles className="w-5 h-5 text-yellow-300 animate-bounce" />
+        </div>
       </header>
 
-      {/* 2. Form viết Note */}
-      <section className="bg-white p-6 rounded-xl border-2 border-dashed border-blue-200 shadow-sm">
+      {/* Input Section - Đã thêm logic trượt ẩn/hiện */}
+      <section 
+        className={`max-w-4xl mx-auto w-full backdrop-blur-md bg-white/70 p-6 rounded-3xl border border-white/50 shadow-2xl sticky top-4 z-30 ring-8 ring-blue-500/5 transition-all duration-500 transform ${
+          isVisible ? "translate-y-0 opacity-100" : "-translate-y-24 opacity-0 pointer-events-none"
+        }`}
+      >
         <form onSubmit={handleAddNote} className="flex flex-col sm:flex-row gap-4">
-          <input
-            type="text"
+          <textarea
             value={newNote}
             onChange={(e) => setNewNote(e.target.value)}
-            maxLength={200}
-            placeholder="Chia sẻ suy nghĩ của bạn (tối đa 200 ký tự)..."
-            className="flex-1 bg-gray-50 border border-gray-200 rounded-lg px-4 py-3 focus:outline-none focus:ring-2 focus:ring-blue-500 text-gray-800"
+            maxLength={300}
+            placeholder="Chia sẻ suy nghĩ rực rỡ của bạn..."
+            className="flex-1 bg-white/80 border-2 border-blue-50 rounded-2xl px-5 py-4 focus:outline-none focus:ring-4 focus:ring-blue-500/20 text-gray-800 shadow-inner min-h-[80px] text-base resize-none transition-all placeholder:italic"
           />
           <button
             type="submit"
             disabled={loading || !newNote.trim()}
-            className="bg-[#1d72f2] text-white px-6 py-3 rounded-lg font-bold flex items-center justify-center gap-2 hover:bg-blue-600 transition-colors disabled:opacity-50 whitespace-nowrap"
+            className="bg-gradient-to-br from-blue-500 via-indigo-600 to-purple-600 text-white px-10 py-4 rounded-2xl font-black flex items-center justify-center gap-3 shadow-lg shadow-blue-500/30 hover:shadow-indigo-500/40 transition-all active:scale-95 disabled:opacity-50 h-fit sm:self-end border-b-4 border-black/20"
           >
-            <Send className="w-4 h-4" />
-            {loading ? "Đang gửi..." : "Đăng Note"}
+            <Send className="w-5 h-5" />
+            {loading ? "..." : "DÁN LÊN"}
           </button>
         </form>
       </section>
 
-      {/* 3. Bảng Note Chung (Grid) */}
-      <div className="min-h-[400px] border-2 border-red-800/10 p-4 md:p-8 rounded-2xl bg-gray-50/50">
-        <div className="flex items-center gap-2 mb-6">
-          <StickyNote className="w-6 h-6 text-yellow-600" />
-          <h2 className="text-2xl font-black text-gray-800 uppercase italic">Public Board</h2>
+      {/* Bảng Note */}
+      <div className="min-h-[700px] h-auto border-[16px] border-white p-6 md:p-14 rounded-[4rem] bg-gradient-to-tr from-slate-50 via-white to-blue-50/40 shadow-[0_30px_60px_-15px_rgba(0,0,0,0.1)] relative overflow-hidden">
+        <div className="absolute inset-0 opacity-[0.03] pointer-events-none bg-[url('https://www.transparenttextures.com/patterns/carbon-fibre.png')]" />
+        
+        <div className="flex items-center gap-4 mb-16 relative">
+          <div className="p-3 bg-yellow-400 rounded-2xl shadow-xl rotate-12">
+            <StickyNote className="w-8 h-8 text-white fill-white/20" />
+          </div>
+          <h2 className="text-3xl font-black text-slate-800 uppercase tracking-tighter italic">The Wall</h2>
+          <div className="flex-1 h-1.5 bg-gradient-to-r from-yellow-400/60 to-transparent ml-6 rounded-full" />
         </div>
 
-        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
-          {notes.map((note) => (
-            <div
-              key={note.id}
-              // Fix lỗi: color có thể là null nên cần fallback giá trị mặc định
-              style={{ backgroundColor: note.color || "#fff9c4" }}
-              className="p-6 shadow-lg border border-black/5 min-h-[180px] flex flex-col transform transition-transform hover:scale-105 hover:-rotate-1 relative group"
-            >
-              <div className="absolute top-2 right-2 w-3 h-3 bg-black/10 rounded-full" />
-              <p className="text-gray-800 font-medium leading-relaxed mb-4 break-words">
-                {note.content}
-              </p>
-              <div className="mt-auto pt-2 border-t border-black/5">
-                <p className="text-[10px] font-bold text-black/40 uppercase tracking-widest">
-                  {/* Fix lỗi: username có thể là null */}
-                  By: {note.username || "Người dùng ẩn danh"}
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 2xl:grid-cols-5 gap-8 grid-flow-row-dense relative">
+          {notes.map((note) => {
+            const { classes, textColor } = getNoteAppearance(note);
+            return (
+              <div
+                key={note.id}
+                style={{ 
+                  backgroundColor: note.color || "#fff9c4",
+                  color: textColor
+                }}
+                className={`p-7 shadow-[10px_10px_0px_rgba(0,0,0,0.03)] border-2 border-white/40 flex flex-col transform transition-all hover:scale-105 hover:-translate-y-2 hover:rotate-0 hover:z-20 cursor-default relative group rounded-xl ${classes}`}
+              >
+                <div className="absolute -top-4 left-1/2 -translate-x-1/2 w-7 h-7 bg-gradient-to-br from-red-500 to-red-700 rounded-full shadow-xl border-4 border-white z-10 hidden group-hover:block animate-bounce" />
+                
+                <p className="font-bold leading-relaxed mb-6 break-words text-lg font-serif italic">
+                  &quot;{note.content}&quot;
                 </p>
+                
+                <div className="mt-auto pt-4 border-t-2 border-black/5 flex flex-col">
+                  <p className="text-[11px] font-black uppercase tracking-[0.2em] text-current opacity-60">
+                    @{note.username?.split(' ').pop() || "anon"}
+                  </p>
+                </div>
               </div>
-            </div>
-          ))}
-          
-          {notes.length === 0 && !loading && (
-            <div className="col-span-full text-center py-20 text-gray-400 italic">
-              Chưa có ghi chú nào. Hãy là người đầu tiên viết gì đó!
-            </div>
-          )}
+            );
+          })}
         </div>
+
+        {notes.length === 0 && (
+          <div className="flex flex-col items-center justify-center py-56 opacity-10">
+            <StickyNote className="w-32 h-32 mb-8" />
+            <p className="text-4xl font-black italic tracking-tighter uppercase">Chưa có gì ở đây...</p>
+          </div>
+        )}
       </div>
 
-      {/* 4. Tips Section */}
-      <div className="space-y-4 pt-4 border-l-4 border-red-700/30 pl-6">
-        <div className="bg-[#1d72f2] text-white px-10 py-2 w-fit rounded-full flex items-center gap-2 shadow-lg transform -translate-x-10">
-          <Lightbulb className="w-6 h-6 fill-yellow-300 text-yellow-300" />
-          <span className="font-black text-xl uppercase tracking-widest italic">Community Tips</span>
+      {/* Footer */}
+      <footer className="max-w-5xl mx-auto bg-slate-900 text-white p-8 rounded-[3rem] shadow-2xl flex flex-col md:flex-row items-center gap-8 border-b-[10px] border-indigo-600 relative overflow-hidden">
+        <div className="absolute top-0 right-0 w-32 h-32 bg-blue-500/10 rounded-full -mr-16 -mt-16 blur-3xl" />
+        <div className="p-5 bg-yellow-400 rounded-3xl shadow-2xl transform hover:scale-110 transition-transform cursor-pointer">
+          <Lightbulb className="w-10 h-10 text-slate-900 fill-white" />
         </div>
-        
-        <div className="p-6 bg-blue-50 border-l-[12px] border-blue-400 rounded-lg shadow-sm">
-          <p className="text-blue-800 font-medium italic">
-            &quot;Sự thấu cảm bắt đầu từ việc lắng nghe những chia sẻ nhỏ nhất.&quot;
+        <div className="text-center md:text-left relative z-10">
+          <h3 className="text-xl font-black uppercase tracking-widest text-yellow-400">Tư duy rực rỡ</h3>
+          <p className="text-base italic font-medium opacity-80 mt-2 leading-relaxed">
+            &quot;Sự khác biệt của bạn là một siêu năng lực. Hãy để thế giới chiêm ngưỡng nó qua những dòng chữ này.&quot;
           </p>
         </div>
+      </footer>
+      
+      <div className="opacity-40 text-center text-[11px] font-black tracking-[0.4em] uppercase pb-12 text-slate-500">
+        &copy; ADHD Community Board — Wisdom in Chaos
       </div>
     </div>
   );

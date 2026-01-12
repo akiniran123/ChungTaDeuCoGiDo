@@ -2,7 +2,6 @@
 
 import { useState, createContext, useContext } from "react";
 import SidebarLeft from "@/components/sidebarleft/components/SidebarLeft";
-import SidebarRight from "@/components/SideBarRight/SidebarRight";
 
 const GridContext = createContext({
   biggerGrid: false,
@@ -20,28 +19,26 @@ export default function AppLayout({ children }: { children: React.ReactNode }) {
     <GridContext.Provider value={{ biggerGrid, toggleGrid }}>
       <div className="bg-white text-black min-h-screen">
         
-        {/* 1. SIDEBAR TRÁI - Giữ cố định bên trái */}
+        {/* 1. SIDEBAR TRÁI - Giữ nguyên z-index để không bị nội dung đè lên */}
         <div className="relative z-50">
           <SidebarLeft />
         </div>
 
-        {/* 2. NỘI DUNG CHÍNH - Đã bỏ paddingTop động của Header */}
+        {/* 2. NỘI DUNG CHÍNH - Chiếm toàn bộ không gian còn lại */}
         <main
-          className="transition-all duration-300 min-h-screen px-4 pb-20 pt-6 md:pl-64 md:pb-6 xl:pr-[300px]"
+          className="transition-all duration-300 min-h-screen pt-6 pb-20 
+                     md:pl-64 
+                     w-full"
         >
-          <div className="max-w-5xl mx-auto">
+          {/* - Bỏ xl:pr-[300px]: Để không còn khoảng trống của Sidebar phải cũ.
+              - w-full: Đảm bảo nội dung kéo dài hết cỡ sang bên phải.
+              - px-4 md:px-8: Tăng khoảng padding để các thẻ Note trông thoáng hơn trên màn hình lớn.
+          */}
+          <div className="w-full px-4 md:px-8 lg:px-10">
             {children}
           </div>
         </main>
 
-        {/* 3. SIDEBAR PHẢI - Giữ cố định bên phải */}
-        <aside
-          className="hidden xl:block fixed right-0 top-0 bg-white border-l border-gray-100 overflow-y-auto"
-          style={{ width: 300, height: "100vh", zIndex: 50 }}
-        >
-          {/* Đã bỏ selectedCategory vì không còn HeaderBar để chọn */}
-          <SidebarRight  />
-        </aside>
       </div>
     </GridContext.Provider>
   );

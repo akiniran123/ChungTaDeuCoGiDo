@@ -1,64 +1,29 @@
 "use client";
-import React, { useEffect, useState } from "react";
+
+import React from "react";
 import UserMenu from "@/components/SideBarRight/UserMenu";
-import { supabase } from "@/lib/supabase/client";
-import type { Database } from "@/types/supabase";
 
-type Community = Database["public"]["Tables"]["communities"]["Row"];
-
-interface SidebarRightCardProps {
-  selectedCategory: string | null;
-}
-
-export default function SidebarRightCard({ selectedCategory }: SidebarRightCardProps) {
-  const [communities, setCommunities] = useState<Community[]>([]);
-
-  useEffect(() => {
-    const loadCommunities = async () => {
-      if (!selectedCategory) return;
-
-      const { data, error } = await supabase
-        .from("communities")
-        .select("*")
-        .eq("category", selectedCategory)
-        .limit(5);
-
-      if (error) {
-        console.error("Load communities error:", error);
-        setCommunities([]);
-        return;
-      }
-
-      setCommunities((data ?? []) as Community[]);
-    };
-    loadCommunities();
-  }, [selectedCategory]);
-
+export default function SidebarRightCard() {
   return (
     <aside className="fixed top-[10px] right-[10px] z-30 w-[260px] h-[calc(100vh-20px)]">
       <div className="h-full rounded-4xl bg-white border border-gray-200 shadow-sm overflow-hidden flex flex-col">
+        {/* Phần chứa thông tin User */}
         <div className="p-4 border-b border-gray-200">
           <UserMenu />
         </div>
 
-        <div className="flex-1 p-4">
-          <h3 className="text-sm font-semibold mb-2">Cộng đồng liên quan</h3>
-          {selectedCategory ? (
-            communities.length > 0 ? (
-              <ul className="space-y-2">
-                {communities.map((c) => (
-                  <li key={c.id} className="p-2 rounded-md hover:bg-gray-50 cursor-pointer">
-                    <div className="font-medium text-gray-800">{c.title}</div>
-                    <div className="text-xs text-gray-500">👥 {c.members_count ?? 0} thành viên</div>
-                  </li>
-                ))}
-              </ul>
-            ) : (
-              <p className="text-xs text-gray-400">Không có gợi ý cho mục này</p>
-            )
-          ) : (
-            <p className="text-xs text-gray-400">Chọn một category để xem gợi ý</p>
-          )}
+        {/* Phần thân bên dưới - Hiện tại để trống hoặc bạn có thể thêm các widget khác */}
+        <div className="flex-1 p-4 overflow-y-auto">
+          <div className="text-center py-10">
+            <p className="text-xs text-gray-400 italic">
+              Nội dung bổ sung sẽ được cập nhật sau
+            </p>
+          </div>
+        </div>
+
+        {/* Chân trang Sidebar (Tùy chọn) */}
+        <div className="p-4 border-t border-gray-50 text-[10px] text-gray-400 text-center">
+          © 2026 Your App Name
         </div>
       </div>
     </aside>
